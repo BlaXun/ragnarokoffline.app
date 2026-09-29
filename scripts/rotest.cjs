@@ -47,7 +47,7 @@ server:  server <args>                     the world's ragnarok-stack: logs map 
   shot [name]                screenshot; prints the file
   walk <x> <y>               click that map cell, wait for the walk to end
   attack [gid|nearest]       click a monster (a real click on it)
-  skill <id> [level] [--target <gid|nearest>] [--cell <x> <y>] [--burst N]
+  skill <id> [level] [--target <gid|nearest>] [--cell <x> <y>] [--burst N [--every ms]]
                              cast via the skill window's path, then click the target
   click <x> <y> [right]      raw mouse click at page pixels
   key <key>                  press a key (Playwright names: Enter, Escape, F1, Alt+E ...)
@@ -228,6 +228,9 @@ async function daemon(flags) {
         return (host?.id || el.closest('[id]')?.id || el.tagName) + (el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : '');
     }, [x, y]);
     const findTarget = async spec => {
+        // `self` (or the player's own id) for skills cast on a friend.
+        const me = await player();
+        if (spec === 'self' || String(spec) === String(me?.gid)) return me;
         const list = await agent('entities', [{ radius: 30 }]);
         if (!spec || spec === 'nearest') return list.find(e => e.type === 'MOB' && !e.dead) || null;
         return list.find(e => String(e.gid) === String(spec)) || null;
@@ -382,6 +385,8 @@ async function daemon(flags) {
             const level = args[1] && !args[1].startsWith('--') ? Number(args[1]) : undefined;
             const t = args.indexOf('--target'), c = args.indexOf('--cell'), b = args.indexOf('--burst');
             const burst = b >= 0 ? Number(args[b + 1]) || 6 : 0;
+            const ev = args.indexOf('--every');
+            const every = ev >= 0 ? Number(args[ev + 1]) || 150 : 150;
             // A previous cast still waiting for a target would take this one's
             // click. Right-click cancels target selection; Escape would open
             // the game menu instead.
@@ -406,10 +411,14 @@ async function daemon(flags) {
             const frames = [];
             // Cropped to the player and what is in front of them, so a frame is
             // the effect rather than the whole screen.
+            // Centred between the caster and whatever was clicked, so an
+            // effect on a target a few cells away is in frame too.
             const me = await player();
             const vp = page.viewportSize();
-            const clip = { x: Math.max(0, Math.min(vp.width - 560, me.cell.x - 280)), y: Math.max(0, Math.min(vp.height - 420, me.cell.y - 260)), width: 560, height: 420 };
-            for (let i = 0; i < burst; i++) { frames.push(await shot(`skill-${id}-f${i}`, clip)); await page.waitForTimeout(150); }
+            const aim = clicked?.target?.cell || clicked?.cell || me.cell;
+            const cx = (me.cell.x + aim.x) / 2, cy = (me.cell.y + aim.y) / 2 - 40;
+            const clip = { x: Math.round(Math.max(0, Math.min(vp.width - 560, cx - 280))), y: Math.round(Math.max(0, Math.min(vp.height - 420, cy - 210))), width: 560, height: 420 };
+            for (let i = 0; i < burst; i++) { frames.push(await shot(`skill-${id}-f${i}`, clip)); await page.waitForTimeout(every); }
             await page.waitForTimeout(burst ? 600 : 2000);
             return { started, clicked, player: await player(), chat: await agent('chat', [6]), frames, shot: await shot(`skill-${id}`), errors: newErrors() };
         },

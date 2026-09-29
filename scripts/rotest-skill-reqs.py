@@ -8,11 +8,13 @@ Cart, Shield, ...), read from db/re/skill_db.yml. For every weapon and ammo type
 to hand the character before casting.
 
     python3 scripts/rotest-skill-reqs.py [vendor/rathena] > artifacts/sweep/skill-reqs.json
+    REQS_MIN_ID=0 python3 ...   # every skill, not only 3rd/4th-job ids (>= 2000)
 
 The files are regular enough to read line by line, which keeps this free of a
 YAML dependency.
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -81,7 +83,7 @@ def first_of_each(name, kind):
 
 
 json.dump({
-    'skills': {k: v for k, v in skills.items() if k >= 2000},
+    'skills': {k: v for k, v in skills.items() if k >= int(os.environ.get('REQS_MIN_ID', 2000))},
     'weaponItem': first_of_each('item_db_equip.yml', 'Weapon'),
     'ammoItem': first_of_each('item_db_etc.yml', 'Ammo'),
 }, sys.stdout, indent=1)

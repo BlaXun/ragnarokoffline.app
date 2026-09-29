@@ -10,6 +10,7 @@
 // moment of the cast, and tiles them into one sheet per skill.
 //
 //   node scripts/rotest-skill-sweep.cjs <reqs.json> <jobId> ...
+//   SWEEP_SKILLS=5201,5208 node scripts/rotest-skill-sweep.cjs <reqs.json> 4252   # just those
 //
 // reqs.json maps skill id to { weapons, ammo, state } and weapon/ammo type to
 // an item id; artifacts/sweep/skill-reqs.json is built from
@@ -131,19 +132,19 @@ function sheet(job, skill, frames, label) {
     const py = `
 import sys, json
 from PIL import Image, ImageDraw
-files, out, label = json.loads(sys.argv[1]), sys.argv[2], sys.argv[3]
+files, out, label, every = json.loads(sys.argv[1]), sys.argv[2], sys.argv[3], int(sys.argv[4])
 ims = [Image.open(f) for f in files]
 w, h = ims[0].size
-cols = 3; rows = (len(ims) + cols - 1) // cols
+cols = 3 if len(ims) <= 6 else 4; rows = (len(ims) + cols - 1) // cols
 sheet = Image.new('RGB', (w * cols, h * rows + 28), 'black')
 d = ImageDraw.Draw(sheet)
 d.text((8, 7), label, fill='white')
 for i, im in enumerate(ims):
     sheet.paste(im, ((i % cols) * w, 28 + (i // cols) * h))
-    d.text(((i % cols) * w + 6, 28 + (i // cols) * h + 4), f'+{i * 150} ms', fill='yellow')
+    d.text(((i % cols) * w + 6, 28 + (i // cols) * h + 4), f'+{i * every} ms', fill='yellow')
 sheet.save(out)
 `;
-    const r = spawnSync('python3', ['-c', py, JSON.stringify(frames), out, label]);
+    const r = spawnSync('python3', ['-c', py, JSON.stringify(frames), out, label, String(process.env.SWEEP_EVERY || 150)]);
     if (r.status === 0) for (const f of frames) fs.rmSync(f, { force: true });
     return r.status === 0 ? out : null;
 }
@@ -158,7 +159,8 @@ async function sweepJob(job) {
     await gm('@heal');
     await call('wait', ['1500']);
     const me = await evaluate('window.roAgent.player()');
-    const skills = (await call('skills')).filter(s => s.type && s.level && s.id >= 2000);
+    const only = process.env.SWEEP_SKILLS ? new Set(process.env.SWEEP_SKILLS.split(',').map(Number)) : null;
+    const skills = (await call('skills')).filter(s => s.type && s.level && s.id >= Number(process.env.SWEEP_MIN_ID ?? 2000) && (!only || only.has(s.id)));
     let bad = 0;
     for (const skill of skills) {
         if (!(await evaluate('Boolean(window.roClientDiagnostics.snapshot().map)'))) throw new Error('left the game; see `rotest shot`');
@@ -172,13 +174,17 @@ async function sweepJob(job) {
         const k = kind(skill.type);
         const mob = k === 'enemy' || k === 'ground' ? await target() : null;
         const offset = missingSize();
-        const args = [skill.id, skill.level, '--burst', 6];
+        // Long casts (Arch Mage and the like) land after a short burst ends:
+        // SWEEP_BURST frames, SWEEP_EVERY ms apart.
+        const burst = Number(process.env.SWEEP_BURST || 6), every = Number(process.env.SWEEP_EVERY || 150);
+        const args = [skill.id, skill.level, '--burst', burst, '--every', every];
         if (k === 'enemy' && mob) args.push('--target', mob.gid);
         if (k === 'ground' && mob) args.push('--cell', Math.round(mob.position[0]), Math.round(mob.position[1]));
-        if (k === 'friend') args.push('--target', before.gid);
+        if (k === 'friend') args.push('--target', 'self');
         const t0 = await evaluate('Date.now()');
         const r = await call('skill', args);
         const net = await evaluate(`window.roAgent.net(${t0})`);
+        const started = await evaluate(`window.roAgent.effects ? window.roAgent.effects(${t0}) : null`);
         const after = await evaluate('window.roAgent.player()');
         const mobAfter = mob ? ((await call('state', ['12'])).entities || []).find(e => e.gid === mob.gid) : null;
         const chat = newLines(chatBefore, await evaluate('window.roAgent.chat(30)'));
@@ -194,6 +200,7 @@ async function sweepJob(job) {
             chat, problems, missing,
             sent: net?.sent || [], recv: net?.recv || [],
             unhandled: (net?.recv || []).filter(n => n.endsWith('(no handler)')),
+            effects: started ? [...new Set(started.map(e => String(e.id) + (e.known ? '' : ' (not in EffectTable)')))] : null,
             sheet: sheet(job, skill, r.frames, `${job} ${skill.id} ${skill.name} (${k}) sp:${sp ?? '?'} ${chat.slice(-1)[0] || ''}`),
         };
         if (problems.length || missing.length || line.unhandled.length) bad++;

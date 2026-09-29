@@ -22,6 +22,8 @@ import Network from 'Network/NetworkManager.js';
 import PACKET from 'Network/PacketStructure.js';
 import PACKETVER from 'Network/PacketVerManager.js';
 import UIManager from 'UI/UIManager.js';
+import EffectManager from 'Renderer/EffectManager.js';
+import EffectTable from 'DB/Effects/EffectTable.js';
 
 function enabled() {
     try { return window.localStorage.getItem('roAgent') === '1'; } catch { return false; }
@@ -129,11 +131,26 @@ function trace() {
         return send.apply(this, arguments);
     };
 }
+// Every effect the client asked to play, and whether the effect table knew
+// it. A skill with a SkillEffect entry pointing at a missing EffectTable key
+// fails silently in EffectManager.spam; this makes that visible.
+const effects = [];
+function traceEffects() {
+    const spam = EffectManager.spam;
+    EffectManager.spam = function (init) {
+        if (init && init.effectId !== undefined) {
+            effects.push({ at: Date.now(), id: init.effectId, known: init.effectId in EffectTable, owner: init.ownerAID ?? null });
+            if (effects.length > 2000) effects.splice(0, 500);
+        }
+        return spam.apply(this, arguments);
+    };
+}
 const IGNORED = /^PACKET_(CZ_REQUEST_TIME|ZC_NOTIFY_TIME|CZ_PING|ZC_PING|ZC_NOTIFY_MOVE|ZC_NOTIFY_PLAYERMOVE|CZ_REQUEST_MOVE2?|ZC_NOTIFY_MOVEENTRY\d*|ZC_NOTIFY_STANDENTRY\d*|ZC_NOTIFY_NEWENTRY\d*|ZC_NOTIFY_VANISH|ZC_STOPMOVE|ZC_PAR_CHANGE|ZC_LONGPAR_CHANGE\d*|ZC_STATUS_CHANGE|ZC_NOTIFY_CHAT|ZC_NOTIFY_PLAYERCHAT|CZ_REQUEST_CHAT)$/;
 
 export function install() {
     if (!enabled() || window.roAgent) return;
     trace();
+    traceEffects();
     Object.defineProperty(window, 'roAgent', { configurable: true, value: Object.freeze({
         version: 1,
         project, player, entities, skills: skillList, chat,
@@ -151,6 +168,8 @@ export function install() {
             const keep = p => p.at >= since && (all || !IGNORED.test(p.name));
             return { sent: net.sent.filter(keep).map(p => p.name), recv: net.recv.filter(keep).map(p => p.handled ? p.name : p.name + ' (no handler)') };
         },
+        // Effects the client started since `since`: { id, known, owner }.
+        effects(since = 0) { return effects.filter(e => e.at >= since).map(({ id, known, owner }) => ({ id, known, owner })); },
         mouse() { return { state: Mouse.state, intersect: Mouse.intersect, screen: { ...Mouse.screen }, world: { ...Mouse.world },
             over: EntityManager.getOverEntity() ? describe(EntityManager.getOverEntity()) : null }; },
         modules: { Session, Camera, Renderer, MapRenderer, EntityManager, Entity, Altitude, Mouse, DB, SkillInfo, Network, PACKET, PACKETVER, UIManager },

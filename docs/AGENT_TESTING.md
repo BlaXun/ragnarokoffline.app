@@ -123,6 +123,16 @@ node scripts/rotest-skill-sweep.cjs artifacts/sweep/skill-reqs.json 4252 4253 > 
 
 Do it on a field map (`@warp prt_fild08 170 360`); towns forbid some skills.
 
+- `SWEEP_SKILLS=5201,5208` limits it to those ids; `SWEEP_MIN_ID=0` includes
+  skills below 2000 (with a `REQS_MIN_ID=0` requirements file).
+- `SWEEP_BURST=16 SWEEP_EVERY=250` takes four seconds of frames, for long casts.
+- Each line carries `effects`: the effect ids the client started (from
+  `roAgent.effects(since)`), with `(not in EffectTable)` on any it could not
+  find, and `unhandled`: packets received that the client has no handler for.
+- 4th-job skills cost AP, which `@heal` does not restore:
+  `rotest server sql --write "UPDATE \`char\` SET ap=max_ap WHERE name='Tester'"`
+  while logged out.
+
 ## How it works, and what to watch for
 
 - **Never press Escape to cancel something.** Escape opens Game Options, whose
