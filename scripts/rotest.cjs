@@ -46,7 +46,7 @@ server:  server <args>                     the world's ragnarok-stack: logs map 
   shot [name]                screenshot; prints the file
   walk <x> <y>               click that map cell, wait for the walk to end
   attack [gid|nearest]       click a monster (a real click on it)
-  skill <id> [level] [--target <gid|nearest>] [--cell <x> <y>]
+  skill <id> [level] [--target <gid|nearest>] [--cell <x> <y>] [--burst N]
                              cast via the skill window's path, then click the target
   click <x> <y> [right]      raw mouse click at page pixels
   key <key>                  press a key (Playwright names: Enter, Escape, F1, Alt+E ...)
@@ -152,7 +152,12 @@ async function daemon(flags) {
     const errors = [];
     let errorsSeen = 0;
     page.on('pageerror', e => errors.push({ at: Date.now(), kind: 'pageerror', text: String(e.stack || e.message).slice(0, 2000) }));
-    page.on('console', m => { if (m.type() === 'error') errors.push({ at: Date.now(), kind: 'console', text: m.text().slice(0, 2000) }); });
+    // Warnings too: roBrowser reports an unhandled packet ("Packet 0x... not
+    // registered") as a warning, and that is often the whole bug.
+    page.on('console', m => {
+        const kind = m.type() === 'error' ? 'console' : m.type() === 'warning' ? 'warning' : null;
+        if (kind) errors.push({ at: Date.now(), kind, text: m.text().slice(0, 2000) });
+    });
     page.on('response', r => { if (r.status() >= 400) errors.push({ at: Date.now(), kind: 'http', text: `${r.status()} ${new URL(r.url()).pathname}` }); });
     await page.goto(GAME, { waitUntil: 'domcontentloaded' });
     log('browser ready', headed ? '(headed)' : '(headless)');
@@ -178,9 +183,9 @@ async function daemon(flags) {
         return Boolean(me && window.roAgent.project(Math.round(me.position[0]), Math.round(me.position[1])).onScreen);
     }).catch(() => false), 60000, 300);
     const newErrors = () => { const e = errors.slice(errorsSeen); errorsSeen = errors.length; return e; };
-    const shot = async name => {
+    const shot = async (name, clip) => {
         const file = path.join(OUT, `${(name || 'shot').replace(/[^\w.-]+/g, '_')}-${Date.now()}.png`);
-        await page.screenshot({ path: file });
+        await page.screenshot({ path: file, ...(clip ? { clip } : {}) });
         return file;
     };
     const player = () => agent('player');
@@ -205,11 +210,22 @@ async function daemon(flags) {
         await page.mouse.click(target.click.x, target.click.y, { button });
         return over.over?.gid === target.gid;
     };
+    // Type into the chat box and send. Only ever the visible input: with the
+    // game menu (Escape) or a dialog open, Enter would press *their* default
+    // button -- which is how a stray Enter logs a character out.
     const chatSend = async text => {
-        const input = page.locator('.input-chatbox').first();
-        if (!(await input.isVisible().catch(() => false))) await page.keyboard.press('Enter');
-        await input.fill(text);
-        await input.press('Enter');
+        let input = page.locator('.input-chatbox:visible').first();
+        if (!(await input.count())) {
+            const blocked = await page.evaluate(() => {
+                const s = window.roClientDiagnostics?.snapshot();
+                return s?.input?.capturing || !s?.map;
+            }).catch(() => true);
+            if (blocked) throw new Error('chat is not reachable: a menu or dialog is open, or not in game (see `rotest shot`)');
+            await page.keyboard.press('Enter');
+            input = page.locator('.input-chatbox:visible').first();
+        }
+        await input.fill(text, { timeout: 3000 });
+        await input.press('Enter', { timeout: 3000 });
         await page.waitForTimeout(700);
         return agent('chat', [8]).catch(() => []);
     };
@@ -335,7 +351,16 @@ async function daemon(flags) {
         skill: async args => {
             const id = Number(args[0]);
             const level = args[1] && !args[1].startsWith('--') ? Number(args[1]) : undefined;
-            const t = args.indexOf('--target'), c = args.indexOf('--cell');
+            const t = args.indexOf('--target'), c = args.indexOf('--cell'), b = args.indexOf('--burst');
+            const burst = b >= 0 ? Number(args[b + 1]) || 6 : 0;
+            // A previous cast still waiting for a target would take this one's
+            // click. Right-click cancels target selection; Escape would open
+            // the game menu instead.
+            if ((await agent('mouse')).state === await page.evaluate(() => window.roAgent.modules.Mouse.MOUSE_STATE.USESKILL)) {
+                const me = await player();
+                await page.mouse.click(me.cell.x, me.cell.y, { button: 'right' });
+                await page.waitForTimeout(200);
+            }
             const started = await agent('useSkill', [id, level]);
             let clicked = null;
             if (started.targeting && t >= 0) {
@@ -347,8 +372,17 @@ async function daemon(flags) {
                 await page.mouse.click(cell.x, cell.y);
                 clicked = { cell };
             }
-            await page.waitForTimeout(2000);
-            return { started, clicked, player: await player(), chat: await agent('chat', [6]), shot: await shot(`skill-${id}`), errors: newErrors() };
+            // Effects are over in a second or two, so a burst from the moment
+            // of the cast catches them where one later screenshot does not.
+            const frames = [];
+            // Cropped to the player and what is in front of them, so a frame is
+            // the effect rather than the whole screen.
+            const me = await player();
+            const vp = page.viewportSize();
+            const clip = { x: Math.max(0, Math.min(vp.width - 560, me.cell.x - 280)), y: Math.max(0, Math.min(vp.height - 420, me.cell.y - 260)), width: 560, height: 420 };
+            for (let i = 0; i < burst; i++) { frames.push(await shot(`skill-${id}-f${i}`, clip)); await page.waitForTimeout(150); }
+            await page.waitForTimeout(burst ? 600 : 2000);
+            return { started, clicked, player: await player(), chat: await agent('chat', [6]), frames, shot: await shot(`skill-${id}`), errors: newErrors() };
         },
         errors: async () => ({ errors }),
         stop: async () => { setTimeout(async () => { await browser.close().catch(() => {}); serve.kill('SIGTERM'); setTimeout(() => process.exit(0), 3000); }, 50); return { ok: true, stopping: true }; },

@@ -45,10 +45,24 @@ scripts/rotest start           # asset server + browser; add --headed to watch
 ```
 
 A new world has one account, the GM account `ragnarok` / `ragnarok`, and no
-characters.
+characters. The client draws that account with the GM "operator" sprite
+whatever its job (it is the `adminList` entry in `config/Config.local.js`), so
+nothing you see on it tells you what a class looks like. Make a second account
+for play-testing, and give it GM commands on the server without putting it on
+the client's list:
 
 ```sh
-scripts/rotest login
+printf '{"era":"renewal","action":"create","username":"tester","password":"tester123","confirmation":"tester123"}' \
+  | scripts/rotest server accounts
+scripts/rotest server sql --write "UPDATE login SET group_id=99 WHERE userid='tester'"
+```
+
+`tester` then looks like any player (real class outfits, normal name and chat
+colour) and can still run `@commands`. The server treats it as a GM, so for a
+bug where GM permissions might matter, test on a group-0 account as well.
+
+```sh
+scripts/rotest login tester tester123
 scripts/rotest create 0 Tester    # first time only
 scripts/rotest char 0
 ```
@@ -67,7 +81,7 @@ scripts/rotest char 0
 | `shot [name]` | a screenshot; prints the file path |
 | `walk <x> <y>` | clicks the map cell, waits for the walk to finish |
 | `attack [gid\|nearest]` | clicks the monster where the client picks it |
-| `skill <id> [lv] [--target <gid\|nearest>] [--cell <x> <y>]` | starts the cast the way the skill window does, then clicks the target |
+| `skill <id> [lv] [--target <gid\|nearest>] [--cell <x> <y>] [--burst N]` | starts the cast the way the skill window does, then clicks the target; `--burst` takes N frames 150 ms apart, cropped to the player, from the moment of the cast |
 | `equip <itemId>` | equips an item already in the inventory (`gm "@item <id>"` first) |
 | `hover <x> <y> [--px]` | puts the cursor on a cell (or pixels) and reports what the client sees there |
 | `click <x> <y> [right]`, `key <key>` | raw input |
@@ -98,7 +112,29 @@ scripts/rotest shot after-hack
 <count>` puts targets next to you. `@item`, `@baselvl`, `@joblvl`,
 `@jobchange`, `@allskill`, `@heal` and `@speed` cover most set-up.
 
+## Sweeping a job's skills
+
+`scripts/rotest-skill-sweep.cjs` casts every 3rd/4th-job skill of the jobs you
+name, one JSON line per skill. Before each cast it gives the character what
+rAthena's `skill_db` requires (a weapon of the right type, ammo, a shield, a
+mount, a cart), so a refusal is the game's rule and not a missing weapon. Each
+cast gets a tiled sheet of burst frames, so the effect can be checked by eye.
+It records the server's chat lines, SP spent, whether the target took damage,
+client errors and warnings, and files the asset server could not find.
+
+```sh
+python3 scripts/rotest-skill-reqs.py vendor/rathena > artifacts/sweep/skill-reqs.json
+node scripts/rotest-skill-sweep.cjs artifacts/sweep/skill-reqs.json 4252 4253 > sweep.jsonl
+```
+
+Do it on a field map (`@warp prt_fild08 170 360`); towns forbid some skills.
+
 ## How it works, and what to watch for
+
+- **Never press Escape to cancel something.** Escape opens Game Options, whose
+  first button is Character Select, and the next Enter logs the character
+  out. `skill` cancels a pending target with a right-click, and `gm`/`say`
+  refuse while a menu or dialog is open rather than pressing Enter into it.
 
 - **Clicks are real input.** `walk` projects the cell to the screen and
   clicks it. `attack` and `skill --target` click the middle of the box the
