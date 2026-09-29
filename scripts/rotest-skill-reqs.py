@@ -2,8 +2,8 @@
 """Skill requirements for scripts/rotest-skill-sweep.cjs, from the pinned rAthena.
 
 For every skill id >= 2000 (3rd and 4th jobs): the weapon types and ammo it
-requires and the state it needs (Ridingdragon, Mado, Cart, Shield, ...), read
-from db/re/skill_db.yml. For every weapon and ammo type, one item of that type
+requires, the items it consumes, and the state it needs (Ridingdragon, Mado,
+Cart, Shield, ...), read from db/re/skill_db.yml. For every weapon and ammo type, one item of that type
 (the lowest id) from db/re/item_db_equip.yml and item_db_etc.yml, for the sweep
 to hand the character before casting.
 
@@ -24,7 +24,7 @@ cur = section = None
 for line in open(db / 'skill_db.yml', encoding='utf-8'):
     m = re.match(r'^  - Id: (\d+)', line)
     if m:
-        cur = {'weapons': [], 'ammo': [], 'state': None, 'name': None}
+        cur = {'weapons': [], 'ammo': [], 'state': None, 'name': None, 'items': []}
         skills[int(m.group(1))] = cur
         section = None
         continue
@@ -45,6 +45,11 @@ for line in open(db / 'skill_db.yml', encoding='utf-8'):
         if key == 'State':
             cur['state'] = value
         section = ('requires', key if value == '' else None)
+        continue
+    m = re.match(r'^        - Item: (\S+)', line)
+    if m and isinstance(section, tuple) and section[1] == 'ItemCost':
+        if m.group(1) not in cur['items']:
+            cur['items'].append(m.group(1))
         continue
     m = re.match(r'^        (\w+): true', line)
     if m and isinstance(section, tuple):

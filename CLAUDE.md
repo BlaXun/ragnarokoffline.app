@@ -183,9 +183,12 @@ has the set-up and the commands. Use it to reproduce a client or server bug
 before changing anything, and to show the fix works after. Things that will
 mislead you:
 
-- A new world's only account is the GM `ragnarok` / `ragnarok`, and the client
-  draws GM accounts with the GM sprite whatever their job. Check how a job
-  *looks* on a non-GM account.
+- Log in as `tester` / `tester123` (the default; `world up` creates it). It
+  has GM commands but the client draws it as its real class. The built-in
+  `ragnarok` account is on the client's admin list and always shows the GM
+  sprite, so screenshots taken on it say nothing about outfits or effects.
+- For skill effects, `skill <id> --burst 8` takes frames from the moment of
+  the cast; one screenshot a second later misses most of them.
 - The client must be the `build:all` build; a partial build has no `api.html`
   and the page says "File not found".
 - zsh does not split an unquoted `$var`, so `for c in "150 184"; do rotest

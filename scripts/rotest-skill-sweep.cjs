@@ -67,7 +67,7 @@ function newLines(before, after) {
 const kind = type => (type & 4) ? 'self' : (type & 2) ? 'ground' : (type & 1) ? 'enemy' : (type & 16) ? 'friend' : (type ? 'other' : 'passive');
 
 let reqs;
-const state = { weaponType: null, ammoType: null, mounted: false, cart: false, falcon: false, shield: false };
+const state = { weaponType: null, ammoType: null, mounted: false, cart: false, falcon: false, shield: false, items: new Set() };
 const isAmmo = id => (id >= 1750 && id < 1800) || (id >= 13200 && id < 13300) || id >= 18000;
 
 async function equipItem(id) {
@@ -93,6 +93,11 @@ async function prepare(skill) {
         const type = need.ammo.find(t => reqs.ammoItem[t]);
         if (type && await equipItem(reqs.ammoItem[type])) { state.ammoType = type; notes.push(`ammo ${type}`); }
         else notes.push(`ammo: none of ${need.ammo.join('/')} would equip`);
+    }
+    // What the cast consumes (gemstones, cannonballs, crystals...): a stack,
+    // by AegisName, which @item accepts.
+    for (const item of need.items || []) {
+        if (!state.items.has(item)) { await gm(`@item ${item} 50`); state.items.add(item); notes.push(`items ${item}`); }
     }
     const s = need.state;
     if (/^(Ridingdragon|Mado|Riding)$/i.test(s || '')) {
@@ -144,7 +149,7 @@ sheet.save(out)
 }
 
 async function sweepJob(job) {
-    Object.assign(state, { weaponType: null, ammoType: null, mounted: false, cart: false, falcon: false, shield: false });
+    Object.assign(state, { weaponType: null, ammoType: null, mounted: false, cart: false, falcon: false, shield: false, items: new Set() });
     await gm(`@jobchange ${job}`);
     await gm('@blvl 250');
     await gm('@jlvl 70');
@@ -171,7 +176,9 @@ async function sweepJob(job) {
         if (k === 'enemy' && mob) args.push('--target', mob.gid);
         if (k === 'ground' && mob) args.push('--cell', Math.round(mob.position[0]), Math.round(mob.position[1]));
         if (k === 'friend') args.push('--target', before.gid);
+        const t0 = await evaluate('Date.now()');
         const r = await call('skill', args);
+        const net = await evaluate(`window.roAgent.net(${t0})`);
         const after = await evaluate('window.roAgent.player()');
         const mobAfter = mob ? ((await call('state', ['12'])).entities || []).find(e => e.gid === mob.gid) : null;
         const chat = newLines(chatBefore, await evaluate('window.roAgent.chat(30)'));
@@ -185,12 +192,14 @@ async function sweepJob(job) {
             picked: r.clicked?.pickedByClient ?? null, spSpent: sp,
             targetDamaged: mob ? (mobAfter ? mobAfter.hp?.hp < mob.hp?.hp || mobAfter.dead : true) : null,
             chat, problems, missing,
+            sent: net?.sent || [], recv: net?.recv || [],
+            unhandled: (net?.recv || []).filter(n => n.endsWith('(no handler)')),
             sheet: sheet(job, skill, r.frames, `${job} ${skill.id} ${skill.name} (${k}) sp:${sp ?? '?'} ${chat.slice(-1)[0] || ''}`),
         };
-        if (problems.length || missing.length) bad++;
+        if (problems.length || missing.length || line.unhandled.length) bad++;
         console.log(JSON.stringify(line));
     }
-    console.error(`job ${job} (${me?.name}): ${skills.length} skills, ${bad} with client errors/warnings or missing files`);
+    console.error(`job ${job} (${me?.name}): ${skills.length} skills, ${bad} with client errors/warnings, missing files or unhandled packets`);
 }
 
 (async () => {

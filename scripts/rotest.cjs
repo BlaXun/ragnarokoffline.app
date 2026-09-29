@@ -31,11 +31,12 @@ const env = { ...process.env, RO_E2E_WORLD: WORLD,
 
 const USAGE = `usage: rotest <command> [args]
 
-world:   prepare | up | down | backup      the disposable world (tests/e2e/world.cjs)
+world:   prepare | up | down | backup      the disposable world (tests/e2e/world.cjs); up also makes tester
+         world tester                      make the tester account in an existing world
 daemon:  start [--headed] | stop | status  asset server + browser, kept running
 server:  server <args>                     the world's ragnarok-stack: logs map 100, sql "...", status
 
-  login [user] [pass]        default ragnarok / ragnarok
+  login [user] [pass]        default tester / tester123 (made by world up); ragnarok / ragnarok is the GM-sprite account
   char <slot>                enter the game with the character in <slot> (0-based)
   create <slot> <name>       make a character in an empty slot, then enter with it
   gm <text> | say <text>     type into the chat box and send (e.g. gm "@jobchange 4252")
@@ -58,6 +59,36 @@ Environment: RO_E2E_WORLD (default artifacts/agent-world), RO_E2E_RUNTIME,
 RO_E2E_CLIENT_JSON, ROTEST_PORT (7480), ROTEST_OUT (artifacts/rotest).`;
 
 // ---------------------------------------------------------------- client side
+
+// The world's own ragnarok-stack, with the environment world.cjs gives it.
+function stack(args, stdio = 'pipe', input) {
+    const suffix = process.platform === 'win32' ? '.exe' : '';
+    const root = path.join(WORLD, 'runtime');
+    return spawnSync(path.join(root, 'bin', 'ragnarok-stack' + suffix), args, { stdio, input, encoding: 'utf8', env: { ...env,
+        RAGNAROK_OFFLINE_ROOT: root, RAGNAROK_OFFLINE_HOME: WORLD, RAGNAROKMAC_STATE: path.join(WORLD, 'state'),
+        NEBULA_HOME: path.join(WORLD, 'nebula'), NEBULA_BIN: path.join(root, 'bin', 'nebula' + suffix),
+        RAGNAROKMAC_DOCKER: path.join(root, 'bin', 'docker-slim' + suffix) } });
+}
+
+// The play-testing account every world should have: `tester` / `tester123`,
+// in the GM group so @commands work, and -- unlike the built-in `ragnarok`
+// account -- not on the client's adminList, so the client draws its real
+// class outfit instead of the GM sprite. Made once; a no-op after that.
+const TESTER = { user: 'tester', pass: 'tester123' };
+function ensureTester() {
+    const has = stack(['sql', `SELECT group_id FROM login WHERE userid='${TESTER.user}'`]);
+    const group = (has.stdout || '').trim().split('\n').slice(1).join('').trim();
+    if (group === '99') { console.log(`test account ready: ${TESTER.user} / ${TESTER.pass}`); return true; }
+    if (!group) {
+        const made = stack(['accounts'], 'pipe', JSON.stringify({ era: fs.existsSync(path.join(WORLD, 'state/prerenewal')) ? 'prerenewal' : 'renewal',
+            action: 'create', username: TESTER.user, password: TESTER.pass, confirmation: TESTER.pass }));
+        if (made.status !== 0) { console.error('could not create the tester account:', made.stderr || made.stdout); return false; }
+    }
+    const gm = stack(['sql', '--write', `UPDATE login SET group_id=99 WHERE userid='${TESTER.user}'`]);
+    if (gm.status !== 0) { console.error('could not give tester GM commands:', gm.stderr || gm.stdout); return false; }
+    console.log(`test account ready: ${TESTER.user} / ${TESTER.pass} (GM commands, drawn as its class)`);
+    return true;
+}
 
 function call(cmd, args) {
     return new Promise((resolve, reject) => {
@@ -84,19 +115,17 @@ async function client(argv) {
     if (!cmd || cmd === 'help' || cmd === '--help') { console.log(USAGE); return; }
     if (cmd === 'world') {
         const sub = args[0];
+        // For a world that was made before `up` created it.
+        if (sub === 'tester') { process.exitCode = ensureTester() ? 0 : 1; return; }
         const r = spawnSync(process.execPath, [path.join(repo, 'tests/e2e/world.cjs'), sub], { env, stdio: 'inherit' });
         process.exitCode = r.status ?? 1;
+        if (sub === 'up' && r.status === 0) process.exitCode = ensureTester() ? 0 : 1;
         return;
     }
     if (cmd === 'server') {
         // The world's own supervisor, with the environment world.cjs gives it:
         // `rotest server logs map 200`, `rotest server sql "SELECT ..."`.
-        const suffix = process.platform === 'win32' ? '.exe' : '';
-        const root = path.join(WORLD, 'runtime');
-        const r = spawnSync(path.join(root, 'bin', 'ragnarok-stack' + suffix), args, { stdio: 'inherit', env: { ...env,
-            RAGNAROK_OFFLINE_ROOT: root, RAGNAROK_OFFLINE_HOME: WORLD, RAGNAROKMAC_STATE: path.join(WORLD, 'state'),
-            NEBULA_HOME: path.join(WORLD, 'nebula'), NEBULA_BIN: path.join(root, 'bin', 'nebula' + suffix),
-            RAGNAROKMAC_DOCKER: path.join(root, 'bin', 'docker-slim' + suffix) } });
+        const r = stack(args, 'inherit');
         process.exitCode = r.status ?? 1;
         return;
     }
@@ -233,7 +262,7 @@ async function daemon(flags) {
     const commands = {
         ping: async () => ({ ok: true }),
         status: async () => ({ ok: true, running: true, url: page.url(), inGame: await inGame(), errors: errors.length }),
-        login: async ([user = 'ragnarok', pass = 'ragnarok']) => {
+        login: async ([user = TESTER.user, pass = TESTER.pass]) => {
             if (!page.url().startsWith(GAME)) await page.goto(GAME);
             await page.locator('#user').waitFor({ timeout: 60000 });
             await page.locator('#user').fill(user);

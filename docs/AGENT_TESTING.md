@@ -44,22 +44,16 @@ scripts/rotest world up        # boots the VM and the servers (a few minutes the
 scripts/rotest start           # asset server + browser; add --headed to watch
 ```
 
-A new world has one account, the GM account `ragnarok` / `ragnarok`, and no
-characters. The client draws that account with the GM "operator" sprite
-whatever its job (it is the `adminList` entry in `config/Config.local.js`), so
-nothing you see on it tells you what a class looks like. Make a second account
-for play-testing, and give it GM commands on the server without putting it on
-the client's list:
+`world up` makes sure the world has two accounts:
 
-```sh
-printf '{"era":"renewal","action":"create","username":"tester","password":"tester123","confirmation":"tester123"}' \
-  | scripts/rotest server accounts
-scripts/rotest server sql --write "UPDATE login SET group_id=99 WHERE userid='tester'"
-```
+| Account | What it is for |
+|---|---|
+| `tester` / `tester123` | **Use this one.** In the GM group, so `@commands` work, but not on the client's admin list, so the client draws it as its class. Screenshots of jobs, outfits and skill effects come from here. `login` uses it by default. |
+| `ragnarok` / `ragnarok` | The built-in GM account every install has. It is on the client's `adminList` (`config/Config.local.js`), so the client draws it with the GM "operator" sprite whatever its job. Use it only to see what a player on the default account sees. |
 
-`tester` then looks like any player (real class outfits, normal name and chat
-colour) and can still run `@commands`. The server treats it as a GM, so for a
-bug where GM permissions might matter, test on a group-0 account as well.
+`rotest world tester` adds `tester` to a world made before `up` did this.
+`tester` is still a GM on the server, so for a bug where GM permissions might
+matter, check on a group-0 account as well.
 
 ```sh
 scripts/rotest login tester tester123
@@ -162,6 +156,13 @@ harness sets before the page loads:
   the screen point a click selects the entity at.
 - `project(x, y)`: a map cell in page pixels.
 - `skills()`, `useSkill(id, level)`, `chat(n)`, `mouse()`.
+- `net(since)`: packets sent and received since a timestamp, with
+  `(no handler)` on any the client received and ignored. This is how to tell
+  "the client never sent the cast" from "the server refused it" from "the
+  server answered and the client did nothing". A refused skill arrives as
+  `ZC_ACK_TOUSESKILL`, whose `cause` is rAthena's `useskill_fail_cause`
+  (`src/map/clif.hpp`; 9 is overweight, which a long sweep's `@item` stacks
+  will reach -- `gm "@itemreset"` clears them).
 - `modules`: `Session`, `EntityManager`, `DB`, `Network`, `PACKET`,
   `UIManager` and others, for `rotest eval`.
 

@@ -108,8 +108,32 @@ function player() {
         sp: me.life ? { sp: me.life.sp, max: me.life.sp_max } : null, mouseState: Mouse.state };
 }
 
+// What went over the wire, for telling "the client never sent the cast" from
+// "the server answered and the client ignored it". Received packets are read
+// from NetworkManager's own per-packet log line, which names the packet and
+// says "(no callback)" when the client has no handler for it.
+const net = { sent: [], recv: [] };
+function trace() {
+    const log = console.log;
+    console.log = function (...args) {
+        if (typeof args[0] === 'string' && args[0].startsWith('%c[Network] Recv:')) {
+            net.recv.push({ at: Date.now(), name: args[2]?.constructor?.name || '?', handled: args[3] !== '(no callback)' });
+            if (net.recv.length > 2000) net.recv.splice(0, 500);
+        }
+        return log.apply(this, args);
+    };
+    const send = Network.sendPacket;
+    Network.sendPacket = function (packet) {
+        net.sent.push({ at: Date.now(), name: packet?.constructor?.name || '?' });
+        if (net.sent.length > 2000) net.sent.splice(0, 500);
+        return send.apply(this, arguments);
+    };
+}
+const IGNORED = /^PACKET_(CZ_REQUEST_TIME|ZC_NOTIFY_TIME|CZ_PING|ZC_PING|ZC_NOTIFY_MOVE|ZC_NOTIFY_PLAYERMOVE|CZ_REQUEST_MOVE2?|ZC_NOTIFY_MOVEENTRY\d*|ZC_NOTIFY_STANDENTRY\d*|ZC_NOTIFY_NEWENTRY\d*|ZC_NOTIFY_VANISH|ZC_STOPMOVE|ZC_PAR_CHANGE|ZC_LONGPAR_CHANGE\d*|ZC_STATUS_CHANGE|ZC_NOTIFY_CHAT|ZC_NOTIFY_PLAYERCHAT|CZ_REQUEST_CHAT)$/;
+
 export function install() {
     if (!enabled() || window.roAgent) return;
+    trace();
     Object.defineProperty(window, 'roAgent', { configurable: true, value: Object.freeze({
         version: 1,
         project, player, entities, skills: skillList, chat,
@@ -120,6 +144,12 @@ export function install() {
             if (!list?.useSkillID) return { ok: false, reason: 'no skill window' };
             list.useSkillID(id, level);
             return { ok: true, targeting: Mouse.state === Mouse.MOUSE_STATE.USESKILL };
+        },
+        // Packets since `since` (ms epoch), without the steady chatter of
+        // movement, time sync and stat updates unless `all`.
+        net(since = 0, all = false) {
+            const keep = p => p.at >= since && (all || !IGNORED.test(p.name));
+            return { sent: net.sent.filter(keep).map(p => p.name), recv: net.recv.filter(keep).map(p => p.handled ? p.name : p.name + ' (no handler)') };
         },
         mouse() { return { state: Mouse.state, intersect: Mouse.intersect, screen: { ...Mouse.screen }, world: { ...Mouse.world },
             over: EntityManager.getOverEntity() ? describe(EntityManager.getOverEntity()) : null }; },
