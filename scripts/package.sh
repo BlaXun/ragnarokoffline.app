@@ -378,8 +378,16 @@ case "$(uname -s)" in
 esac
 
 # A marker the app compares against, so a new build refreshes the copy it
-# materialises into Application Support.
-git -C "$ROOT" rev-parse --short HEAD 2>/dev/null > "$PAYLOAD/VERSION" || echo dev > "$PAYLOAD/VERSION"
+# materialises into Application Support. A build with uncommitted changes gets a
+# timestamp too: two such builds on one commit are different builds, and with
+# the bare hash the second would keep running the first's binaries (#174).
+if MARKER=$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null); then
+    [ -z "$(git -C "$ROOT" status --porcelain --untracked-files=no 2>/dev/null)" ] ||
+        MARKER="$MARKER-dirty-$(date +%s)"
+else
+    MARKER=dev
+fi
+echo "$MARKER" > "$PAYLOAD/VERSION"
 
 # The release version, which is a different thing from the build marker above:
 # VERSION changes on every commit and exists so the app knows to re-materialise
