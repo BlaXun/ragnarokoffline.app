@@ -335,6 +335,17 @@ tar -cf "$EN/data.tar" -C "$SRC" data
 cp -R "$SRC/SystemEN" "$EN/SystemEN"
 done
 
+# The single files link-assets lifts from ROenglishRE's Compatibility layers;
+# config/TRANSLATION_EXTRAS lists them and says why only these.
+grep -v '^[[:space:]]*\(#\|$\)' "$ROOT/config/TRANSLATION_EXTRAS" | while IFS=$'\t' read -r SRC _; do
+    [ -f "$ROOT/vendor/ROenglishRE/Translation/$SRC" ] || {
+        echo "warning: TRANSLATION_EXTRAS names $SRC, which the pinned ROenglishRE lacks" >&2
+        continue
+    }
+    mkdir -p "$(dirname "$PAYLOAD/vendor/ROenglishRE/Translation/$SRC")"
+    cp "$ROOT/vendor/ROenglishRE/Translation/$SRC" "$PAYLOAD/vendor/ROenglishRE/Translation/$SRC"
+done
+
 # The Visual C++ runtime, for the Windows installer to hand to Windows.
 #
 # Every binary in payload/bin imports VCRUNTIME140.dll; the Electron shell does
