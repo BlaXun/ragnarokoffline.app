@@ -52,6 +52,7 @@ fn agent_slot(request: &Value) -> Result<u32, String> {
         },
     }
 }
+/// Documented in docs/MODDING.md ("Group 20 is taken") so mods keep off it.
 pub const AGENT_GROUP: u32 = 20;
 pub const AGENT_GROUP_OWNER: &str = "Ragnarok Offline (AI agent)";
 pub const AGENT_GROUP_YML: &str = "Header:
