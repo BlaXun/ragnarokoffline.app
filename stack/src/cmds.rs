@@ -652,7 +652,19 @@ fn write_mod_conf_files(cfg: &Config, mods: &crate::mods::Assembled) -> Result<(
     let conf = cfg.state.join("conf");
     for file in ["groups.yml", "atcommands.yml"] {
         let path = conf.join(file);
-        match mods.conf.get(&format!("file:{file}")) {
+        // The AI agent's group is the app's own, and goes first: always
+        // present, so an agent account can log in whether or not any mod
+        // grants commands, and read before any mod's copy so a mod cannot
+        // quietly widen it by listing the same group.
+        let mut with_agent;
+        let entries = if file == "groups.yml" {
+            with_agent = vec![(crate::accounts::AGENT_GROUP_OWNER.to_string(), crate::accounts::AGENT_GROUP_YML.to_string())];
+            with_agent.extend(mods.conf.get("file:groups.yml").cloned().unwrap_or_default());
+            Some(&with_agent)
+        } else {
+            mods.conf.get(&format!("file:{file}"))
+        };
+        match entries {
             None => {
                 let _ = fs::remove_file(&path);
             }
