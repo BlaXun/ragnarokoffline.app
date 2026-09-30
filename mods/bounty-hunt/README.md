@@ -4,8 +4,16 @@ Use a **Bounty Marker**, the cursor turns into the target picker, and you click
 a monster. A dialog lists that monster's drops with the kills each would take;
 pick one. From then on, every kill of that monster counts up, and once you hit
 the goal the drop you chose is handed to you — guaranteed. The bounty then
-clears completely; to start another hunt you use a fresh Bounty Marker. Your
-bounty and its progress are saved on your character and survive a server
+clears completely; to start another hunt you use a fresh Bounty Marker.
+
+**Lucky drops refresh the counter.** If the hunted item drops naturally from
+the target *on a kill you dealt yourself*, the bounty stays active but progress
+resets to 0 — you already got one for free, so the grind starts fresh. The
+guaranteed payout is still there at the end of the new count. Party mates,
+mercs, and homun stealing the kill do not trigger the refresh; the check is
+strictly your own killing blow.
+
+Your bounty and its progress are saved on your character and survive a server
 restart.
 
 **The goal scales with rarity.** A common drop is a handful of kills; a 0.02%
@@ -28,16 +36,18 @@ The interesting part is the seam: *clicking a monster* is a client thing, while
 | You click a monster | `client/index.js` | `pick()` resolves with the monster's **class id**; the plugin sends `@bounty <id>`. |
 | A dialog lists the drops; you choose | `npc/bounty.txt` | `@bounty` (bound with `bindatcmd`) reads the drops with `getmobdrops`, works out each one's kill goal from its rate, and shows them with `select()`; your choice is stored in permanent character variables. |
 | Each kill counts; the drop is granted | `npc/bounty.txt` | `OnNPCKillEvent` fires on every kill; when `killedrid` is your target it counts up, and at the goal `getitem` hands you the drop and the bounty clears — a fresh Bounty Marker starts the next hunt. |
+| The hunted item drops naturally on your own kill | `npc/bounty.txt` + `db/extension_db.yml` | `OnPCDropItemEvent` fires per rolled drop — `killeddropid` names the item and `killedbyme` says whether *you* struck the killing blow. When both match, we flip a flag and the imminent `OnNPCKillEvent` refreshes the counter instead of incrementing it. The event is a rAthena feature (`pc_drop_item_event`) the mod turns on through its own `db/extension_db.yml`. |
 
 The client never decides anything the server should: the drop list and the kill
 goal come from the server's own `mob_db`, and the counter and reward are pure
 rAthena script. The plugin only carries *which monster you clicked* across the
 gap.
 
-**Persistence.** `bh_target`, `bh_item`, `bh_goal` and `bh_progress` have no
-prefix, so they are permanent character variables — written to `char_reg_num`
-and restored on login. Kill five Porings, restart the server, and you are still
-at 5 of the goal.
+**Persistence.** `bh_target`, `bh_item`, `bh_goal`, `bh_progress` and `bh_lucky`
+have no prefix, so they are permanent character variables — written to
+`char_reg_num` and restored on login. Kill five Porings, restart the server,
+and you are still at 5 of the goal. `bh_lucky` is the flag `OnPCDropItemEvent`
+sets and `OnNPCKillEvent` clears within the same mob death.
 
 ## Checking and setting a bounty in game
 
@@ -92,6 +102,14 @@ restart):
 the counter); you just type `@bounty <mob id>` by hand instead of clicking, and
 using the item raises no cursor. Those capabilities are compiled into the
 roBrowser bundle, so the cursor appears only on an app built with `patches/client`.
+
+**Server-side extension.** The lucky-drop refresh relies on the
+`pc_drop_item_event` server extension (rAthena fork `mob-drop-item-event`
+branch). The mod ships `db/extension_db.yml` that enables it — no extra setup
+is needed if the server was built with the extensions framework. On a build
+without the extension registered, `OnPCDropItemEvent` never fires and the
+refresh is silently absent; the rest of the mod (counter, payout, one-shot
+clear) still works.
 
 ## Installing
 

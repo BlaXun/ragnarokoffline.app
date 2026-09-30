@@ -10,9 +10,17 @@
 //   bh_item       the item id the player chose to hunt for
 //   bh_goal       kills required for this bounty (scaled by the drop's rarity)
 //   bh_progress   kills of bh_target since the bounty was set
+//   bh_lucky      set to 1 by OnPCDropItemEvent when the hunted item drops
+//                 naturally on this kill; consumed by OnNPCKillEvent to
+//                 refresh the counter instead of incrementing it
 //
-// A bounty is one-shot: on payout all four variables are cleared, so a new
+// A bounty is one-shot: on payout all five variables are cleared, so a new
 // Bounty Marker is needed to start another hunt.
+//
+// If the hunted item drops naturally before the counter runs out, the counter
+// is *refreshed* to 0 (the bounty stays active). See OnPCDropItemEvent below
+// for how the natural drop is detected -- it needs the pc_drop_item_event
+// server extension, enabled via db/extension_db.yml in this same mod.
 //
 // The goal scales with the chosen drop's rate -- a rarer drop takes more kills,
 // up to a cap -- from the mod's settings read at startup (.bh_scale/min/max).
@@ -117,15 +125,39 @@ OnBounty:
 	bh_item = .@opt_item[.@choice - 1];
 	bh_goal = .@opt_goal[.@choice - 1];
 	bh_progress = 0;
+	bh_lucky = 0;
 	mes "[Bounty Hunt]";
 	mes "Bounty set. Slay ^0000FF" + getmonsterinfo(.@mob, MOB_NAME) + "^000000 ^FF0000" + bh_goal + "^000000 times";
 	mes "for a guaranteed ^0000FF" + getitemname(bh_item) + "^000000.";
 	close;
 
+// Fires per rolled drop from a mob, before its OnNPCKillEvent. Requires the
+// pc_drop_item_event extension (enabled in this mod's db/extension_db.yml).
+// killedrid is the mob's class id, killeddropid is the item id that rolled,
+// killedbyme is 1 iff this pc dealt the killing blow (not a party mate, merc
+// or homun). A drop of the hunted item from the current target on our own
+// kill flips bh_lucky, and the imminent OnNPCKillEvent reads it below.
+OnPCDropItemEvent:
+	if (!bh_target || bh_goal < 1) end;
+	if (killedrid != bh_target || killeddropid != bh_item) end;
+	if (!killedbyme) end;
+	bh_lucky = 1;
+	end;
+
 // Fires when any player kills a monster; killedrid is that monster's class id.
 OnNPCKillEvent:
 	if (!bh_target || bh_goal < 1 || killedrid != bh_target)
 		end;
+	// Lucky-drop refresh: the hunted item dropped from this kill, per the
+	// OnPCDropItemEvent handler that ran a moment ago. The player already got
+	// one for free, so the counter refreshes and the grind starts fresh --
+	// the bounty stays active either way.
+	if (bh_lucky) {
+		bh_lucky = 0;
+		bh_progress = 0;
+		dispbottom "Bounty: lucky drop! " + getitemname(bh_item) + " landed -- counter refreshed to 0/" + bh_goal + ".";
+		end;
+	}
 	bh_progress++;
 	if (bh_progress < bh_goal) {
 		dispbottom "Bounty: " + bh_progress + "/" + bh_goal + " " + getmonsterinfo(bh_target, MOB_NAME) + " (" + getitemname(bh_item) + ").";
@@ -140,5 +172,6 @@ OnNPCKillEvent:
 	bh_item = 0;
 	bh_goal = 0;
 	bh_progress = 0;
+	bh_lucky = 0;
 	end;
 }
