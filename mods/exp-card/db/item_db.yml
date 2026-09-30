@@ -1,0 +1,38 @@
+# The Exp Card -- a usable item in the 30000+ custom range that no client
+# update will collide with. Dropped by npc/exp_card.txt on a small chance
+# from any mob kill, bound to the killer via makeitemowned. Using it grants
+# a percentage of the current next-level exp requirement (both base and
+# job), so it stays useful at every level.
+#
+# NextBaseExp / NextJobExp are readparam constants for pc_nextbaseexp /
+# pc_nextjobexp -- if a player is already max level, the readparam returns
+# 0 and getexp is a no-op; the message still fires so the player sees why
+# they got nothing.
+#
+# The percentages come from the mod's Settings via F_ModSetting, which the
+# supervisor writes at server start. Fallbacks match mod.json defaults.
+#
+# Version 3 is the ITEM_DB version this build reads; take it from the
+# header of vendor/rathena/db/import-tmpl/item_db.yml if you retarget.
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+Body:
+  - Id: 30051
+    AegisName: Exp_Card
+    Name: Exp Card
+    Type: Usable
+    Buy: 0
+    Weight: 1
+    Script: |
+      .@base_pct = callfunc("F_ModSetting", "exp-card", "base_pct", 5);
+      .@job_pct = callfunc("F_ModSetting", "exp-card", "job_pct", 5);
+      .@base = readparam(NextBaseExp) * .@base_pct / 100;
+      .@job = readparam(NextJobExp) * .@job_pct / 100;
+      if (.@base < 1 && .@job < 1) {
+          dispbottom "Exp Card: nothing to gain -- you are already at cap.";
+          end;
+      }
+      getexp .@base, .@job;
+      dispbottom "Exp Card: +" + .@base + " base, +" + .@job + " job.";
