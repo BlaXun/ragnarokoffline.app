@@ -3,9 +3,7 @@
 Every monster kill has a small chance to drop an **Exp Card**, bound to the
 killer for the standard pickup window. Two families — **Base Exp Cards** and
 **Job Exp Cards** — each with ten levels. Higher-level monsters drop
-higher-level cards. Using a card grants a fixed chunk of experience; a
-Level 10 card is roughly 5% of the exp a Renewal character needs from
-level 98 to 99, and lower levels scale down linearly.
+higher-level cards. Using a card grants a fixed chunk of experience.
 
 The point: streamline the offline experience without touching per-mob drop
 tables. Any mob, any map, one uniform bonus channel that scales with the
@@ -13,28 +11,31 @@ content the player is fighting.
 
 ## The cards
 
-| Level | Base exp / Job exp | Item ids (base / job) |
-|---|---|---|
-| 1  | 6,000  | 30051 / 30061 |
-| 2  | 12,000 | 30052 / 30062 |
-| 3  | 18,000 | 30053 / 30063 |
-| 4  | 24,000 | 30054 / 30064 |
-| 5  | 30,000 | 30055 / 30065 |
-| 6  | 36,000 | 30056 / 30066 |
-| 7  | 42,000 | 30057 / 30067 |
-| 8  | 48,000 | 30058 / 30068 |
-| 9  | 54,000 | 30059 / 30069 |
-| 10 | 60,000 | 30060 / 30070 |
+Exp per card follows a roughly geometric curve (~2× per level), anchored so a
+Lv 10 card is about 5% of a level-98 Renewal character's next-level bar and
+each lower level is roughly the same 3–5% at the player level *that band of
+mobs suits* — matching the shape of rAthena's own NextBaseExp curve.
+
+| Level | Exp | Item ids (base / job) | Typical player level |
+|---|---|---|---|
+| 1  | 100    | 30051 / 30061 | ~5   |
+| 2  | 250    | 30052 / 30062 | ~15  |
+| 3  | 500    | 30053 / 30063 | ~25  |
+| 4  | 1,000  | 30054 / 30064 | ~35  |
+| 5  | 2,000  | 30055 / 30065 | ~45  |
+| 6  | 4,000  | 30056 / 30066 | ~55  |
+| 7  | 7,500  | 30057 / 30067 | ~65  |
+| 8  | 15,000 | 30058 / 30068 | ~75  |
+| 9  | 30,000 | 30059 / 30069 | ~85  |
+| 10 | 60,000 | 30060 / 30070 | ~95+ |
 
 Base cards grant only base exp; Job cards grant only job exp. The two are
 symmetric — a Base Lv 10 gives 60,000 base exp, a Job Lv 10 gives 60,000
 job exp.
 
-The calibration anchor is **~5% of the level-98 base-exp requirement in
-Renewal** (~1.25M in `db/re/job_exp.yml`, first jobs group). If you want a
-different curve, edit the twenty scripts in `db/item_db.yml` — the
-`EXP_PER_LEVEL` constant in `System/itemInfo.lua` needs to match so the
-descriptions stay in sync.
+If you want a different curve, edit the twenty scripts in `db/item_db.yml`
+and update the `EXP_BY_LEVEL` table in `System/itemInfo.lua` to match (so
+the tooltips still show the right numbers).
 
 ## How drops work
 
@@ -103,7 +104,7 @@ Then enable it under **Settings → Mods** (it ships off by default).
 `npc/exp_card.txt` is the whole feature in one screen: an `OnInit` that
 reads the chance from Settings, and an `OnNPCKillEvent` that rolls it,
 picks a card level from `MOB_LV`, flips for family, and calls
-`makeitemowned`. Everything else is item entries (`db/item_db.yml`, twenty
-scripts), their client-side names built with a small loop
+`makeitemowned`. Everything else is item entries (`db/item_db.yml`,
+twenty scripts), their client-side names built with a small loop
 (`System/itemInfo.lua`), and the one-line extension override
 (`db/extension_db.yml`).

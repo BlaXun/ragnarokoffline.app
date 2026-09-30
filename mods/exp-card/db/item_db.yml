@@ -8,21 +8,22 @@
 #   30051..30060  Base_Exp_Card_1  .. Base_Exp_Card_10   -- grant BASE exp
 #   30061..30070  Job_Exp_Card_1   .. Job_Exp_Card_10    -- grant JOB exp
 #
-# Calibration: a Level 10 card grants ~5% of the exp a Renewal character
-# needs from level 98 to 99 (~1.25M in db/re/job_exp.yml, first jobs
-# group -> 5% is roughly 60,000). Lower levels scale down linearly at
-# 6,000 base exp per level:
+# Exp per card is a roughly geometric curve, anchored at Lv 10 = 60,000
+# (~5% of the Renewal level-98 base-exp requirement, ~1.25M in
+# db/re/job_exp.yml). Each level down halves-or-so, matching the shape
+# of rAthena's own NextBaseExp curve -- so a Lv 1 card at player level 5
+# is roughly the same 3-5% chunk of the next level that a Lv 10 card is
+# at player level 98:
 #
-#   Lv 1 -> 6,000     Lv 6  -> 36,000
-#   Lv 2 -> 12,000    Lv 7  -> 42,000
-#   Lv 3 -> 18,000    Lv 8  -> 48,000
-#   Lv 4 -> 24,000    Lv 9  -> 54,000
-#   Lv 5 -> 30,000    Lv 10 -> 60,000
+#   Lv 1  ->     100      Lv 6  ->  4,000
+#   Lv 2  ->     250      Lv 7  ->  7,500
+#   Lv 3  ->     500      Lv 8  -> 15,000
+#   Lv 4  ->   1,000      Lv 9  -> 30,000
+#   Lv 5  ->   2,000      Lv 10 -> 60,000
 #
-# Job cards use the same numbers on the job axis. Class-specific curves
-# differ, but 60,000 job exp at job level ~60 is in the same
-# neighbourhood of "one meaningful chunk of the next level". If you want
-# a different curve, edit the numbers below -- one file, twenty scripts.
+# Job cards use the same numbers on the job axis. If you want a different
+# curve, edit the twenty scripts below -- and keep System/itemInfo.lua's
+# EXP_BY_LEVEL table in sync so descriptions still show the right +N.
 #
 # Version 3 is the ITEM_DB version this build reads; take it from the
 # header of vendor/rathena/db/import-tmpl/item_db.yml if you retarget.
@@ -39,8 +40,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 6000, 0;
-      dispbottom "Base Exp Card Lv1: +6,000 base experience.";
+      getexp 100, 0;
+      dispbottom "Base Exp Card Lv1: +100 base experience.";
 
   - Id: 30052
     AegisName: Base_Exp_Card_2
@@ -49,8 +50,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 12000, 0;
-      dispbottom "Base Exp Card Lv2: +12,000 base experience.";
+      getexp 250, 0;
+      dispbottom "Base Exp Card Lv2: +250 base experience.";
 
   - Id: 30053
     AegisName: Base_Exp_Card_3
@@ -59,8 +60,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 18000, 0;
-      dispbottom "Base Exp Card Lv3: +18,000 base experience.";
+      getexp 500, 0;
+      dispbottom "Base Exp Card Lv3: +500 base experience.";
 
   - Id: 30054
     AegisName: Base_Exp_Card_4
@@ -69,8 +70,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 24000, 0;
-      dispbottom "Base Exp Card Lv4: +24,000 base experience.";
+      getexp 1000, 0;
+      dispbottom "Base Exp Card Lv4: +1,000 base experience.";
 
   - Id: 30055
     AegisName: Base_Exp_Card_5
@@ -79,8 +80,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 30000, 0;
-      dispbottom "Base Exp Card Lv5: +30,000 base experience.";
+      getexp 2000, 0;
+      dispbottom "Base Exp Card Lv5: +2,000 base experience.";
 
   - Id: 30056
     AegisName: Base_Exp_Card_6
@@ -89,8 +90,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 36000, 0;
-      dispbottom "Base Exp Card Lv6: +36,000 base experience.";
+      getexp 4000, 0;
+      dispbottom "Base Exp Card Lv6: +4,000 base experience.";
 
   - Id: 30057
     AegisName: Base_Exp_Card_7
@@ -99,8 +100,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 42000, 0;
-      dispbottom "Base Exp Card Lv7: +42,000 base experience.";
+      getexp 7500, 0;
+      dispbottom "Base Exp Card Lv7: +7,500 base experience.";
 
   - Id: 30058
     AegisName: Base_Exp_Card_8
@@ -109,8 +110,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 48000, 0;
-      dispbottom "Base Exp Card Lv8: +48,000 base experience.";
+      getexp 15000, 0;
+      dispbottom "Base Exp Card Lv8: +15,000 base experience.";
 
   - Id: 30059
     AegisName: Base_Exp_Card_9
@@ -119,8 +120,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 54000, 0;
-      dispbottom "Base Exp Card Lv9: +54,000 base experience.";
+      getexp 30000, 0;
+      dispbottom "Base Exp Card Lv9: +30,000 base experience.";
 
   - Id: 30060
     AegisName: Base_Exp_Card_10
@@ -140,8 +141,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 6000;
-      dispbottom "Job Exp Card Lv1: +6,000 job experience.";
+      getexp 0, 100;
+      dispbottom "Job Exp Card Lv1: +100 job experience.";
 
   - Id: 30062
     AegisName: Job_Exp_Card_2
@@ -150,8 +151,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 12000;
-      dispbottom "Job Exp Card Lv2: +12,000 job experience.";
+      getexp 0, 250;
+      dispbottom "Job Exp Card Lv2: +250 job experience.";
 
   - Id: 30063
     AegisName: Job_Exp_Card_3
@@ -160,8 +161,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 18000;
-      dispbottom "Job Exp Card Lv3: +18,000 job experience.";
+      getexp 0, 500;
+      dispbottom "Job Exp Card Lv3: +500 job experience.";
 
   - Id: 30064
     AegisName: Job_Exp_Card_4
@@ -170,8 +171,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 24000;
-      dispbottom "Job Exp Card Lv4: +24,000 job experience.";
+      getexp 0, 1000;
+      dispbottom "Job Exp Card Lv4: +1,000 job experience.";
 
   - Id: 30065
     AegisName: Job_Exp_Card_5
@@ -180,8 +181,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 30000;
-      dispbottom "Job Exp Card Lv5: +30,000 job experience.";
+      getexp 0, 2000;
+      dispbottom "Job Exp Card Lv5: +2,000 job experience.";
 
   - Id: 30066
     AegisName: Job_Exp_Card_6
@@ -190,8 +191,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 36000;
-      dispbottom "Job Exp Card Lv6: +36,000 job experience.";
+      getexp 0, 4000;
+      dispbottom "Job Exp Card Lv6: +4,000 job experience.";
 
   - Id: 30067
     AegisName: Job_Exp_Card_7
@@ -200,8 +201,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 42000;
-      dispbottom "Job Exp Card Lv7: +42,000 job experience.";
+      getexp 0, 7500;
+      dispbottom "Job Exp Card Lv7: +7,500 job experience.";
 
   - Id: 30068
     AegisName: Job_Exp_Card_8
@@ -210,8 +211,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 48000;
-      dispbottom "Job Exp Card Lv8: +48,000 job experience.";
+      getexp 0, 15000;
+      dispbottom "Job Exp Card Lv8: +15,000 job experience.";
 
   - Id: 30069
     AegisName: Job_Exp_Card_9
@@ -220,8 +221,8 @@ Body:
     Buy: 0
     Weight: 1
     Script: |
-      getexp 0, 54000;
-      dispbottom "Job Exp Card Lv9: +54,000 job experience.";
+      getexp 0, 30000;
+      dispbottom "Job Exp Card Lv9: +30,000 job experience.";
 
   - Id: 30070
     AegisName: Job_Exp_Card_10

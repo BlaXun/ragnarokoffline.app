@@ -5,8 +5,8 @@
 --
 -- The two card families share their shape (weight, resource, description
 -- layout), so this is a small loop over levels 1..10 instead of twenty
--- copy-pasted blocks -- keeps the exp values in the description in sync
--- with the +N text and the item_db numbers automatically.
+-- copy-pasted blocks. EXP_BY_LEVEL must stay in sync with the getexp
+-- values in db/item_db.yml -- twenty scripts there, ten entries here.
 --
 -- identifiedResourceName is the ART, written in Korean the way the client
 -- names it. 돋보기 is the Magnifier's icon and sprite, borrowed here so
@@ -16,15 +16,35 @@
 -- state/assets/logs/missing-files.log.
 tbl = {}
 
-local EXP_PER_LEVEL = 6000    -- must match db/item_db.yml (level * EXP_PER_LEVEL)
+-- Roughly geometric growth (~2x per level), anchored at Lv 10 = 60,000
+-- and rounded to clean numbers. See db/item_db.yml for the rationale.
+local EXP_BY_LEVEL = { 100, 250, 500, 1000, 2000, 4000, 7500, 15000, 30000, 60000 }
 local RESOURCE = "돋보기"
 
+-- Group thousands with commas so "60,000" reads more comfortably than
+-- "60000" in the tooltip. Lua's string.format has no %'d, so build it by
+-- hand. (Only touches non-negative integers; nothing else uses this.)
+local function commas(n)
+	local s = tostring(n)
+	local out = ""
+	local count = 0
+	for i = #s, 1, -1 do
+		out = s:sub(i, i) .. out
+		count = count + 1
+		if count % 3 == 0 and i > 1 then
+			out = "," .. out
+		end
+	end
+	return out
+end
+
 for level = 1, 10 do
-	local exp = EXP_PER_LEVEL * level
+	local exp = EXP_BY_LEVEL[level]
+	local expText = commas(exp)
 	local baseName = "Base Exp Card Lv" .. level
 	local jobName  = "Job Exp Card Lv"  .. level
 	local baseDesc = {
-		"^0000FF+" .. exp .. "^000000 base experience.",
+		"^0000FF+" .. expText .. "^000000 base experience.",
 		"^ffffff_^000000",
 		"Drops on a small chance from any monster you kill.",
 		"Bound to you briefly on drop; nobody else can pick it up first.",
@@ -33,7 +53,7 @@ for level = 1, 10 do
 		"Weight: ^777777 1 ^000000"
 	}
 	local jobDesc = {
-		"^0000FF+" .. exp .. "^000000 job experience.",
+		"^0000FF+" .. expText .. "^000000 job experience.",
 		"^ffffff_^000000",
 		"Drops on a small chance from any monster you kill.",
 		"Bound to you briefly on drop; nobody else can pick it up first.",
