@@ -303,8 +303,14 @@ class AgentDriver {
 		const me = await this.player();
 		if (spec === 'self' || String(spec) === String(me?.gid)) return me;
 		const list = await this.agent('entities', [{ radius: 30 }]);
-		// "nearest" is always a monster; players and NPCs are named by id or name.
-		if (!spec || spec === 'nearest') return list.find(e => e.type === 'MOB' && !e.dead) || null;
+		// "nearest" is always a monster; players and NPCs are named by id or
+		// name. Only one on screen and not behind a window can be clicked.
+		if (!spec || spec === 'nearest') {
+			const dist = e => Math.hypot(e.position[0] - me.position[0], e.position[1] - me.position[1]);
+			const mobs = list.filter(e => e.type === 'MOB' && !e.dead && e.cell?.onScreen).sort((a, b) => dist(a) - dist(b));
+			for (const m of mobs) if (!(await this.blocker(m.click.x, m.click.y))) return m;
+			return null;
+		}
 		return list.find(e => String(e.gid) === String(spec)) || list.find(e => e.name && e.name.toLowerCase() === String(spec).toLowerCase()) || null;
 	}
 	// A skill still waiting for its target takes the next click on the map,
@@ -323,12 +329,21 @@ class AgentDriver {
 	}
 	// Hover first and let a frame run: the client only picks what is under
 	// the cursor on its next frame, and a click before that lands on the map.
+	// A monster moves between reading where it is and clicking it, so read
+	// again and retry, clicking only once the client picks it.
 	async clickEntity(target, button = 'left') {
-		await this.move(target.click.x, target.click.y);
-		await sleep(150);
-		const over = await this.agent('mouse');
-		await this.click(target.click.x, target.click.y, button);
-		return over?.over?.gid === target.gid;
+		for (let attempt = 0; attempt < 4; attempt++) {
+			const now = attempt ? (await this.agent('entities', [{ radius: 30 }])).find(e => e.gid === target.gid) : target;
+			if (!now || !now.click) return false;
+			await this.move(now.click.x, now.click.y);
+			await sleep(150);
+			const over = await this.agent('mouse');
+			if (over?.over?.gid === target.gid) {
+				await this.click(now.click.x, now.click.y, button);
+				return true;
+			}
+		}
+		return false;
 	}
 	// Type into the chat box and send. Only ever the visible input: with the
 	// game menu or a dialog open, Enter would press *their* default button --
@@ -478,31 +493,56 @@ class AgentDriver {
 				await sleep(800);
 				return { ...result, chat: await this.newChat(), errors: this.newErrors() };
 			},
+			// Walk to a cell anywhere on this map. One click only reaches a cell
+			// that is on screen, so a far one is reached in steps: each click
+			// goes as far along the way as is visible and not behind a window.
 			walk: async ([x, y]) => {
 				x = Number(x); y = Number(y);
-				const target = await this.agent('project', [x, y]);
-				if (!target?.onScreen) return { ok: false, reason: 'cell is off screen; walk to a nearer cell first', target };
-				const covered = await this.blocker(target.x, target.y);
-				if (covered) return { ok: false, reason: `a window covers that cell (${covered}); close it or pick another cell`, target };
+				if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error('walk <x> <y>');
 				await this.cancelTargeting();
-				await this.move(target.x, target.y);
-				await sleep(120);
-				await this.click(target.x, target.y);
-				// Done when the player reaches the cell, or started and then
-				// stood still for a second, or never moved within three seconds.
-				const start = Date.now();
-				let last = (await this.player()).position.join(','), stillSince = Date.now(), moved = false;
-				while (Date.now() - start < 30000) {
-					await sleep(250);
-					const pos = (await this.player()).position;
-					const p = pos.join(',');
-					if (Math.round(pos[0]) === x && Math.round(pos[1]) === y) break;
-					if (p !== last) { moved = true; last = p; stillSince = Date.now(); }
-					if (moved && Date.now() - stillSince > 1000) break;
-					if (!moved && Date.now() - start > 3000) break;
+				const near = p => Math.abs(p[0] - x) <= 1 && Math.abs(p[1] - y) <= 1;
+				const FRACTIONS = [1, 0.8, 0.6, 0.45, 0.33, 0.22, 0.12];
+				const started = Date.now();
+				let steps = 0, stuck = 0, skip = 0;
+				let me = await this.player();
+				while (!near(me.position) && Date.now() - started < 120000 && steps < 30) {
+					let aim = null;
+					for (const f of FRACTIONS.slice(skip)) {
+						const cx = Math.round(me.position[0] + (x - me.position[0]) * f);
+						const cy = Math.round(me.position[1] + (y - me.position[1]) * f);
+						if (cx === Math.round(me.position[0]) && cy === Math.round(me.position[1])) continue;
+						const p = await this.agent('project', [cx, cy]);
+						if (!p?.onScreen || await this.blocker(p.x, p.y)) continue;
+						aim = { cx, cy, p };
+						break;
+					}
+					if (!aim) break;
+					await this.move(aim.p.x, aim.p.y);
+					await sleep(120);
+					await this.click(aim.p.x, aim.p.y);
+					steps++;
+					// This step is done when the player reaches its cell, or
+					// started and then stood still for a second, or never
+					// moved within three seconds.
+					const from = me.position.join(',');
+					const t0 = Date.now();
+					let last = from, stillSince = Date.now(), moved = false;
+					while (Date.now() - t0 < 30000) {
+						await sleep(250);
+						const pos = (await this.player()).position;
+						const p = pos.join(',');
+						if (Math.round(pos[0]) === aim.cx && Math.round(pos[1]) === aim.cy) break;
+						if (p !== last) { moved = true; last = p; stillSince = Date.now(); }
+						if (moved && Date.now() - stillSince > 1000) break;
+						if (!moved && Date.now() - t0 > 3000) break;
+					}
+					me = await this.player();
+					// No progress: that cell is likely not walkable; aim shorter.
+					if (me.position.join(',') === from) { stuck++; skip = Math.min(skip + 2, FRACTIONS.length - 1); if (stuck >= 3) break; }
+					else { stuck = 0; skip = 0; }
 				}
-				const me = await this.player();
-				return { ok: Math.abs(me.position[0] - x) <= 1 && Math.abs(me.position[1] - y) <= 1, position: me.position, errors: this.newErrors() };
+				const ok = near(me.position);
+				return { ok, position: me.position, steps, ...(ok ? {} : { reason: steps ? 'stopped short: the way may be blocked, or the cell is not walkable' : 'no visible cell toward that point is free to click (a window may be in the way)' }), errors: this.newErrors() };
 			},
 			attack: async ([spec]) => {
 				const target = await this.findTarget(spec);
@@ -611,7 +651,7 @@ const COMMANDS = {
 	party: { description: 'Say something in party chat.', args: [['text', 'string', 'What to say']] },
 	guild: { description: 'Say something in guild chat.', args: [['text', 'string', 'What to say']] },
 	answer: { description: 'Answer the box the game is showing: yes/no for a question such as a party invitation, or ok for a message. state shows it as prompt.', args: [['choice', 'string', 'yes, no or ok', true]] },
-	walk: { description: 'Walk to a map cell that is on screen.', args: [['x', 'number', 'Cell x'], ['y', 'number', 'Cell y']] },
+	walk: { description: 'Walk to a cell on this map. Far cells are reached in several steps automatically.', args: [['x', 'number', 'Cell x'], ['y', 'number', 'Cell y']] },
 	attack: { description: 'Attack a monster by entity id, or the nearest one.', args: [['target', 'string', 'Entity gid, a name, or "nearest"', true]] },
 	interact: { description: 'Click an NPC, Kafra, item or warp by entity id or name. NPC dialog shows in the result.', args: [['target', 'string', 'Entity gid or name']] },
 	dialog: { description: 'The NPC dialog now showing: text, and menu options if any.', args: [] },

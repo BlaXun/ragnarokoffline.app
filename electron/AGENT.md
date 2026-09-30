@@ -31,7 +31,7 @@ Your game window opens the first time you use a command. The player may have cho
 |---|---|
 | `state [radius]` | You (position, HP, job), what is nearby (id `gid`, type, name, position, `click` point), recent chat, and any NPC dialog open. Use it constantly: it is cheap. |
 | `shot [name]` | A screenshot of your window. Look before you act when you are unsure. Over MCP it comes back as an image. |
-| `walk <x> <y>` | Walk to a map cell that is on screen. For far places, walk in steps of about 10 cells toward it, checking `state` between steps. |
+| `walk <x> <y>` | Walk to a cell on this map. A far one is reached in several steps by itself; it stops short if the way is blocked. `state` gives your position; north is up on the minimap, and larger `y` is further north. |
 | `attack [gid\|nearest]` | Attack a monster. It keeps attacking until the monster dies or you move. |
 | `interact <gid\|name>` | Talk to an NPC, open a Kafra, pick up an item, step into a warp. |
 | `dialog` / `next` / `close` / `choose <n>` | Read and answer NPC dialog. `choose` takes the option number shown in `dialog`. |
@@ -65,7 +65,7 @@ The player may let up to four agents play at once. Each is its own account (`aia
 
 ## When something goes wrong
 
-- *"cell is off screen"*: walk to a nearer cell first.
+- *"stopped short"*: something blocks the way; try a point beside it, or go round.
 - *"a window covers that cell"*: close the window (`key Escape` closes some; `close` closes NPC dialog), or pick another cell.
 - *"the game server is not running"*: ask the player to press Play in Ragnarok Offline.
 - A command answers but nothing happens: take a `shot`. A dialog or menu is often waiting.
