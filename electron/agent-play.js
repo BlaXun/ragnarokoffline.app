@@ -159,7 +159,14 @@ function createAgentPlay(deps) {
 			const up = await fetch(base, { signal: AbortSignal.timeout(3000) }).then(r => r.ok, () => false);
 			if (!up) throw new Error('The game server is not running. Ask the player to press Play in Ragnarok Offline, then try again.');
 			const password = crypto.randomBytes(12).toString('hex');
-			await deps.runAccount({ action: 'agent', agent: String(n), era: deps.era(), password });
+			// The account change queues behind anything else the supervisor is
+			// doing (a start, a backup); wait for it rather than fail.
+			for (let attempt = 0; ; attempt++) {
+				try { await deps.runAccount({ action: 'agent', agent: String(n), era: deps.era(), password }); break; } catch (e) {
+					if (!/operation is in progress/i.test(e.message) || attempt >= 24) throw e;
+					await new Promise(r => setTimeout(r, 5000));
+				}
+			}
 			s.credentials = { user: accountName(n), pass: password };
 
 			const win = new deps.BrowserWindow({
