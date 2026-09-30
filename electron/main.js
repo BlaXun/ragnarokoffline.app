@@ -10,10 +10,12 @@
 // sprites render doubled on WebKit (roBrowserLegacy #1350). One engine
 // everywhere is worth ~60 MB of download.
 //
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard, screen, session, safeStorage, powerMonitor, protocol } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard, screen, session, safeStorage, powerMonitor, protocol, net } = require('electron');
 // Mods' own settings pages are served from a private scheme, which Chromium
 // only accepts if it is declared before the app is ready.
-require('./mod-settings-window').registerScheme(protocol);
+// Every privileged scheme in one call (Electron keeps only the last): the mod
+// settings pages' and Settings -> Tools' ro-tool://.
+require('./mod-settings-window').registerScheme(protocol, [require('./tools').schemePrivileges]);
 // Quiet launches mute every window for this run, without persisting a setting.
 if (process.argv.includes('--quiet')) {
     app.on('web-contents-created', (_event, contents) => contents.setAudioMuted(true));
@@ -968,6 +970,16 @@ function getSettings() {
 // changes how the server runs and has to go through Apply.
 const APP_PREFERENCES = new Set(['open_settings_first']);
 
+let toolsSingleton = null;
+function toolsInstance() {
+	if (!toolsSingleton) {
+		toolsSingleton = require('./tools').createTools({
+			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
+		});
+	}
+	return toolsSingleton;
+}
+
 // The AI agent (#187): the local API, its files and its game window.
 let agentPlayInstance = null;
 function agentPlay() {
@@ -1487,7 +1499,7 @@ const openGame = () => {
 // includes the title bar. A screen shorter than that clamps the window and the
 // page scrolls.
 const openSetup = () => makeWindow('setup', 'setup.html', { width: 620, height: 760, resizable: false, title: `${productName()} — set up your client` });
-const openSettings = () => makeWindow('settings', 'settings.html', { width: 650, height: 800, title: `${productName()} — settings` });
+const openSettings = () => makeWindow('settings', 'settings.html', { width: 700, height: 800, title: `${productName()} — settings` });
 
 
 // ---------------------------------------------------------------------------
@@ -2447,6 +2459,9 @@ const handlers = {
 
 	copy_text: ({ text }) => clipboard.writeText(String(text || '')),
 
+	// Settings -> Tools (#195).
+	tools_list: () => toolsInstance().list(),
+	open_tool: ({ id }) => toolsInstance().open(String(id)),
 	// Let an AI agent play (#187). Saved and applied at once, like the app
 	// preferences above: nothing about the server changes.
 	agent_status: () => { const s = getSettings(); return { ...agentPlay().info(), enabled: !!s.agent_play, show: s.agent_window !== false, count: s.agent_count || 1 }; },
