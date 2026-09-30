@@ -273,6 +273,10 @@ class ServiceFeed extends Feed {
 			return this.later();
 		}
 		this.child = child;
+		// Per follow: the time of the last stamped line, and whether it was
+		// a repeat dropped as overlap (see line()).
+		this.stamp = null;
+		this.repeat = false;
 		let rest = { stdout: '', stderr: '' };
 		const take = which => chunk => {
 			const lines = (rest[which] + chunk.toString('utf8')).split('\n');
@@ -316,15 +320,28 @@ class ServiceFeed extends Feed {
 	}
 
 	line(raw) {
-		raw = raw.replace(/\r$/, '');
+		// rAthena redraws a progress line in place ("Loading 'x'...\r"), and
+		// docker stamps each piece after a \r as it would a new line. What a
+		// terminal would show is the last piece, so that is the line.
+		raw = raw.split('\r').filter(piece => piece.trim()).pop() || '';
 		const [time, text] = splitTime(raw);
 		if (!time) {
-			// The supervisor's own complaint, not the container's.
-			if (raw.trim()) this.emit(raw, { level: 'warning' });
+			if (!raw.trim()) return;
+			// Docker stamps a write, not a line: when rAthena writes two lines
+			// at once the second comes unstamped. It belongs with the line
+			// before it, repeat or not.
+			if (this.stamp) {
+				if (!this.repeat) this.emit(raw, { time: this.stamp });
+				return;
+			}
+			// Nothing from the container yet: the supervisor's own complaint.
+			this.emit(raw, { level: 'warning' });
 			return;
 		}
+		this.stamp = time;
 		const key = sortableTime(time);
-		if (key && key <= this.last) return; // already shown before a reconnect
+		this.repeat = !!key && key <= this.last;
+		if (this.repeat) return; // already shown before a reconnect
 		if (this.state !== 'up') {
 			// Lines from a container we had seen stop: it came back.
 			if (this.state === 'down') this.mark('up');

@@ -177,6 +177,28 @@ test('a container stream marks a stop, reconnects, drops the overlap and marks t
   assert.ok(calls[2].child.killed, 'the follow stops with its last listener');
 });
 
+test('a progress line rAthena redraws with \\r shows as its last piece, and an unstamped line takes the time before it', async () => {
+  const dir = scratch();
+  const { spawn } = fakeSpawn([
+    { lines: [
+      "\x1b[1;32m[Status]\x1b[0m: Loading 'barters/a.yml'...\x1b[K\r2026-09-30T20:40:50.8166Z \x1b[1;32m[Status]\x1b[0m: Loading '7' entries in 'barters/a.yml'\r",
+      '2026-09-30T20:40:50.8173Z [Status]: Done reading \'7\' entries\r\n[Status]: Map Server is now online.\r',
+    ] },
+  ]);
+  const s = streams(dir, { spawn });
+  const seen = [];
+  const stop = s.subscribe(['map'], e => seen.push(e));
+  await until(() => seen.length >= 3, 'all three lines');
+  assert.deepStrictEqual(seen.map(e => [e.time, e.text, e.level]), [
+    ['2026-09-30T20:40:50.8166Z', "\x1b[1;32m[Status]\x1b[0m: Loading '7' entries in 'barters/a.yml'", seen[0].level],
+    ['2026-09-30T20:40:50.8173Z', "[Status]: Done reading '7' entries", seen[1].level],
+    // Written in the same breath, so docker stamped only the first.
+    ['2026-09-30T20:40:50.8173Z', '[Status]: Map Server is now online.', seen[2].level],
+  ]);
+  assert.ok(seen.every(e => e.level !== 'warning'), JSON.stringify(seen));
+  stop();
+});
+
 test('a server that is not running says so once', async () => {
   const dir = scratch();
   const { spawn, calls } = fakeSpawn([{ lines: [], code: 4 }, { lines: [], code: 4 }]);
