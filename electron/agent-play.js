@@ -149,6 +149,9 @@ function createAgentPlay(deps) {
 					backgroundThrottling: false,
 				},
 			});
+			// Muted: the player hears their own game, not a second copy of
+			// its music and sounds from a window they may not even see.
+			win.webContents.setAudioMuted(true);
 			win.on('page-title-updated', e => e.preventDefault());
 			win.webContents.on('will-prevent-unload', e => e.preventDefault());
 			win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
