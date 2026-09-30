@@ -1,0 +1,8 @@
+{
+  "name": "blaze-shield-drain",
+  "version": "1.0.0",
+  "author": "Ragnarok Offline",
+  "description": "Route each Blaze Shield (NJ_KAENSIN) pillar tick through battle_drain, so Moonlight Dagger's SP drain and every other weapon-drain bonus fires on Ninjas channelling the skill. Off until you turn it on.",
+  "default": "off",
+  "requires": { "app": ">=1.2.6", "era": "any" }
+}

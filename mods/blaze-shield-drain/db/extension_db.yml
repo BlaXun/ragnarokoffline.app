@@ -1,0 +1,16 @@
+# Enable rAthena's blaze_shield_drain extension. That is the whole mod --
+# the server-side registry (db/extension_db.yml in the rAthena build) has
+# the full description; here we only flip the switch.
+#
+# The extension is defined in the rAthena fork this app builds. If the
+# extension is not present in the running build (an older pin), the
+# override still parses cleanly and is a no-op -- extension_enabled()
+# returns false for unknown identifiers.
+
+Header:
+  Type: EXTENSION_DB
+  Version: 1
+
+Body:
+  - Id: blaze_shield_drain
+    Enabled: true
