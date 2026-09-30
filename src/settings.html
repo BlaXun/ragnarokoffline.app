@@ -1927,7 +1927,8 @@ function paintAgent(a) {
     $('agent-claude').textContent = a.claudeCommand || '';
     $('agent-mcp').textContent = a.mcp || '';
     $('agent-file').textContent = a.connection || '';
-    $('agent-command').textContent = a.command || '';
+    // Quoted: the folder has spaces in it on every platform.
+    $('agent-command').textContent = a.command ? `"${a.command}"` : '';
   }
   $('agent-status').textContent = a.enabled
     ? (a.windowOpen ? 'An agent is playing now.' : 'Waiting for an agent to connect. Its game window opens when it logs in.')
