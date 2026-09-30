@@ -2124,6 +2124,58 @@ pub fn logs(dk: &Docker, service: &str, tail: &str) {
     let _ = out.write_all(dk.logs(&format!("ragnarok-{service}"), tail).as_bytes());
 }
 
+/// Services `logs --follow` will follow: names, not container names, so
+/// nothing but the game's own containers can be asked for.
+pub const FOLLOWED: [&str; 4] = ["map", "char", "login", "db"];
+
+/// Why a follow ended, as the exit status, for a caller that restarts it: the
+/// log viewer (#202) marks a stopped server, and only reconnects when the
+/// stream broke with the server still up.
+pub const FOLLOW_STOPPED: i32 = 0;
+pub const FOLLOW_BROKEN: i32 = 3;
+pub const FOLLOW_ABSENT: i32 = 4;
+
+/// The container and tail length `logs --follow` was asked for.
+fn follow_args(args: &[String]) -> Result<(String, String), String> {
+    let mut service = None;
+    let mut tail = "100".to_string();
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--follow" => {}
+            "--tail" => {
+                let n = args.get(i + 1).ok_or("--tail needs a number")?;
+                if n != "all" && n.parse::<u32>().is_err() {
+                    return Err(format!("--tail needs a number, not {n}"));
+                }
+                tail = n.clone();
+                i += 1;
+            }
+            other if service.is_none() && FOLLOWED.contains(&other) => service = Some(other.to_string()),
+            other => return Err(format!("logs --follow takes one of {}, not {other}", FOLLOWED.join(", "))),
+        }
+        i += 1;
+    }
+    Ok((format!("ragnarok-{}", service.unwrap_or_else(|| "map".into())), tail))
+}
+
+/// `logs --follow <service> [--tail N]`: stream a game service's log until
+/// it stops. Returns the exit status to end with.
+pub fn logs_follow(dk: &Docker, args: &[String]) -> Result<i32, String> {
+    let (name, tail) = follow_args(args)?;
+    if dk.state(&name).is_none() {
+        return Ok(FOLLOW_ABSENT);
+    }
+    let followed = dk.follow_logs(&name, &tail);
+    Ok(if dk.is_running(&name) {
+        FOLLOW_BROKEN
+    } else if followed.is_ok() || dk.state(&name).is_some() {
+        FOLLOW_STOPPED
+    } else {
+        FOLLOW_ABSENT
+    })
+}
+
 fn human(bytes: u64) -> String {
     const U: [&str; 4] = ["B", "KB", "MB", "GB"];
     let mut v = bytes as f64;
@@ -2137,6 +2189,16 @@ fn human(bytes: u64) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn logs_follow_names_only_game_services() {
+        let args = |v: &[&str]| v.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        assert_eq!(super::follow_args(&args(&["--follow", "char", "--tail", "50"])).unwrap(), ("ragnarok-char".to_string(), "50".to_string()));
+        assert_eq!(super::follow_args(&args(&["--follow"])).unwrap().0, "ragnarok-map");
+        for bad in [&["--follow", "db2"][..], &["--follow", "../x"], &["--follow", "map", "--tail", "1;x"], &["--follow", "map", "char"]] {
+            assert!(super::follow_args(&args(bad)).is_err(), "{bad:?}");
+        }
+    }
     #[test]
     fn changed_image_bytes_invalidate_the_same_tag_cache() {
         let first = super::image_bundle_fingerprint(&b"same-size-old"[..]).unwrap();

@@ -239,6 +239,18 @@ impl Docker {
         }
     }
 
+    /// `logs -f -t`: the container's log as it is written, timestamped, onto
+    /// this process's own stdout and stderr, until the container stops. For
+    /// the log viewer in Settings -> Tools (#202).
+    pub fn follow_logs(&self, name: &str, tail: &str) -> Result<(), String> {
+        let status = self.base()
+            .args(["logs", "-f", "-t", "--tail", tail, name])
+            .stdin(Stdio::null())
+            .status()
+            .map_err(|e| format!("following {name}: {e}"))?;
+        if status.success() { Ok(()) } else { Err(format!("{name} has no log to follow")) }
+    }
+
     pub fn started_at(&self, name: &str) -> Option<String> {
         let output = self.output(["inspect", name]).ok()?;
         let crate::json::Value::Array(containers) = crate::json::parse(&output).ok()? else { return None; };

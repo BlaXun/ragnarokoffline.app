@@ -39,7 +39,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::exit;
 
-const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|agent <command> [args]|export-table <name>\n\
+const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|logs --follow <map|char|login|db> [--tail N]|agent <command> [args]|export-table <name>\n\
                      \x20      db tables|describe <table>|rows|apply (JSON on stdin for rows and apply)\n\
                      \x20      backup <file>|restore <file>\n\
                      \x20      sql [--write] [--file <path>] [<statement>]\n\
@@ -160,6 +160,10 @@ fn main() {
             cmds::status(&dk);
             Ok(())
         }
+        "logs" if args.iter().any(|a| a == "--follow") => match cmds::logs_follow(&dk, &args[1..]) {
+            Ok(code) => exit(code),
+            Err(e) => Err(e),
+        },
         "logs" => {
             cmds::logs(&dk, args.get(1).map(String::as_str).unwrap_or("map"),
                        args.get(2).map(String::as_str).unwrap_or("40"));
