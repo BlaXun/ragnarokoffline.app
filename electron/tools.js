@@ -44,6 +44,13 @@ const TOOLS = [
 		author: 'BlaXun',
 		needsServer: true,
 	},
+	{
+		id: 'log-viewer',
+		name: 'Log viewer',
+		description: 'The game client, the servers, the app and the engine, logging live as you play: for debugging a mod or an NPC script.',
+		page: 'log-viewer.html',
+		author: 'Ragnarok Offline',
+	},
 ];
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.yml': 'text/yaml; charset=utf-8', '.lua': 'application/octet-stream', '.png': 'image/png', '.json': 'application/json' };
@@ -55,6 +62,7 @@ const schemePrivileges = { scheme: SCHEME, privileges: { standard: true, secure:
 /**
  * @param {object} deps
  *   BrowserWindow, session, net, shell, stackBin(), stackEnv(), stateDir(), runtimeDir(), log(text), icon
+ *   and, for the log viewer: nebulaLogsDir(), redact(text), openGameDevTools()
  */
 function createTools(deps) {
 	const windows = new Map();
@@ -124,6 +132,35 @@ function createTools(deps) {
 		return (monsterSprites = out);
 	}
 
+	// The log viewer (#202): its stream, and the two things it may ask of the
+	// app. See log-stream.js.
+	let logStreams = null;
+	async function logViewerRoute(name, url, request) {
+		if (name === 'stream') {
+			if (!logStreams) {
+				logStreams = require('./log-stream').createLogStreams({
+					stateDir: deps.stateDir, nebulaLogsDir: deps.nebulaLogsDir,
+					stackBin: deps.stackBin, stackEnv: deps.stackEnv, redact: deps.redact,
+				});
+			}
+			return logStreams.response(url);
+		}
+		if (name === 'sources.json') return respond(JSON.stringify(require('./log-stream').SOURCES.map(({ id, name }) => ({ id, name }))), TYPES['.json']);
+		if (name === 'mods.json') {
+			// The enabled mods' names, for the badges on lines that name one.
+			const { cwd, env } = deps.stackEnv();
+			const rows = await new Promise(resolve => execFile(deps.stackBin(), ['mods'], { cwd, env, timeout: 30000 }, (error, stdout) => resolve(error ? '' : stdout)));
+			const on = rows.split('\n').map(l => l.split('\t')).filter(r => r[0] === 'on' && r[1]).map(r => r[1]);
+			return respond(JSON.stringify(on), TYPES['.json']);
+		}
+		if (name === 'api/devtools') {
+			if (request.method !== 'POST') return respond('POST only', 'text/plain', 405);
+			deps.openGameDevTools();
+			return respond('{}', TYPES['.json']);
+		}
+		return null;
+	}
+
 	function respond(body, type, status = 200) {
 		return new Response(body, { status, headers: { 'content-type': type, 'cache-control': 'no-store' } });
 	}
@@ -137,6 +174,10 @@ function createTools(deps) {
 			if (!tool) return respond('no such tool', 'text/plain', 404);
 			const name = decodeURIComponent(url.pathname.replace(/^\/+/, ''));
 			try {
+				if (tool.id === 'log-viewer') {
+					const answer = await logViewerRoute(name, url, request);
+					if (answer) return answer;
+				}
 				if (name === 'mob_db.yml' || /^item_db_(equip|etc|usable)\.yml$/.test(name)) {
 					return respond(await exportTable(name.replace(/\.yml$/, '')), TYPES['.yml']);
 				}
@@ -208,7 +249,11 @@ function createTools(deps) {
 			webPreferences: { partition: PARTITION, contextIsolation: true, nodeIntegration: false, sandbox: true },
 		});
 		windows.set(id, win);
-		win.on('closed', () => windows.delete(id));
+		win.on('closed', () => {
+			windows.delete(id);
+			// Stop following logs with no viewer left to show them.
+			if (id === 'log-viewer' && logStreams) logStreams.stopAll();
+		});
 		win.on('page-title-updated', e => e.preventDefault());
 		win.webContents.setWindowOpenHandler(({ url }) => {
 			// Links out (rAthena docs, GitHub) open in the browser, not here.

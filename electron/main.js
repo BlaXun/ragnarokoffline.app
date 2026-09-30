@@ -970,11 +970,36 @@ function getSettings() {
 // changes how the server runs and has to go through Apply.
 const APP_PREFERENCES = new Set(['open_settings_first']);
 
+// The AI agent's bearer token, for redaction. Read from its connection file
+// rather than from the agent: it outlives the session that made it, and it is
+// asked for on every log line, so it is looked at no more than once a second.
+let agentTokenCache = { at: 0, tokens: [] };
+function agentTokens() {
+	if (Date.now() - agentTokenCache.at > 1000) {
+		let tokens = [];
+		try {
+			const c = JSON.parse(fs.readFileSync(path.join(stateDir(), 'agent', 'connection.json'), 'utf8'));
+			if (typeof c.token === 'string') tokens = [c.token];
+		} catch { /* no agent set up */ }
+		agentTokenCache = { at: Date.now(), tokens };
+	}
+	return agentTokenCache.tokens;
+}
+
 let toolsSingleton = null;
 function toolsInstance() {
 	if (!toolsSingleton) {
 		toolsSingleton = require('./tools').createTools({
 			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
+			// The log viewer (#202) shows what Copy diagnostics would, redacted
+			// the same way, and the agent's token besides.
+			nebulaLogsDir: () => path.join(dataRoot(), 'nebula', 'logs'),
+			redact: text => require('./log-stream').redactSecrets(joinSession.redact(text), agentTokens()),
+			openGameDevTools: () => {
+				const game = windows.game;
+				if (!game || game.isDestroyed()) throw new Error('The game window is not open. Press Play first.');
+				game.webContents.openDevTools({ mode: 'detach' });
+			},
 		});
 	}
 	return toolsSingleton;
