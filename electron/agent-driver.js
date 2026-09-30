@@ -122,6 +122,18 @@ class AgentDriver {
 				[/ZC_NOTIFY_PLAYERCHAT$/, 'local', true], [/ZC_NOTIFY_CHAT$/, 'local'], [/ZC_NOTIFY_CHAT_PARTY$/, 'party'],
 				[/ZC_GUILD_CHAT$/, 'guild'], [/ZC_WHISPER[0-9]*$/, 'whisper'], [/ZC_BROADCAST[0-9]*$/, 'broadcast'], [/ZC_NPC_CHAT$/, 'npc'],
 			];
+			// What the client says by itself (red and blue lines: "You haven't
+			// learned enough Basic Skills to Party.", "Party created."), which
+			// never comes as a chat packet.
+			const box = window.roAgent?.modules?.UIManager?.getComponent('ChatBox');
+			if (box && typeof box.addText === 'function' && box.TYPE) {
+				const T = box.TYPE, add = box.addText;
+				const mine = T.ERROR | T.INFO | T.BLUE;
+				box.addText = function (text, colorType) {
+					try { if (colorType & mine) say('client', null, String(text).replace(/<[^>]+>/g, '')); } catch { /* keep the client's own path */ }
+					return add.apply(this, arguments);
+				};
+			}
 			const log = console.log;
 			console.log = function (...args) {
 				const p = args[2];
@@ -575,7 +587,7 @@ const COMMANDS = {
 	char: { description: 'Enter the game with the character in a slot.', args: [['slot', 'number', 'Slot number, from 0']] },
 	state: { description: 'The player, what is nearby, recent chat, any NPC dialog, and new client errors.', args: [['radius', 'number', 'Cells around the player to list (default 15)', true]] },
 	say: { description: 'Say something in local chat. Slash commands go here too (/organize <party name>, /invite <name>, /leave), and the travel commands (@warp, @go, @load), which you should use only when you need to.', args: [['text', 'string', 'What to say']] },
-	chat: { description: 'Chat you have not seen yet: channel (local, party, guild, whisper, broadcast, npc, system), who said it, and the text. "all" for the last 50.', args: [['which', 'string', '"all" for recent history instead of only new lines', true]] },
+	chat: { description: 'Chat you have not seen yet: channel (local, party, guild, whisper, broadcast, npc, system, client: the game\'s own notices and errors), who said it, and the text. "all" for the last 50.', args: [['which', 'string', '"all" for recent history instead of only new lines', true]] },
 	whisper: { description: 'Send a private message to one character by name.', args: [['to', 'string', 'Character name'], ['text', 'string', 'What to say']] },
 	party: { description: 'Say something in party chat.', args: [['text', 'string', 'What to say']] },
 	guild: { description: 'Say something in guild chat.', args: [['text', 'string', 'What to say']] },
