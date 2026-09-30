@@ -23,22 +23,28 @@ all for a caster.
 While the mod is on and the player has a weapon equipped on the main hand,
 they get a flat MATK bonus of:
 
-    (main-hand refine level) × (per-tier setting)
+    MATK = (main-hand refine level) × (matk_per_refine)
 
-The per-tier defaults mirror how ATK already scales with the weapon's own
-level, so a +10 staff is worth about as much magic damage over +0 as a +10
-sword is worth extra physical damage over +0:
+`matk_per_refine` is one setting under **Settings → Mods → refine-matk**,
+default `2`, range `0..50`. So the ordinary case:
 
-| weapon level | example                          | default MATK per +1 |
-|--------------|----------------------------------|---------------------|
-| 1            | Knife, Novice Rod                | 1                   |
-| 2            | Rod, Mace, one-handed swords     | 2                   |
-| 3            | Staff, Wizardry Staff, two-hand  | 3                   |
-| 4            | Survivor's Rod, top-tier weapons | 4                   |
+| weapon             | refine | setting | MATK bonus |
+|--------------------|--------|---------|------------|
+| Rod                | +7     | 2       | +14        |
+| Staff              | +10    | 2       | +20        |
+| Wizardry Staff     | +15    | 2       | +30        |
+| Survivor's Rod     | +10    | 3       | +30        |
+| any weapon         | +0     | any     | 0          |
 
-Each one is a setting under **Settings → Mods → refine-matk**, so a server
-that wants magic classes to scale harder (or softer) than physical ones can
-tune it without editing the mod.
+The setting takes effect on the next **Apply** (server restart). Set it to
+`0` to switch the bonus off without disabling the mod — useful if you want
+to keep the mod ticked while you A/B-test something else.
+
+Weapon *tier* (Lv1..Lv4) is not part of the formula on purpose: one knob is
+easier to reason about than four, and the numbers a server owner picks
+here are almost always going to be the same across tiers. If you want
+tier-scaled bonuses instead, edit `.@per` in `npc/refine_matk.txt` to look
+up a per-tier value.
 
 ## What it does not touch
 
