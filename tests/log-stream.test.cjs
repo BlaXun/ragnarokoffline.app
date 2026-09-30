@@ -128,8 +128,20 @@ test('missing-files.log says which file, as a warning; other asset lines keep th
 
 function fakeSpawn(scripts) {
   const calls = [];
+  let pids = 1000;
   const spawn = (bin, args) => {
+    // On Windows a follow is stopped with `taskkill /pid N /T /F`: stop the
+    // fake with that pid, as the real one would be.
+    if (bin === 'taskkill') {
+      const target = calls.find(c => String(c.child.pid) === args[args.indexOf('/pid') + 1]);
+      if (target) target.child.killed = true;
+      const done = new EventEmitter();
+      setImmediate(() => done.emit('close', 0));
+      return done;
+    }
     const child = new EventEmitter();
+    // Only where it is used: elsewhere a pid would be signalled for real.
+    if (process.platform === 'win32') child.pid = ++pids;
     child.stdout = new PassThrough();
     child.stderr = new PassThrough();
     child.kill = () => { child.killed = true; };
