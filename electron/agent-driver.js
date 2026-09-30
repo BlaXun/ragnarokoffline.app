@@ -307,6 +307,20 @@ class AgentDriver {
 		if (!spec || spec === 'nearest') return list.find(e => e.type === 'MOB' && !e.dead) || null;
 		return list.find(e => String(e.gid) === String(spec)) || list.find(e => e.name && e.name.toLowerCase() === String(spec).toLowerCase()) || null;
 	}
+	// A skill still waiting for its target takes the next click on the map,
+	// whatever that click was for. Right-click cancels it; Escape would open
+	// the game menu instead.
+	async cancelTargeting() {
+		const mouse = await this.agent('mouse').catch(() => null);
+		const useskill = await this.eval(`return window.roAgent.modules.Mouse.MOUSE_STATE.USESKILL;`).catch(() => null);
+		if (mouse && useskill !== null && mouse.state === useskill) {
+			const me = await this.player();
+			await this.click(me.cell.x, me.cell.y, 'right');
+			await sleep(200);
+			return true;
+		}
+		return false;
+	}
 	// Hover first and let a frame run: the client only picks what is under
 	// the cursor on its next frame, and a click before that lands on the map.
 	async clickEntity(target, button = 'left') {
@@ -470,6 +484,7 @@ class AgentDriver {
 				if (!target?.onScreen) return { ok: false, reason: 'cell is off screen; walk to a nearer cell first', target };
 				const covered = await this.blocker(target.x, target.y);
 				if (covered) return { ok: false, reason: `a window covers that cell (${covered}); close it or pick another cell`, target };
+				await this.cancelTargeting();
 				await this.move(target.x, target.y);
 				await sleep(120);
 				await this.click(target.x, target.y);
@@ -492,6 +507,7 @@ class AgentDriver {
 			attack: async ([spec]) => {
 				const target = await this.findTarget(spec);
 				if (!target) return { ok: false, reason: 'no such monster in range', nearby: (await this.agent('entities', [{ radius: 30 }])).slice(0, 8) };
+				await this.cancelTargeting();
 				const picked = await this.clickEntity(target);
 				await sleep(2500);
 				const after = (await this.agent('entities', [{ radius: 30 }])).find(e => e.gid === target.gid) || null;
@@ -502,6 +518,7 @@ class AgentDriver {
 			interact: async ([spec]) => {
 				const target = await this.findTarget(spec, ['NPC', 'NPC2', 'ITEM', 'WARP']);
 				if (!target) return { ok: false, reason: 'nothing by that id or name in range' };
+				await this.cancelTargeting();
 				const picked = await this.clickEntity(target);
 				await sleep(1200);
 				return { ok: picked, target, dialog: await this.dialog(), errors: this.newErrors() };
@@ -538,26 +555,27 @@ class AgentDriver {
 				const id = Number(args[0]);
 				const level = args[1] && !args[1].startsWith('--') ? Number(args[1]) : undefined;
 				const t = args.indexOf('--target'), cell = args.indexOf('--cell');
-				// A previous cast still waiting for a target would take this one's
-				// click. Right-click cancels target selection; Escape would open
-				// the game menu instead.
-				const mouse = await this.agent('mouse');
-				const useskill = await this.eval(`return window.roAgent.modules.Mouse.MOUSE_STATE.USESKILL;`);
-				if (mouse.state === useskill) {
-					const me = await this.player();
-					await this.click(me.cell.x, me.cell.y, 'right');
-					await sleep(200);
+				// A previous cast still waiting for a target would take this one's click.
+				await this.cancelTargeting();
+				// Found before the cast, so a missing target leaves nothing waiting.
+				let target = null;
+				if (t >= 0) {
+					target = await this.findTarget(args[t + 1], ['MOB', 'PC', 'NPC', 'HOM', 'MERC', 'ELEM']);
+					if (!target) return { ok: false, reason: 'target not found in range; walk closer or pick another', nearby: (await this.agent('entities', [{ radius: 20 }])).filter(e => e.type === 'MOB').slice(0, 6) };
 				}
 				const started = await this.agent('useSkill', [id, level]);
 				let clicked = null;
-				if (started.targeting && t >= 0) {
-					const target = await this.findTarget(args[t + 1], ['MOB', 'PC', 'NPC', 'HOM', 'MERC', 'ELEM']);
-					if (!target) return { ok: false, reason: 'target not found', started };
+				if (started.targeting && target) {
 					clicked = { target, pickedByClient: await this.clickEntity(target) };
 				} else if (started.targeting && cell >= 0) {
 					const at = await this.agent('project', [Number(args[cell + 1]), Number(args[cell + 2])]);
 					await this.click(at.x, at.y);
 					clicked = { cell: at };
+				} else if (started.targeting) {
+					// A targeted skill with nothing to click: don't leave the game
+					// waiting for one.
+					await this.cancelTargeting();
+					return { ok: false, reason: 'this skill needs --target <gid|nearest|self> or --cell <x> <y>', started };
 				}
 				await sleep(2000);
 				return { started, clicked, player: await this.player(), chat: await this.newChat(), errors: this.newErrors() };
