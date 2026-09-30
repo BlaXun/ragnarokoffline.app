@@ -61,9 +61,16 @@ The mob's own drop table is untouched.
 `F_ModSetting` on each server start (so **Apply** takes effect on the
 next restart):
 
-- **Drop chance** (`drop_chance`, default 100 = 1%) — in 0.01% units,
+- **Drop chance** (`drop_chance`, default 225 = 2.25%) — in 0.01% units,
   matching rAthena's drop-rate convention. 1,000 is 10%, 10,000 is
   guaranteed.
+
+  Sizing rule of thumb: at ~150 kills per hour and the 50/50 base/job
+  split, `drop_chance` × 0.0006 is roughly the "% of a level per hour"
+  bonus on whichever axis the player is currently pushing. At the default
+  2.25% that is ~5–9% of a level per hour — meaningful without
+  trivialising the grind. Bump to 500 for a more generous curve, drop to
+  100 for background-noise pace.
 
 Card exp values are hard-coded in `db/item_db.yml` (twenty scripts, one
 per card). Change them there if you want a different curve.

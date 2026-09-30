@@ -9,11 +9,11 @@
     {
       "key": "drop_chance",
       "type": "number",
-      "default": 100,
+      "default": 225,
       "min": 1,
       "max": 10000,
       "label": "Drop chance (0.01% units)",
-      "description": "Odds a card drops from any given monster kill, in 0.01% units. 100 = 1%, 1000 = 10%. Applied on top of stock drops; the mob's own table is unchanged. Which card (base or job, level 1-10) is decided per drop -- see the mod's README."
+      "description": "Odds a card drops from any given monster kill, in 0.01% units. 225 = 2.25% (the default), 100 = 1%, 1000 = 10%. At ~150 kills per hour and a 50/50 base/job split, 2.25% works out to ~5-9% of a level per hour on whichever axis the player is pushing -- noticeable without trivialising the grind. Which card (base or job, level 1-10) is decided per drop -- see the mod's README."
     }
   ]
 }
