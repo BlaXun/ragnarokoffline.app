@@ -11,6 +11,8 @@
 
 mod assets;
 mod accounts;
+mod agent;
+mod tools;
 mod asset_transaction;
 mod cmds;
 mod crashes;
@@ -36,7 +38,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::exit;
 
-const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]\n\
+const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|agent <command> [args]|export-table <name>\n\
                      \x20      backup <file>|restore <file>\n\
                      \x20      sql [--write] [--file <path>] [<statement>]\n\
                      \x20      accounts (private JSON request on stdin)\n\
@@ -67,6 +69,17 @@ fn main() {
     config::widen_path();
     let args: Vec<String> = env::args().skip(1).collect();
     let verb = args.first().map(String::as_str).unwrap_or("status");
+
+    // A client of the app's agent API. No config, no lock and no server: it
+    // only has to find the connection file the app wrote.
+    if verb == "agent" {
+        let root = project_root();
+        if let Err(error) = agent::run(&config::state_dir(&root), &args[1..]) {
+            eprintln!("{error}");
+            exit(1);
+        }
+        return;
+    }
 
     if verb == "process-identity" {
         let result = args.get(1).and_then(|s| s.parse::<u32>().ok())
@@ -125,6 +138,11 @@ fn main() {
         "capture-crashes" => crashes::command(&cfg, &dk),
         "sharing-check" => hosting::sharing_check(&cfg, &dk).map(|report| println!("{report}")),
         "hosting-check" => hosting::check(&cfg, &dk, lan).map(|report| println!("{report}")),
+        // A read, for Settings -> Tools: no lock, and nothing changes.
+        "export-table" => match args.get(1) {
+            Some(name) => tools::export_table(&cfg, &dk, name).map(|text| print!("{text}")),
+            None => Err(format!("export-table needs one of {}", tools::TABLES.join(", "))),
+        },
         "accounts" => {
             if let Err(error) = accounts::run(&cfg, &dk) {
                 fail(verb, &error);
