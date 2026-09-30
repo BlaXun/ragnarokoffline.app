@@ -303,7 +303,8 @@ class AgentDriver {
 		const me = await this.player();
 		if (spec === 'self' || String(spec) === String(me?.gid)) return me;
 		const list = await this.agent('entities', [{ radius: 30 }]);
-		if (!spec || spec === 'nearest') return list.find(e => types.includes(e.type) && !e.dead) || null;
+		// "nearest" is always a monster; players and NPCs are named by id or name.
+		if (!spec || spec === 'nearest') return list.find(e => e.type === 'MOB' && !e.dead) || null;
 		return list.find(e => String(e.gid) === String(spec)) || list.find(e => e.name && e.name.toLowerCase() === String(spec).toLowerCase()) || null;
 	}
 	// Hover first and let a frame run: the client only picks what is under
@@ -461,7 +462,7 @@ class AgentDriver {
 					inv.onEquipItem(item.index, item.location);
 					return { ok: true, index: item.index, location: item.location };`, id);
 				await sleep(800);
-				return { ...result, chat: await this.agent('chat', [3]), errors: this.newErrors() };
+				return { ...result, chat: await this.newChat(), errors: this.newErrors() };
 			},
 			walk: async ([x, y]) => {
 				x = Number(x); y = Number(y);
@@ -494,7 +495,7 @@ class AgentDriver {
 				const picked = await this.clickEntity(target);
 				await sleep(2500);
 				const after = (await this.agent('entities', [{ radius: 30 }])).find(e => e.gid === target.gid) || null;
-				return { ok: picked, target, after, player: await this.player(), chat: await this.agent('chat', [5]), errors: this.newErrors() };
+				return { ok: picked, target, after, player: await this.player(), chat: await this.newChat(), errors: this.newErrors() };
 			},
 			// Talk to an NPC, open a Kafra, pick up an item: any entity, by id
 			// or name.
@@ -559,7 +560,7 @@ class AgentDriver {
 					clicked = { cell: at };
 				}
 				await sleep(2000);
-				return { started, clicked, player: await this.player(), chat: await this.agent('chat', [6]), errors: this.newErrors() };
+				return { started, clicked, player: await this.player(), chat: await this.newChat(), errors: this.newErrors() };
 			},
 			shot: async ([name]) => this.shot(name),
 			click: async ([x, y, button]) => { await this.click(Number(x), Number(y), button === 'right' ? 'right' : 'left'); await sleep(300); return { ok: true, errors: this.newErrors() }; },
