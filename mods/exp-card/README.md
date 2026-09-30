@@ -16,22 +16,29 @@ Lv 10 card is about 5% of a level-98 Renewal character's next-level bar and
 each lower level is roughly the same 3–5% at the player level *that band of
 mobs suits* — matching the shape of rAthena's own NextBaseExp curve.
 
-| Level | Exp | Item ids (base / job) | Typical player level |
+| Level | Exp | Required base level | Item ids (base / job) |
 |---|---|---|---|
-| 1  | 100    | 30051 / 30061 | ~5   |
-| 2  | 250    | 30052 / 30062 | ~15  |
-| 3  | 500    | 30053 / 30063 | ~25  |
-| 4  | 1,000  | 30054 / 30064 | ~35  |
-| 5  | 2,000  | 30055 / 30065 | ~45  |
-| 6  | 4,000  | 30056 / 30066 | ~55  |
-| 7  | 7,500  | 30057 / 30067 | ~65  |
-| 8  | 15,000 | 30058 / 30068 | ~75  |
-| 9  | 30,000 | 30059 / 30069 | ~85  |
-| 10 | 60,000 | 30060 / 30070 | ~95+ |
+| 1  | 100    | 1  | 30051 / 30061 |
+| 2  | 250    | 11 | 30052 / 30062 |
+| 3  | 500    | 21 | 30053 / 30063 |
+| 4  | 1,000  | 31 | 30054 / 30064 |
+| 5  | 2,000  | 41 | 30055 / 30065 |
+| 6  | 4,000  | 51 | 30056 / 30066 |
+| 7  | 7,500  | 61 | 30057 / 30067 |
+| 8  | 15,000 | 71 | 30058 / 30068 |
+| 9  | 30,000 | 81 | 30059 / 30069 |
+| 10 | 60,000 | 91 | 30060 / 30070 |
 
 Base cards grant only base exp; Job cards grant only job exp. The two are
 symmetric — a Base Lv 10 gives 60,000 base exp, a Job Lv 10 gives 60,000
 job exp.
+
+**Level gate.** Each card has an `EquipLevelMin` matching its tier — a Lv 10
+card needs base level 91 to use, a Lv 5 needs 41, and so on. rAthena's
+`pc_isUseitem` refuses to consume the item below the threshold, so a
+low-level character who happens to pick up a high-tier card just carries
+it in the bag until they reach the level. Prevents a level 20 alt from
+downing a Lv 10 base card for two-thirds of a level in one click.
 
 If you want a different curve, edit the twenty scripts in `db/item_db.yml`
 and update the `EXP_BY_LEVEL` table in `System/itemInfo.lua` to match (so

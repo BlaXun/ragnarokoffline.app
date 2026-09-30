@@ -25,6 +25,17 @@
 # curve, edit the twenty scripts below -- and keep System/itemInfo.lua's
 # EXP_BY_LEVEL table in sync so descriptions still show the right +N.
 #
+# EquipLevelMin gates use to a player who is at least "expected level for
+# this tier". rAthena's pc_isUseitem checks it before consuming the item,
+# so a low-level player who picks up a Lv 10 card just carries it around
+# until they hit the level. The gate is (card_level - 1) * 10 + 1:
+#
+#   Lv 1 -> 1     Lv 6  -> 51
+#   Lv 2 -> 11    Lv 7  -> 61
+#   Lv 3 -> 21    Lv 8  -> 71
+#   Lv 4 -> 31    Lv 9  -> 81
+#   Lv 5 -> 41    Lv 10 -> 91
+#
 # Version 3 is the ITEM_DB version this build reads; take it from the
 # header of vendor/rathena/db/import-tmpl/item_db.yml if you retarget.
 Header:
@@ -39,6 +50,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 1
     Script: |
       getexp 100, 0;
       dispbottom "Base Exp Card Lv1: +100 base experience.";
@@ -49,6 +61,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 11
     Script: |
       getexp 250, 0;
       dispbottom "Base Exp Card Lv2: +250 base experience.";
@@ -59,6 +72,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 21
     Script: |
       getexp 500, 0;
       dispbottom "Base Exp Card Lv3: +500 base experience.";
@@ -69,6 +83,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 31
     Script: |
       getexp 1000, 0;
       dispbottom "Base Exp Card Lv4: +1,000 base experience.";
@@ -79,6 +94,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 41
     Script: |
       getexp 2000, 0;
       dispbottom "Base Exp Card Lv5: +2,000 base experience.";
@@ -89,6 +105,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 51
     Script: |
       getexp 4000, 0;
       dispbottom "Base Exp Card Lv6: +4,000 base experience.";
@@ -99,6 +116,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 61
     Script: |
       getexp 7500, 0;
       dispbottom "Base Exp Card Lv7: +7,500 base experience.";
@@ -109,6 +127,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 71
     Script: |
       getexp 15000, 0;
       dispbottom "Base Exp Card Lv8: +15,000 base experience.";
@@ -119,6 +138,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 81
     Script: |
       getexp 30000, 0;
       dispbottom "Base Exp Card Lv9: +30,000 base experience.";
@@ -129,6 +149,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 91
     Script: |
       getexp 60000, 0;
       dispbottom "Base Exp Card Lv10: +60,000 base experience.";
@@ -140,6 +161,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 1
     Script: |
       getexp 0, 100;
       dispbottom "Job Exp Card Lv1: +100 job experience.";
@@ -150,6 +172,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 11
     Script: |
       getexp 0, 250;
       dispbottom "Job Exp Card Lv2: +250 job experience.";
@@ -160,6 +183,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 21
     Script: |
       getexp 0, 500;
       dispbottom "Job Exp Card Lv3: +500 job experience.";
@@ -170,6 +194,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 31
     Script: |
       getexp 0, 1000;
       dispbottom "Job Exp Card Lv4: +1,000 job experience.";
@@ -180,6 +205,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 41
     Script: |
       getexp 0, 2000;
       dispbottom "Job Exp Card Lv5: +2,000 job experience.";
@@ -190,6 +216,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 51
     Script: |
       getexp 0, 4000;
       dispbottom "Job Exp Card Lv6: +4,000 job experience.";
@@ -200,6 +227,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 61
     Script: |
       getexp 0, 7500;
       dispbottom "Job Exp Card Lv7: +7,500 job experience.";
@@ -210,6 +238,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 71
     Script: |
       getexp 0, 15000;
       dispbottom "Job Exp Card Lv8: +15,000 job experience.";
@@ -220,6 +249,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 81
     Script: |
       getexp 0, 30000;
       dispbottom "Job Exp Card Lv9: +30,000 job experience.";
@@ -230,6 +260,7 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    EquipLevelMin: 91
     Script: |
       getexp 0, 60000;
       dispbottom "Job Exp Card Lv10: +60,000 job experience.";

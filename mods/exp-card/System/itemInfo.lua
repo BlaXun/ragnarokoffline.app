@@ -41,11 +41,15 @@ end
 for level = 1, 10 do
 	local exp = EXP_BY_LEVEL[level]
 	local expText = commas(exp)
+	-- Player-level gate for this card, matching EquipLevelMin in
+	-- db/item_db.yml: (level - 1) * 10 + 1.
+	local requiredLevel = (level - 1) * 10 + 1
 	local baseName = "Base Exp Card Lv" .. level
 	local jobName  = "Job Exp Card Lv"  .. level
 	local baseDesc = {
 		"^0000FF+" .. expText .. "^000000 base experience.",
 		"^ffffff_^000000",
+		"Requires base level ^0000FF" .. requiredLevel .. "^000000 to use.",
 		"Drops on a small chance from any monster you kill.",
 		"Bound to you briefly on drop; nobody else can pick it up first.",
 		"Higher-level monsters drop higher-level cards.",
@@ -55,6 +59,7 @@ for level = 1, 10 do
 	local jobDesc = {
 		"^0000FF+" .. expText .. "^000000 job experience.",
 		"^ffffff_^000000",
+		"Requires base level ^0000FF" .. requiredLevel .. "^000000 to use.",
 		"Drops on a small chance from any monster you kill.",
 		"Bound to you briefly on drop; nobody else can pick it up first.",
 		"Higher-level monsters drop higher-level cards.",
