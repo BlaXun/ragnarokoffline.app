@@ -405,27 +405,14 @@
   <select id="cat-filter" disabled title="Filter by category">
     <option value="">All categories</option>
   </select>
-  <label class="btn ghost" for="file-input">Load itemInfo.lua</label>
-  <input type="file" id="file-input" accept=".lua,.txt">
   <span class="status" id="status">No file loaded yet.</span>
 </header>
 <main>
   <div id="results" aria-label="Item list"></div>
   <div id="detail" class="empty">
     <div class="empty-state">
-      <h3>Point me at your itemInfo.lua</h3>
-      <p>The client's translated item table is what feeds this browser.</p>
-      <p><strong>Windows:</strong> <code id="path-hint">%APPDATA%\Ragnarok Offline\state\assets\SystemEN\LuaFiles514\itemInfo.lua</code></p>
-      <p><strong>macOS:</strong> <code>~/Library/Application Support/Ragnarok Offline/state/assets/SystemEN/LuaFiles514/itemInfo.lua</code></p>
-      <label class="drop-zone" id="drop-zone">
-        <input type="file" id="drop-input" accept=".lua,.txt">
-        Drop the file here, or click to pick it
-      </label>
-      <p class="hint">
-        Prefer the <code>SystemEN/LuaFiles514/itemInfo.lua</code> for English names — the top-level <code>SystemEN/itemInfo.lua</code> is just a loader stub.
-        Fall back to <code>System/LuaFiles514/itemInfo.lua</code> if the English one is missing.
-        The file is loaded entirely in your browser — nothing is uploaded.
-      </p>
+      <h3 id="empty-title">Loading the game's item table…</h3>
+      <p id="empty-msg">Reading the <code>itemInfo.lua</code> your game uses, with your mods' items included in the client.</p>
     </div>
   </div>
 </main>
@@ -439,9 +426,6 @@ const catFilter = $("cat-filter");
 const status = $("status");
 const results = $("results");
 const detail = $("detail");
-const fileInput = $("file-input");
-const dropInput = $("drop-input");
-const dropZone = $("drop-zone");
 
 let items = [];
 let index = new Map();
@@ -451,23 +435,6 @@ let selectedId = null;
 // which is allowed for <img> without CORS but blocked for canvas.
 const ASSET_ORIGIN = "http://127.0.0.1:3338";
 
-fileInput.addEventListener("change", (e) => {
-  if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
-});
-dropInput.addEventListener("change", (e) => {
-  if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
-});
-dropZone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  dropZone.classList.add("drag");
-});
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag"));
-dropZone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropZone.classList.remove("drag");
-  const f = e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f) loadFile(f);
-});
 
 // -------- persistent cache in IndexedDB --------
 // After a successful parse we stash the parsed array plus the source
@@ -529,7 +496,6 @@ async function tryRestore() {
   search.disabled = false;
   catFilter.disabled = false;
   setStatus(`${items.length.toLocaleString()} items restored from cache${cached.fileName ? " (" + cached.fileName + ")" : ""}`, "ok");
-  showClearCacheButton();
   render("");
   return true;
 }
@@ -649,7 +615,6 @@ async function loadFile(file) {
     populateCategoryFilter();
     // Persist for the next page-open. Fire-and-forget; cache miss is fine.
     dbPut("current", { fileName: file.name, size: file.size, when: Date.now(), items });
-    showClearCacheButton();
     search.focus();
     render(search.value.trim());
   } catch (err) {
@@ -1176,9 +1141,27 @@ function readableColor(hex, onDark) {
   return hslToHex(h, s, l);
 }
 
-// Attempt to restore the last-loaded file. If nothing is cached, the empty
-// state remains and the user drops a file as before.
-tryRestore();
+// Inside Ragnarok Offline (served from ro-tool://) the game's own item table
+// is next to this page, so load it straight away. Opened from disk, restore
+// the last-loaded file, or wait for one to be dropped, as before.
+(async () => {
+  if (location.protocol === "file:") { tryRestore(); return; }
+  setStatus("Reading the game's item table…");
+  try {
+    const res = await fetch("./itemInfo.lua", { cache: "no-store" });
+    if (!res.ok) throw new Error((await res.text().catch(() => "")) || "HTTP " + res.status);
+    await loadFile(new File([await res.blob()], "itemInfo.lua"));
+    if (items.length) clearDetail();
+  } catch (err) {
+    const why = err && err.message ? err.message : "The item table could not be read.";
+    setStatus(why, "error");
+    const title = document.getElementById("empty-title");
+    const msg = document.getElementById("empty-msg");
+    if (title) title.textContent = "Couldn't read the game's item table";
+    if (msg) msg.textContent = why;
+    if (!(await tryRestore())) return;
+  }
+})();
 
 function hslToHex(h, s, l) {
   h = ((h % 360) + 360) % 360 / 360;

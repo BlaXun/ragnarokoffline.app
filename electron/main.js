@@ -11,12 +11,11 @@
 // everywhere is worth ~60 MB of download.
 //
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard, screen, session, safeStorage, powerMonitor, protocol, net } = require('electron');
-// Settings -> Tools serves its pages from ro-tool://, which has to be declared
-// before the app is ready (tools.js).
-protocol.registerSchemesAsPrivileged([require('./tools').schemePrivileges]);
 // Mods' own settings pages are served from a private scheme, which Chromium
 // only accepts if it is declared before the app is ready.
-require('./mod-settings-window').registerScheme(protocol);
+// Every privileged scheme in one call (Electron keeps only the last): the mod
+// settings pages' and Settings -> Tools' ro-tool://.
+require('./mod-settings-window').registerScheme(protocol, [require('./tools').schemePrivileges]);
 // Quiet launches mute every window for this run, without persisting a setting.
 if (process.argv.includes('--quiet')) {
     app.on('web-contents-created', (_event, contents) => contents.setAudioMuted(true));

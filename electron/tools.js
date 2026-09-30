@@ -32,8 +32,6 @@ const TOOLS = [
 		description: 'Every item the game client knows: names, descriptions, icons and slots, grouped by type.',
 		page: 'item-browser.html',
 		author: 'BlaXun',
-		// The page loads a dropped itemInfo.lua; hand it the one the client uses.
-		feed: 'itemInfo.lua',
 	},
 	{
 		id: 'mob-browser',
@@ -175,17 +173,6 @@ function createTools(deps) {
 			if (!event.url.startsWith(`${SCHEME}://${id}/`)) event.preventDefault();
 		});
 		await win.loadURL(`${SCHEME}://${id}/${tool.page}`);
-		if (tool.feed) {
-			// The page's own loader, with the file it would have been handed.
-			const result = await win.webContents.executeJavaScript(`(async () => {
-				if (typeof loadFile !== 'function') return 'this page has no loader';
-				const res = await fetch('./${tool.feed}', { cache: 'no-store' });
-				if (!res.ok) return await res.text();
-				await loadFile(new File([await res.blob()], '${tool.feed}'));
-				return 'ok';
-			})()`).catch(e => e.message);
-			if (result !== 'ok') deps.log(`tools: ${id}: ${result}`);
-		}
 	}
 
 	return {

@@ -415,35 +415,15 @@
   <select id="size-filter" class="filter" disabled title="Size"><option value="">All sizes</option></select>
   <select id="element-filter" class="filter" disabled title="Element"><option value="">All elements</option></select>
   <select id="tier-filter" class="filter" disabled title="Category"><option value="">Any tier</option><option value="normal">Normal</option><option value="miniboss">Mini-boss</option><option value="mvp">MVP</option></select>
-  <label class="btn ghost" for="file-input">Load mob_db.yml</label>
-  <input type="file" id="file-input" accept=".yml,.yaml,.txt">
   <span class="status" id="status">Idle.</span>
 </header>
 <main>
   <div id="results" aria-label="Mob list"></div>
   <div id="detail" class="empty">
     <div class="empty-state">
-      <h3>Where's your mob_db.yml?</h3>
-      <p>
-        This tool wants the exact <code>mob_db.yml</code> your running server is using. That file lives
-        inside the map container, not on your filesystem directly. Run this once in PowerShell to extract it
-        into this <code>tools/</code> folder, next to the script and this page:
-      </p>
-      <div class="copy-line" style="max-width:660px;margin:14px auto">
-        <code id="extract-cmd">powershell -ExecutionPolicy Bypass -File ".\tools\extract-mob-db.ps1"</code>
-        <button class="btn" id="copy-extract">Copy</button>
-      </div>
-      <p style="font-size:12.5px;color:var(--muted)">
-        Run it from the project root. It writes <code>mob_db.yml</code> (and <code>mob_db_pre-re.yml</code>) into <code>tools/</code>.
-      </p>
-      <div class="divider">then</div>
-      <label class="drop-zone" id="drop-zone">
-        <input type="file" id="drop-input" accept=".yml,.yaml,.txt">
-        Drop <strong>tools\mob_db.yml</strong> here (cached after the first load)
-      </label>
-      <p style="margin-top:14px;font-size:12.5px;color:var(--muted)">
-        No app running? <button id="fetch-github" class="btn ghost" style="padding:3px 10px;font-size:12px">Fetch rAthena master from GitHub</button>
-        <br>(convenient, but drifts from your running server's actual version)
+      <h3 id="empty-title">Loading your server's monsters…</h3>
+      <p id="empty-msg">
+        Reading <code>mob_db.yml</code> from your running server, with your mods' changes included.
       </p>
     </div>
   </div>
@@ -461,10 +441,6 @@ const tierFilter = $("tier-filter");
 const status = $("status");
 const results = $("results");
 const detail = $("detail");
-const fileInput = $("file-input");
-const dropInput = $("drop-input");
-const dropZone = $("drop-zone");
-const fetchGithubBtn = $("fetch-github");
 
 let mobs = [];
 let index = new Map();
@@ -479,30 +455,11 @@ let dropIconMap = new Map();
 // extract-mob-db.ps1. This resolves against wherever the page was loaded
 // from — file:// blocks it in most browsers, but any HTTP host works.
 const LOCAL_URL = "./mob_db.yml";
-const GITHUB_URL = "https://raw.githubusercontent.com/rathena/rathena/master/db/re/mob_db.yml";
 const ASSET_ORIGIN = "http://127.0.0.1:3338";
 const ITEM_DB_FILES = ["./item_db_equip.yml", "./item_db_etc.yml", "./item_db_usable.yml"];
 const ITEMINFO_URL = ASSET_ORIGIN + "/System/LuaFiles514/itemInfo.lua";
 
 // --------- events ---------
-fileInput.addEventListener("change", e => e.target.files[0] && loadFile(e.target.files[0]));
-dropInput.addEventListener("change", e => e.target.files[0] && loadFile(e.target.files[0]));
-dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("drag"); });
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag"));
-dropZone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropZone.classList.remove("drag");
-  const f = e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f) loadFile(f);
-});
-fetchGithubBtn.addEventListener("click", fetchFromGithub);
-document.getElementById("copy-extract").addEventListener("click", async (e) => {
-  const btn = e.currentTarget;
-  const cmd = document.getElementById("extract-cmd").textContent;
-  try { await navigator.clipboard.writeText(cmd); btn.textContent = "Copied!"; }
-  catch { btn.textContent = "Select + Ctrl+C"; }
-  setTimeout(() => btn.textContent = "Copy", 1200);
-});
 document.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement !== search && !e.metaKey && !e.ctrlKey) {
     e.preventDefault(); search.focus(); search.select();
@@ -532,24 +489,6 @@ for (const el of [raceFilter, sizeFilter, elementFilter, tierFilter]) {
   el.addEventListener("change", render);
 }
 
-async function fetchFromGithub() {
-  fetchGithubBtn.disabled = true;
-  fetchGithubBtn.textContent = "Fetching…";
-  setStatus("Fetching mob_db.yml from GitHub…");
-  try {
-    const t0 = performance.now();
-    const res = await fetch(GITHUB_URL);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const text = await res.text();
-    setStatus(`Parsing ${(text.length / 1024 / 1024).toFixed(1)} MB…`);
-    await new Promise(r => setTimeout(r, 20));
-    await ingest(text, "rathena/master mob_db.yml", t0);
-  } catch (err) {
-    setStatus("GitHub fetch failed: " + err.message + " — try dropping a local file.", "error");
-    fetchGithubBtn.disabled = false;
-    fetchGithubBtn.textContent = "Fetch rAthena master from GitHub";
-  }
-}
 
 // Try to fetch mob_db.yml sitting next to this HTML. Works when the page is
 // opened via any HTTP host (e.g. a static server serving the tools/ folder).
@@ -557,19 +496,30 @@ async function fetchFromGithub() {
 // which case the empty state remains and the user can drop the file manually.
 async function tryFetchLocal() {
   if (location.protocol === "file:") return false;
-  setStatus("Looking for a sibling mob_db.yml…");
+  setStatus("Reading your server\u2019s mob_db.yml…");
   try {
     const t0 = performance.now();
     const res = await fetch(LOCAL_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    // Inside Ragnarok Offline the app answers with the reason when it can't
+    // (most often: the server isn't running).
+    if (!res.ok) throw new Error((await res.text().catch(() => "")) || "HTTP " + res.status);
     const text = await res.text();
     if (text.length < 1000) throw new Error("response too small to be a mob_db");
     setStatus(`Parsing local mob_db.yml (${(text.length/1024/1024).toFixed(1)} MB)…`);
     await new Promise(r => setTimeout(r, 20));
     await ingest(text, "local mob_db.yml", t0);
+    const title = document.getElementById("empty-title");
+    const msg = document.getElementById("empty-msg");
+    if (title) title.textContent = "Pick a monster";
+    if (msg) msg.textContent = "Click one on the left, or search by name, ID or AegisName.";
     return true;
-  } catch {
-    setStatus("Run the extract script, then drop mob_db.yml here.");
+  } catch (err) {
+    const why = err && err.message ? err.message : "The monster table could not be read.";
+    setStatus(why, "error");
+    const title = document.getElementById("empty-title");
+    const msg = document.getElementById("empty-msg");
+    if (title) title.textContent = "Couldn't read your server's monsters";
+    if (msg) msg.textContent = why + " Then close this window and open it again from Settings → Tools.";
     return false;
   }
 }
@@ -599,7 +549,6 @@ async function ingest(text, sourceLabel, startTime) {
   setStatus(`Loaded ${mobs.length.toLocaleString()} mobs from ${sourceLabel} in ${secs}s`, "ok");
   populateFilters();
   enableUi();
-  showClearCacheButton();
   dbPut("current", { source: sourceLabel, when: Date.now(), mobs });
   render();
   search.focus();
@@ -1051,7 +1000,6 @@ async function tryRestore() {
   populateFilters();
   enableUi();
   setStatus(`${mobs.length.toLocaleString()} mobs restored from cache${cached.source ? " (" + cached.source + ")" : ""}`, "ok");
-  showClearCacheButton();
   render();
   tryLoadDropIcons();
   return true;
