@@ -161,6 +161,7 @@
     border-left: 3px solid var(--accent);
     padding-left: 13px;
   }
+  .row-thumb { flex: none; width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
   .row-main {
     flex: 1;
     overflow: hidden;
@@ -802,6 +803,7 @@ function render() {
                 : "";
     const elClass = m.element ? "element-" + m.element : "";
     row.innerHTML =
+      `<img class="row-thumb" alt="" data-thumb="${m.id}">` +
       '<div class="row-main">' +
         `<div class="row-name">${highlight(m.name || "?", q)} ${badge}</div>` +
         `<div class="row-sub">` +
@@ -816,6 +818,7 @@ function render() {
     frag.appendChild(row);
   }
   results.appendChild(frag);
+  watchThumbs();
 }
 
 function selectMob(m) {
@@ -1162,26 +1165,97 @@ function layerImage(images, spr, layer) {
   return images[layer.index + (layer.type === 1 ? spr.indexed : 0)] || null;
 }
 
+// One load per sprite, shared by the list's thumbnails and the viewer.
+const spriteCache = new Map();
+function loadSprite(name) {
+  if (!spriteCache.has(name)) {
+    spriteCache.set(name, (async () => {
+      const [a, b] = await Promise.all([
+        fetch(`./sprite/${encodeURIComponent(name)}.spr`), fetch(`./sprite/${encodeURIComponent(name)}.act`)]);
+      if (!a.ok || !b.ok) throw new Error(`Your client has no sprite called ${name}.`);
+      const spr = readSpr(await a.arrayBuffer());
+      const act = readAct(await b.arrayBuffer());
+      return { spr, act, images: frameImages(spr) };
+    })());
+  }
+  return spriteCache.get(name);
+}
+
+// A still of the monster standing, facing the viewer, for the list.
+const thumbCache = new Map();
+async function spriteThumb(m) {
+  const name = await spriteName(m);
+  if (!name) return null;
+  if (thumbCache.has(name)) return thumbCache.get(name);
+  const { spr, act, images } = await loadSprite(name);
+  const layers = (act.actions[0] && act.actions[0].frames[0]) || [];
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const l of layers) {
+    const img = layerImage(images, spr, l);
+    if (!img) continue;
+    const w = img.width * Math.abs(l.sx), h = img.height * Math.abs(l.sy);
+    x0 = Math.min(x0, l.x - w / 2); x1 = Math.max(x1, l.x + w / 2);
+    y0 = Math.min(y0, l.y - h / 2); y1 = Math.max(y1, l.y + h / 2);
+  }
+  if (!isFinite(x0)) return null;
+  const size = 80; // drawn at 2x, shown at 40px
+  const zoom = Math.min(2, size / Math.max(x1 - x0, y1 - y0));
+  const c = document.createElement("canvas");
+  c.width = size; c.height = size;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  const cx = size / 2 - ((x0 + x1) / 2) * zoom, cy = size / 2 - ((y0 + y1) / 2) * zoom;
+  for (const l of layers) {
+    const img = layerImage(images, spr, l);
+    if (!img) continue;
+    ctx.save();
+    ctx.globalAlpha = l.alpha;
+    ctx.translate(cx + l.x * zoom, cy + l.y * zoom);
+    if (l.angle) ctx.rotate(l.angle * Math.PI / 180);
+    ctx.scale(l.sx * zoom * (l.mirror ? -1 : 1), l.sy * zoom);
+    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+    ctx.restore();
+  }
+  const url = c.toDataURL("image/png");
+  thumbCache.set(name, url);
+  return url;
+}
+
+// Thumbnails load as their rows scroll into view, not all 300 at once.
+let thumbObserver = null;
+function watchThumbs() {
+  if (!("IntersectionObserver" in window)) return;
+  if (!thumbObserver) {
+    thumbObserver = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const img = e.target;
+        thumbObserver.unobserve(img);
+        const m = index.get(Number(img.dataset.thumb));
+        if (!m) continue;
+        spriteThumb(m).then(url => { if (url) img.src = url; else img.style.visibility = "hidden"; })
+          .catch(() => { img.style.visibility = "hidden"; });
+      }
+    }, { root: results, rootMargin: "200px" });
+  }
+  for (const img of results.querySelectorAll("img[data-thumb]")) thumbObserver.observe(img);
+}
+
 async function showSprite(m) {
   const run = ++spriteRun;
   const canvas = $("sprite-canvas"), note = $("sprite-note"), controls = $("sprite-controls");
   if (!canvas) return;
   const say = t => { if (run === spriteRun && note) note.textContent = t; };
-  let spr, act;
+  let spr, act, images;
   try {
     const name = await spriteName(m);
     if (!name) { say("No sprite for this monster."); return; }
-    const [a, b] = await Promise.all([
-      fetch(`./sprite/${encodeURIComponent(name)}.spr`), fetch(`./sprite/${encodeURIComponent(name)}.act`)]);
-    if (!a.ok || !b.ok) { say(`Your client has no sprite called ${name}.`); return; }
-    spr = readSpr(await a.arrayBuffer());
-    act = readAct(await b.arrayBuffer());
+    ({ spr, act, images } = await loadSprite(name));
   } catch (e) {
-    say("The sprite could not be read: " + e.message);
+    say(e.message.startsWith("Your client") ? e.message : "The sprite could not be read: " + e.message);
     return;
   }
   if (run !== spriteRun) return;
-  const images = frameImages(spr);
   const state = { action: 0, dir: 0 };
   const available = SPRITE_ACTIONS.filter(([, n]) => act.actions.length > n * 8);
 

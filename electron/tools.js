@@ -58,6 +58,8 @@ const schemePrivileges = { scheme: SCHEME, privileges: { standard: true, secure:
  */
 function createTools(deps) {
 	const windows = new Map();
+	// Converted icons, by path: the item list asks for hundreds at a time.
+	const pngCache = new Map();
 	let handlersReady = false;
 
 	function exportTable(name) {
@@ -169,6 +171,20 @@ function createTools(deps) {
 					deps.log(`tools: item icons: ${e.message}`);
 					return respond('/* ' + e.message.replace(/\*\//g, '') + ' */', TYPES['.js'], 503);
 				}
+			}
+			// The game's .bmp pictures, with their magenta turned transparent.
+			if (url.host === '127.0.0.1:3338' && /\.bmp$/i.test(url.pathname)) {
+				const key = url.pathname;
+				if (!pngCache.has(key)) {
+					const res = await deps.net.fetch(request.url, { bypassCustomProtocolHandlers: true });
+					if (!res.ok) return res;
+					const original = Buffer.from(await res.arrayBuffer());
+					const png = require('./bmp').bmpToPng(original);
+					if (pngCache.size > 5000) pngCache.clear();
+					pngCache.set(key, png ? { body: png, type: 'image/png' } : { body: original, type: 'image/bmp' });
+				}
+				const hit = pngCache.get(key);
+				return new Response(hit.body, { headers: { 'content-type': hit.type, 'cache-control': 'max-age=3600' } });
 			}
 			return deps.net.fetch(request, { bypassCustomProtocolHandlers: true });
 		});
