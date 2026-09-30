@@ -6,7 +6,7 @@ rebuild, no compiler, no Docker.
 ```
 <app data>/state/mods/my-mod/
 ├── mod.json     name, version, author, description, what it requires
-├── db/          server tables: mob stats, item stats, drops, skills
+├── db/          server tables: mob stats, item stats, drops, skills — new ones too
 ├── npc/         server scripts: NPCs, warps, monster spawns, quests
 ├── lua/         skill hooks: damage formulas, accuracy, what a hit does
 ├── conf/        a few server settings, from a short allowlist
@@ -399,6 +399,117 @@ in a directory nothing opens.
 every key, how the headcount is divided between maps, which tables are still
 unreachable, and the two ways this data fails without the server saying
 anything.
+
+## Making new things: items, monsters, and how they look
+
+A mod can add items and monsters that exist in no client and no server, with
+ids of their own. Nothing is replaced: every stock item and monster keeps its
+own entry. A new thing needs up to three layers: `db/` for what it *does*,
+`System/` for what the client *calls* it and *draws*, and `npc/` to put it in
+the world.
+
+[`examples/mods/custom-monster`](../examples/mods/custom-monster) has one of
+each: a monster, a headgear with its own look, and a card that casts a spell.
+
+### Ids
+
+| | Use | Why there |
+|---|---|---|
+| Monsters | **25000–31998** | rAthena accepts 1001–3998 and 20021–31998 and keeps 3999–20020 for player clones. Its own monsters reach about 22700 and grow with each update. |
+| Items | **50000–99999** | Item ids are 32-bit. Stock items sit below 32409 and from 100000 up, so this block is empty. |
+| Headgear/garment looks (`View:`) | **5000+** | Stock view ids stop at 2822. |
+
+Pick a number in the middle rather than the first one, since other authors
+start at the start too. If two enabled mods define the same id, Settings →
+Mods says so under the one whose version isn't in effect.
+
+### A new item
+
+`db/item_db.yml` says what it is and does; `System/itemInfo.lua` holds its
+name, description and icon, **only your entries**. The app lists your table
+ahead of the client's own, so nothing else changes.
+[`examples/mods/custom-item`](../examples/mods/custom-item) explains the
+details: which icon a resource name gives you, and how to rename a stock
+item.
+
+What an item *does* is its `Script:`, rAthena's item script. The common
+forms:
+
+| Script | Effect |
+|---|---|
+| `bonus bStr,5;` `bonus bMaxHPrate,10;` | stats (`doc/item_bonus.txt` in rAthena lists them all) |
+| `bonus2 bAddRace,RC_Undead,20;` | +20% damage against a race |
+| `bonus3 bAutoSpell,"AS_SONICBLOW",5,50;` | 5% chance to cast Sonic Blow Lv 5 **when you attack** |
+| `bonus3 bAutoSpellWhenHit,"CR_REFLECTSHIELD",1,30;` | 3% chance to cast Reflect Shield **when you are hit** |
+| `bonus4 bAutoSpellOnSkill,"MG_FIREBOLT","MG_COLDBOLT",3,200;` | 20% chance to follow Fire Bolt with Cold Bolt Lv 3 |
+| `autobonus "{ bonus bAtk,50; }",10,5000;` | 1% on attack: +50 ATK for 5 seconds |
+| `itemheal rand(120,180),0;` | a potion |
+
+The chances in `bAutoSpell…` and `autobonus` are out of 1000. Anything a bonus can't express
+("only below 30% HP", "every fifth hit") is what [Lua](#lua--changing-how-a-skill-works)
+is for.
+
+### A new monster
+
+`db/mob_db.yml` with the new id, and a spawn in `npc/`:
+
+```
+prt_fild08,0,0	monster	Lunar Poring	25001,8,60000,30000
+```
+
+What it looks like is up to you:
+
+- **A stock monster's look, no client change:** `db/mob_avail.yml` tells the
+  server to show it as another monster.
+  ```yaml
+  Body:
+    - Mob: LUNAR_PORING
+      Sprite: POPORING
+  ```
+  The server sends Poporing's id, so the client never learns the new one:
+  the monster's name still comes from the server, but tools that go by id
+  see the stock monster.
+- **Its own entry on the client:** `System/jobname.lub` maps the new id to a
+  sprite, with only your rows:
+  ```lua
+  JobNameTable = {
+  	[25001] = "LUNAR_PORING",
+  }
+  ```
+  `LUNAR_PORING` can be a stock sprite's name (`POPORING`), or your own art
+  in `data/sprite/monster/lunar_poring.spr` and `.act`. The official format,
+  `System/npcidentity.lub` defining `jobtbl.JT_LUNAR_PORING = 25001` with
+  `[jobtbl.JT_LUNAR_PORING]` in `jobname.lub`, works too. Add to `jobtbl`
+  rather than replacing it.
+
+### A new look for headgear, garments and weapons
+
+An equipment item's `View:` is a number; the client turns it into a sprite
+through a table, and a mod adds rows to those tables the same way:
+
+| Equipment | Files in `System/` | Art, if it's your own |
+|---|---|---|
+| Headgear | `accname.lub` (+ `accessoryid.lub` for named ids) | `data/sprite/accessory/남/남_<name>.spr`, `여/여_<name>.spr` |
+| Garments | `spriterobename.lub` (+ `spriterobeid.lub`) | `data/sprite/robe/…` |
+| Weapons | `weapontable.lub` | `data/sprite/human/…` |
+
+```lua
+AccNameTable = {
+	[5001] = "_리본",   -- Moon_Ribbon's View: 5001 looks like the Ribbon
+}
+```
+
+**Save these three tables in CP949, not UTF-8,** whenever a name in them is
+Korean. They name the client's own sprite files byte for byte; a UTF-8 copy
+names a file that isn't there and the item is invisible on you. An ASCII
+name for your own art has no such problem. The sex folders and file prefix
+(`남`, `여`) have no ASCII alias yet.
+
+### Checking your work
+
+**Settings → Tools → Item browser** and **Monster browser** read the same
+tables the client does, your mods' included: a new item appears with its
+name and icon, and a new monster with its sprite and drops.
 
 ## npc/ — adding things to the world
 
