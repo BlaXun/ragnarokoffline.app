@@ -141,6 +141,7 @@
     <button role="tab" class="tab" id="tab-accounts" aria-controls="panel-accounts" aria-selected="false" tabindex="-1">Accounts</button>
     <button role="tab" class="tab" id="tab-savedata" aria-controls="panel-savedata" aria-selected="false" tabindex="-1">Save data</button>
     <button role="tab" class="tab" id="tab-mods" aria-controls="panel-mods" aria-selected="false" tabindex="-1">Mods</button>
+    <button role="tab" class="tab" id="tab-tools" aria-controls="panel-tools" aria-selected="false" tabindex="-1">Tools</button>
     <button role="tab" class="tab" id="tab-population" aria-controls="panel-population" aria-selected="false" tabindex="-1">Population</button>
     <button role="tab" class="tab" id="tab-rates" aria-controls="panel-rates" aria-selected="false" tabindex="-1">Rates</button>
   </div>
@@ -494,6 +495,13 @@
   </div>
   </div>
 
+  <div class="tabpanel" id="panel-tools" role="tabpanel" aria-labelledby="tab-tools" hidden>
+  <h2>Tools</h2>
+  <div class="panel" id="tools-list"></div>
+  <p class="note">Helpers for making mods, reading straight from your server: what they show
+     includes what your mods change. Each opens in its own window. <span id="tools-status"></span></p>
+  </div>
+
   <div class="tabpanel" id="panel-population" role="tabpanel" aria-labelledby="tab-population" hidden>
   <h2>Population</h2>
   <div class="panel">
@@ -556,6 +564,8 @@
       <input type="checkbox" id="agent_window" style="accent-color: var(--accent); flex: none" />
       <span class="val" style="width:auto; color: var(--dim)">show the agents' game windows</span>
     </label>
+    <p class="note">These two take effect as soon as you tick them &mdash; no <b>Apply</b>, and the
+       server keeps running.</p>
     <p class="note"><b>This is not the population engine above.</b> Those are AI characters the
        server runs by itself. This lets <i>you</i> bring in an AI agent &mdash; Claude Code, Codex, or
        any agent that can use MCP or run a command &mdash; to play with you, in its own game
@@ -1292,7 +1302,7 @@ async function refreshMods() {
 // Tabs. Every panel stays in the DOM and is only hidden, so nothing here has
 // to care which section an element lives in -- the rest of this file still
 // looks elements up by id exactly as it did when the page was one scroll.
-const TAB_KEYS = ['general', 'multiplayer', 'accounts', 'savedata', 'mods', 'population', 'rates'];
+const TAB_KEYS = ['general', 'multiplayer', 'accounts', 'savedata', 'mods', 'tools', 'population', 'rates'];
 function showTab(key, focus = false) {
   if (!TAB_KEYS.includes(key)) key = TAB_KEYS[0];
   for (const other of TAB_KEYS) {
@@ -1925,6 +1935,36 @@ refresh();
 refreshMods();
 setInterval(refresh, 4000);
 
+// ---- Tools (#195)
+function paintTools(tools) {
+  const list = $('tools-list');
+  list.textContent = '';
+  for (const t of tools) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; align-items:center; gap:12px; padding:8px 0';
+    const text = document.createElement('div');
+    text.style.flex = '1';
+    const name = document.createElement('div');
+    name.textContent = t.name;
+    name.style.color = 'var(--text)';
+    const about = document.createElement('div');
+    about.className = 'note';
+    about.style.marginTop = '2px';
+    about.textContent = t.description + (t.needsServer ? ' Needs your server running.' : '') + (t.author ? ` By ${t.author}.` : '');
+    text.append(name, about);
+    const open = document.createElement('button');
+    open.className = 'ghost';
+    open.textContent = 'Open';
+    open.addEventListener('click', async () => {
+      $('tools-status').textContent = `Opening ${t.name}…`;
+      try { await invoke('open_tool', { id: t.id }); $('tools-status').textContent = ''; }
+      catch (e) { $('tools-status').textContent = String(e.message || e); }
+    });
+    row.append(text, open);
+    list.append(row);
+  }
+}
+invoke('tools_list').then(paintTools).catch(() => {});
 // ---- Play with an AI agent (#187)
 function paintAgent(a) {
   $('agent_play').checked = !!a.enabled;
