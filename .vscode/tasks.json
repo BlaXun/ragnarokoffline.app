@@ -2,6 +2,32 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Patch webclient",
+			"detail": "Apply patches/client/* to vendor/roBrowserLegacy (extension bridge, hooks, lockfile). Without this the build has no api.targeting/api.server and mods that need them go inert.",
+			"type": "process",
+			"windows": {
+				"command": "wsl.exe",
+				"args": ["--cd", "${workspaceFolder}", "--", "bash", "scripts/patch-client.sh"]
+			},
+			"linux": {
+				"command": "bash",
+				"args": ["scripts/patch-client.sh"]
+			},
+			"osx": {
+				"command": "bash",
+				"args": ["scripts/patch-client.sh"]
+			},
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"clear": true
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Build webclient",
 			"detail": "npm run build:all in vendor/roBrowserLegacy",
 			"type": "shell",
@@ -13,7 +39,7 @@
 			"presentation": {
 				"reveal": "always",
 				"panel": "shared",
-				"clear": true
+				"clear": false
 			},
 			"problemMatcher": []
 		},
@@ -55,9 +81,9 @@
 		},
 		{
 			"label": "Build and Deploy",
-			"detail": "Build the webclient and copy it to the runtime target directory",
+			"detail": "Patch, build, and copy the webclient to the runtime target directory",
 			"dependsOrder": "sequence",
-			"dependsOn": ["Build webclient", "Deploy webclient"],
+			"dependsOn": ["Patch webclient", "Build webclient", "Deploy webclient"],
 			"group": {
 				"kind": "build",
 				"isDefault": true
