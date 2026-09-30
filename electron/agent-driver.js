@@ -122,18 +122,27 @@ class AgentDriver {
 				[/ZC_NOTIFY_PLAYERCHAT$/, 'local', true], [/ZC_NOTIFY_CHAT$/, 'local'], [/ZC_NOTIFY_CHAT_PARTY$/, 'party'],
 				[/ZC_GUILD_CHAT$/, 'guild'], [/ZC_WHISPER[0-9]*$/, 'whisper'], [/ZC_BROADCAST[0-9]*$/, 'broadcast'], [/ZC_NPC_CHAT$/, 'npc'],
 			];
-			// What the client says by itself (red and blue lines: "You haven't
-			// learned enough Basic Skills to Party.", "Party created."), which
-			// never comes as a chat packet.
-			const box = window.roAgent?.modules?.UIManager?.getComponent('ChatBox');
-			if (box && typeof box.addText === 'function' && box.TYPE) {
-				const T = box.TYPE, add = box.addText;
-				const mine = T.ERROR | T.INFO | T.BLUE;
-				box.addText = function (text, colorType) {
-					try { if (colorType & mine) say('client', null, String(text).replace(/<[^>]+>/g, '')); } catch { /* keep the client's own path */ }
-					return add.apply(this, arguments);
-				};
-			}
+			// What the client says by itself ("Insufficient SP", "You haven't
+			// learned enough Basic Skills to Party.", item pickups), which never
+			// comes as a chat packet: every line the chat box adds that a chat
+			// packet did not just account for. Watched in the page because the
+			// client's chat box is not reachable as an object from here.
+			const watchBox = () => {
+				const host = document.getElementById('ChatBox');
+				const content = host?.shadowRoot?.querySelector('.content');
+				if (!content) return false;
+				new MutationObserver(records => {
+					for (const r of records) for (const node of r.addedNodes) {
+						const text = (node.textContent || '').trim();
+						if (!text) continue;
+						const recent = window.__agentChat.slice(-20).filter(m => Date.now() - m.at < 3000);
+						if (recent.some(m => text === m.text || text === (m.from + ' : ' + m.text) || text.endsWith(m.text))) continue;
+						say('client', null, text);
+					}
+				}).observe(content, { childList: true, subtree: false });
+				return true;
+			};
+			if (!watchBox()) { const t = setInterval(() => { if (watchBox()) clearInterval(t); }, 1000); }
 			const log = console.log;
 			console.log = function (...args) {
 				const p = args[2];
