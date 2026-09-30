@@ -542,6 +542,13 @@ earlier, before the server reads it, and names each one in the log. Taking away
 a command the group does not have (`go: false`) is the same error, and is
 treated the same way. Aliases count: `accountinfo` is `accinfo`.
 
+**Group 20 is taken.** The app always defines it, as *AI Agent*: the accounts
+an AI agent plays on (Claude Code, Codex; Settings → Population → *Play with an
+AI agent*). It is a player's permissions plus `@warp`, `@go` and `@load`, and
+it is read before any mod's file. Give your own groups another id. A mod that
+lists group 20 adds its commands to the agents rather than making a group of
+its own; one that removes commands from it can stop the agents travelling.
+
 **`groups.yml` decides what every player on your server can do.** A mod that
 ships one can hand out `@item` or `@zeny` as easily as `@autoloot`. The
 supervisor says which mod supplied it on every start — `mods: my-mod supplies

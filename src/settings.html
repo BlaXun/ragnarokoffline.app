@@ -535,6 +535,49 @@
        on a computer with less than 8&nbsp;GB of RAM.</p>
     <p class="note" id="ram-note"></p>
   </div>
+
+  <h2 style="margin-top:18px">Play with an AI agent</h2>
+  <div class="panel">
+    <label>
+      <span>AI agent</span>
+      <input type="checkbox" id="agent_play" style="accent-color: var(--accent); flex: none" />
+      <span class="val" style="width:auto; color: var(--dim)">let an AI agent play with me</span>
+    </label>
+    <label style="margin-top:6px">
+      <span>How many</span>
+      <select id="agent_count" style="flex: none">
+        <option value="1">1 agent</option><option value="2">2 agents</option>
+        <option value="3">3 agents</option><option value="4">4 agents</option>
+      </select>
+      <span class="val" style="width:auto; color: var(--dim)">each its own character; about 400&nbsp;MB of memory each</span>
+    </label>
+    <label style="margin-top:6px" id="agent-window-row">
+      <span>Its window</span>
+      <input type="checkbox" id="agent_window" style="accent-color: var(--accent); flex: none" />
+      <span class="val" style="width:auto; color: var(--dim)">show the agents' game windows</span>
+    </label>
+    <p class="note"><b>This is not the population engine above.</b> Those are AI characters the
+       server runs by itself. This lets <i>you</i> bring in an AI agent &mdash; Claude Code, Codex, or
+       any agent that can use MCP or run a command &mdash; to play with you, in its own game
+       window, as its own character on your server. It plays as the account <code>aiagent</code>:
+       a normal player that can also use <code>@warp</code>, <code>@go</code> and
+       <code>@load</code> to travel, and nothing a GM can.</p>
+    <div id="agent-connect" hidden>
+      <p class="note" style="color: var(--text)">Connect an agent (it keeps working across restarts):</p>
+      <p class="note">Claude Code, one line per agent (run each in the agent's own session):</p>
+      <pre id="agent-claude" style="white-space: pre-wrap; word-break: break-all; font-size: 11px; margin: 4px 0"></pre>
+      <div class="actions" style="margin-top:4px">
+        <button id="agent-copy-claude" class="ghost">Copy</button>
+        <button id="agent-open-guide" class="ghost">Open the guide</button>
+        <button id="agent-replace" class="ghost">Replace the token</button>
+      </div>
+      <p class="note">Other MCP clients: <code id="agent-mcp"></code> with the header
+         <code>Authorization: Bearer</code> and the token in <code id="agent-file"></code>.
+         From a terminal: <code id="agent-command"></code> <code>state</code>. Point the agent at
+         <b>the guide</b> (AGENT.md) before it starts: it says how to play and what not to do.</p>
+    </div>
+    <p class="note" id="agent-status"></p>
+  </div>
   </div>
 
   <div class="tabpanel" id="panel-rates" role="tabpanel" aria-labelledby="tab-rates" hidden>
@@ -1881,6 +1924,47 @@ invoke('host_ram_mib').then(total => {
 refresh();
 refreshMods();
 setInterval(refresh, 4000);
+
+// ---- Play with an AI agent (#187)
+function paintAgent(a) {
+  $('agent_play').checked = !!a.enabled;
+  $('agent_window').checked = a.show !== false;
+  $('agent_window').disabled = !a.enabled;
+  $('agent_count').value = String(a.count || 1);
+  $('agent_count').disabled = !a.enabled;
+  $('agent-connect').hidden = !(a.enabled && a.on);
+  if (a.on) {
+    $('agent-claude').textContent = (a.agents || []).map(x => x.claudeCommand).join('\n\n') || a.claudeCommand || '';
+    $('agent-mcp').textContent = a.mcp || '';
+    $('agent-file').textContent = a.connection || '';
+    // Quoted: the folder has spaces in it on every platform.
+    $('agent-command').textContent = a.command ? `"${a.command}"` : '';
+  }
+  const playing = (a.agents || []).filter(x => x.playing).length;
+  $('agent-status').textContent = a.enabled
+    ? (playing ? `${playing} of ${a.count || 1} playing now.` : 'Waiting for an agent to connect. Its game window opens when it logs in.')
+    : '';
+  agentState = a;
+}
+let agentState = null;
+async function setAgent() {
+  $('agent-status').textContent = 'Saving…';
+  try { paintAgent(await invoke('agent_set', { enabled: $('agent_play').checked, show: $('agent_window').checked, count: Number($('agent_count').value) })); }
+  catch (e) { $('agent-status').textContent = String(e.message || e); }
+}
+$('agent_play').addEventListener('change', setAgent);
+$('agent_window').addEventListener('change', setAgent);
+$('agent_count').addEventListener('change', setAgent);
+$('agent-copy-claude').addEventListener('click', async () => {
+  const text = $('agent-claude').textContent;
+  if (text) { await invoke('copy_text', { text }); $('agent-status').textContent = 'Copied. Paste each line into a terminal.'; }
+});
+$('agent-open-guide').addEventListener('click', () => invoke('agent_open_guide').catch(e => { $('agent-status').textContent = String(e.message || e); }));
+$('agent-replace').addEventListener('click', async () => {
+  try { paintAgent(await invoke('agent_replace_token')); $('agent-status').textContent = 'New token made; the old one no longer works. Re-add the agent with the command above.'; }
+  catch (e) { $('agent-status').textContent = String(e.message || e); }
+});
+invoke('agent_status').then(paintAgent).catch(() => {});
 </script>
 <script src="accounts-settings.js"></script>
 </body>
