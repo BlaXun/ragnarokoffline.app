@@ -300,7 +300,7 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
         &cfg.root.join("client-assets/data"),
         &server_root.join("data"),
     )?;
-    let (plugins, item_tables) = overlay_mods(cfg, &server_root, &merged)?;
+    let (plugins, item_tables, quest_tables) = overlay_mods(cfg, &server_root, &merged)?;
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
     fnv(&mut fingerprint, b"owned-assets-v2");
     fnv(&mut fingerprint, text.as_str().as_bytes());
@@ -339,7 +339,7 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
         format!("{fingerprint:016x}"),
     )
     .map_err(|e| e.to_string())?;
-    write_client_config(cfg, &server_root, &plugins, &item_tables, text, packetver)?;
+    write_client_config(cfg, &server_root, &plugins, &item_tables, &quest_tables, text, packetver)?;
     copy_file(
         &cfg.root.join("config/index.html"),
         &server_root.join("index.html"),
@@ -365,9 +365,10 @@ fn overlay_mods(
     cfg: &Config,
     server_root: &Path,
     merged: &Path,
-) -> Result<(Vec<(String, String)>, Vec<String>), String> {
+) -> Result<(Vec<(String, String)>, Vec<String>, Vec<String>), String> {
     let mut plugins = Vec::new();
     let mut item_tables = Vec::new();
+    let mut quest_tables = Vec::new();
     // The player's answers to whatever each mod declared in its mod.json.
     let saved = crate::mods::read_settings(&cfg.state)?;
     for m in crate::mods::enabled(cfg) {
@@ -379,7 +380,9 @@ fn overlay_mods(
         copy_over(&m.dir.join("BGM"), &server_root.join("BGM"))?;
         // Client tables. itemInfo is merged rather than replaced; see
         // copy_system_layer.
-        item_tables.extend(copy_system_layer(&m.dir.join("System"), merged, &m.name)?);
+        let (items, quests) = copy_system_layer(&m.dir.join("System"), merged, &m.name)?;
+        item_tables.extend(items);
+        quest_tables.extend(quests);
         for misplaced in item_tables_under(&m.dir.join("data"), "data") {
             eprintln!(
                 "mods: {} has {misplaced}, but the client reads item tables only from System/ -- \
@@ -405,7 +408,7 @@ fn overlay_mods(
             plugins.push((m.name.clone(), pars));
         }
     }
-    Ok((plugins, item_tables))
+    Ok((plugins, item_tables, quest_tables))
 }
 
 /// FNV-1a, the same one `guest_fingerprint` uses, fed a piece at a time.
@@ -619,10 +622,20 @@ fn copy_data_aliased(src: &Path, dst: &Path) -> Result<(), String> {
 /// Nothing is lost by making this additive: a mod that really wants to replace
 /// the whole table can still ship a complete one, and defining every id is
 /// indistinguishable from replacing.
-fn copy_system_layer(src: &Path, merged: &Path, mod_name: &str) -> Result<Vec<String>, String> {
+///
+/// The quest table (`OngoingQuestInfoList`) is the same case (#163): replacing
+/// it to add one quest drops every other quest's title and description. Each
+/// is copied aside for `customQuestInfo`, which the client loads after the
+/// base, a quest at a time by id.
+fn copy_system_layer(
+    src: &Path,
+    merged: &Path,
+    mod_name: &str,
+) -> Result<(Vec<String>, Vec<String>), String> {
     let mut added = Vec::new();
+    let mut quests = Vec::new();
     if !src.exists() {
-        return Ok(added);
+        return Ok((added, quests));
     }
     // Named for the mod so two mods can each ship one, and so the file cannot
     // collide with the translation's own copy.
@@ -656,6 +669,13 @@ fn copy_system_layer(src: &Path, merged: &Path, mod_name: &str) -> Result<Vec<St
             };
             copy_file(&from, &merged.join(&dst_name))?;
             added.push(dst_name);
+        } else if from.is_file() && is_quest_table(&name) {
+            let dst_name = match quests.len() {
+                0 => format!("OngoingQuestInfoList-{safe}.lub"),
+                n => format!("OngoingQuestInfoList-{safe}.{}.lub", n + 1),
+            };
+            copy_file(&from, &merged.join(&dst_name))?;
+            quests.push(dst_name);
         } else if from.is_dir() {
             for nested in item_tables_under(&from, &format!("System/{name}")) {
                 eprintln!(
@@ -670,7 +690,14 @@ fn copy_system_layer(src: &Path, merged: &Path, mod_name: &str) -> Result<Vec<St
             copy_file(&from, &to)?;
         }
     }
-    Ok(added)
+    Ok((added, quests))
+}
+
+/// `OngoingQuestInfoList.lub`, `OngoingQuestInfoList_True.lub` -- the quest
+/// table under any name the client's own goes by.
+fn is_quest_table(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    lower.starts_with("ongoingquestinfolist") && (lower.ends_with(".lua") || lower.ends_with(".lub"))
 }
 
 /// `itemInfo.lua`, `itemInfo_C.lua`, `iteminfo.lub` -- any name the client's
@@ -794,6 +821,7 @@ fn write_client_config(
     web: &Path,
     plugins: &[(String, String)],
     item_tables: &[String],
+    quest_tables: &[String],
     text: GameText,
     packetver: &str,
 ) -> Result<(), String> {
@@ -841,6 +869,18 @@ fn write_client_config(
             .collect::<Vec<_>>()
             .join(", ");
         insert_before_close(body, &format!("\tcustomItemInfo: [{list}],\n"))
+    };
+    // Quest tables load *after* the base and each other, and the last to
+    // define a quest wins -- so, unlike items, in mod order.
+    let body = if quest_tables.is_empty() {
+        body
+    } else {
+        let list = quest_tables
+            .iter()
+            .map(|n| format!("'System/{n}'"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        insert_before_close(body, &format!("\tcustomQuestInfo: [{list}],\n"))
     };
     let out = if plugins.is_empty() {
         body
@@ -1323,7 +1363,7 @@ mod tests {
         write(&src.join("itemInfo.lua"), "MOD ADDITIONS");
         write(&src.join("OngoingQuests.lub"), "other table");
 
-        let added = copy_system_layer(&src, &merged, "my-mod").unwrap();
+        let (added, _) = copy_system_layer(&src, &merged, "my-mod").unwrap();
 
         assert_eq!(added, vec!["itemInfo-my-mod.lua".to_string()]);
         // The base is untouched...
@@ -1344,6 +1384,29 @@ mod tests {
         let _ = fs::remove_dir_all(&tmp);
     }
 
+    /// A mod's quest table sits beside the base instead of replacing it, so
+    /// adding one quest keeps every other quest's title (#163).
+    #[test]
+    fn a_quest_table_is_kept_aside_rather_than_replacing_the_base() {
+        let tmp = std::env::temp_dir().join(format!("ro-sysq-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&tmp);
+        let (src, merged) = (tmp.join("mod/System"), tmp.join("merged"));
+        fs::create_dir_all(&merged).unwrap();
+        write(&merged.join("OngoingQuestInfoList.lub"), "BASE");
+        write(&src.join("OngoingQuestInfoList.lub"), "MOD QUESTS");
+        write(&src.join("OngoingQuestInfoList_True.lub"), "MORE QUESTS");
+        let (items, quests) = copy_system_layer(&src, &merged, "story").unwrap();
+        assert!(items.is_empty());
+        assert_eq!(
+            quests,
+            vec!["OngoingQuestInfoList-story.lub".to_string(), "OngoingQuestInfoList-story.2.lub".to_string()]
+        );
+        assert_eq!(fs::read_to_string(merged.join("OngoingQuestInfoList.lub")).unwrap(), "BASE");
+        assert_eq!(fs::read_to_string(merged.join("OngoingQuestInfoList-story.lub")).unwrap(), "MOD QUESTS");
+        assert_eq!(fs::read_to_string(merged.join("OngoingQuestInfoList-story.2.lub")).unwrap(), "MORE QUESTS");
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
     /// A mod name that is not a safe filename must not become one.
     #[test]
     fn the_item_table_filename_is_sanitised() {
@@ -1353,7 +1416,7 @@ mod tests {
         fs::create_dir_all(&merged).unwrap();
         write(&src.join("itemInfo.lub"), "x");
         assert_eq!(
-            copy_system_layer(&src, &merged, "../evil name").unwrap(),
+            copy_system_layer(&src, &merged, "../evil name").unwrap().0,
             vec!["itemInfo----evil-name.lua".to_string()]
         );
         let _ = fs::remove_dir_all(&tmp);
@@ -1370,7 +1433,7 @@ mod tests {
         write(&src.join("itemInfo.lua"), "FIRST");
         write(&src.join("itemInfo_C.lua"), "SECOND");
         write(&src.join("LuaFiles514/itemInfo.lua"), "NESTED");
-        let added = copy_system_layer(&src, &merged, "m").unwrap();
+        let (added, _) = copy_system_layer(&src, &merged, "m").unwrap();
         assert_eq!(added, vec!["itemInfo-m.lua".to_string(), "itemInfo-m.2.lua".to_string()]);
         assert_eq!(fs::read_to_string(merged.join("itemInfo-m.lua")).unwrap(), "FIRST");
         assert_eq!(fs::read_to_string(merged.join("itemInfo-m.2.lua")).unwrap(), "SECOND");
@@ -1397,10 +1460,16 @@ mod tests {
         write(&web.join("System/itemInfo.lua"), "base");
         fs::write(cfg.root.join("config/Config.local.js"), "window.ROConfigLocal = {\n\tskipIntro: true\n};\n").unwrap();
         let tables = vec!["itemInfo-a.lua".to_string(), "itemInfo-b.lua".to_string()];
-        write_client_config(&cfg, &web, &[], &tables, GameText::English, crate::packetver::default()).unwrap();
+        let quests = vec!["OngoingQuestInfoList-a.lub".to_string(), "OngoingQuestInfoList-b.lub".to_string()];
+        write_client_config(&cfg, &web, &[], &tables, &quests, GameText::English, crate::packetver::default()).unwrap();
         let body = fs::read_to_string(web.join("Config.local.js")).unwrap();
         assert!(
             body.contains("customItemInfo: ['System/itemInfo-b.lua', 'System/itemInfo-a.lua', 'System/itemInfo.lua', 'System/itemInfo_true.lub'],"),
+            "{body}"
+        );
+        // Quests load after the base and the last definition wins: mod order.
+        assert!(
+            body.contains("customQuestInfo: ['System/OngoingQuestInfoList-a.lub', 'System/OngoingQuestInfoList-b.lub'],"),
             "{body}"
         );
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
@@ -1446,7 +1515,7 @@ mod tests {
             // shape the loader sees never depends on whether options exist.
             ("plain".to_string(), String::new()),
         ];
-        write_client_config(&cfg, &web, &plugins, &[], GameText::English, crate::packetver::default()).unwrap();
+        write_client_config(&cfg, &web, &plugins, &[], &[], GameText::English, crate::packetver::default()).unwrap();
         let body = fs::read_to_string(web.join("Config.local.js")).unwrap();
         assert!(
             body.contains("'wasd-movement': { path: 'plugins/wasd-movement/index', pars: { \"show_controls_button\": false } }"),
