@@ -15,6 +15,8 @@
 //   ro-tool://mob-browser/monster-sprites.json  monster id -> sprite name
 //   ro-tool://mob-browser/sprite/<name>.spr|act the monster's sprite, from the
 //                                            asset server (so it is same-origin)
+//   ro-tool://db-browser/api/<call>          the database browser's bridge,
+//                                            see db-bridge.js
 //
 // The tables come with the mods' db/import laid over them, so a mod's
 // monsters and items show up too. Each window has its own session and no
@@ -44,6 +46,13 @@ const TOOLS = [
 		author: 'BlaXun',
 		needsServer: true,
 	},
+	{
+		id: 'db-browser',
+		name: 'Database',
+		description: 'Browse the server\'s database table by table, and edit rows: characters, inventories, accounts. Saving stops the game for a few seconds and takes a backup first.',
+		page: 'db-browser.html',
+		needsServer: true,
+	},
 ];
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.yml': 'text/yaml; charset=utf-8', '.lua': 'application/octet-stream', '.png': 'image/png', '.json': 'application/json' };
@@ -61,6 +70,7 @@ function createTools(deps) {
 	// Converted icons, by path: the item list asks for hundreds at a time.
 	const pngCache = new Map();
 	let handlersReady = false;
+	const dbBridge = require('./db-bridge').createDbBridge(deps);
 
 	function exportTable(name) {
 		const { cwd, env } = deps.stackEnv();
@@ -137,6 +147,7 @@ function createTools(deps) {
 			if (!tool) return respond('no such tool', 'text/plain', 404);
 			const name = decodeURIComponent(url.pathname.replace(/^\/+/, ''));
 			try {
+				if (tool.id === 'db-browser' && name.startsWith('api/')) return await dbBridge(request, name.slice(4));
 				if (name === 'mob_db.yml' || /^item_db_(equip|etc|usable)\.yml$/.test(name)) {
 					return respond(await exportTable(name.replace(/\.yml$/, '')), TYPES['.yml']);
 				}
