@@ -88,7 +88,8 @@ fn post(port: u16, token: &str, body: &str) -> Result<(u16, String), String> {
     let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(3))
         .map_err(|_| "the app is not listening. Is Ragnarok Offline open, with the AI agent turned on?".to_string())?;
     // Some commands wait on the game (a walk, a warp): allow for them.
-    let _ = stream.set_read_timeout(Some(Duration::from_secs(120)));
+    // Logging in again after a server restart can take a couple of minutes.
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(300)));
     let request = format!(
         "POST /v1/command HTTP/1.0\r\nHost: 127.0.0.1:{port}\r\nAuthorization: Bearer {token}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
         body.len()

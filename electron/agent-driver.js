@@ -149,11 +149,34 @@ class AgentDriver {
 		if (lines.length) this.chatSeen = lines[lines.length - 1].at;
 		return all ? lines.slice(-50) : lines;
 	}
-	// A yes/no box the game is waiting on (a party invitation, a confirmation).
+	// A box the game is waiting on: a yes/no question (WinPrompt: a party
+	// invitation, a confirmation) or a message with one button (WinMSG:
+	// "Disconnected from Server.").
 	prompt() {
 		return this.eval(`
-			const box = __deep('.text').find(e => __visible(e) && e.getRootNode()?.host?.id === 'WinPrompt');
-			return box ? { text: box.innerText } : null;`).catch(() => null);
+			for (const id of ['WinPrompt', 'WinMSG']) {
+				const host = __deep('#' + id).find(__visible);
+				if (!host) continue;
+				const buttons = [...host.shadowRoot.querySelectorAll('.btns > *')].filter(__visible);
+				return { kind: buttons.length > 1 ? 'yes/no' : 'message', text: host.shadowRoot.querySelector('.text')?.innerText || '' };
+			}
+			return null;`).catch(() => null);
+	}
+	// Press a button on that box: the first (yes, ok) or the second (no).
+	async pressPrompt(yes) {
+		const at = await this.eval(`
+			for (const id of ['WinPrompt', 'WinMSG']) {
+				const host = __deep('#' + id).find(__visible);
+				if (!host) continue;
+				const buttons = [...host.shadowRoot.querySelectorAll('.btns > *')].filter(__visible);
+				const b = buttons.length > 1 ? buttons[arg ? 0 : 1] : buttons[0];
+				return b ? __rect(b) : null;
+			}
+			return null;`, yes);
+		if (!at) return false;
+		await this.click(at.x, at.y);
+		await sleep(800);
+		return true;
 	}
 	newErrors() { const e = this.errors.slice(this.errorsSeen); this.errorsSeen = this.errors.length; return e; }
 	async until(test, ms = 15000, step = 200) {
@@ -325,9 +348,17 @@ class AgentDriver {
 				// the app restarted while in game -- is kicked by the first
 				// attempt, which then lands back on the login box; the next one
 				// gets through. So try a few times before giving up.
+				// Already there and still connected: nothing to do.
+				const onSelect = () => this.eval(`return Boolean(__deep('#slot0').find(__visible));`);
+				if (await onSelect() && !(await this.prompt())) {
+					return { ok: true, screen: 'character select', account: user, already: true, errors: this.newErrors() };
+				}
 				let ok = false;
 				for (let attempt = 0; attempt < 4 && !ok; attempt++) {
 					if (attempt) await sleep(5000);
+					// "Disconnected from Server." after a server restart sits in
+					// front of everything until someone presses OK.
+					if (await this.prompt()) { await this.pressPrompt(true); await sleep(1500); }
 					if (!(await this.until(() => this.eval(`return Boolean(__deep('#user').find(__visible));`), attempt ? 20000 : 60000))) break;
 					await this.fill('#user', user);
 					await this.fill('#pass', pass);
@@ -384,18 +415,12 @@ class AgentDriver {
 			},
 			party: async args => ({ chat: await this.chatSend('%' + args.join(' ')), errors: this.newErrors() }),
 			guild: async args => ({ chat: await this.chatSend('$' + args.join(' ')), errors: this.newErrors() }),
-			answer: async ([choice]) => {
+			answer: async ([choice = 'ok']) => {
 				const yes = /^(y|yes|ok|accept|1|true)$/i.test(String(choice));
-				const at = await this.eval(`
-					const host = __deep('#WinPrompt').find(__visible);
-					if (!host) return null;
-					const buttons = [...host.shadowRoot.querySelectorAll('.btns > *')].filter(__visible);
-					const b = buttons[arg ? 0 : 1];
-					return b ? __rect(b) : null;`, yes);
-				if (!at) return { ok: false, reason: 'nothing is asking a yes/no question' };
-				await this.click(at.x, at.y);
-				await sleep(800);
-				return { ok: true, answered: yes ? 'yes' : 'no', chat: await this.newChat(), errors: this.newErrors() };
+				const box = await this.prompt();
+				if (!box) return { ok: false, reason: 'the game is not asking anything' };
+				await this.pressPrompt(yes);
+				return { ok: true, box, answered: box.kind === 'message' ? 'ok' : yes ? 'yes' : 'no', chat: await this.newChat(), errors: this.newErrors() };
 			},
 			state: async ([radius = '15']) => ({
 				player: await this.player().catch(e => ({ error: e.message })),
@@ -549,7 +574,7 @@ const COMMANDS = {
 	whisper: { description: 'Send a private message to one character by name.', args: [['to', 'string', 'Character name'], ['text', 'string', 'What to say']] },
 	party: { description: 'Say something in party chat.', args: [['text', 'string', 'What to say']] },
 	guild: { description: 'Say something in guild chat.', args: [['text', 'string', 'What to say']] },
-	answer: { description: 'Answer a yes/no box the game is showing, such as a party invitation.', args: [['choice', 'string', 'yes or no']] },
+	answer: { description: 'Answer the box the game is showing: yes/no for a question such as a party invitation, or ok for a message. state shows it as prompt.', args: [['choice', 'string', 'yes, no or ok', true]] },
 	walk: { description: 'Walk to a map cell that is on screen.', args: [['x', 'number', 'Cell x'], ['y', 'number', 'Cell y']] },
 	attack: { description: 'Attack a monster by entity id, or the nearest one.', args: [['target', 'string', 'Entity gid, a name, or "nearest"', true]] },
 	interact: { description: 'Click an NPC, Kafra, item or warp by entity id or name. NPC dialog shows in the result.', args: [['target', 'string', 'Entity gid or name']] },
