@@ -1911,7 +1911,7 @@ fn read_only(script: &str) -> Result<(), String> {
 /// A statement that starts with anything but a bare word yields an empty
 /// string, which no keyword matches, so the guard refuses it rather than
 /// guessing.
-fn leading_words(script: &str) -> Vec<String> {
+pub(crate) fn leading_words(script: &str) -> Vec<String> {
     let chars: Vec<char> = script.chars().collect();
     let mut out = Vec::new();
     let mut word = String::new();
@@ -1997,7 +1997,7 @@ pub fn backup(cfg: &Config, dk: &Docker, dest: &str) -> Result<(), String> {
 
 /// `announce` is off for the safety copies taken on someone else's behalf, so
 /// their line cannot land in the middle of output a caller is parsing.
-fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: bool) -> Result<(), String> {
+pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: bool) -> Result<(), String> {
     let backups = cfg.state.join("backups");
     fs::create_dir_all(&backups).map_err(|e| e.to_string())?;
     let tmp = format!("ragnarokmac-{}-{}.sql", std::process::id(), crate::private_fs::random_hex(12)?);
@@ -2045,6 +2045,24 @@ pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
     crate::private_fs::directory(&backups)?;
     let safety = backups.join(format!("before-restore-{}-{}.sql", crate::service_credentials::era(cfg), crate::private_fs::random_hex(8)?));
     backup_snapshot(cfg, dk, &safety.to_string_lossy(), true)?;
+    load_dump(cfg, dk, Path::new(src))
+        .map_err(|_| "Restore failed and may have partially changed the database. Keep game services stopped and restore a verified backup.".to_string())?;
+    if let Some(credentials) = crate::service_credentials::load(&cfg.state, crate::service_credentials::era(cfg))? {
+        // An older dump may carry the old interserver login. Restore the
+        // managed service row before any subsequent player reconnect.
+        migrate_service_credentials(dk, &credentials)?;
+    }
+    println!("restored from {src}; game services are stopped. Restart the server to reconnect. A pre-restore backup was preserved.");
+    Ok(())
+}
+
+/// Feed a dump to the running database. Game services must be stopped.
+///
+/// The dump carries CREATE DATABASE + USE, so this replaces the schema
+/// wholesale rather than merging into whatever is there now.
+pub(crate) fn load_dump(cfg: &Config, dk: &Docker, src: &Path) -> Result<(), String> {
+    let backups = cfg.state.join("backups");
+    crate::private_fs::directory(&backups)?;
     let tmp = format!("restore-{}-{}.sql", std::process::id(), crate::private_fs::random_hex(12)?);
     let staged = backups.join(&tmp);
     if staged.exists() { crate::private_fs::protect(&staged, false)?; }
@@ -2053,22 +2071,13 @@ pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
     if cfg!(windows) {
         dk.copy_into(DB_CONTAINER, &backups, "/backups")?;
     }
-    // The dump carries CREATE DATABASE + USE, so this replaces the schema
-    // wholesale rather than merging into whatever is there now.
     let r = dk.output([
         "exec", DB_CONTAINER, "sh", "-c",
         &format!("{} < /backups/{tmp}", dk.database_client("mariadb")?),
     ]);
     let _ = fs::remove_file(&staged);
     dk.quiet(["exec", DB_CONTAINER, "rm", "-f", &format!("/backups/{tmp}")]);
-    r.map_err(|_| "Restore failed and may have partially changed the database. Keep game services stopped and restore a verified backup.".to_string())?;
-    if let Some(credentials) = crate::service_credentials::load(&cfg.state, crate::service_credentials::era(cfg))? {
-        // An older dump may carry the old interserver login. Restore the
-        // managed service row before any subsequent player reconnect.
-        migrate_service_credentials(dk, &credentials)?;
-    }
-    println!("restored from {src}; game services are stopped. Restart the server to reconnect. A pre-restore backup was preserved.");
-    Ok(())
+    r.map(|_| ())
 }
 
 /// The escape hatch for a shipped user with no terminal and no docker CLI.

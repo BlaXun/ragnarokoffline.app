@@ -16,6 +16,7 @@ mod tools;
 mod asset_transaction;
 mod cmds;
 mod crashes;
+mod database;
 mod host;
 mod config;
 mod cp949;
@@ -39,6 +40,7 @@ use std::path::PathBuf;
 use std::process::exit;
 
 const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|agent <command> [args]|export-table <name>\n\
+                     \x20      db tables|describe <table>|rows|apply (JSON on stdin for rows and apply)\n\
                      \x20      backup <file>|restore <file>\n\
                      \x20      sql [--write] [--file <path>] [<statement>]\n\
                      \x20      accounts (private JSON request on stdin)\n\
@@ -105,7 +107,8 @@ fn main() {
     // A read is just a query and can run beside anything. `sql --write` stops
     // and starts game services, which is a lifecycle operation and has to
     // queue behind the others.
-    let writes_sql = verb == "sql" && args.iter().any(|a| a == "--write");
+    let writes_sql = (verb == "sql" && args.iter().any(|a| a == "--write"))
+        || (verb == "db" && args.get(1).map(String::as_str) == Some("apply"));
     let _operation = if writes_sql || matches!(verb, "up" | "down" | "repair" | "backup" | "restore" | "accounts" | "secure-services" | "hosting-check" | "sharing-check" | "capture-crashes") {
         match operation_lock::acquire(&cfg.state) {
             Ok(lock) => Some(lock),
@@ -163,6 +166,9 @@ fn main() {
             Ok(())
         }
         "sql" => cmds::sql(&cfg, &dk, &args[1..]),
+        // Settings -> Tools -> Database (#200). Reads need no lock; `apply`
+        // stops the game like `sql --write` and holds it (above).
+        "db" => database::run(&cfg, &dk, &args[1..]),
         "backup" => match args.get(1) {
             Some(p) => cmds::backup(&cfg, &dk, p),
             None => Err("destination file required".into()),

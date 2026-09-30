@@ -29,6 +29,7 @@
       "electron/**/*",
       "src/**/*",
       "tools/**/*.html",
+      "tools/**/*.js",
       "!**/node_modules/**",
       "!electron/vc_redist.x64.exe",
       "!electron/installer.nsh",
