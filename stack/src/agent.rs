@@ -13,10 +13,11 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::Path;
 use std::time::Duration;
 
-const USAGE: &str = "usage: ragnarok-stack agent <command> [args...]
+const USAGE: &str = "usage: ragnarok-stack agent [--agent N] <command> [args...]
 
   login | characters | char <slot> | create <slot> <name>
-  state [radius] | shot [name] | say <text> | walk <x> <y>
+  state [radius] | chat [all] | shot [name] | say <text> | walk <x> <y>
+  whisper <name> <text> | party <text> | guild <text> | answer yes|no
   attack [gid|nearest] | interact <gid|name> | dialog | next | close | choose <n>
   skills [filter] | skill <id> [level] [--target <gid|nearest|self>] [--cell <x> <y>]
   equip <itemId> | hover <x> <y> [--px] | click <x> <y> [right] | key <key>
@@ -26,6 +27,22 @@ Turn on Settings -> Population -> \"Let an AI agent play with me\" first.
 The guide is AGENT.md, beside the connection file.";
 
 pub fn run(state: &Path, args: &[String]) -> Result<(), String> {
+    // `--agent N` picks which agent, when the player allows several.
+    let mut agent: u32 = 1;
+    let mut rest = Vec::new();
+    let mut it = args.iter();
+    while let Some(a) = it.next() {
+        if a == "--agent" {
+            agent = it
+                .next()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|n| *n >= 1)
+                .ok_or("--agent takes a number, 1 for the first agent")?;
+        } else {
+            rest.push(a.clone());
+        }
+    }
+    let args = &rest[..];
     let Some(cmd) = args.first() else {
         println!("{USAGE}");
         return Ok(());
@@ -49,7 +66,7 @@ pub fn run(state: &Path, args: &[String]) -> Result<(), String> {
     let token = conn.str("token").ok_or_else(|| format!("{}: no token", file.display()))?;
 
     let body = format!(
-        "{{\"cmd\":{},\"args\":[{}]}}",
+        "{{\"cmd\":{},\"agent\":{agent},\"args\":[{}]}}",
         json::quote(cmd),
         args[1..].iter().map(|a| json::quote(a)).collect::<Vec<_>>().join(",")
     );

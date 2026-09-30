@@ -106,3 +106,32 @@ test('say and create keep their text; required arguments are marked', () => {
 	const state = toolList().find(t => t.name === 'state');
 	assert.deepStrictEqual(state.inputSchema.required, []);
 });
+
+test('several agents: each has its own MCP route and queue, and none beyond the allowed number', async () => {
+	const calls = [];
+	const api = createAgentApi({ token: TOKEN, agents: () => 2, run: async (cmd, args, n) => {
+		calls.push(`start ${n} ${cmd}`);
+		await new Promise(r => setTimeout(r, cmd === 'walk' ? 80 : 5));
+		calls.push(`end ${n} ${cmd}`);
+		return { ok: true, agent: n };
+	} });
+	const port = await api.listen(0);
+	try {
+		const call = (path, name) => request(port, { path, body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: {} } } });
+		const two = await call('/mcp/2', 'state');
+		assert.strictEqual(JSON.parse(two.body.result.content[0].text).agent, 2);
+		assert.strictEqual((await call('/mcp/3', 'state')).status, 404);
+		const init = await request(port, { path: '/mcp/2', body: { jsonrpc: '2.0', id: 1, method: 'initialize', params: {} } });
+		assert.match(init.body.result.instructions, /"aiagent2"/);
+		const cli = await request(port, { body: { cmd: 'state', agent: 2 } });
+		assert.strictEqual(cli.body.agent, 2);
+		assert.strictEqual((await request(port, { body: { cmd: 'state', agent: 3 } })).status, 400);
+		// Agent 1's long walk does not hold agent 2's state.
+		calls.length = 0;
+		await Promise.all([
+			request(port, { body: { cmd: 'walk', args: ['1', '2'], agent: 1 } }),
+			request(port, { body: { cmd: 'state', agent: 2 } }),
+		]);
+		assert.ok(calls.indexOf('end 2 state') < calls.indexOf('end 1 walk'), calls.join(', '));
+	} finally { await api.close(); }
+});

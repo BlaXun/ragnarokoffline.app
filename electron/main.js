@@ -877,6 +877,8 @@ const SETTINGS_DEFAULTS = {
 	// nothing.
 	agent_play: false,
 	agent_window: true,
+	// How many agents may play at once, each its own account and window.
+	agent_count: 1,
 	// How long a friends invitation stays valid, in days. Nothing to do with
 	// Cloudflare -- the tunnel runs as long as the app shares; this is only how
 	// long the invite token is accepted. A link posted in Discord should still
@@ -2447,13 +2449,13 @@ const handlers = {
 
 	// Let an AI agent play (#187). Saved and applied at once, like the app
 	// preferences above: nothing about the server changes.
-	agent_status: () => ({ ...agentPlay().info(), enabled: !!getSettings().agent_play, show: getSettings().agent_window !== false }),
-	agent_set: async ({ enabled, show }) => {
+	agent_status: () => { const s = getSettings(); return { ...agentPlay().info(), enabled: !!s.agent_play, show: s.agent_window !== false, count: s.agent_count || 1 }; },
+	agent_set: async ({ enabled, show, count }) => {
 		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
-			{ agent_play: !!enabled, agent_window: show !== false }, SETTINGS_DEFAULTS);
-		if (settings.agent_play) await agentPlay().start({ show: settings.agent_window });
+			{ agent_play: !!enabled, agent_window: show !== false, agent_count: Math.max(1, Math.min(4, Number(count) || 1)) }, SETTINGS_DEFAULTS);
+		if (settings.agent_play) await agentPlay().start({ show: settings.agent_window, agents: settings.agent_count });
 		else if (agentPlay().running()) await agentPlay().stop();
-		return { ...agentPlay().info(), enabled: settings.agent_play, show: settings.agent_window };
+		return { ...agentPlay().info(), enabled: settings.agent_play, show: settings.agent_window, count: settings.agent_count };
 	},
 	agent_open_guide: async () => {
 		const guide = agentPlay().info().guide;
@@ -2464,7 +2466,7 @@ const handlers = {
 	agent_replace_token: async () => {
 		if (!getSettings().agent_play) throw new Error('Turn the AI agent on first.');
 		await agentPlay().replaceToken();
-		return { ...agentPlay().info(), enabled: true, show: getSettings().agent_window !== false };
+		return { ...agentPlay().info(), enabled: true, show: getSettings().agent_window !== false, count: getSettings().agent_count || 1 };
 	},
 
 	// Windows
@@ -2890,7 +2892,7 @@ app.whenReady().then(() => {
 	// Only the listener and its files: the agent's window waits for an agent.
 	try {
 		const s = getSettings();
-		if (s.agent_play) agentPlay().start({ show: s.agent_window !== false }).catch(e => appLog(`agent play: ${e.message}`));
+		if (s.agent_play) agentPlay().start({ show: s.agent_window !== false, agents: s.agent_count || 1 }).catch(e => appLog(`agent play: ${e.message}`));
 	} catch (e) { appLog(`agent play: ${e.message}`); }
 
 	// Joining loads the host's page directly, so nothing on the way there

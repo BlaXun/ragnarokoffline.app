@@ -101,6 +101,60 @@ class AgentDriver {
 			if (!window.roAgent) throw new Error('the game has not started yet (window.roAgent is missing)');
 			return JSON.parse(JSON.stringify(window.roAgent[arg.fn](...arg.args) ?? null));`, { fn, args });
 	}
+	// What the client receives that the page does not keep in a readable
+	// form: the character list (character select draws it on canvases) and
+	// chat with who said it and on which channel. Both are taken from the
+	// packets as the client logs them, and kept on the page. Idempotent; a
+	// reloaded page needs it again.
+	installHooks() {
+		return this.eval(`
+			if (window.__agentHooked) return;
+			window.__agentHooked = true;
+			window.__agentChars = {};
+			window.__agentChat = [];
+			const keep = c => { if (c && c.name !== undefined) window.__agentChars[c.CharNum ?? Object.keys(window.__agentChars).length] = { slot: c.CharNum ?? null, name: c.name, job: c.job, level: c.level ?? c.BaseLevel ?? null }; };
+			const say = (channel, from, text) => {
+				window.__agentChat.push({ at: Date.now(), channel, from, text });
+				if (window.__agentChat.length > 500) window.__agentChat.splice(0, 100);
+			};
+			const split = msg => { const i = String(msg).indexOf(' : '); return i > 0 ? [msg.slice(0, i), msg.slice(i + 3)] : [null, String(msg)]; };
+			const CHANNELS = [
+				[/ZC_NOTIFY_PLAYERCHAT$/, 'local', true], [/ZC_NOTIFY_CHAT$/, 'local'], [/ZC_NOTIFY_CHAT_PARTY$/, 'party'],
+				[/ZC_GUILD_CHAT$/, 'guild'], [/ZC_WHISPER\d*$/, 'whisper'], [/ZC_BROADCAST\d*$/, 'broadcast'], [/ZC_NPC_CHAT$/, 'npc'],
+			];
+			const log = console.log;
+			console.log = function (...args) {
+				const p = args[2];
+				if (typeof args[0] === 'string' && args[0].includes('Recv') && p) {
+					try {
+						if (Array.isArray(p.charInfo)) p.charInfo.forEach(keep);
+						if (p.charinfo) keep(p.charinfo);
+						const name = p.constructor?.name || '';
+						const hit = CHANNELS.find(([re]) => re.test(name));
+						if (hit && typeof p.msg === 'string') {
+							if (hit[1] === 'whisper') say('whisper', p.sender || null, p.msg);
+							else if (hit[1] === 'broadcast' || hit[1] === 'npc') say(hit[1], null, p.msg);
+							else { const [from, text] = split(p.msg); say(hit[1], from, text); }
+							if (hit[2]) window.__agentChat[window.__agentChat.length - 1].self = true;
+						}
+					} catch { /* never break the client's own logging */ }
+				}
+				return log.apply(this, args);
+			};`).catch(() => {});
+	}
+	// Chat since the agent last asked, oldest first.
+	async newChat(all = false) {
+		const since = all ? 0 : this.chatSeen || 0;
+		const lines = await this.eval(`return (window.__agentChat || []).filter(m => m.at > arg);`, since).catch(() => []);
+		if (lines.length) this.chatSeen = lines[lines.length - 1].at;
+		return all ? lines.slice(-50) : lines;
+	}
+	// A yes/no box the game is waiting on (a party invitation, a confirmation).
+	prompt() {
+		return this.eval(`
+			const box = __deep('.text').find(e => __visible(e) && e.getRootNode()?.host?.id === 'WinPrompt');
+			return box ? { text: box.innerText } : null;`).catch(() => null);
+	}
 	newErrors() { const e = this.errors.slice(this.errorsSeen); this.errorsSeen = this.errors.length; return e; }
 	async until(test, ms = 15000, step = 200) {
 		const end = Date.now() + ms;
@@ -235,7 +289,7 @@ class AgentDriver {
 		await this.fill('.input-chatbox', text);
 		await this.press('Enter');
 		await sleep(700);
-		return this.agent('chat', [8]).catch(() => []);
+		return this.newChat();
 	}
 	dialog() {
 		return this.eval(`
@@ -266,24 +320,7 @@ class AgentDriver {
 			login: async () => {
 				const { user, pass } = await this.credentials();
 				await this.until(() => this.eval(`return Boolean(__deep('#user').find(__visible));`), 60000);
-				// Character select draws its slots on canvases, so the list is
-				// taken from the packets that carry it -- the client logs each
-				// one it receives -- and kept for `characters`.
-				await this.eval(`
-					if (!window.__agentCharsHooked) {
-						window.__agentCharsHooked = true;
-						window.__agentChars = {};
-						const keep = c => { if (c && c.name !== undefined) window.__agentChars[c.CharNum ?? Object.keys(window.__agentChars).length] = { slot: c.CharNum ?? null, name: c.name, job: c.job, level: c.level ?? c.BaseLevel ?? null }; };
-						const log = console.log;
-						console.log = function (...args) {
-							const p = args[2];
-							if (typeof args[0] === 'string' && args[0].includes('Recv') && p) {
-								if (Array.isArray(p.charInfo)) p.charInfo.forEach(keep);
-								if (p.charinfo) keep(p.charinfo);
-							}
-							return log.apply(this, args);
-						};
-					}`).catch(() => {});
+				await this.installHooks();
 				// A session the server still holds -- the agent's window closed or
 				// the app restarted while in game -- is kicked by the first
 				// attempt, which then lands back on the login box; the next one
@@ -331,10 +368,40 @@ class AgentDriver {
 				if (/^[@#](warp|go|load)\b/i.test(text)) { await sleep(800); await this.settled(); }
 				return { chat, player: await this.player().catch(() => null), errors: this.newErrors() };
 			},
+			chat: async ([which]) => ({ chat: await this.newChat(which === 'all'), prompt: await this.prompt() }),
+			whisper: async ([to, ...words]) => {
+				if (!to || !words.length) throw new Error('whisper <name> <text>');
+				// The chat box's name field is who a line goes to; empty again after.
+				const set = name => this.eval(`
+					const el = __deep('.input .username, input.username').find(e => e.getRootNode()?.host?.id === 'ChatBox');
+					if (!el) return false;
+					el.value = arg; el.dispatchEvent(new Event('input', { bubbles: true })); return true;`, name);
+				let has = await this.eval(`return Boolean(__deep('.input-chatbox').find(__visible));`);
+				if (!has) { await this.press('Enter'); await sleep(200); }
+				if (!(await set(to))) throw new Error('the chat box has no name field showing');
+				try { return { chat: await this.chatSend(words.join(' ')), errors: this.newErrors() }; }
+				finally { await set(''); }
+			},
+			party: async args => ({ chat: await this.chatSend('%' + args.join(' ')), errors: this.newErrors() }),
+			guild: async args => ({ chat: await this.chatSend('$' + args.join(' ')), errors: this.newErrors() }),
+			answer: async ([choice]) => {
+				const yes = /^(y|yes|ok|accept|1|true)$/i.test(String(choice));
+				const at = await this.eval(`
+					const host = __deep('#WinPrompt').find(__visible);
+					if (!host) return null;
+					const buttons = [...host.shadowRoot.querySelectorAll('.btns > *')].filter(__visible);
+					const b = buttons[arg ? 0 : 1];
+					return b ? __rect(b) : null;`, yes);
+				if (!at) return { ok: false, reason: 'nothing is asking a yes/no question' };
+				await this.click(at.x, at.y);
+				await sleep(800);
+				return { ok: true, answered: yes ? 'yes' : 'no', chat: await this.newChat(), errors: this.newErrors() };
+			},
 			state: async ([radius = '15']) => ({
 				player: await this.player().catch(e => ({ error: e.message })),
 				entities: await this.agent('entities', [{ radius: Number(radius) }]).catch(e => ({ error: e.message })),
-				chat: await this.agent('chat', [10]).catch(() => []),
+				chat: await this.newChat(),
+				prompt: await this.prompt(),
 				dialog: await this.dialog().catch(() => null),
 				errors: this.newErrors(),
 			}),
@@ -477,7 +544,12 @@ const COMMANDS = {
 	create: { description: 'Make a character in an empty slot on character select.', args: [['slot', 'number', 'Slot number, from 0'], ['name', 'string', 'Character name']] },
 	char: { description: 'Enter the game with the character in a slot.', args: [['slot', 'number', 'Slot number, from 0']] },
 	state: { description: 'The player, what is nearby, recent chat, any NPC dialog, and new client errors.', args: [['radius', 'number', 'Cells around the player to list (default 15)', true]] },
-	say: { description: 'Type into the chat box and send it. Travel commands (@warp, @go, @load) also go here; use them only when you need to.', args: [['text', 'string', 'What to say']] },
+	say: { description: 'Say something in local chat. Slash commands go here too (/organize <party name>, /invite <name>, /leave), and the travel commands (@warp, @go, @load), which you should use only when you need to.', args: [['text', 'string', 'What to say']] },
+	chat: { description: 'Chat you have not seen yet: channel (local, party, guild, whisper, broadcast, npc), who said it, and the text. "all" for the last 50.', args: [['which', 'string', '"all" for recent history instead of only new lines', true]] },
+	whisper: { description: 'Send a private message to one character by name.', args: [['to', 'string', 'Character name'], ['text', 'string', 'What to say']] },
+	party: { description: 'Say something in party chat.', args: [['text', 'string', 'What to say']] },
+	guild: { description: 'Say something in guild chat.', args: [['text', 'string', 'What to say']] },
+	answer: { description: 'Answer a yes/no box the game is showing, such as a party invitation.', args: [['choice', 'string', 'yes or no']] },
 	walk: { description: 'Walk to a map cell that is on screen.', args: [['x', 'number', 'Cell x'], ['y', 'number', 'Cell y']] },
 	attack: { description: 'Attack a monster by entity id, or the nearest one.', args: [['target', 'string', 'Entity gid, a name, or "nearest"', true]] },
 	interact: { description: 'Click an NPC, Kafra, item or warp by entity id or name. NPC dialog shows in the result.', args: [['target', 'string', 'Entity gid or name']] },

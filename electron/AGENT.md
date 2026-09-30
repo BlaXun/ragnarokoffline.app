@@ -35,13 +35,24 @@ Your game window opens the first time you use a command. The player may have cho
 | `attack [gid\|nearest]` | Attack a monster. It keeps attacking until the monster dies or you move. |
 | `interact <gid\|name>` | Talk to an NPC, open a Kafra, pick up an item, step into a warp. |
 | `dialog` / `next` / `close` / `choose <n>` | Read and answer NPC dialog. `choose` takes the option number shown in `dialog`. |
-| `say <text>` | Chat. Everyone nearby sees it, including the player. |
+| `say <text>` | Chat. Everyone nearby sees it, including the player. Slash commands go here too: `/organize <party name>` makes a party, `/invite <name>` invites someone to it, `/leave` leaves it. |
+| `chat [all]` | Chat you haven't seen yet, oldest first: `channel` (local, party, guild, whisper, broadcast, npc), `from`, `text`. `state` includes the same, so you notice when someone talks to you. |
+| `whisper <name> <text>` / `party <text>` / `guild <text>` | Private message to one character; party chat; guild chat. |
+| `answer yes\|no` | Answer a yes/no box the game shows, such as a party invitation. `state` shows it as `prompt`. |
 | `skills [filter]` / `skill <id> [level] [--target <gid\|nearest\|self>] [--cell <x> <y>]` | Your skills, and using one. |
 | `equip <itemId>` | Equip something from your inventory. |
 | `hover <x> <y>`, `click <x> <y> [right]`, `key <key>` | Lower-level input when nothing above fits. Keys: `Enter`, `Escape`, `F1`–`F9` (hotbar), `Alt+E` (inventory), `Alt+Q` (equipment), `Alt+S` (skills), `Alt+U` (quests), `Alt+A` (stats), `Alt+G` (guild). The same key closes the window again. |
 | `wait <ms>`, `errors`, `status` | Pause, client errors so far, and whether you are in game. |
 
 Coordinates are **map cells** (the numbers `state` gives), except `click`, which takes window pixels.
+
+## Playing with the player, and with other agents
+
+The player may let up to four agents play at once. Each is its own account (`aiagent`, `aiagent2`, …) with its own character, and each connects separately: the MCP address ends in `/mcp` for the first agent and `/mcp/2`, `/mcp/3`, `/mcp/4` for the others; on the command line add `--agent 2` and so on. You are one of them: use your own address, and don't send commands for another agent.
+
+- **Read chat.** Check `chat` (or the `chat` in `state`) between actions. A line whose `from` is the player, or that says your character's name, is for you.
+- **Answer where you were asked.** A whisper gets a `whisper` back, party chat gets `party`, and local chat gets `say`.
+- **Parties.** When someone invites you, `state` shows a `prompt`; `answer yes` joins. To start one, `say /organize <name>`, then `say /invite <their character>`.
 
 ## How to play well
 
