@@ -1,8 +1,9 @@
 //===== Ragnarok Offline mod: refine-matk ==========================
-//= Weapon refining grants MATK too. Both hands contribute for
-//= dual-wielders (Ninja, Kagerou/Oboro, Assassin Cross with two
-//= MATK daggers, etc.), and a two-handed weapon that occupies
-//= both slots is only counted once.
+//= Weapon refining grants MATK too, scaled per weapon tier.
+//= Each equipped weapon contributes independently, so dual-wielders
+//= (Ninja, Kagerou/Oboro, Assassin Cross with MATK daggers) get
+//= both hands. A two-handed weapon that occupies both slots is
+//= only counted once.
 //= The refresh loop keeps a short-lived bonus_script alive so
 //= the bonus tracks the currently equipped weapon(s).
 //==================================================================
@@ -18,7 +19,6 @@ OnPCLoginEvent:
 	end;
 
 OnRefresh:
-	.@per = callfunc("F_ModSetting", "refine-matk", "matk_per_refine", 2);
 	.@bonus = 0;
 
 	// --- Right hand ------------------------------------------------
@@ -32,8 +32,10 @@ OnRefresh:
 		// EQP_HAND_L=32); a two-hand weapon reports both bits set.
 		.@r_loc = getiteminfo(.@r_item, 5);
 	}
-	if (.@r_wlvl >= 1 && .@r_wlvl <= 4)
-		.@bonus += .@r_ref * .@per;
+	if (.@r_wlvl >= 1 && .@r_wlvl <= 4) {
+		.@per_r = callfunc("F_ModSetting", "refine-matk", "matk_lv" + .@r_wlvl, .@r_wlvl);
+		.@bonus += .@r_ref * .@per_r;
+	}
 
 	// --- Left hand -------------------------------------------------
 	// Skip when the right hand already holds a two-handed weapon,
@@ -46,9 +48,12 @@ OnRefresh:
 		if (.@l_item > 0)
 			.@l_wlvl = getiteminfo(.@l_item, ITEMINFO_WEAPONLEVEL);
 		// Shields have WeaponLevel 0, so this filter also excludes
-		// them without a separate item-type check.
-		if (.@l_wlvl >= 1 && .@l_wlvl <= 4)
-			.@bonus += .@l_ref * .@per;
+		// them without a separate item-type check. A dual-wielded
+		// off-hand weapon looks up its own tier's setting.
+		if (.@l_wlvl >= 1 && .@l_wlvl <= 4) {
+			.@per_l = callfunc("F_ModSetting", "refine-matk", "matk_lv" + .@l_wlvl, .@l_wlvl);
+			.@bonus += .@l_ref * .@per_l;
+		}
 	}
 
 	// Reapply only when the target value changed, so an identical
