@@ -1,0 +1,448 @@
+'use strict';
+// Plays the game in one window for an AI agent (#187).
+//
+// The commands are scripts/rotest's, moved from Playwright onto what Electron
+// already has: executeJavaScript for page.evaluate, sendInputEvent for the
+// mouse and keyboard (real input, so the client's own code paths run), and
+// capturePage for screenshots. docs/AGENT_TESTING.md describes the harness
+// these came from; resources/AGENT.md is what an agent reads.
+//
+// Deliberately missing next to rotest: `eval` and the GM helpers. The agent's
+// window has no preload, so nothing in it can reach the app, and the agent's
+// account is a player's; everything else it does, the server authorises.
+
+const fs = require('node:fs');
+const path = require('node:path');
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Shared page-side helpers, prepended to every script: a query that walks open
+// shadow roots (roBrowser's windows are custom elements with one), and what
+// counts as visible.
+const PAGE_HELPERS = `
+const __deep = (selector) => {
+	const out = [];
+	const walk = root => {
+		root.querySelectorAll(selector).forEach(e => out.push(e));
+		root.querySelectorAll('*').forEach(e => { if (e.shadowRoot) walk(e.shadowRoot); });
+	};
+	walk(document);
+	return out;
+};
+const __visible = e => {
+	if (!e || !e.isConnected) return false;
+	const r = e.getBoundingClientRect();
+	if (r.width <= 0 || r.height <= 0) return false;
+	for (let n = e; n; n = n.parentElement || (n.getRootNode && n.getRootNode().host)) {
+		const s = getComputedStyle(n);
+		if (s.display === 'none' || s.visibility === 'hidden') return false;
+	}
+	return true;
+};
+const __rect = e => { const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; };
+`;
+
+// Electron's sendInputEvent key codes are accelerator names. The agent writes
+// keys the way the harness did (Playwright's names: Enter, Escape, F1, Alt+E).
+const KEY_ALIASES = { Esc: 'Escape', Return: 'Enter', ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right', ' ': 'Space' };
+function parseKey(spec) {
+	const parts = String(spec).split('+');
+	const key = parts.pop();
+	const modifiers = parts.map(m => ({ Control: 'control', Ctrl: 'control', Alt: 'alt', Shift: 'shift', Meta: 'meta', Cmd: 'meta' }[m] || m.toLowerCase()));
+	return { keyCode: KEY_ALIASES[key] || (key.length === 1 ? key.toUpperCase() : key), char: key.length === 1 ? key : null, modifiers };
+}
+
+class AgentDriver {
+	/**
+	 * @param {Electron.WebContents} wc the agent's game page
+	 * @param {object} opts { shotsDir, credentials: () => Promise<{user, pass}> }
+	 */
+	constructor(wc, opts) {
+		this.wc = wc;
+		this.shotsDir = opts.shotsDir;
+		this.credentials = opts.credentials;
+		this.errors = [];
+		this.errorsSeen = 0;
+		wc.on('console-message', (...a) => {
+			// Electron has had two signatures for this event.
+			const d = a[1] && typeof a[1] === 'object' ? a[1] : { level: a[1], message: a[2] };
+			const level = typeof d.level === 'number' ? d.level : { warning: 2, error: 3 }[d.level] || 0;
+			// Warnings too: roBrowser reports an unhandled packet as a warning.
+			if (level >= 2) this.record(level === 3 ? 'console' : 'warning', String(d.message).slice(0, 2000));
+		});
+		wc.on('render-process-gone', (_e, d) => this.record('crash', d.reason));
+		wc.session.webRequest.onCompleted(details => {
+			if (details.statusCode >= 400 && details.webContentsId === wc.id) {
+				let p = details.url;
+				try { p = new URL(details.url).pathname; } catch { /* keep the URL */ }
+				this.record('http', `${details.statusCode} ${p}`);
+			}
+		});
+	}
+	record(kind, text) {
+		this.errors.push({ at: Date.now(), kind, text });
+		// A long session must not grow this without bound.
+		if (this.errors.length > 2000) {
+			this.errors.splice(0, 1000);
+			this.errorsSeen = Math.max(0, this.errorsSeen - 1000);
+		}
+	}
+
+	// ------------------------------------------------------------- the page
+
+	eval(body, arg) {
+		// `body` is one of ours, never the agent's: an async function body with
+		// the helpers above in scope and `arg` as its argument.
+		const src = `(async (arg) => { ${PAGE_HELPERS}\n${body}\n})(${JSON.stringify(arg ?? null)})`;
+		return this.wc.executeJavaScript(src, true);
+	}
+	agent(fn, args = []) {
+		return this.eval(`
+			if (!window.roAgent) throw new Error('the game has not started yet (window.roAgent is missing)');
+			return JSON.parse(JSON.stringify(window.roAgent[arg.fn](...arg.args) ?? null));`, { fn, args });
+	}
+	newErrors() { const e = this.errors.slice(this.errorsSeen); this.errorsSeen = this.errors.length; return e; }
+	async until(test, ms = 15000, step = 200) {
+		const end = Date.now() + ms;
+		while (Date.now() < end) { if (await test().catch(() => false)) return true; await sleep(step); }
+		return false;
+	}
+	inGame() {
+		return this.eval(`const s = window.roClientDiagnostics?.snapshot();
+			return Boolean(s?.map && s.input?.canMove && window.roAgent?.player());`).catch(() => false);
+	}
+	// In game and the camera set up: the player's own cell projects on screen.
+	settled() {
+		return this.until(async () => (await this.inGame()) && this.eval(`const me = window.roAgent.player();
+			return Boolean(me && window.roAgent.project(Math.round(me.position[0]), Math.round(me.position[1])).onScreen);`), 60000, 300);
+	}
+	player() { return this.agent('player'); }
+
+	// ------------------------------------------------------------- input
+
+	async move(x, y) { this.wc.sendInputEvent({ type: 'mouseMove', x: Math.round(x), y: Math.round(y) }); }
+	async click(x, y, button = 'left', clickCount = 1) {
+		x = Math.round(x); y = Math.round(y);
+		this.wc.sendInputEvent({ type: 'mouseMove', x, y });
+		await sleep(30);
+		this.wc.sendInputEvent({ type: 'mouseDown', x, y, button, clickCount });
+		await sleep(30);
+		this.wc.sendInputEvent({ type: 'mouseUp', x, y, button, clickCount });
+	}
+	async dblclick(x, y) { await this.click(x, y, 'left', 1); await sleep(60); await this.click(x, y, 'left', 2); }
+	async press(spec) {
+		const { keyCode, char, modifiers } = parseKey(spec);
+		this.wc.sendInputEvent({ type: 'keyDown', keyCode, modifiers });
+		if (char && !modifiers.some(m => m === 'control' || m === 'alt' || m === 'meta')) this.wc.sendInputEvent({ type: 'char', keyCode: char, modifiers });
+		await sleep(30);
+		this.wc.sendInputEvent({ type: 'keyUp', keyCode, modifiers });
+	}
+	// Put text into the first visible element matching `selector`, the way
+	// typing would leave it, and focus it for the Enter that follows.
+	async fill(selector, text) {
+		const ok = await this.eval(`
+			const el = __deep(arg.selector).find(__visible);
+			if (!el) return false;
+			el.focus();
+			const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value')?.set;
+			setter ? setter.call(el, arg.text) : (el.value = arg.text);
+			el.dispatchEvent(new Event('input', { bubbles: true }));
+			el.dispatchEvent(new Event('change', { bubbles: true }));
+			return true;`, { selector, text });
+		if (!ok) throw new Error(`nothing visible matches ${selector}`);
+	}
+	async clickSelector(selector, double = false) {
+		const at = await this.eval(`const el = __deep(arg).find(__visible); return el ? __rect(el) : null;`, selector);
+		if (!at) return false;
+		if (double) await this.dblclick(at.x, at.y); else await this.click(at.x, at.y);
+		return true;
+	}
+	// What a click at (x, y) lands on. The game canvas means the map; anything
+	// else is a window in the way, and the client never sees the click.
+	blocker(x, y) {
+		return this.eval(`
+			let el = document.elementFromPoint(arg.x, arg.y);
+			while (el?.shadowRoot?.elementFromPoint(arg.x, arg.y) && el.shadowRoot.elementFromPoint(arg.x, arg.y) !== el) el = el.shadowRoot.elementFromPoint(arg.x, arg.y);
+			if (!el || el.tagName === 'CANVAS') return null;
+			const host = el.getRootNode()?.host;
+			return (host?.id || el.closest('[id]')?.id || el.tagName) + (el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : '');`, { x, y });
+	}
+
+	async shot(name, clip) {
+		const image = await this.wc.capturePage(clip);
+		const png = image.toPNG();
+		fs.mkdirSync(this.shotsDir, { recursive: true });
+		const file = path.join(this.shotsDir, `${String(name || 'shot').replace(/[^\w.-]+/g, '_')}-${Date.now()}.png`);
+		fs.writeFileSync(file, png);
+		this.pruneShots();
+		return { file, png };
+	}
+	// Screenshots are the agent's eyes, not a record: keep the last 200.
+	pruneShots() {
+		try {
+			const files = fs.readdirSync(this.shotsDir).filter(f => f.endsWith('.png'))
+				.map(f => ({ f, t: fs.statSync(path.join(this.shotsDir, f)).mtimeMs })).sort((a, b) => b.t - a.t);
+			for (const { f } of files.slice(200)) fs.rmSync(path.join(this.shotsDir, f), { force: true });
+		} catch { /* best effort */ }
+	}
+
+	async findTarget(spec, types = ['MOB']) {
+		const me = await this.player();
+		if (spec === 'self' || String(spec) === String(me?.gid)) return me;
+		const list = await this.agent('entities', [{ radius: 30 }]);
+		if (!spec || spec === 'nearest') return list.find(e => types.includes(e.type) && !e.dead) || null;
+		return list.find(e => String(e.gid) === String(spec)) || list.find(e => e.name && e.name.toLowerCase() === String(spec).toLowerCase()) || null;
+	}
+	// Hover first and let a frame run: the client only picks what is under
+	// the cursor on its next frame, and a click before that lands on the map.
+	async clickEntity(target, button = 'left') {
+		await this.move(target.click.x, target.click.y);
+		await sleep(150);
+		const over = await this.agent('mouse');
+		await this.click(target.click.x, target.click.y, button);
+		return over?.over?.gid === target.gid;
+	}
+	// Type into the chat box and send. Only ever the visible input: with the
+	// game menu or a dialog open, Enter would press *their* default button --
+	// which is how a stray Enter logs a character out.
+	async chatSend(text) {
+		let has = await this.eval(`return Boolean(__deep('.input-chatbox').find(__visible));`);
+		if (!has) {
+			const blocked = await this.eval(`const s = window.roClientDiagnostics?.snapshot(); return Boolean(s?.input?.capturing || !s?.map);`).catch(() => true);
+			if (blocked) throw new Error('chat is not reachable: a menu or dialog is open, or not in game (take a screenshot)');
+			await this.press('Enter');
+			await sleep(200);
+		}
+		await this.fill('.input-chatbox', text);
+		await this.press('Enter');
+		await sleep(700);
+		return this.agent('chat', [8]).catch(() => []);
+	}
+	dialog() {
+		return this.eval(`
+			const UI = window.roAgent?.modules?.UIManager;
+			const box = UI?.getComponent('NpcBox'), menu = UI?.getComponent('NpcMenu');
+			const shown = c => c && c._host && c._host.isConnected && getComputedStyle(c._host).display !== 'none';
+			const out = { open: false };
+			if (shown(box)) {
+				const root = box.getRoot();
+				out.open = true;
+				out.text = root.querySelector('.content')?.innerText || '';
+				out.next = __visible(root.querySelector('.next'));
+				out.close = __visible(root.querySelector('.close'));
+			}
+			if (shown(menu)) {
+				const root = menu.getRoot();
+				out.open = true;
+				out.menu = [...root.querySelectorAll('.content div[data-index]')].map((d, i) => ({ n: i + 1, text: d.innerText }));
+			}
+			return out;`);
+	}
+
+	// ------------------------------------------------------------- commands
+
+	commands() {
+		const c = {
+			status: async () => ({ ok: true, url: this.wc.getURL(), inGame: await this.inGame(), errors: this.errors.length }),
+			login: async () => {
+				const { user, pass } = await this.credentials();
+				await this.until(() => this.eval(`return Boolean(__deep('#user').find(__visible));`), 60000);
+				await this.fill('#user', user);
+				await this.fill('#pass', pass);
+				await this.clickSelector('.connect');
+				const ok = await this.until(() => this.eval(`return Boolean(__deep('#slot0').find(__visible));`), 30000);
+				return { ok, screen: ok ? 'character select' : 'still on login', account: user, errors: this.newErrors() };
+			},
+			characters: async () => this.eval(`
+				return __deep('[id^=slot]').filter(__visible).map(e => ({ slot: Number(e.id.replace('slot', '')), text: e.innerText.trim().replace(/\\s+/g, ' ') }));`),
+			char: async ([slot = '0']) => {
+				if (!(await this.clickSelector(`#slot${Number(slot)}`, true))) return { ok: false, reason: 'not on character select (run login first)' };
+				const ok = await this.settled();
+				if (ok) await sleep(1000);
+				return { ok, player: ok ? await this.player() : null, errors: this.newErrors() };
+			},
+			create: async ([slot = '0', ...name]) => {
+				name = name.join(' ');
+				if (!name) throw new Error('create <slot> <name>');
+				if (!(await this.clickSelector(`#slot${Number(slot)}`, true))) return { ok: false, reason: 'not on character select (run login first)' };
+				await sleep(1500);
+				await this.fill('#CharCreatev4 input[type=text], input.name', name);
+				await this.clickSelector('ui-button.make');
+				const ok = await this.until(async () => !(await this.eval(`return Boolean(__deep('ui-button.make').find(__visible));`)), 15000);
+				await sleep(1000);
+				return { ok, next: `char ${slot}`, errors: this.newErrors() };
+			},
+			say: async args => {
+				const text = args.join(' ');
+				const chat = await this.chatSend(text);
+				// A travel command reloads the map; wait for it rather than hand
+				// back a half-loaded scene.
+				if (/^[@#](warp|go|load)\b/i.test(text)) { await sleep(800); await this.settled(); }
+				return { chat, player: await this.player().catch(() => null), errors: this.newErrors() };
+			},
+			state: async ([radius = '15']) => ({
+				player: await this.player().catch(e => ({ error: e.message })),
+				entities: await this.agent('entities', [{ radius: Number(radius) }]).catch(e => ({ error: e.message })),
+				chat: await this.agent('chat', [10]).catch(() => []),
+				dialog: await this.dialog().catch(() => null),
+				errors: this.newErrors(),
+			}),
+			skills: async ([filter]) => {
+				const seen = new Set();
+				return (await this.agent('skills')).filter(sk => !seen.has(sk.id) && seen.add(sk.id))
+					.filter(sk => !filter || String(sk.id) === filter || sk.name.toLowerCase().includes(filter.toLowerCase()));
+			},
+			// The inventory's own equip path (what a double-click on the item runs).
+			equip: async ([id]) => {
+				const result = await this.eval(`
+					const inv = window.roAgent.modules.UIManager.getComponent('Inventory');
+					const item = inv?.getItemById(Number(arg));
+					if (!item) return { ok: false, reason: 'item ' + arg + ' is not in the inventory' };
+					inv.onEquipItem(item.index, item.location);
+					return { ok: true, index: item.index, location: item.location };`, id);
+				await sleep(800);
+				return { ...result, chat: await this.agent('chat', [3]), errors: this.newErrors() };
+			},
+			walk: async ([x, y]) => {
+				x = Number(x); y = Number(y);
+				const target = await this.agent('project', [x, y]);
+				if (!target?.onScreen) return { ok: false, reason: 'cell is off screen; walk to a nearer cell first', target };
+				const covered = await this.blocker(target.x, target.y);
+				if (covered) return { ok: false, reason: `a window covers that cell (${covered}); close it or pick another cell`, target };
+				await this.move(target.x, target.y);
+				await sleep(120);
+				await this.click(target.x, target.y);
+				// Done when the player reaches the cell, or started and then
+				// stood still for a second, or never moved within three seconds.
+				const start = Date.now();
+				let last = (await this.player()).position.join(','), stillSince = Date.now(), moved = false;
+				while (Date.now() - start < 30000) {
+					await sleep(250);
+					const pos = (await this.player()).position;
+					const p = pos.join(',');
+					if (Math.round(pos[0]) === x && Math.round(pos[1]) === y) break;
+					if (p !== last) { moved = true; last = p; stillSince = Date.now(); }
+					if (moved && Date.now() - stillSince > 1000) break;
+					if (!moved && Date.now() - start > 3000) break;
+				}
+				const me = await this.player();
+				return { ok: Math.abs(me.position[0] - x) <= 1 && Math.abs(me.position[1] - y) <= 1, position: me.position, errors: this.newErrors() };
+			},
+			attack: async ([spec]) => {
+				const target = await this.findTarget(spec);
+				if (!target) return { ok: false, reason: 'no such monster in range', nearby: (await this.agent('entities', [{ radius: 30 }])).slice(0, 8) };
+				const picked = await this.clickEntity(target);
+				await sleep(2500);
+				const after = (await this.agent('entities', [{ radius: 30 }])).find(e => e.gid === target.gid) || null;
+				return { ok: picked, target, after, player: await this.player(), chat: await this.agent('chat', [5]), errors: this.newErrors() };
+			},
+			// Talk to an NPC, open a Kafra, pick up an item: any entity, by id
+			// or name.
+			interact: async ([spec]) => {
+				const target = await this.findTarget(spec, ['NPC', 'NPC2', 'ITEM', 'WARP']);
+				if (!target) return { ok: false, reason: 'nothing by that id or name in range' };
+				const picked = await this.clickEntity(target);
+				await sleep(1200);
+				return { ok: picked, target, dialog: await this.dialog(), errors: this.newErrors() };
+			},
+			dialog: async () => this.dialog(),
+			next: async () => {
+				const ok = await this.eval(`const r = window.roAgent.modules.UIManager.getComponent('NpcBox').getRoot().querySelector('.next'); return __visible(r) ? __rect(r) : null;`);
+				if (!ok) return { ok: false, reason: 'no Next button showing', dialog: await this.dialog() };
+				await this.click(ok.x, ok.y);
+				await sleep(600);
+				return { ok: true, dialog: await this.dialog(), errors: this.newErrors() };
+			},
+			close: async () => {
+				const ok = await this.eval(`const r = window.roAgent.modules.UIManager.getComponent('NpcBox').getRoot().querySelector('.close'); return __visible(r) ? __rect(r) : null;`);
+				if (!ok) return { ok: false, reason: 'no Close button showing', dialog: await this.dialog() };
+				await this.click(ok.x, ok.y);
+				await sleep(600);
+				return { ok: true, dialog: await this.dialog(), errors: this.newErrors() };
+			},
+			// Pick menu option n (1-based), as the list shows it.
+			choose: async ([n]) => {
+				const at = await this.eval(`
+					const root = window.roAgent.modules.UIManager.getComponent('NpcMenu').getRoot();
+					const item = root.querySelectorAll('.content div[data-index]')[Number(arg) - 1];
+					return item && __visible(item) ? __rect(item) : null;`, n);
+				if (!at) return { ok: false, reason: 'no such menu option', dialog: await this.dialog() };
+				await this.dblclick(at.x, at.y);
+				await sleep(800);
+				// A menu choice that warps reloads the map.
+				await this.until(() => this.inGame(), 5000);
+				return { ok: true, dialog: await this.dialog(), player: await this.player().catch(() => null), errors: this.newErrors() };
+			},
+			skill: async args => {
+				const id = Number(args[0]);
+				const level = args[1] && !args[1].startsWith('--') ? Number(args[1]) : undefined;
+				const t = args.indexOf('--target'), cell = args.indexOf('--cell');
+				// A previous cast still waiting for a target would take this one's
+				// click. Right-click cancels target selection; Escape would open
+				// the game menu instead.
+				const mouse = await this.agent('mouse');
+				const useskill = await this.eval(`return window.roAgent.modules.Mouse.MOUSE_STATE.USESKILL;`);
+				if (mouse.state === useskill) {
+					const me = await this.player();
+					await this.click(me.cell.x, me.cell.y, 'right');
+					await sleep(200);
+				}
+				const started = await this.agent('useSkill', [id, level]);
+				let clicked = null;
+				if (started.targeting && t >= 0) {
+					const target = await this.findTarget(args[t + 1], ['MOB', 'PC', 'NPC', 'HOM', 'MERC', 'ELEM']);
+					if (!target) return { ok: false, reason: 'target not found', started };
+					clicked = { target, pickedByClient: await this.clickEntity(target) };
+				} else if (started.targeting && cell >= 0) {
+					const at = await this.agent('project', [Number(args[cell + 1]), Number(args[cell + 2])]);
+					await this.click(at.x, at.y);
+					clicked = { cell: at };
+				}
+				await sleep(2000);
+				return { started, clicked, player: await this.player(), chat: await this.agent('chat', [6]), errors: this.newErrors() };
+			},
+			shot: async ([name]) => this.shot(name),
+			click: async ([x, y, button]) => { await this.click(Number(x), Number(y), button === 'right' ? 'right' : 'left'); await sleep(300); return { ok: true, errors: this.newErrors() }; },
+			hover: async ([x, y, flag]) => {
+				const point = flag === '--px' ? { x: Number(x), y: Number(y) } : await this.agent('project', [Number(x), Number(y)]);
+				await this.move(point.x, point.y);
+				await sleep(150);
+				return { point, coveredBy: await this.blocker(point.x, point.y), mouse: await this.agent('mouse') };
+			},
+			key: async ([key]) => { await this.press(key); await sleep(300); return { ok: true, errors: this.newErrors() }; },
+			wait: async ([ms = '1000']) => { await sleep(Math.min(Number(ms) || 0, 60000)); return { ok: true }; },
+			errors: async () => ({ errors: this.errors.slice(-200) }),
+		};
+		return c;
+	}
+}
+
+// What the commands take, for the MCP tool list and the CLI's help. One entry
+// per command; `args` are positional, in order.
+const COMMANDS = {
+	status: { description: 'Whether the agent\'s game window is up and in game.', args: [] },
+	login: { description: 'Log in to the agent\'s own account. Lands on character select.', args: [] },
+	characters: { description: 'The character slots on character select.', args: [] },
+	create: { description: 'Make a character in an empty slot on character select.', args: [['slot', 'number', 'Slot number, from 0'], ['name', 'string', 'Character name']] },
+	char: { description: 'Enter the game with the character in a slot.', args: [['slot', 'number', 'Slot number, from 0']] },
+	state: { description: 'The player, what is nearby, recent chat, any NPC dialog, and new client errors.', args: [['radius', 'number', 'Cells around the player to list (default 15)', true]] },
+	say: { description: 'Type into the chat box and send it. Travel commands (@warp, @go, @load) also go here; use them only when you need to.', args: [['text', 'string', 'What to say']] },
+	walk: { description: 'Walk to a map cell that is on screen.', args: [['x', 'number', 'Cell x'], ['y', 'number', 'Cell y']] },
+	attack: { description: 'Attack a monster by entity id, or the nearest one.', args: [['target', 'string', 'Entity gid, a name, or "nearest"', true]] },
+	interact: { description: 'Click an NPC, Kafra, item or warp by entity id or name. NPC dialog shows in the result.', args: [['target', 'string', 'Entity gid or name']] },
+	dialog: { description: 'The NPC dialog now showing: text, and menu options if any.', args: [] },
+	next: { description: 'Press Next in an NPC dialog.', args: [] },
+	close: { description: 'Press Close in an NPC dialog.', args: [] },
+	choose: { description: 'Pick an NPC menu option by its number (1-based).', args: [['option', 'number', 'Option number']] },
+	skills: { description: 'Skills the character has: id, name, level, SP, range.', args: [['filter', 'string', 'Id or part of a name', true]] },
+	skill: { description: 'Use a skill. For a targeted one add --target <gid|nearest|self> or --cell <x> <y>.', args: [['id', 'number', 'Skill id'], ['rest', 'string', 'Level and flags, e.g. "5 --target nearest"', true]] },
+	equip: { description: 'Equip an item from the inventory by item id.', args: [['item', 'number', 'Item id']] },
+	shot: { description: 'Screenshot of the agent\'s game window.', args: [['name', 'string', 'Label for the file', true]] },
+	hover: { description: 'Put the cursor on a cell (or pixels with --px) and report what the client sees there.', args: [['x', 'number', 'Cell x'], ['y', 'number', 'Cell y'], ['flag', 'string', '--px for page pixels', true]] },
+	click: { description: 'A raw mouse click at page pixels.', args: [['x', 'number', 'Pixel x'], ['y', 'number', 'Pixel y'], ['button', 'string', 'left or right', true]] },
+	key: { description: 'Press a key: Enter, Escape, F1, Alt+E ...', args: [['key', 'string', 'Key name']] },
+	wait: { description: 'Wait up to 60 seconds.', args: [['ms', 'number', 'Milliseconds']] },
+	errors: { description: 'Client errors and warnings seen so far.', args: [] },
+};
+
+module.exports = { AgentDriver, COMMANDS, parseKey };
