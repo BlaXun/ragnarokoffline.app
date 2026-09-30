@@ -20,25 +20,36 @@ all for a caster.
 
 ## What it grants
 
-While the mod is on and the player has a weapon equipped on the main hand,
-they get a flat MATK bonus of:
+While the mod is on, every refined **weapon** the player has equipped
+contributes a flat MATK bonus:
 
-    MATK = (main-hand refine level) × (matk_per_refine)
+    MATK = (R-hand refine + L-hand refine) × (matk_per_refine)
 
 `matk_per_refine` is one setting under **Settings → Mods → refine-matk**,
 default `2`, range `0..50`. So the ordinary case:
 
-| weapon             | refine | setting | MATK bonus |
-|--------------------|--------|---------|------------|
-| Rod                | +7     | 2       | +14        |
-| Staff              | +10    | 2       | +20        |
-| Wizardry Staff     | +15    | 2       | +30        |
-| Survivor's Rod     | +10    | 3       | +30        |
-| any weapon         | +0     | any     | 0          |
+| loadout                                       | setting | MATK bonus |
+|-----------------------------------------------|---------|------------|
+| +7 Rod (single-hand)                          | 2       | +14        |
+| +10 Staff (two-hand)                          | 2       | +20        |
+| +15 Wizardry Staff (two-hand)                 | 2       | +30        |
+| +10 dagger + +10 dagger (Ninja, dual-wield)   | 2       | +40        |
+| +8 dagger + shield                            | 2       | +16        |
+| +10 Survivor's Rod                            | 3       | +30        |
+| any weapon                                    | 0       | 0          |
 
 The setting takes effect on the next **Apply** (server restart). Set it to
 `0` to switch the bonus off without disabling the mod — useful if you want
 to keep the mod ticked while you A/B-test something else.
+
+**Two-handed weapons are only counted once.** A staff or two-handed sword
+occupies both `EQI_HAND_R` and `EQI_HAND_L` slots internally, so the mod
+detects that (by the item's equip-location bitmask) and skips the L-hand
+pass — otherwise a +10 staff would incorrectly be worth +40 MATK instead
+of +20.
+
+**Shields don't contribute.** A shield in the left hand reports weapon
+level 0, so the same filter that keeps non-weapons out also excludes it.
 
 Weapon *tier* (Lv1..Lv4) is not part of the formula on purpose: one knob is
 easier to reason about than four, and the numbers a server owner picks
@@ -48,9 +59,6 @@ up a per-tier value.
 
 ## What it does not touch
 
-- **Off-hand items.** Only `EQI_HAND_R` (main-hand) counts. Dual-wielding two
-  weapons still only scores the main-hand's refine — matching how the base
-  game already treats stat gear.
 - **Armor refining.** Only weapons.
 - **The refine.yml table.** rAthena's refine data is left alone, so ATK
   bonuses from refining are exactly as upstream ships them. This mod adds

@@ -1,7 +1,10 @@
 //===== Ragnarok Offline mod: refine-matk ==========================
-//= Weapon refining grants MATK too, scaled per weapon level.
+//= Weapon refining grants MATK too. Both hands contribute for
+//= dual-wielders (Ninja, Kagerou/Oboro, Assassin Cross with two
+//= MATK daggers, etc.), and a two-handed weapon that occupies
+//= both slots is only counted once.
 //= The refresh loop keeps a short-lived bonus_script alive so
-//= the bonus tracks the currently equipped main-hand weapon.
+//= the bonus tracks the currently equipped weapon(s).
 //==================================================================
 
 -	script	refine_matk_mgr	FAKE_NPC,{
@@ -15,17 +18,38 @@ OnPCLoginEvent:
 	end;
 
 OnRefresh:
-	.@item = getequipid(EQI_HAND_R);
-	.@refine = getequiprefinerycnt(EQI_HAND_R);
-	.@wlvl = 0;
-	if (.@item > 0)
-		.@wlvl = getiteminfo(.@item, ITEMINFO_WEAPONLEVEL);
-	// Weapons are levels 1..4; anything else (shield, no weapon)
-	// grants nothing, even at a positive refine.
 	.@per = callfunc("F_ModSetting", "refine-matk", "matk_per_refine", 2);
 	.@bonus = 0;
-	if (.@wlvl >= 1 && .@wlvl <= 4)
-		.@bonus = .@refine * .@per;
+
+	// --- Right hand ------------------------------------------------
+	.@r_item = getequipid(EQI_HAND_R);
+	.@r_ref = getequiprefinerycnt(EQI_HAND_R);
+	.@r_wlvl = 0;
+	.@r_loc = 0;
+	if (.@r_item > 0) {
+		.@r_wlvl = getiteminfo(.@r_item, ITEMINFO_WEAPONLEVEL);
+		// getiteminfo type 5 = equip location bitmask (EQP_HAND_R=2,
+		// EQP_HAND_L=32); a two-hand weapon reports both bits set.
+		.@r_loc = getiteminfo(.@r_item, 5);
+	}
+	if (.@r_wlvl >= 1 && .@r_wlvl <= 4)
+		.@bonus += .@r_ref * .@per;
+
+	// --- Left hand -------------------------------------------------
+	// Skip when the right hand already holds a two-handed weapon,
+	// since it also fills the left slot and would double-count.
+	.@is_two_handed = ((.@r_loc & 2) != 0) && ((.@r_loc & 32) != 0);
+	if (!.@is_two_handed) {
+		.@l_item = getequipid(EQI_HAND_L);
+		.@l_ref = getequiprefinerycnt(EQI_HAND_L);
+		.@l_wlvl = 0;
+		if (.@l_item > 0)
+			.@l_wlvl = getiteminfo(.@l_item, ITEMINFO_WEAPONLEVEL);
+		// Shields have WeaponLevel 0, so this filter also excludes
+		// them without a separate item-type check.
+		if (.@l_wlvl >= 1 && .@l_wlvl <= 4)
+			.@bonus += .@l_ref * .@per;
+	}
 
 	// Reapply only when the target value changed, so an identical
 	// bonus_script refreshes in place rather than piling up.

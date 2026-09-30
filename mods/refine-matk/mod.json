@@ -1,8 +1,8 @@
 {
   "name": "refine-matk",
-  "version": "1.1.0",
-  "author": "Ragnarok Offline",
-  "description": "Weapon refining also raises MATK, so magic classes get something out of a blacksmith too. Off until you turn it on.",
+  "version": "1.2.0",
+  "author": "BlaXun",
+  "description": "Weapon refining also raises MATK, so magic classes get something out of a blacksmith too. Counts both hands for dual-wielders. Off until you turn it on.",
   "default": "off",
   "requires": { "app": ">=1.2.6", "era": "any" },
   "settings": [
@@ -13,7 +13,7 @@
       "min": 0,
       "max": 50,
       "label": "MATK per +1 refine",
-      "description": "Flat MATK the main-hand weapon gains for every level of refine. A +10 weapon at the default of 2 grants +20 MATK. Set to 0 to turn the bonus off without disabling the mod."
+      "description": "Flat MATK per refine level on each equipped weapon. A +10 weapon at the default of 2 grants +20 MATK; a dual-wielder with two +10 daggers gets +40. Set to 0 to turn the bonus off without disabling the mod."
     }
   ]
 }
