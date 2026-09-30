@@ -144,8 +144,19 @@ class AgentDriver {
 			const el = __deep(arg.selector).find(__visible);
 			if (!el) return false;
 			el.focus();
-			const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value')?.set;
-			setter ? setter.call(el, arg.text) : (el.value = arg.text);
+			if (el.isContentEditable) {
+				// The chat line is an editable div, not an input.
+				el.textContent = arg.text;
+				const range = document.createRange();
+				range.selectNodeContents(el);
+				range.collapse(false);
+				const sel = el.getRootNode().getSelection?.() || window.getSelection();
+				sel.removeAllRanges();
+				sel.addRange(range);
+			} else {
+				const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value')?.set;
+				setter ? setter.call(el, arg.text) : (el.value = arg.text);
+			}
 			el.dispatchEvent(new Event('input', { bubbles: true }));
 			el.dispatchEvent(new Event('change', { bubbles: true }));
 			return true;`, { selector, text });
@@ -169,13 +180,21 @@ class AgentDriver {
 	}
 
 	async shot(name, clip) {
-		const image = await this.wc.capturePage(clip);
+		let image = await this.wc.capturePage(clip);
+		// In page pixels, the ones `click` and `hover --px` take, rather than
+		// the display's (twice as many on a Retina screen, and four times the
+		// bytes for an agent to read).
+		const width = clip ? clip.width : await this.eval(`return window.innerWidth;`).catch(() => 0);
+		if (width && image.getSize().width > width) image = image.resize({ width, quality: 'good' });
 		const png = image.toPNG();
+		// For MCP, which hands the picture to the model: a JPEG is a tenth
+		// the size and reads as well. The PNG on disk stays exact.
+		const jpeg = typeof image.toJPEG === 'function' ? image.toJPEG(75) : null;
 		fs.mkdirSync(this.shotsDir, { recursive: true });
 		const file = path.join(this.shotsDir, `${String(name || 'shot').replace(/[^\w.-]+/g, '_')}-${Date.now()}.png`);
 		fs.writeFileSync(file, png);
 		this.pruneShots();
-		return { file, png };
+		return { file, png, jpeg };
 	}
 	// Screenshots are the agent's eyes, not a record: keep the last 200.
 	pruneShots() {
@@ -247,14 +266,45 @@ class AgentDriver {
 			login: async () => {
 				const { user, pass } = await this.credentials();
 				await this.until(() => this.eval(`return Boolean(__deep('#user').find(__visible));`), 60000);
-				await this.fill('#user', user);
-				await this.fill('#pass', pass);
-				await this.clickSelector('.connect');
-				const ok = await this.until(() => this.eval(`return Boolean(__deep('#slot0').find(__visible));`), 30000);
+				// Character select draws its slots on canvases, so the list is
+				// taken from the packets that carry it -- the client logs each
+				// one it receives -- and kept for `characters`.
+				await this.eval(`
+					if (!window.__agentCharsHooked) {
+						window.__agentCharsHooked = true;
+						window.__agentChars = {};
+						const keep = c => { if (c && c.name !== undefined) window.__agentChars[c.CharNum ?? Object.keys(window.__agentChars).length] = { slot: c.CharNum ?? null, name: c.name, job: c.job, level: c.level ?? c.BaseLevel ?? null }; };
+						const log = console.log;
+						console.log = function (...args) {
+							const p = args[2];
+							if (typeof args[0] === 'string' && args[0].includes('Recv') && p) {
+								if (Array.isArray(p.charInfo)) p.charInfo.forEach(keep);
+								if (p.charinfo) keep(p.charinfo);
+							}
+							return log.apply(this, args);
+						};
+					}`).catch(() => {});
+				// A session the server still holds -- the agent's window closed or
+				// the app restarted while in game -- is kicked by the first
+				// attempt, which then lands back on the login box; the next one
+				// gets through. So try a few times before giving up.
+				let ok = false;
+				for (let attempt = 0; attempt < 4 && !ok; attempt++) {
+					if (attempt) await sleep(5000);
+					if (!(await this.until(() => this.eval(`return Boolean(__deep('#user').find(__visible));`), attempt ? 20000 : 60000))) break;
+					await this.fill('#user', user);
+					await this.fill('#pass', pass);
+					await this.clickSelector('.connect');
+					ok = await this.until(() => this.eval(`return Boolean(__deep('#slot0').find(__visible));`), 20000);
+				}
 				return { ok, screen: ok ? 'character select' : 'still on login', account: user, errors: this.newErrors() };
 			},
-			characters: async () => this.eval(`
-				return __deep('[id^=slot]').filter(__visible).map(e => ({ slot: Number(e.id.replace('slot', '')), text: e.innerText.trim().replace(/\\s+/g, ' ') }));`),
+			characters: async () => {
+				const known = await this.eval(`return Object.values(window.__agentChars || {});`);
+				const slots = await this.eval(`return __deep('[id^=slot]').filter(__visible).map(e => Number(e.id.replace('slot', ''))).filter(n => !isNaN(n));`);
+				if (!slots.length) return { ok: false, reason: 'not on character select (run login first)' };
+				return { ok: true, characters: known, emptySlots: slots.filter(n => !known.some(k => k.slot === n)) };
+			},
 			char: async ([slot = '0']) => {
 				if (!(await this.clickSelector(`#slot${Number(slot)}`, true))) return { ok: false, reason: 'not on character select (run login first)' };
 				const ok = await this.settled();
@@ -266,7 +316,8 @@ class AgentDriver {
 				if (!name) throw new Error('create <slot> <name>');
 				if (!(await this.clickSelector(`#slot${Number(slot)}`, true))) return { ok: false, reason: 'not on character select (run login first)' };
 				await sleep(1500);
-				await this.fill('#CharCreatev4 input[type=text], input.name', name);
+				// The creation window's name box: the one text field showing.
+				await this.fill('input[type=text]', name);
 				await this.clickSelector('ui-button.make');
 				const ok = await this.until(async () => !(await this.eval(`return Boolean(__deep('ui-button.make').find(__visible));`)), 15000);
 				await sleep(1000);

@@ -87,7 +87,9 @@ function createAgentApi({ run, token, log = () => {} }) {
 					const result = await exec(name, positional(name, params.arguments || {}));
 					if (name === 'shot') {
 						return reply({ content: [
-							{ type: 'image', data: result.png.toString('base64'), mimeType: 'image/png' },
+							result.jpeg
+								? { type: 'image', data: result.jpeg.toString('base64'), mimeType: 'image/jpeg' }
+								: { type: 'image', data: result.png.toString('base64'), mimeType: 'image/png' },
 							{ type: 'text', text: JSON.stringify({ file: result.file }) },
 						] });
 					}
