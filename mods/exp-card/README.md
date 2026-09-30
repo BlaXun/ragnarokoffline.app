@@ -1,53 +1,82 @@
 # exp-card
 
 Every monster kill has a small chance to drop an **Exp Card**, bound to the
-killer for the standard pickup window. Using the card grants a percentage of
-the experience you need for your next level (base and job separately), so it
-stays useful whether you're level 12 or 175.
+killer for the standard pickup window. Two families — **Base Exp Cards** and
+**Job Exp Cards** — each with ten levels. Higher-level monsters drop
+higher-level cards. Using a card grants a fixed chunk of experience; a
+Level 10 card is roughly 5% of the exp a Renewal character needs from
+level 98 to 99, and lower levels scale down linearly.
 
 The point: streamline the offline experience without touching per-mob drop
-tables. Any mob, any map, one uniform bonus channel.
+tables. Any mob, any map, one uniform bonus channel that scales with the
+content the player is fighting.
 
-## How it works, layer by layer
+## The cards
 
-The interesting part is that the mod *does not* modify any mob's drop table.
-It hangs off rAthena's kill event and hands out an owned flooritem, using a
-new script command (`makeitemowned`) that ships in our rAthena fork.
-
-| Step | Layer | What happens |
+| Level | Base exp / Job exp | Item ids (base / job) |
 |---|---|---|
-| A monster dies | rAthena | `OnNPCKillEvent` fires on the top damager (`first_sd`) — stock rAthena behaviour. |
-| Roll the chance | `npc/exp_card.txt` | `rand(10000) < .chance` — same roll shape mob drop tables use, in 0.01% units. |
-| Drop the card, bound to the killer | `npc/exp_card.txt` | `makeitemowned 30051, 1, "<map>", <x>, <y>;` — no explicit `first_charid`, so it defaults to the attached player's `char_id`. |
-| Killer has priority to pick it up | rAthena | `battle.conf`'s `item_first_get_time` window applies, same as regular drops. After it elapses the drop is free for everyone. |
-| Player uses the card | `db/item_db.yml` | Item script computes `NextBaseExp * base_pct / 100` and `NextJobExp * job_pct / 100`, calls `getexp`. |
+| 1  | 6,000  | 30051 / 30061 |
+| 2  | 12,000 | 30052 / 30062 |
+| 3  | 18,000 | 30053 / 30063 |
+| 4  | 24,000 | 30054 / 30064 |
+| 5  | 30,000 | 30055 / 30065 |
+| 6  | 36,000 | 30056 / 30066 |
+| 7  | 42,000 | 30057 / 30067 |
+| 8  | 48,000 | 30058 / 30068 |
+| 9  | 54,000 | 30059 / 30069 |
+| 10 | 60,000 | 30060 / 30070 |
 
-The scaling is what makes the card "always meaningful": the reward is always
-some fraction of what you need for the next level, not a fixed number that
-either trivialises low levels or vanishes at high levels.
+Base cards grant only base exp; Job cards grant only job exp. The two are
+symmetric — a Base Lv 10 gives 60,000 base exp, a Job Lv 10 gives 60,000
+job exp.
+
+The calibration anchor is **~5% of the level-98 base-exp requirement in
+Renewal** (~1.25M in `db/re/job_exp.yml`, first jobs group). If you want a
+different curve, edit the twenty scripts in `db/item_db.yml` — the
+`EXP_PER_LEVEL` constant in `System/itemInfo.lua` needs to match so the
+descriptions stay in sync.
+
+## How drops work
+
+The `exp_card_ctrl` NPC hooks `OnNPCKillEvent`, rolls one dice against the
+configured chance, and — on a hit — picks *which* card:
+
+- **Level** comes from the dead mob's `MOB_LV`, clamped to `1..10`:
+  ```
+  card_level = clamp((mob_level + 9) / 10, 1, 10)
+  ```
+  So mob levels 1–10 give a Lv 1 card, 11–20 give Lv 2, …, 91+ gives Lv 10.
+- **Family** is a coin flip — 50% Base Exp Card, 50% Job Exp Card.
+
+The card lands at the killer's position and is bound to their `char_id`
+via `makeitemowned`. Nobody else can pick it up during the standard
+`item_first_get_time` window (see `battle.conf`); after that, it's free.
+
+The mob's own drop table is untouched.
 
 ## Settings
 
-**Settings → Mods → exp-card** exposes three numbers, all read through
-`F_ModSetting` on each server start (so **Apply** takes effect on the next
-restart):
+**Settings → Mods → exp-card** exposes one number, read through
+`F_ModSetting` on each server start (so **Apply** takes effect on the
+next restart):
 
-- **Drop chance** (`drop_chance`, default 100 = 1%) — in 0.01% units, matching
-  rAthena's drop-rate convention. 1000 is 10%, 10000 is guaranteed.
-- **Base exp per card (%)** (`base_pct`, default 5) — percentage of the
-  current `NextBaseExp` requirement granted on use.
-- **Job exp per card (%)** (`job_pct`, default 5) — percentage of the current
-  `NextJobExp` requirement granted on use.
+- **Drop chance** (`drop_chance`, default 100 = 1%) — in 0.01% units,
+  matching rAthena's drop-rate convention. 1,000 is 10%, 10,000 is
+  guaranteed.
+
+Card exp values are hard-coded in `db/item_db.yml` (twenty scripts, one
+per card). Change them there if you want a different curve.
 
 ## Requirements
 
 - `requires.app` is **`>=1.3.8`**.
-- The server must have the **`makeitem_owned` extension** compiled in and
-  registered — that's a rAthena fork commit (branch `makeitem-owned`). The
-  mod ships `db/extension_db.yml` that enables it, but on a server without
-  the extension registered, `makeitemowned` returns failure and the on-kill
-  event logs a one-line error per kill; nothing else on the mod is affected
-  (the item still exists and can be granted with `@item Exp_Card`).
+- The server must have the **`makeitem_owned` extension** compiled in
+  and registered — that's a rAthena fork commit (branch
+  `makeitem-owned`). The mod ships `db/extension_db.yml` that enables
+  it, but on a server without the extension registered, `makeitemowned`
+  returns failure and the on-kill event logs a one-line error per kill;
+  nothing else on the mod is affected (the items still exist and can be
+  granted with `@item Base_Exp_Card_1` and friends).
 
 ## Installing
 
@@ -62,17 +91,19 @@ Then enable it under **Settings → Mods** (it ships off by default).
 ## Checking it loaded
 
 - The supervisor prints `mods: exp-card` on start.
-- The map-server log's NPC count goes up by one (`exp_card_ctrl`). A parse
-  error names the file and line.
+- The map-server log's NPC count goes up by one (`exp_card_ctrl`). A
+  parse error names the file and line.
 - `@extensions` in game should list `makeitem_owned` as **on** — this
   confirms the server-side gate.
-- In game: `@item Exp_Card` gives you one and using it grants the exp; that
-  isolates the item and the settings from the on-kill roll.
+- In game: `@item Base_Exp_Card_10` gives you one, and using it grants
+  60,000 base exp; that isolates the item side from the on-kill roll.
 
 ## What to look at first
 
-`npc/exp_card.txt` is the whole mod in one screen: an `OnInit` that reads
-the chance from Settings, and an `OnNPCKillEvent` that rolls it and calls
-`makeitemowned`. Everything else is the item's stats (`db/item_db.yml`, with
-the on-use exp calculation), its name and icon (`System/itemInfo.lua`), and
-the one-line extension override (`db/extension_db.yml`).
+`npc/exp_card.txt` is the whole feature in one screen: an `OnInit` that
+reads the chance from Settings, and an `OnNPCKillEvent` that rolls it,
+picks a card level from `MOB_LV`, flips for family, and calls
+`makeitemowned`. Everything else is item entries (`db/item_db.yml`, twenty
+scripts), their client-side names built with a small loop
+(`System/itemInfo.lua`), and the one-line extension override
+(`db/extension_db.yml`).
