@@ -560,7 +560,7 @@ Body:
       - tur_dun04
     DungeonsPopulation: 50
 
-  - Profile: pve_gunslinger
+  - Profile: pve_gunslinger  # 40-99: no second class, so one profile spans the mid and high tiers
     Towns:
       - aldebaran
       - comodo
@@ -570,7 +570,16 @@ Body:
       - louyang
       - umbala
       - xmas
-    TownsPopulation: 50
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 80
     Fields:
       - moc_fild01
       - moc_fild02
@@ -583,7 +592,17 @@ Body:
       - cmd_fild02
       - cmd_fild03
       - cmd_fild04
-    FieldsPopulation: 50
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 110
     Dungeons:
       - tur_dun01
       - tur_dun02
@@ -592,9 +611,38 @@ Body:
       - beach_dun
       - beach_dun2
       - beach_dun3
-    DungeonsPopulation: 35
+      - glast_01
+      - gl_chyard
+      - gl_cas01
+      - gl_cas02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - thor_v03
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - ra_san01
+      - ra_san02
+      - ice_dun01
+      - ice_dun02
+    DungeonsPopulation: 95
 
-  - Profile: pve_ninja
+  - Profile: pve_ninja  # 40-99: no second class, so one profile spans the mid and high tiers
     Towns:
       - aldebaran
       - comodo
@@ -604,7 +652,16 @@ Body:
       - louyang
       - umbala
       - xmas
-    TownsPopulation: 40
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 70
     Fields:
       - lou_fild01
       - ama_fild01
@@ -612,7 +669,17 @@ Body:
       - gef_fild03
       - gef_fild05
       - gef_fild06
-    FieldsPopulation: 45
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 105
     Dungeons:
       - ama_dun01
       - ama_dun02
@@ -625,7 +692,37 @@ Body:
       - in_sphinx3
       - in_sphinx4
       - in_sphinx5
-    DungeonsPopulation: 35
+      - glast_01
+      - gl_church
+      - gl_chyard
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - ra_san01
+      - ra_san02
+      - ra_san03
+      - ice_dun01
+      - ice_dun02
+      - ice_dun03
+    DungeonsPopulation: 95
 
   # =========================================================================
   # HIGH TIER (Lv 70–99)
@@ -1251,119 +1348,6 @@ Body:
       - ra_san02
       - ice_dun01
       - ice_dun02
-    DungeonsPopulation: 60
-
-  - Profile: pve_gunslinger_high
-    Towns:
-      - yuno
-      - einbroch
-      - einbech
-      - lighthalzen
-      - rachel
-      - veins
-      - niflheim
-      - moscovia
-      - ayothaya
-    TownsPopulation: 30
-    Fields:
-      - yuno_fild01
-      - yuno_fild02
-      - ein_fild01
-      - ein_fild02
-      - lhz_fild01
-      - lhz_fild02
-      - ra_fild01
-      - ra_fild02
-      - ve_fild01
-      - ve_fild02
-    FieldsPopulation: 60
-    Dungeons:
-      - glast_01
-      - gl_chyard
-      - gl_cas01
-      - gl_cas02
-      - gefenia01
-      - gefenia02
-      - gefenia03
-      - gefenia04
-      - abyss_01
-      - abyss_02
-      - abyss_03
-      - thor_v01
-      - thor_v02
-      - thor_v03
-      - odin_tem01
-      - odin_tem02
-      - odin_tem03
-      - lhz_dun01
-      - lhz_dun02
-      - lhz_dun03
-      - juperos_01
-      - juperos_02
-      - tha_t01
-      - tha_t02
-      - tha_t03
-      - ra_san01
-      - ra_san02
-      - ice_dun01
-      - ice_dun02
-    DungeonsPopulation: 60
-
-  - Profile: pve_ninja_high
-    Towns:
-      - yuno
-      - einbroch
-      - einbech
-      - lighthalzen
-      - rachel
-      - veins
-      - niflheim
-      - moscovia
-      - ayothaya
-    TownsPopulation: 30
-    Fields:
-      - yuno_fild01
-      - yuno_fild02
-      - ein_fild01
-      - ein_fild02
-      - lhz_fild01
-      - lhz_fild02
-      - ra_fild01
-      - ra_fild02
-      - ve_fild01
-      - ve_fild02
-    FieldsPopulation: 60
-    Dungeons:
-      - glast_01
-      - gl_church
-      - gl_chyard
-      - gefenia01
-      - gefenia02
-      - gefenia03
-      - gefenia04
-      - abyss_01
-      - abyss_02
-      - abyss_03
-      - thor_v01
-      - thor_v02
-      - odin_tem01
-      - odin_tem02
-      - odin_tem03
-      - lhz_dun01
-      - lhz_dun02
-      - lhz_dun03
-      - juperos_01
-      - juperos_02
-      - jupe_cave
-      - tha_t01
-      - tha_t02
-      - tha_t03
-      - ra_san01
-      - ra_san02
-      - ra_san03
-      - ice_dun01
-      - ice_dun02
-      - ice_dun03
     DungeonsPopulation: 60
 
 # RAGNAROKMAC: the import a mod's table arrives through.
