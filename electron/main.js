@@ -974,7 +974,7 @@ let toolsSingleton = null;
 function toolsInstance() {
 	if (!toolsSingleton) {
 		toolsSingleton = require('./tools').createTools({
-			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, log: appLog,
+			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
 		});
 	}
 	return toolsSingleton;

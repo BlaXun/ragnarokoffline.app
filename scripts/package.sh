@@ -237,6 +237,11 @@ cp "$ROOT/dist/images.tar.gz" "$PAYLOAD/dist/"
 echo "==> client runtime"
 mkdir -p "$PAYLOAD/vendor/roBrowserLegacy/dist"
 cp -R "$ROOT/vendor/roBrowserLegacy/dist/Web" "$PAYLOAD/vendor/roBrowserLegacy/dist/Web"
+# The client's monster id -> sprite name table, for Settings -> Tools'
+# monster browser (electron/tools.js). It is bundled into the client, not
+# served as a file, so the source copy travels beside it.
+mkdir -p "$PAYLOAD/client-tables"
+cp "$ROOT/vendor/roBrowserLegacy/src/DB/Monsters/MonsterTable.js" "$PAYLOAD/client-tables/MonsterTable.js"
 # `npm run build:all` emits seven ~12 MB bundles and the game loads exactly one.
 # bootstrap.sh prunes the rest, but anyone who rebuilds the client directly
 # skips that and silently adds 24 MB per unpruned viewer to the download. Prune

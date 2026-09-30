@@ -211,6 +211,16 @@
   }
   #detail.empty { padding: 0; }
   .detail-head { margin-bottom: 20px; }
+  .detail-top { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
+  .sprite-box { flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    background: var(--panel, rgba(255,255,255,0.03)); border: 1px solid var(--line, rgba(255,255,255,0.08));
+    border-radius: 10px; padding: 10px; min-width: 200px; }
+  .sprite-box canvas { image-rendering: pixelated; display: block; }
+  .sprite-box .sprite-note { font-size: 12px; color: var(--muted, #8b93a7); min-height: 16px; }
+  .sprite-controls { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+  .sprite-controls button { font: inherit; font-size: 12px; padding: 3px 8px; border-radius: 6px; cursor: pointer;
+    background: transparent; color: var(--muted, #8b93a7); border: 1px solid var(--line, rgba(255,255,255,0.12)); }
+  .sprite-controls button.on { color: var(--text, #e5e7eb); border-color: var(--accent, #7b8cde); }
   .detail-head h2 {
     margin: 0 0 6px;
     font-size: 24px;
@@ -820,6 +830,7 @@ function selectMob(m) {
   const mvpDrops = renderDropTable(m.mvpDrops, "mvp");
 
   detail.innerHTML =
+    '<div class="detail-top">' +
     '<div class="detail-head">' +
       `<h2>${escapeHtml(m.name || "?")} ${bigBadge}</h2>` +
       '<div class="detail-meta">' +
@@ -831,11 +842,15 @@ function selectMob(m) {
         (m.size ? `<span>Size: ${escapeHtml(m.size)}</span>` : "") +
       '</div>' +
     '</div>' +
+    '<div class="sprite-box" id="sprite-box"><canvas id="sprite-canvas" width="200" height="200"></canvas>' +
+      '<div class="sprite-controls" id="sprite-controls"></div><div class="sprite-note" id="sprite-note">Loading sprite…</div></div>' +
+    '</div>' +
     renderCopyLine(m) +
     renderStats(m) +
     (drops ? '<h3>Drops</h3>' + drops : "") +
     (mvpDrops ? '<h3>MVP Drops</h3>' + mvpDrops : "");
 
+  showSprite(m);
   const qty = $("copy-qty");
   const kind = $("copy-kind");
   const code = $("copy-code");
@@ -1003,6 +1018,241 @@ async function tryRestore() {
   render();
   tryLoadDropIcons();
   return true;
+}
+
+// --------- monster sprite ---------
+// The monster's own .spr/.act from your client, the way the game draws it:
+// the app finds the sprite name (the client's monster table) and fetches the
+// files from the asset server. The decoding follows roBrowser's
+// Loaders/Sprite.js and Loaders/Action.js.
+const SPRITE_ACTIONS = [["Idle", 0], ["Walk", 1], ["Attack", 2], ["Hurt", 3], ["Die", 4]];
+let spriteTable = null;
+let spriteRun = 0; // bumps on every monster change, so an old animation stops
+
+async function spriteName(m) {
+  if (!spriteTable) {
+    try { spriteTable = await (await fetch("./monster-sprites.json", { cache: "no-store" })).json(); }
+    catch { spriteTable = {}; }
+  }
+  return spriteTable[m.id] || (m.aegisName ? m.aegisName.toLowerCase() : null);
+}
+
+function reader(buf) {
+  const dv = new DataView(buf);
+  let p = 0;
+  return {
+    get pos() { return p; }, set pos(v) { p = v; }, length: buf.byteLength,
+    u8: () => dv.getUint8(p++),
+    u16: () => { const v = dv.getUint16(p, true); p += 2; return v; },
+    i16: () => { const v = dv.getInt16(p, true); p += 2; return v; },
+    u32: () => { const v = dv.getUint32(p, true); p += 4; return v; },
+    i32: () => { const v = dv.getInt32(p, true); p += 4; return v; },
+    f32: () => { const v = dv.getFloat32(p, true); p += 4; return v; },
+    str: n => { let s = ""; for (let i = 0; i < n; i++) s += String.fromCharCode(dv.getUint8(p + i)); p += n; return s; },
+  };
+}
+
+function readSpr(buf) {
+  const r = reader(buf);
+  if (r.str(2) !== "SP") throw new Error("not a sprite");
+  const version = r.u8() / 10 + r.u8();
+  const indexed = r.u16();
+  const rgba = version > 1.1 ? r.u16() : 0;
+  const frames = [];
+  for (let i = 0; i < indexed; i++) {
+    const w = r.u16(), h = r.u16();
+    const data = new Uint8Array(w * h);
+    if (version < 2.1) {
+      for (let j = 0; j < w * h; j++) data[j] = r.u8();
+    } else {
+      // Runs of transparent pixels are stored as 0, count.
+      const end = r.u16() + r.pos;
+      let k = 0;
+      while (r.pos < end) {
+        const c = r.u8();
+        data[k++] = c;
+        if (!c) {
+          const n = r.u8();
+          if (!n) data[k++] = 0; else for (let j = 1; j < n; j++) data[k++] = 0;
+        }
+      }
+    }
+    frames.push({ rgba: false, w, h, data });
+  }
+  for (let i = 0; i < rgba; i++) {
+    const w = r.i16(), h = r.i16();
+    const data = new Uint8Array(buf, r.pos, w * h * 4).slice();
+    r.pos += w * h * 4;
+    frames.push({ rgba: true, w, h, data });
+  }
+  const palette = version > 1.0 ? new Uint8Array(buf, buf.byteLength - 1024, 1024) : null;
+  return { indexed, frames, palette };
+}
+
+function readAct(buf) {
+  const r = reader(buf);
+  if (r.str(2) !== "AC") throw new Error("not an action file");
+  const version = r.u8() / 10 + r.u8();
+  const count = r.u16();
+  r.pos += 10;
+  const actions = [];
+  for (let a = 0; a < count; a++) {
+    const frames = [];
+    const nf = r.u32();
+    for (let f = 0; f < nf; f++) {
+      r.pos += 32;
+      const nl = r.u32();
+      const layers = [];
+      for (let l = 0; l < nl; l++) {
+        const layer = { x: r.i32(), y: r.i32(), index: r.i32(), mirror: r.i32(), alpha: 1, sx: 1, sy: 1, angle: 0, type: 0 };
+        if (version >= 2.0) {
+          r.u8(); r.u8(); r.u8(); layer.alpha = r.u8() / 255;
+          layer.sx = r.f32();
+          layer.sy = version <= 2.3 ? layer.sx : r.f32();
+          layer.angle = r.i32();
+          layer.type = r.i32();
+          if (version >= 2.5) { r.i32(); r.i32(); }
+        }
+        layers.push(layer);
+      }
+      if (version >= 2.0) r.i32(); // sound
+      if (version >= 2.3) { const np = r.i32(); r.pos += np * 16; }
+      frames.push(layers);
+    }
+    actions.push({ frames, delay: 150 });
+  }
+  if (version >= 2.1) {
+    const sounds = r.i32();
+    r.pos += sounds * 40;
+    if (version >= 2.2) for (const a of actions) a.delay = r.f32() * 25;
+  }
+  return { actions };
+}
+
+// One canvas per sprite frame, made once.
+function frameImages(spr) {
+  const pal = spr.palette;
+  return spr.frames.map(f => {
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, f.w); c.height = Math.max(1, f.h);
+    const ctx = c.getContext("2d");
+    const img = ctx.createImageData(c.width, c.height);
+    const out = img.data;
+    for (let y = 0; y < f.h; y++) {
+      for (let x = 0; x < f.w; x++) {
+        const o = (y * f.w + x) * 4;
+        if (f.rgba) {
+          // Stored bottom-up, as A, B, G, R.
+          const s = ((f.h - y - 1) * f.w + x) * 4;
+          out[o] = f.data[s + 3]; out[o + 1] = f.data[s + 2]; out[o + 2] = f.data[s + 1]; out[o + 3] = f.data[s];
+        } else {
+          const i = f.data[y * f.w + x];
+          if (!i || !pal) continue;
+          out[o] = pal[i * 4]; out[o + 1] = pal[i * 4 + 1]; out[o + 2] = pal[i * 4 + 2]; out[o + 3] = 255;
+        }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return c;
+  });
+}
+
+function layerImage(images, spr, layer) {
+  if (layer.index < 0) return null;
+  return images[layer.index + (layer.type === 1 ? spr.indexed : 0)] || null;
+}
+
+async function showSprite(m) {
+  const run = ++spriteRun;
+  const canvas = $("sprite-canvas"), note = $("sprite-note"), controls = $("sprite-controls");
+  if (!canvas) return;
+  const say = t => { if (run === spriteRun && note) note.textContent = t; };
+  let spr, act;
+  try {
+    const name = await spriteName(m);
+    if (!name) { say("No sprite for this monster."); return; }
+    const [a, b] = await Promise.all([
+      fetch(`./sprite/${encodeURIComponent(name)}.spr`), fetch(`./sprite/${encodeURIComponent(name)}.act`)]);
+    if (!a.ok || !b.ok) { say(`Your client has no sprite called ${name}.`); return; }
+    spr = readSpr(await a.arrayBuffer());
+    act = readAct(await b.arrayBuffer());
+  } catch (e) {
+    say("The sprite could not be read: " + e.message);
+    return;
+  }
+  if (run !== spriteRun) return;
+  const images = frameImages(spr);
+  const state = { action: 0, dir: 0 };
+  const available = SPRITE_ACTIONS.filter(([, n]) => act.actions.length > n * 8);
+
+  const pick = () => {
+    const i = state.action * 8 + state.dir;
+    return act.actions[i] || act.actions[state.action * 8] || act.actions[0];
+  };
+  // Fit the whole action, every frame, in the box.
+  let view = null;
+  const fit = () => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const layers of pick().frames) for (const l of layers) {
+      const img = layerImage(images, spr, l);
+      if (!img) continue;
+      const w = img.width * Math.abs(l.sx), h = img.height * Math.abs(l.sy);
+      x0 = Math.min(x0, l.x - w / 2); x1 = Math.max(x1, l.x + w / 2);
+      y0 = Math.min(y0, l.y - h / 2); y1 = Math.max(y1, l.y + h / 2);
+    }
+    if (!isFinite(x0)) { x0 = -20; y0 = -20; x1 = 20; y1 = 20; }
+    const span = Math.max(x1 - x0, y1 - y0);
+    const zoom = Math.max(0.5, Math.min(3, 200 / Math.max(span, 1)));
+    view = { zoom, cx: 100 - ((x0 + x1) / 2) * zoom, cy: 100 - ((y0 + y1) / 2) * zoom };
+  };
+
+  const buttons = () => {
+    controls.textContent = "";
+    for (const [label, n] of available) {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      if (n === state.action) btn.className = "on";
+      btn.addEventListener("click", () => { state.action = n; frame = 0; last = 0; fit(); buttons(); });
+      controls.append(btn);
+    }
+    const turn = document.createElement("button");
+    turn.textContent = "Turn ↻";
+    turn.title = "Look from another side";
+    turn.addEventListener("click", () => { state.dir = (state.dir + 1) % 8; frame = 0; fit(); });
+    controls.append(turn);
+  };
+
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  let frame = 0, last = 0;
+  fit(); buttons(); say("");
+  const draw = t => {
+    if (run !== spriteRun || !document.body.contains(canvas)) return;
+    const a = pick();
+    const delay = Math.max(40, a.delay || 150);
+    if (!last) last = t;
+    if (t - last >= delay) {
+      last = t;
+      // Die holds its last frame for a moment before playing again.
+      if (state.action === 4 && frame === a.frames.length - 1) { if (t - (draw.held || (draw.held = t)) < 1500) { requestAnimationFrame(draw); return; } }
+      draw.held = 0;
+      frame = (frame + 1) % a.frames.length;
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const l of a.frames[frame % a.frames.length] || []) {
+      const img = layerImage(images, spr, l);
+      if (!img) continue;
+      ctx.save();
+      ctx.globalAlpha = l.alpha;
+      ctx.translate(view.cx + l.x * view.zoom, view.cy + l.y * view.zoom);
+      if (l.angle) ctx.rotate(l.angle * Math.PI / 180);
+      ctx.scale(l.sx * view.zoom * (l.mirror ? -1 : 1), l.sy * view.zoom);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      ctx.restore();
+    }
+    requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
 }
 
 // Boot sequence:

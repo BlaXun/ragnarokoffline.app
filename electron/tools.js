@@ -12,6 +12,9 @@
 //   ro-tool://mob-browser/item_db_*.yml     ... item_db_equip / _etc / _usable
 //   ro-tool://item-browser/itemInfo.lua     the client's item table, as served
 //   http://127.0.0.1:3338/item-icons.js     AegisName -> icon, built here
+//   ro-tool://mob-browser/monster-sprites.json  monster id -> sprite name
+//   ro-tool://mob-browser/sprite/<name>.spr|act the monster's sprite, from the
+//                                            asset server (so it is same-origin)
 //
 // The tables come with the mods' db/import laid over them, so a mod's
 // monsters and items show up too. Each window has its own session and no
@@ -51,7 +54,7 @@ const schemePrivileges = { scheme: SCHEME, privileges: { standard: true, secure:
 
 /**
  * @param {object} deps
- *   BrowserWindow, session, net, shell, stackBin(), stackEnv(), stateDir(), log(text), icon
+ *   BrowserWindow, session, net, shell, stackBin(), stackEnv(), stateDir(), runtimeDir(), log(text), icon
  */
 function createTools(deps) {
 	const windows = new Map();
@@ -102,6 +105,23 @@ function createTools(deps) {
 		return 'window.__mobItemIcons=' + JSON.stringify(out) + ';if(window.__mobItemIconsReady)window.__mobItemIconsReady();\n';
 	}
 
+	// The client's monster id -> sprite name table (roBrowser's
+	// DB/Monsters/MonsterTable.js, shipped beside the client by package.sh).
+	let monsterSprites = null;
+	function monsterTable() {
+		if (monsterSprites) return monsterSprites;
+		const candidates = [
+			path.join(deps.runtimeDir(), 'client-tables', 'MonsterTable.js'),
+			// Running from source before package.sh has been run.
+			path.join(__dirname, '..', 'vendor', 'roBrowserLegacy', 'src', 'DB', 'Monsters', 'MonsterTable.js'),
+		];
+		const file = candidates.find(f => fs.existsSync(f));
+		if (!file) throw new Error('The client\'s monster table is missing from this build.');
+		const out = {};
+		for (const m of fs.readFileSync(file, 'utf8').matchAll(/^\s*(\d+)\s*:\s*'([^']+)'/gm)) out[m[1]] = m[2];
+		return (monsterSprites = out);
+	}
+
 	function respond(body, type, status = 200) {
 		return new Response(body, { status, headers: { 'content-type': type, 'cache-control': 'no-store' } });
 	}
@@ -119,6 +139,16 @@ function createTools(deps) {
 					return respond(await exportTable(name.replace(/\.yml$/, '')), TYPES['.yml']);
 				}
 				if (name === 'itemInfo.lua') return respond(itemInfo(), TYPES['.lua']);
+				if (name === 'monster-sprites.json') return respond(JSON.stringify(monsterTable()), TYPES['.json']);
+				const sprite = /^sprite\/([^/]+)\.(spr|act)$/.exec(name);
+				if (sprite) {
+					// data/sprite/몬스터/ ("monster"): the asset server resolves the
+					// Korean folder and the GRFs' lowercase names.
+					const url = `http://127.0.0.1:3338/data/sprite/${encodeURIComponent('몬스터')}/${encodeURIComponent(sprite[1].toLowerCase())}.${sprite[2]}`;
+					const res = await deps.net.fetch(url, { bypassCustomProtocolHandlers: true });
+					if (!res.ok) return respond(`no sprite ${sprite[1]}`, 'text/plain', 404);
+					return respond(Buffer.from(await res.arrayBuffer()), 'application/octet-stream');
+				}
 				// The tool's own files, and nothing outside its folder.
 				const dir = path.join(ROOT, tool.id);
 				const file = path.resolve(dir, name || tool.page);
