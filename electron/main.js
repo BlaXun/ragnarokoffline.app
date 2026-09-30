@@ -875,6 +875,13 @@ let registryImages = null;
 
 const SETTINGS_DEFAULTS = {
 	open_registration: true,
+	// "Let an AI agent play with me" (#187) and whether its window shows. App
+	// preferences, not server settings: turning them on or off restarts
+	// nothing.
+	agent_play: false,
+	agent_window: true,
+	// How many agents may play at once, each its own account and window.
+	agent_count: 1,
 	// How long a friends invitation stays valid, in days. Nothing to do with
 	// Cloudflare -- the tunnel runs as long as the app shares; this is only how
 	// long the invite token is accepted. A link posted in Discord should still
@@ -972,6 +979,25 @@ function toolsInstance() {
 		});
 	}
 	return toolsSingleton;
+}
+
+// The AI agent (#187): the local API, its files and its game window.
+let agentPlayInstance = null;
+function agentPlay() {
+	if (!agentPlayInstance) {
+		agentPlayInstance = require('./agent-play').createAgentPlay({
+			BrowserWindow,
+			stateDir,
+			stackBin,
+			gameBase: () => 'http://127.0.0.1:3338',
+			gamePath: GAME_PATH,
+			runAccount: request => require('./accounts').runAccounts(stackBin(), stackEnv(), request),
+			era: () => (getSettings().prerenewal ? 'prerenewal' : 'renewal'),
+			hosting: () => getClientPaths().mode !== 'join',
+			log: appLog,
+		});
+	}
+	return agentPlayInstance;
 }
 
 // Whether this launch opens Settings instead of the game.
@@ -2437,6 +2463,27 @@ const handlers = {
 	// Settings -> Tools (#195).
 	tools_list: () => toolsInstance().list(),
 	open_tool: ({ id }) => toolsInstance().open(String(id)),
+	// Let an AI agent play (#187). Saved and applied at once, like the app
+	// preferences above: nothing about the server changes.
+	agent_status: () => { const s = getSettings(); return { ...agentPlay().info(), enabled: !!s.agent_play, show: s.agent_window !== false, count: s.agent_count || 1 }; },
+	agent_set: async ({ enabled, show, count }) => {
+		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
+			{ agent_play: !!enabled, agent_window: show !== false, agent_count: Math.max(1, Math.min(4, Number(count) || 1)) }, SETTINGS_DEFAULTS);
+		if (settings.agent_play) await agentPlay().start({ show: settings.agent_window, agents: settings.agent_count });
+		else if (agentPlay().running()) await agentPlay().stop();
+		return { ...agentPlay().info(), enabled: settings.agent_play, show: settings.agent_window, count: settings.agent_count };
+	},
+	agent_open_guide: async () => {
+		const guide = agentPlay().info().guide;
+		if (!guide || !fs.existsSync(guide)) throw new Error('Turn the AI agent on first.');
+		const error = await shell.openPath(guide);
+		if (error) throw new Error(error);
+	},
+	agent_replace_token: async () => {
+		if (!getSettings().agent_play) throw new Error('Turn the AI agent on first.');
+		await agentPlay().replaceToken();
+		return { ...agentPlay().info(), enabled: true, show: getSettings().agent_window !== false, count: getSettings().agent_count || 1 };
+	},
 
 	// Windows
 	// Reload when the window is already there, do not just focus it.
@@ -2750,6 +2797,8 @@ function stackEnv() {
 // responding until the containers finished stopping. Quitting must stay
 // responsive even though the work behind it is slow.
 async function teardownAsync() {
+	// The account stays as it is: the server is going down with it.
+	if (agentPlayInstance?.running()) await agentPlayInstance.stop({ disableAccount: false }).catch(() => {});
     ++sharingStartRequest;
     if (sharing) await sharing.stop();
 	await serverOperationQueue;
@@ -2856,6 +2905,11 @@ app.whenReady().then(() => {
 		else if (entry.file) appLog(`desktop entry not written: ${entry.reason}`);
 	}
 	Menu.setApplicationMenu(buildMenu());
+	// Only the listener and its files: the agent's window waits for an agent.
+	try {
+		const s = getSettings();
+		if (s.agent_play) agentPlay().start({ show: s.agent_window !== false, agents: s.agent_count || 1 }).catch(e => appLog(`agent play: ${e.message}`));
+	} catch (e) { appLog(`agent play: ${e.message}`); }
 
 	// Joining loads the host's page directly, so nothing on the way there
 	// would notice the host being down -- Electron would just render its own
