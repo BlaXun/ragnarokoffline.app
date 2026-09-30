@@ -1,0 +1,46 @@
+{
+  "name": "refine-matk",
+  "version": "1.0.0",
+  "author": "Ragnarok Offline",
+  "description": "Weapon refining also raises MATK, so magic classes get something out of a blacksmith too. Bonus scales with the weapon's own tier. Off until you turn it on.",
+  "default": "off",
+  "requires": { "app": ">=1.2.6", "era": "any" },
+  "settings": [
+    {
+      "key": "matk_lv1",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 20,
+      "label": "MATK per refine, Lv1 weapons",
+      "description": "Daggers and other Level 1 weapons. Applied per +1 refine on the main-hand."
+    },
+    {
+      "key": "matk_lv2",
+      "type": "number",
+      "default": 2,
+      "min": 0,
+      "max": 20,
+      "label": "MATK per refine, Lv2 weapons",
+      "description": "One-handed swords, axes, maces and the rest of Level 2. Applied per +1 refine on the main-hand."
+    },
+    {
+      "key": "matk_lv3",
+      "type": "number",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "label": "MATK per refine, Lv3 weapons",
+      "description": "Two-handed swords, spears, staves and other Level 3 weapons. Applied per +1 refine on the main-hand."
+    },
+    {
+      "key": "matk_lv4",
+      "type": "number",
+      "default": 4,
+      "min": 0,
+      "max": 20,
+      "label": "MATK per refine, Lv4 weapons",
+      "description": "Bows and top-tier Level 4 weapons. Applied per +1 refine on the main-hand."
+    }
+  ]
+}

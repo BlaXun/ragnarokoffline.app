@@ -1,0 +1,43 @@
+//===== Ragnarok Offline mod: refine-matk ==========================
+//= Weapon refining grants MATK too, scaled per weapon level.
+//= The refresh loop keeps a short-lived bonus_script alive so
+//= the bonus tracks the currently equipped main-hand weapon.
+//==================================================================
+
+-	script	refine_matk_mgr	FAKE_NPC,{
+	end;
+
+OnPCLoginEvent:
+	// Restart the per-player loop cleanly on every login.
+	set @refine_matk_last, -1;
+	deltimer "refine_matk_mgr::OnRefresh";
+	addtimer 500, "refine_matk_mgr::OnRefresh";
+	end;
+
+OnRefresh:
+	.@item = getequipid(EQI_HAND_R);
+	.@refine = getequiprefinerycnt(EQI_HAND_R);
+	.@wlvl = 0;
+	if (.@item > 0)
+		.@wlvl = getiteminfo(.@item, ITEMINFO_WEAPONLEVEL);
+	// Weapons are levels 1..4; anything else (shields, no weapon,
+	// consumables) collapses to 0 and grants nothing.
+	if (.@wlvl < 1 || .@wlvl > 4)
+		.@wlvl = 0;
+
+	.@per = 0;
+	if (.@wlvl > 0)
+		.@per = callfunc("F_ModSetting", "refine-matk", "matk_lv" + .@wlvl, .@wlvl);
+	.@bonus = .@refine * .@per;
+
+	// Reapply only when the target value changed, so an identical
+	// bonus_script refreshes in place rather than piling up.
+	if (.@bonus > 0 && .@bonus != @refine_matk_last)
+		bonus_script "bonus bMatk," + .@bonus + ";", 6, 0, 1, 0;
+	set @refine_matk_last, .@bonus;
+
+	// Keep the buff alive; a 4s tick under the 6s duration means at
+	// most ~2s of overlap when the player swaps to a different refine.
+	addtimer 4000, "refine_matk_mgr::OnRefresh";
+	end;
+}
