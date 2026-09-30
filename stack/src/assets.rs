@@ -142,6 +142,28 @@ fn first_dir(cands: &[PathBuf]) -> Option<PathBuf> {
     cands.iter().find(|p| p.is_dir()).cloned()
 }
 
+/// config/TRANSLATION_EXTRAS: single files from ROenglishRE's Compatibility
+/// layers, as (source under Translation/, destination under the staged
+/// translation). That file says why these and not the whole stack.
+fn translation_extras(cfg: &Config) -> Vec<(PathBuf, PathBuf)> {
+    let list = fs::read_to_string(cfg.root.join("config/TRANSLATION_EXTRAS")).unwrap_or_default();
+    list.lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+        .filter_map(|l| {
+            let mut cols = l.split('\t').map(str::trim).filter(|c| !c.is_empty());
+            Some((PathBuf::from(cols.next()?), PathBuf::from(cols.next()?)))
+        })
+        // Both sides stay inside their trees.
+        .filter(|(a, b)| {
+            [a, b].iter().all(|p| {
+                p.components()
+                    .all(|c| matches!(c, std::path::Component::Normal(_)))
+            })
+        })
+        .collect()
+}
+
 pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     let data = readable_path(
         Path::new(args.first().ok_or("data.grf path required")?),
@@ -218,11 +240,20 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
                 copy_over(&translation.join("Pre-Renewal").join(sub), &en.join(sub))?;
             }
         }
+        for (src, dst) in translation_extras(cfg) {
+            // A pin without one of them is an older translation, not a fault.
+            if translation.join(&src).is_file() {
+                copy_file(&translation.join(&src), &en.join(&dst))?;
+            }
+        }
     }
     let merged = server_root.join("System");
     if text.translated() {
         copy_over(&en.join("SystemEN"), &merged)?;
     }
+    // ROenglishRE names the achievement table achievements.lub; the client
+    // asks for achievement_list.lub, and got the Korean one (#164).
+    let has_achievements = text.translated() && en.join("SystemEN/achievements.lub").is_file();
     if let Some(sys) = first_dir(&[client_dir.join("System"), client_dir.join("dll_exe/System")]) {
         for e in entries(&sys)? {
             let name = e.file_name();
@@ -231,7 +262,9 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
             // front; without them the client's own are the only copies there
             // are, and skipping them leaves the game with no item names.
             if text.translated()
-                && (n.starts_with("itemInfo") || n.starts_with("OngoingQuestInfoList"))
+                && (n.starts_with("itemInfo")
+                    || n.starts_with("OngoingQuestInfoList")
+                    || (n.starts_with("achievement_list") && has_achievements))
             {
                 continue;
             }
@@ -255,6 +288,12 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
             &en.join("SystemEN/OngoingQuests.lub"),
             &merged.join("OngoingQuestInfoList.lub"),
         )?;
+        if has_achievements {
+            copy_file(
+                &en.join("SystemEN/achievements.lub"),
+                &merged.join("achievement_list.lub"),
+            )?;
+        }
         copy_over(&en.join("SystemEN"), &server_root.join("SystemEN"))?;
     }
     copy_data_aliased(
@@ -945,6 +984,53 @@ mod tests {
         missing[2] = client.join("unplugged.grf").to_str().unwrap().to_string();
         assert!(link(&cfg, &missing).unwrap_err().contains("unplugged.grf"));
         assert_eq!(fs::read(client.join("data.grf")).unwrap(), b"archive");
+        fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
+    }
+
+    /// A kRO client's own Korean copies must not win over the English ones
+    /// the translation carries under other names or in its Compatibility
+    /// layers (#164), and the extras list cannot reach outside its trees.
+    #[test]
+    fn the_translation_covers_achievements_map_names_and_the_message_csv() {
+        let cfg = fixture_config("extras");
+        let client = cfg.state.parent().unwrap().join("client");
+        for (path, text) in [
+            ("data.grf", "archive"),
+            ("System/achievement_list.lub", "Korean achievements"),
+            ("System/mapInfo.lub", "Korean map names"),
+        ] {
+            write(&client.join(path), text);
+        }
+        let en = cfg.root.join("vendor/ROenglishRE/Translation");
+        write(&en.join("Renewal/data/table.txt"), "renewal table");
+        write(&en.join("Renewal/SystemEN/LuaFiles514/itemInfo.lua"), "English items");
+        write(&en.join("Renewal/SystemEN/OngoingQuests.lub"), "English quests");
+        write(&en.join("Renewal/SystemEN/achievements.lub"), "English achievements");
+        write(&en.join("Compatibility/2019-06-05/SystemEN/mapInfo.lub"), "English map names");
+        write(&en.join("Compatibility/2023-08-02/data/msgstringtable.csv"), "English messages");
+        write(&en.join("Compatibility/secret.txt"), "outside");
+        write(
+            &cfg.root.join("config/TRANSLATION_EXTRAS"),
+            "# comment\n\
+             Compatibility/2019-06-05/SystemEN/mapInfo.lub\tSystemEN/mapInfo.lub\n\
+             Compatibility/2023-08-02/data/msgstringtable.csv\tdata/msgstringtable.csv\n\
+             Compatibility/2099-01-01/data/absent.txt\tdata/absent.txt\n\
+             Compatibility/secret.txt\t../../escaped.txt\n",
+        );
+        write(
+            &cfg.root.join("config/Config.local.js"),
+            "window.ROConfigLocal = {\nrenewal: true,\n};\n",
+        );
+        write(&cfg.root.join("config/index.html"), "game entry");
+        let args = vec![client.join("data.grf").to_str().unwrap().to_string()];
+        link(&cfg, &args).unwrap();
+        let read = |p: &str| fs::read_to_string(cfg.state.join("assets").join(p)).unwrap();
+        assert_eq!(read("System/achievement_list.lub"), "English achievements");
+        assert_eq!(read("System/mapInfo.lub"), "English map names");
+        assert_eq!(read(".translation/data/msgstringtable.csv"), "English messages");
+        assert!(!cfg.state.join("assets/.translation/data/absent.txt").exists());
+        assert!(!cfg.state.join("escaped.txt").exists());
+        assert!(!cfg.state.join("assets/escaped.txt").exists());
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
     }
 
