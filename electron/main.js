@@ -10,7 +10,10 @@
 // sprites render doubled on WebKit (roBrowserLegacy #1350). One engine
 // everywhere is worth ~60 MB of download.
 //
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard, screen, session, safeStorage, powerMonitor, protocol } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard, screen, session, safeStorage, powerMonitor, protocol, net } = require('electron');
+// Settings -> Tools serves its pages from ro-tool://, which has to be declared
+// before the app is ready (tools.js).
+protocol.registerSchemesAsPrivileged([require('./tools').schemePrivileges]);
 // Mods' own settings pages are served from a private scheme, which Chromium
 // only accepts if it is declared before the app is ready.
 require('./mod-settings-window').registerScheme(protocol);
@@ -961,6 +964,16 @@ function getSettings() {
 // changes how the server runs and has to go through Apply.
 const APP_PREFERENCES = new Set(['open_settings_first']);
 
+let toolsSingleton = null;
+function toolsInstance() {
+	if (!toolsSingleton) {
+		toolsSingleton = require('./tools').createTools({
+			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, log: appLog,
+		});
+	}
+	return toolsSingleton;
+}
+
 // Whether this launch opens Settings instead of the game.
 //
 // Guarded, and answering false on anything it cannot read: a settings.json the
@@ -1461,7 +1474,7 @@ const openGame = () => {
 // includes the title bar. A screen shorter than that clamps the window and the
 // page scrolls.
 const openSetup = () => makeWindow('setup', 'setup.html', { width: 620, height: 760, resizable: false, title: `${productName()} — set up your client` });
-const openSettings = () => makeWindow('settings', 'settings.html', { width: 650, height: 800, title: `${productName()} — settings` });
+const openSettings = () => makeWindow('settings', 'settings.html', { width: 700, height: 800, title: `${productName()} — settings` });
 
 
 // ---------------------------------------------------------------------------
@@ -2420,6 +2433,10 @@ const handlers = {
 	},
 
 	copy_text: ({ text }) => clipboard.writeText(String(text || '')),
+
+	// Settings -> Tools (#195).
+	tools_list: () => toolsInstance().list(),
+	open_tool: ({ id }) => toolsInstance().open(String(id)),
 
 	// Windows
 	// Reload when the window is already there, do not just focus it.
