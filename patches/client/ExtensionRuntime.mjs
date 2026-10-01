@@ -140,6 +140,28 @@ export function createRuntime({ storage, report = (...args) => console.error(...
             // cannot speak in the player's voice, and gated server-side by the
             // player's own group like any command they could type themselves.
             // Returns whether it was sent, not whether the server accepted it.
+            // Graphics passes: a full-screen GLSL fragment shader run on each
+            // frame (GraphicsPasses.mjs supplies the frame, its depth, the
+            // sun and the map's lights). Removed when the plugin is.
+            graphics: Object.freeze({
+                registerPass(spec) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!spec || typeof spec !== 'object') throw new TypeError('registerPass takes { name, fragment, uniforms?, enabled? }');
+                    const pass = {
+                        name: typeof spec.name === 'string' && spec.name ? spec.name.slice(0, 80) : 'pass',
+                        fragment: spec.fragment,
+                        uniforms: typeof spec.uniforms === 'function' ? spec.uniforms : undefined,
+                        enabled: typeof spec.enabled === 'function' ? spec.enabled : undefined,
+                    };
+                    if (typeof pass.fragment !== 'string' || !pass.fragment.includes('main') || pass.fragment.length > 65536)
+                        throw new TypeError('registerPass: fragment must be GLSL with a main(), under 64 KB');
+                    if (typeof bridge.registerPass !== 'function') return () => {};
+                    const remove = bridge.registerPass(pass, error => report(`[Plugin ${name}] ${pass.name}`, error));
+                    return cleanup(() => remove?.());
+                },
+                supported: () => Boolean(bridge.graphicsSupported?.()),
+                lights: () => freeze(copy(bridge.mapLights?.() || [])),
+            }),
             server: Object.freeze({
                 command(text) {
                     if (disposed) throw new Error(`Plugin ${name} is disposed`);

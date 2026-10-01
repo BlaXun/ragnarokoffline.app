@@ -2,6 +2,7 @@
 // Imported by Online, never by GUIComponent or NetworkManager (avoids cycles).
 import Runtime from './ExtensionRuntime.mjs';
 import { install as installAgentHook } from './AgentHook.mjs';
+import * as Graphics from './GraphicsPasses.mjs';
 import Session from 'Engine/SessionStorage.js';
 import Camera from 'Renderer/Camera.js';
 import Renderer from 'Renderer/Renderer.js';
@@ -351,6 +352,10 @@ export function init() {
         beginTargeting,
         cancelTargeting,
         serverCommand,
+        // Graphics passes (api.graphics); GraphicsPasses.mjs.
+        registerPass: Graphics.registerPass,
+        graphicsSupported: Graphics.supported,
+        mapLights: Graphics.mapLights,
     });
     const clear = () => Runtime.movement.clear('focus-lost');
     const compose = () => { composing = true; clear(); };

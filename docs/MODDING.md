@@ -1199,7 +1199,45 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 | `api.actions.perform(name, payload)` | Native actions: `attack`, `target` (toggle auto-target), `interact`, `pickup`, `menu` (game options), `shortcut` with `{ index: 0…35 }`, `shortcut:assign` and `storage:transfer` (below), or `window` with an allowed `{ name }`. Returns whether the action was dispatched, not whether the server accepted it. |
 | `api.targeting.pick({ type, label })` | Raises the client's own target cursor and resolves to a frozen `{ classId, gid, name, kind }` for what the player clicks, or `null` for ESC, empty ground, a client too old to offer it, or the player starting a skill of their own (their action wins). `type` is `mob` (default), `player` or `any`; NPCs cannot be picked. One pick at a time: a new one cancels the last, and so does disposal. |
 | `api.server.command(text)` | Sends an `@` or `#` command as if the player had typed it in chat, so the server allows exactly what the player's group allows. Anything else is refused; returns whether it was sent. |
+| `api.graphics.registerPass({ name, fragment, uniforms, enabled })` | A full-screen GLSL pass over each frame, after bloom and before anti-aliasing. Returns a function that removes it; it also goes when the plugin does. See [Graphics passes](#graphics-passes). |
 | `api.cleanup(fn)` | Register idempotent cleanup immediately after allocating a resource. The returned function can release it early. Runs on failure, scope replacement and page teardown. |
+
+### Graphics passes
+
+`api.graphics.registerPass` runs a GLSL fragment shader over every frame of the
+3D view. Write `void main()` and set `fragColor`; everything else is provided:
+
+| | |
+|---|---|
+| `vUv` | where on screen, 0..1 |
+| `uTexture` | the frame so far |
+| `uDepth`, `uHasDepth`, `linearDepth(uv)` | the scene's depth, and the distance from the camera at a point. `uHasDepth` is false on WebGL 1, where there is none |
+| `uResolution`, `uTime` | pixels, seconds |
+| `uSunDirection`, `uSunColor`, `uAmbient` | the map's light |
+| `uLights[i]`, `uLightColors[i]`, `uLightCount` | up to 32 of the map's lamps and torches already on screen: `xy` position, `z` radius, nearest first |
+
+```js
+export default function init(parameters, api) {
+    api.graphics.registerPass({
+        name: 'Sepia',
+        fragment: `
+            uniform float uAmount;
+            void main() {
+                vec3 c = texture(uTexture, vUv).rgb;
+                vec3 sepia = vec3(dot(c, vec3(0.393, 0.769, 0.189)), dot(c, vec3(0.349, 0.686, 0.168)), dot(c, vec3(0.272, 0.534, 0.131)));
+                fragColor = vec4(mix(c, sepia, uAmount), 1.0);
+            }`,
+        uniforms: () => ({ uAmount: parameters.amount / 100 }),
+    });
+}
+```
+
+`uniforms()` is called every frame and returns your own uniforms by name
+(numbers, or arrays of 2, 3, 4 or 16). `enabled()` turns the pass off without
+removing it. A shader that doesn't compile is reported in the client log and
+stays off; it can't affect anything outside the picture.
+[`mods/graphics-plus`](../mods/graphics-plus) is a complete one: grading,
+lamp glow, haze, tone mapping and more in a single pass.
 
 Allowed window actions currently cover Inventory, Equipment, SkillList, Quest,
 WorldMap, PartyFriends, WinStats and already-open Storage. Set `{ name, open: true }`
