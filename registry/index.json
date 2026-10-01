@@ -24,16 +24,8 @@
       },
       "files": [
         {
-          "path": "README.md",
-          "sha256": "41bf812d670f32ad1641f1e1b171a20ed33fb5bd94e2f9604f42e2667a1fc008"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "65998dffa84ae55470b28231d7f1d990ffbc50b72196e263ecb4fc712feb133e"
-        },
-        {
           "path": "db/item_db.yml",
-          "sha256": "20b3d15e771766dfe8ad32d2277c4eb358f8456997760d7f3f34783868a14d9f"
+          "sha256": "fc672fc7233e5ef4aad72dd24ef6c0c5cbaa71c043b841d9f712f8bbd990df0b"
         },
         {
           "path": "images/exp-card.png",
@@ -41,15 +33,23 @@
         },
         {
           "path": "images/icon.png",
-          "sha256": "e222062ad889ad8cf5f253d8eecd3ffbcf00e12d706ae84a532d11bfd9ed9355"
+          "sha256": "3de1ac34ec9b6e571b213f92414b3e73fb32785edf9981f2aa556d15741f2c61"
         },
         {
           "path": "mod.json",
-          "sha256": "4e7d04f78ecc9dc979f8966abb31e24f828131a01d7c55a3a99d9d7b26eb58e7"
+          "sha256": "f0e80cb8ee9b3d22959045dc90cb924851c0918013966cf4de4610ae5826f27f"
         },
         {
           "path": "npc/exp_card.txt",
-          "sha256": "e06490d46d57710a922eb67fffdb3f584e98725fb8bebb1a4264d8b0536bd774"
+          "sha256": "f2592e5295a059302d431f9cb071e6792bd43bb57b686e7e0e60deee623954b2"
+        },
+        {
+          "path": "README.md",
+          "sha256": "6e78b31f2a1cc8bd307efdebee6f08d3363119c98b405003424dff64c5afb305"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "a21da191a706b8adf5a4769da7e52fa446e0b4455563e749a639ae402d561d5b"
         }
       ]
     },
@@ -76,7 +76,7 @@
       "files": [
         {
           "path": "db/skill_db.yml",
-          "sha256": "42dcdf20f7c4b315c03f28a17e8da306ed477500b8c84d7b46e37eb1d39c5098"
+          "sha256": "91f4d828f2e161ce9c9418a13f8b1c94c3c238ba025841d0f14dd3b4c0cbe2c2"
         },
         {
           "path": "images/homunculus.png",
@@ -88,7 +88,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "e256016b9a6e83b3b1fea49f281866c4002f0e5dcfb511fa7d404c920792f8aa"
+          "sha256": "12c15d813f8cf80ef282e24c28fe839ab6d10ea649af9deca5a0414fddbd1657"
         }
       ]
     }
