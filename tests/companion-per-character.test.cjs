@@ -79,3 +79,16 @@ test('a character\'s companions leave with it, whoever logs in next', () => {
 	assert.ok(quit.indexOf('population_engine_persist_companion_gear(shell)') < quit.indexOf('population_engine_shell_release(shell)'),
 		'saved before they are despawned');
 });
+
+test('the population master switch turns companions off without touching their rows', () => {
+	// Off: nothing recalled at login, no row claimed or read...
+	const recall = functionBody('int population_engine_recall_companions(');
+	const gate = recall.indexOf('if (!battle_config.population_engine_enable) return 0;');
+	assert.ok(gate > 0 && gate < recall.indexOf('pop_claim_unowned_companions(owner)'),
+		'recall must stop before it claims or reads anything');
+	// ...and every @companion subcommand refused up front, as @populate is (patch 0002).
+	const acmd = patches.slice(patches.lastIndexOf(' ACMD_FUNC(companion)\n'));
+	assert.match(acmd.slice(0, 600),
+		/^ \tnullpo_retr\(-1, sd\);\n(?:\+.*\n)*?\+\tif \(!battle_config\.population_engine_enable\) \{\n\+\t\tclif_displaymessage\(fd, "The population engine is disabled\. Turn it on in the app's settings\."\);\n\+\t\treturn -1;/m,
+		'@companion must answer like @populate before any subcommand runs');
+});

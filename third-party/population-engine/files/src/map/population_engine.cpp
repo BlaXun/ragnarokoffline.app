@@ -6246,6 +6246,10 @@ static void pop_claim_unowned_companions(const map_session_data *owner)
 int population_engine_recall_companions(map_session_data *owner, uint32_t only_index)
 {
 	if (!owner || mmysql_handle == nullptr) return 0;
+	// The population master switch (Settings -> AI population) covers companions too. Off, the
+	// engine loads no databases, so a recalled shell would have no profiles or skills; and no
+	// row is read, claimed or changed, so turning it back on brings every companion back.
+	if (!battle_config.population_engine_enable) return 0;
 	if (population_engine_is_population_pc(owner->id)) return 0;
 	pop_claim_unowned_companions(owner);
 	const int16_t map_id = (int16_t)owner->m;
