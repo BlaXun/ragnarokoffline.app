@@ -1516,7 +1516,12 @@ async function checkModUpdates(fresh = false) {
   return checkingUpdates;
 }
 
-$('mods-updates').onclick = () => withButton('mods-updates', 'Checking…', 'Check for updates', () => checkModUpdates(true));
+// A real refresh: the mod list itself again (a mod added since this window
+// opened shows up), then every installed mod's latest release.
+$('mods-updates').onclick = () => withButton('mods-updates', 'Checking…', 'Check for updates', async () => {
+  await loadCatalogue({ fresh: true });
+  return checkModUpdates(true);
+});
 
 // Tabs. Every panel stays in the DOM and is only hidden, so nothing here has
 // to care which section an element lives in -- the rest of this file still
@@ -1883,14 +1888,14 @@ $('mods-search').addEventListener('input', paintCatalogue);
 // at page load, when the window may have opened on another section -- and
 // then kept for as long as this window is open.
 let loadingCatalogue = false;
-async function loadCatalogue() {
-  if (catalogue || loadingCatalogue) return;
+async function loadCatalogue({ fresh = false } = {}) {
+  if ((catalogue && !fresh) || loadingCatalogue) return;
   loadingCatalogue = true;
   $('mods-detail').hidden = true;
   $('mods-catalogue').hidden = false;
   paintCatalogue();
   try {
-    catalogue = await invoke('list_registry_mods');
+    catalogue = await invoke('list_registry_mods', { fresh });
     paintCatalogue();
   } catch (e) {
     catalogue = [];

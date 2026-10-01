@@ -1909,9 +1909,14 @@ const handlers = {
 	// The registry: an index of reviewed mods in a GitHub repository. Listed
 	// on demand rather than cached, because the interesting failure is a stale
 	// list showing a mod that has since been taken down.
-	list_registry_mods: async () => {
+	list_registry_mods: async ({ fresh } = {}) => {
 		const registry = require('./mod-registry');
-		return registry.list({ url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX });
+		const url = new URL(process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX);
+		// raw.githubusercontent.com caches a file for minutes; a refresh the
+		// player asked for gets today's list. Files still resolve against the
+		// path alone, so installs are unaffected.
+		if (fresh) url.searchParams.set('t', String(Date.now()));
+		return registry.list({ url: url.toString() });
 	},
 	// Pictures come through here rather than being loaded by the settings
 	// window: it is a privileged page, and a list nobody reviewed should not
