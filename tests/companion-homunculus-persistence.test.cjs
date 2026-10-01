@@ -21,6 +21,8 @@ const ROOT = path.join(__dirname, '..');
 const CMDS = path.join(ROOT, 'stack', 'src', 'cmds.rs');
 const ENGINE = path.join(ROOT, 'third-party', 'population-engine', 'files', 'src', 'map', 'population_engine.cpp');
 const cmds = fs.readFileSync(CMDS, 'utf8').replace(/\r\n/g, '\n');
+// The CREATE lives in the one schema file cmds.rs includes; the upgrade list stays in cmds.rs.
+const schema = fs.readFileSync(path.join(ROOT, 'third-party', 'population-engine', 'files', 'sql-files', 'population_engine', 'cp_companion_persistence.sql'), 'utf8').replace(/\r\n/g, '\n');
 const engine = fs.readFileSync(ENGINE, 'utf8').replace(/\r\n/g, '\n');
 
 const COLUMNS = {
@@ -52,7 +54,7 @@ function gearSnapshotBody() {
 test('the v8 columns exist in the CREATE TABLE literal and in the ALTER list', () => {
 	for (const [name, definition] of Object.entries(COLUMNS)) {
 		// fresh installs
-		assert.match(cmds, new RegExp('`' + name + '`\\s+' + definition.replace(/ /g, '\\s+')),
+		assert.match(schema, new RegExp('`' + name + '`\\s+' + definition.replace(/ /g, '\\s+')),
 			`${name} must appear in the CREATE TABLE a fresh install runs`);
 		// upgrades
 		assert.ok(cmds.includes(`("${name}", "${definition}")`),
@@ -63,9 +65,9 @@ test('the v8 columns exist in the CREATE TABLE literal and in the ALTER list', (
 test('hom_enabled is nullable, and the comments say why', () => {
 	// NULL has to mean "never chosen": that is what keeps an upgrade from re-enabling a pet the
 	// player switched off, and what lets the alchemist default stay on.
-	assert.match(cmds, /`hom_enabled`\s+TINYINT\s+NULL DEFAULT NULL/,
+	assert.match(schema, /`hom_enabled`\s+TINYINT\s+NULL DEFAULT NULL/,
 		'hom_enabled must be NULLable');
-	assert.match(cmds, /\(v8\)[\s\S]{0,700}?never chosen/,
+	assert.match(schema, /\(v8\)[\s\S]{0,700}?never chosen/,
 		'the schema must record what NULL means, or the next reader will "simplify" it away');
 });
 

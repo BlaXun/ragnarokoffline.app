@@ -128,8 +128,10 @@ test('the seeders filter on the selection AND the filter is defined in that tran
 
 test('the v7 column reaches BOTH a fresh install and an existing one', () => {
 	const r = read(CMDS);
-	// Fresh install: the CREATE TABLE.
-	assert.match(r, /`skill_preset`\s+TEXT\s+NULL DEFAULT NULL/,
+	// Fresh install: the CREATE TABLE, in the schema file cmds.rs includes.
+	assert.match(r, /include_str!\(".*cp_companion_persistence\.sql"\)/,
+		'the supervisor must run the schema file, not a copy of it');
+	assert.match(read(SQL), /`skill_preset`\s+TEXT\s+NULL DEFAULT NULL/,
 		'the CREATE must carry the column for a fresh install');
 	// Existing install: the idempotent migration loop. Without this a player who
 	// installed before v7 keeps the old schema and every selection write fails.
