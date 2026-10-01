@@ -1473,6 +1473,7 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     phase(cfg, "Starting the database…");
     if let Some(credentials) = &credentials { migrate_service_credentials(dk, credentials)?; }
     wait_for_db(dk)?;
+    crate::accounts::ensure_password_columns(dk)?;
 
     // Only sql/03-account.sql seeds the GM, during first database creation.
     // An existing database may intentionally have renamed, disabled or deleted

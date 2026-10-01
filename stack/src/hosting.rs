@@ -116,7 +116,7 @@ pub fn effective_for_start(
 fn unsafe_admin_count(dk: &Docker) -> Result<u32, String> {
     // Count every enabled privileged account, including renamed GMs. Also
     // cover the shipped login if its group was changed. No passwords leave SQL.
-    let result = dk.private_sql("SELECT COUNT(*) FROM login WHERE sex<>'S' AND state=0 AND (group_id>0 OR LOWER(userid)='ragnarok') AND (OCTET_LENGTH(user_pass) NOT BETWEEN 8 AND 23 OR BINARY user_pass REGEXP '[^ -~]' OR TRIM(user_pass)='' OR LOWER(user_pass)=LOWER(userid));")?;
+    let result = dk.private_sql(&format!("SELECT COUNT(*) FROM login WHERE sex<>'S' AND state=0 AND (group_id>0 OR LOWER(userid)='ragnarok') AND ({});", crate::accounts::weak_password_sql()))?;
     result
         .trim()
         .parse()
