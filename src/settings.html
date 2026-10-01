@@ -474,6 +474,7 @@
     <div id="mods-list" class="note">Looking…</div>
     <div class="actions" style="margin-top:10px">
       <button id="mods-browse" class="ghost">Find mods…</button>
+      <button id="mods-updates" class="ghost">Check for updates</button>
       <button id="mods-install" class="ghost">Install from a folder…</button>
       <button id="mods-folder" class="ghost">Open mods folder</button>
       <button id="mods-apply" class="ghost">Apply</button>
@@ -484,10 +485,12 @@
       <div id="mods-catalogue" class="note">Looking…</div>
       <div id="mods-detail" hidden></div>
       <p class="note" style="margin-top:8px">These are mods people have published to the
-         app's mod list. Each one is a folder in a public repository and gets there by pull
-         request, so somebody has read it before it appears here &mdash; but a mod can change
-         the rules of your server and run code in your game window, so install ones you
-         want, not ones you are merely curious about.</p>
+         app's mod list. Each one gets there by pull request, so somebody has read it before
+         it appears here. Most are a folder in the app's own repository; the ones marked
+         <em>from GitHub</em> live in their author's repository instead, and the list vouches
+         for that repository rather than for each release, which its author can change without
+         review. A mod can change the rules of your server and run code in your game window,
+         so install ones you want, not ones you are merely curious about.</p>
     </div>
     <p class="note">A mod is a folder. Drop one in and it appears here. Server
        changes need the server restarted, which Apply does; client changes —
@@ -1180,6 +1183,7 @@ async function refreshMods() {
   }
   modState = {};
   modSettings = {}; modSettingsBaseline = {};
+  updateSlots = {};
   box.innerHTML = '';
   for (const m of mods) {
     // A refused mod is not a mod the player can turn on, so it does not get a
@@ -1204,6 +1208,11 @@ async function refreshMods() {
       + (m.grantsCommands
         ? '<br><span style="color:var(--dim)">Changes which commands players can use.</span>'
         : '')
+      // Where a mod installed from its author's own repository came from.
+      // Its updates are published there, not reviewed here, so say whose.
+      + (m.source
+        ? `<br><span style="color:var(--dim); font-size:11px">From github.com/${esc(m.source.repo)}, release ${esc(m.source.tag)}</span>`
+        : '')
       + (m.refused
         ? `<br><span style="color:var(--bad, #e5534b)">Not loaded — ${esc(m.reason)}</span>`
         : '')
@@ -1214,6 +1223,13 @@ async function refreshMods() {
         .map(p => `<br><span style="color:var(--warn, #d98)">Server could not read part of this mod — ${esc(p)}</span>`)
         .join(''));
     row.append(cb, text);
+    if (m.source) {
+      // Filled in by paintUpdates once a release lookup has answered.
+      const slot = document.createElement('span');
+      slot.style.cssText = 'display:block';
+      text.append(slot);
+      updateSlots[m.name] = slot;
+    }
     // Only what the player installed: a mod that ships with the app lives in
     // the app itself and can only be switched off.
     if (!m.bundled) {
@@ -1297,7 +1313,82 @@ async function refreshMods() {
       box.append(options);
     }
   }
+  paintUpdates();
 }
+
+// Updates for mods installed from their author's own repository. Looked up
+// when the Mods tab opens and when asked, never in the background, and only
+// ever offered: the player clicks Update, sees the release, and confirms.
+let updateSlots = {};
+let modUpdates = {};
+let checkingUpdates = null;
+
+function paintUpdates() {
+  for (const [name, slot] of Object.entries(updateSlots)) {
+    slot.innerHTML = '';
+    const u = modUpdates[name];
+    if (!u) continue;
+    const line = document.createElement('span');
+    line.style.cssText = 'font-size:11px';
+    if (u.error) {
+      line.style.color = 'var(--dim)';
+      line.textContent = 'Could not check for updates: ' + u.error;
+    } else if (u.listed === false) {
+      line.style.color = 'var(--dim)';
+      line.textContent = 'No longer in the mod list, so updates are not offered.';
+    } else if (u.update) {
+      line.style.color = 'var(--warn, #d98)';
+      line.textContent = `Update available (${u.installed} → ${u.latest}) `;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'ghost';
+      button.textContent = 'Update…';
+      button.style.cssText = 'font-size:11px; padding:1px 8px; margin-left:4px';
+      button.onclick = async event => {
+        // Inside the row's <label>, like Remove.
+        event.preventDefault();
+        await installMod({ name }, button);
+      };
+      line.append(button);
+    } else {
+      line.style.color = 'var(--dim)';
+      line.textContent = 'Up to date. ';
+    }
+    if (u.url) {
+      const notes = document.createElement('a');
+      notes.href = '#';
+      notes.textContent = 'Release notes';
+      notes.style.cssText = 'margin-left:6px; color:inherit';
+      notes.onclick = event => {
+        event.preventDefault();
+        invoke('open_release_notes', { url: u.url }).catch(e => log('error: ' + e));
+      };
+      line.append(notes);
+    }
+    slot.append(line);
+  }
+}
+
+async function checkModUpdates(fresh = false) {
+  if (checkingUpdates) return checkingUpdates;
+  checkingUpdates = (async () => {
+    try {
+      const results = await invoke('check_mod_updates', { fresh });
+      modUpdates = {};
+      for (const u of results) modUpdates[u.name] = u;
+      paintUpdates();
+      const waiting = results.filter(u => u.update).length;
+      return results.length
+        ? (waiting ? `${waiting} mod update${waiting === 1 ? '' : 's'} available.` : 'Mods from GitHub are up to date.')
+        : 'No mods installed from GitHub.';
+    } finally {
+      checkingUpdates = null;
+    }
+  })();
+  return checkingUpdates;
+}
+
+$('mods-updates').onclick = () => withButton('mods-updates', 'Checking…', 'Check for updates', () => checkModUpdates(true));
 
 // Tabs. Every panel stays in the DOM and is only hidden, so nothing here has
 // to care which section an element lives in -- the rest of this file still
@@ -1314,6 +1405,7 @@ function showTab(key, focus = false) {
     panel.hidden = !on;
   }
   if (focus) $('tab-' + key).focus();
+  if (key === 'mods') checkModUpdates().catch(e => log('error: ' + e));
   // Coming back to a section should not also restore someone else's scroll.
   window.scrollTo(0, 0);
   try { localStorage.setItem('settings-tab', key); } catch { /* private window */ }
@@ -1404,7 +1496,7 @@ function matchScore(mod, terms) {
   if (!terms.length) return 1;
   const name = mod.name.toLowerCase();
   const tags = mod.tags.join(' ');
-  const haystack = `${name} ${mod.author} ${mod.description} ${tags}`.toLowerCase();
+  const haystack = `${name} ${mod.author} ${mod.description} ${tags} ${mod.source ? mod.source.github : ''}`.toLowerCase();
   let score = 0;
   for (const term of terms) {
     // Every term has to appear somewhere, so two words narrow rather than widen.
@@ -1465,11 +1557,39 @@ function detailFor(mod) {
   const install = document.createElement('button');
   install.className = 'ghost';
   install.style.marginTop = '6px';
-  install.textContent = Object.hasOwn(modState, mod.name) ? 'Reinstall' : 'Install';
+  install.textContent = installLabel(mod);
   install.onclick = () => installMod(mod, install);
   title.append(install);
   head.append(title);
   box.append(head);
+
+  // A mod published from its author's own repository: say whose, and which
+  // release an install would get -- one lookup, made because the player
+  // opened this page.
+  if (mod.source) {
+    const from = document.createElement('p');
+    from.className = 'note';
+    from.textContent = `From github.com/${mod.source.github}. The mod list vouches for this repository, `
+      + 'not for each release: its author can publish a new version without review. '
+      + 'Installing shows you the release first.';
+    const latest = document.createElement('span');
+    latest.textContent = ' Looking up the latest release…';
+    from.append(latest);
+    box.append(from);
+    invoke('registry_release', { name: mod.name }).then(release => {
+      const date = release.publishedAt ? ` (${release.publishedAt.slice(0, 10)})` : '';
+      latest.textContent = ` Latest release: ${release.tag}${date}. `;
+      const notes = document.createElement('a');
+      notes.href = '#';
+      notes.textContent = 'Release notes';
+      notes.style.color = 'inherit';
+      notes.onclick = event => {
+        event.preventDefault();
+        invoke('open_release_notes', { url: release.url }).catch(e => log('error: ' + e));
+      };
+      latest.append(notes);
+    }).catch(e => { latest.textContent = ' ' + String(e); });
+  }
 
   if (mod.description) {
     const description = document.createElement('p');
@@ -1521,13 +1641,30 @@ function detailFor(mod) {
   }
 }
 
+function installLabel(mod) {
+  const installed = Object.hasOwn(modState, mod.name) || Object.hasOwn(updateSlots, mod.name);
+  if (mod.source) {
+    const u = modUpdates[mod.name];
+    return u && u.update ? 'Update…' : installed ? 'Reinstall…' : 'Install…';
+  }
+  return installed ? 'Reinstall' : 'Install';
+}
+
 async function installMod(mod, button) {
   const was = button.textContent;
   button.disabled = true; button.textContent = 'Installing…';
   try {
     const result = await invoke('install_registry_mod', { name: mod.name });
-    log(`installed ${result.name} ${result.version}`);
+    // A mod from GitHub asks first, in a dialog of the app's own; saying no
+    // there is not an error.
+    if (result && result.cancelled) {
+      log(result.message || 'Cancelled.');
+      button.textContent = was; button.disabled = false;
+      return;
+    }
+    log(result.message || `installed ${result.name} ${result.version}`);
     button.textContent = 'Installed';
+    if (modUpdates[result.name]) modUpdates[result.name] = { ...modUpdates[result.name], update: false, installed: result.tag || modUpdates[result.name].installed };
     await refreshMods();
   } catch (e) {
     log('error: ' + e);
@@ -1558,7 +1695,7 @@ function paintCatalogue() {
     const button = document.createElement('button');
     button.className = 'ghost';
     button.style.cssText = 'flex:none';
-    button.textContent = Object.hasOwn(modState, mod.name) ? 'Reinstall' : 'Install';
+    button.textContent = installLabel(mod);
     button.onclick = () => installMod(mod, button);
     if (mod.icon) {
       const icon = document.createElement('img');
@@ -1584,6 +1721,12 @@ function paintCatalogue() {
       meta.style.cssText = 'color:var(--dim); font-size:11px';
       meta.textContent = ' ' + by;
       text.append(meta);
+    }
+    if (mod.source) {
+      const from = document.createElement('span');
+      from.style.cssText = 'color:var(--dim); font-size:11px';
+      from.textContent = ` from GitHub (${mod.source.github})`;
+      text.append(from);
     }
     if (mod.tags.length) {
       const tags = document.createElement('span');
