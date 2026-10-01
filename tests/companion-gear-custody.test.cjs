@@ -49,3 +49,14 @@ test('both halves of a move are saved straight away, not on the next poll', () =
 	assert.ok(functionBody('void population_engine_companion_equip_traded(').includes('population_engine_persist_companion_gear(shell)'),
 		'a trade must write the companion row immediately');
 });
+
+test('recall reads all its rows before it spawns anyone', () => {
+	// Spawning queries the same handle (the homunculus sync reads its row) and Sql_Query frees the
+	// current result, so recalling while iterating stopped at the first alchemist-line companion.
+	const body = functionBody('int population_engine_recall_companions(');
+	const free = body.indexOf('Sql_FreeResult(mmysql_handle)');
+	const spawn = body.indexOf('population_engine_recall_one_companion(');
+	assert.ok(free > 0 && spawn > free, 'the result must be freed before the first recall');
+	assert.ok(!/Sql_NextRow\([^)]*\)[\s\S]*population_engine_recall_one_companion\(/.test(body.slice(0, free)),
+		'no recall may happen inside the row loop');
+});

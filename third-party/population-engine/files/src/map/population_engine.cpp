@@ -6127,60 +6127,85 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 	}
 	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) { Sql_ShowDebug(mmysql_handle); return 0; }
 
-	int recalled = 0; char *data;
-	while (SQL_SUCCESS == Sql_NextRow(mmysql_handle)) {
-		int32_t col = 0;
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t index_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); char namebuf[NAME_LENGTH];
+	// Read every row before spawning anything. Spawning runs queries of its own on this same
+	// handle (the homunculus sync reads its row), and Sql_Query frees the current result - so
+	// iterating the result while recalling stopped at the first alchemist-line companion and
+	// the rest of the party silently stayed behind.
+	std::vector<std::vector<std::pair<bool, std::string>>> rows;
+	{
+		const size_t ncols = static_cast<size_t>(Sql_NumColumns(mmysql_handle));
+		while (SQL_SUCCESS == Sql_NextRow(mmysql_handle)) {
+			std::vector<std::pair<bool, std::string>> &r = rows.emplace_back();
+			for (size_t c = 0; c < ncols; ++c) {
+				char *cell = nullptr;
+				Sql_GetData(mmysql_handle, static_cast<int32>(c), &cell, nullptr);
+				r.emplace_back(cell != nullptr, cell != nullptr ? cell : "");
+			}
+		}
+		Sql_FreeResult(mmysql_handle);
+	}
+
+	int recalled = 0;
+	for (const std::vector<std::pair<bool, std::string>> &row : rows) {
+		size_t col = 0;
+		const char *data = nullptr;
+		// NULL comes back as nullptr, as Sql_GetData reported it; a short row reads as NULL.
+		auto next = [&row, &col]() -> const char * {
+			if (col >= row.size()) { ++col; return nullptr; }
+			const std::pair<bool, std::string> &cell = row[col++];
+			return cell.first ? cell.second.c_str() : nullptr;
+		};
+		data = next(); uint32_t index_ = atoi(data);
+		data = next(); char namebuf[NAME_LENGTH];
 		safestrncpy(namebuf, data != nullptr ? data : "", NAME_LENGTH);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int16_t job_id = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int sexv = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int hair_style = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int hair_color = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int cloth_color = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t garment = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t option_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t weapon = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t shield = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t head_top = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t head_mid = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t head_bottom = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t armor = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t shoes = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t acc_l = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t acc_r = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int base_level = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int job_level = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int str = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int agi = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int vit = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int intl = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int dex = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int luk = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int pow_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int sta_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int wis_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int spl_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int con_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int crt_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int mode_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int duty_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int heal_at_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); int emergency_at_ = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t c_top = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t c_mid = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t c_low = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t c_garment = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t sh_armor = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t sh_weapon = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t sh_shield = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t sh_shoes = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t sh_acc_l = atoi(data);
-		Sql_GetData(mmysql_handle, col++, &data, nullptr); uint32_t sh_acc_r = atoi(data);
+		data = next(); int16_t job_id = atoi(data);
+		data = next(); int sexv = atoi(data);
+		data = next(); int hair_style = atoi(data);
+		data = next(); int hair_color = atoi(data);
+		data = next(); int cloth_color = atoi(data);
+		data = next(); uint32_t garment = atoi(data);
+		data = next(); uint32_t option_ = atoi(data);
+		data = next(); uint32_t weapon = atoi(data);
+		data = next(); uint32_t shield = atoi(data);
+		data = next(); uint32_t head_top = atoi(data);
+		data = next(); uint32_t head_mid = atoi(data);
+		data = next(); uint32_t head_bottom = atoi(data);
+		data = next(); uint32_t armor = atoi(data);
+		data = next(); uint32_t shoes = atoi(data);
+		data = next(); uint32_t acc_l = atoi(data);
+		data = next(); uint32_t acc_r = atoi(data);
+		data = next(); int base_level = atoi(data);
+		data = next(); int job_level = atoi(data);
+		data = next(); int str = atoi(data);
+		data = next(); int agi = atoi(data);
+		data = next(); int vit = atoi(data);
+		data = next(); int intl = atoi(data);
+		data = next(); int dex = atoi(data);
+		data = next(); int luk = atoi(data);
+		data = next(); int pow_ = atoi(data);
+		data = next(); int sta_ = atoi(data);
+		data = next(); int wis_ = atoi(data);
+		data = next(); int spl_ = atoi(data);
+		data = next(); int con_ = atoi(data);
+		data = next(); int crt_ = atoi(data);
+		data = next(); int mode_ = atoi(data);
+		data = next(); int duty_ = atoi(data);
+		data = next(); int heal_at_ = atoi(data);
+		data = next(); int emergency_at_ = atoi(data);
+		data = next(); uint32_t c_top = atoi(data);
+		data = next(); uint32_t c_mid = atoi(data);
+		data = next(); uint32_t c_low = atoi(data);
+		data = next(); uint32_t c_garment = atoi(data);
+		data = next(); uint32_t sh_armor = atoi(data);
+		data = next(); uint32_t sh_weapon = atoi(data);
+		data = next(); uint32_t sh_shield = atoi(data);
+		data = next(); uint32_t sh_shoes = atoi(data);
+		data = next(); uint32_t sh_acc_l = atoi(data);
+		data = next(); uint32_t sh_acc_r = atoi(data);
 		// v7: the player's skill selection, or NULL when never chosen. A NULL
 		// column must stay distinguishable from an empty one (see the selector).
 		char presetbuf[512];
-		Sql_GetData(mmysql_handle, col++, &data, nullptr);
+		data = next();
 		if (data != nullptr)
 			safestrncpy(presetbuf, data, sizeof(presetbuf));
 		const char* skill_preset = (data != nullptr) ? presetbuf : nullptr;
@@ -6195,7 +6220,6 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 			skill_preset);
 		recalled++;
 	}
-	Sql_FreeResult(mmysql_handle);
 	if (recalled > 0) {
 		ShowInfo("Population engine: recalled %d companion(s) for owner %u\n", recalled, owner->status.account_id);
 		// Roster changed: refresh any open panel without making it poll.

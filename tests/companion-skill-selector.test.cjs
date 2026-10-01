@@ -87,7 +87,7 @@ test('the selection is threaded through ALL FOUR recall touchpoints', () => {
 	// 2. the row reader must tolerate NULL, which is the "auto" state
 	const reader = e.slice(e.indexOf('uint32_t sh_acc_r = atoi(data);'));
 	assert.match(reader.slice(0, 900),
-		/Sql_GetData\(mmysql_handle, col\+\+, &data, nullptr\);\s*\n\s*if \(data != nullptr\)/,
+		/data = next\(\);\s*\n\s*if \(data != nullptr\)/,
 		'the reader must test the column for NULL rather than copying it blindly');
 
 	// 3. the call site passes it
