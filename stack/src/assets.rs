@@ -300,7 +300,7 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
         &cfg.root.join("client-assets/data"),
         &server_root.join("data"),
     )?;
-    let (plugins, item_tables, quest_tables) = overlay_mods(cfg, &server_root, &merged)?;
+    let (plugins, item_tables, quest_tables, view_tables) = overlay_mods(cfg, &server_root, &merged)?;
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
     fnv(&mut fingerprint, b"owned-assets-v2");
     fnv(&mut fingerprint, text.as_str().as_bytes());
@@ -339,7 +339,7 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
         format!("{fingerprint:016x}"),
     )
     .map_err(|e| e.to_string())?;
-    write_client_config(cfg, &server_root, &plugins, &item_tables, &quest_tables, text, packetver)?;
+    write_client_config(cfg, &server_root, &plugins, &item_tables, &quest_tables, &view_tables, text, packetver)?;
     copy_file(
         &cfg.root.join("config/index.html"),
         &server_root.join("index.html"),
@@ -365,10 +365,11 @@ fn overlay_mods(
     cfg: &Config,
     server_root: &Path,
     merged: &Path,
-) -> Result<(Vec<(String, String)>, Vec<String>, Vec<String>), String> {
+) -> Result<(Vec<(String, String)>, Vec<String>, Vec<String>, ViewTables), String> {
     let mut plugins = Vec::new();
     let mut item_tables = Vec::new();
     let mut quest_tables = Vec::new();
+    let mut view_tables = ViewTables::default();
     // The player's answers to whatever each mod declared in its mod.json.
     let saved = crate::mods::read_settings(&cfg.state)?;
     for m in crate::mods::enabled(cfg) {
@@ -380,9 +381,10 @@ fn overlay_mods(
         copy_over(&m.dir.join("BGM"), &server_root.join("BGM"))?;
         // Client tables. itemInfo is merged rather than replaced; see
         // copy_system_layer.
-        let (items, quests) = copy_system_layer(&m.dir.join("System"), merged, &m.name)?;
+        let (items, quests, views) = copy_system_layer(&m.dir.join("System"), merged, &m.name)?;
         item_tables.extend(items);
         quest_tables.extend(quests);
+        view_tables.extend(views);
         for misplaced in item_tables_under(&m.dir.join("data"), "data") {
             eprintln!(
                 "mods: {} has {misplaced}, but the client reads item tables only from System/ -- \
@@ -408,7 +410,7 @@ fn overlay_mods(
             plugins.push((m.name.clone(), pars));
         }
     }
-    Ok((plugins, item_tables, quest_tables))
+    Ok((plugins, item_tables, quest_tables, view_tables))
 }
 
 /// FNV-1a, the same one `guest_fingerprint` uses, fed a piece at a time.
@@ -631,11 +633,12 @@ fn copy_system_layer(
     src: &Path,
     merged: &Path,
     mod_name: &str,
-) -> Result<(Vec<String>, Vec<String>), String> {
+) -> Result<(Vec<String>, Vec<String>, ViewTables), String> {
     let mut added = Vec::new();
     let mut quests = Vec::new();
+    let mut views = ViewFiles::default();
     if !src.exists() {
-        return Ok((added, quests));
+        return Ok((added, quests, ViewTables::default()));
     }
     // Named for the mod so two mods can each ship one, and so the file cannot
     // collide with the translation's own copy.
@@ -669,6 +672,18 @@ fn copy_system_layer(
             };
             copy_file(&from, &merged.join(&dst_name))?;
             added.push(dst_name);
+        } else if let (true, Some((kind, role))) = (from.is_file(), view_table(&name)) {
+            // The sprite tables behind a new monster's or item's look. Copied
+            // aside like item tables, and paired below.
+            let ext = if name.to_lowercase().ends_with(".lua") { "lua" } else { "lub" };
+            let stem = name[..name.rfind('.').unwrap_or(name.len())].to_string();
+            let dst_name = format!("{stem}-{safe}.{ext}");
+            if views.has(kind, role) {
+                eprintln!("mods: {mod_name} has more than one {kind} {role} table in System/; only the first is used");
+                continue;
+            }
+            copy_file(&from, &merged.join(&dst_name))?;
+            views.set(kind, role, dst_name);
         } else if from.is_file() && is_quest_table(&name) {
             let dst_name = match quests.len() {
                 0 => format!("OngoingQuestInfoList-{safe}.lub"),
@@ -690,7 +705,148 @@ fn copy_system_layer(
             copy_file(&from, &to)?;
         }
     }
-    Ok((added, quests))
+    let views = views.pair(merged, mod_name)?;
+    Ok((added, quests, views))
+}
+
+/// The client's sprite tables that a mod adds rows to (`customLuaTables` in
+/// the roBrowser fork's DBManager.js). Each is an id file and a name file in
+/// the official format, except weapons, which are one file:
+///
+///   accessory  accessoryid + accname          what a headgear looks like on you
+///   robe       spriterobeid + spriterobename  what a garment looks like
+///   monster    npcidentity + jobname          which sprite a monster/NPC id uses
+///   weapon     weapontable                    what a weapon looks like
+///
+/// Loaded after the base, in mod order, and merged over it by id: the last
+/// mod to define an id wins, as in db/.
+#[derive(Debug, Default, PartialEq)]
+pub struct ViewTables {
+    pub accessory: Vec<(String, String)>,
+    pub robe: Vec<(String, String)>,
+    pub monster: Vec<(String, String)>,
+    pub weapon: Vec<String>,
+}
+
+impl ViewTables {
+    fn extend(&mut self, other: ViewTables) {
+        self.accessory.extend(other.accessory);
+        self.robe.extend(other.robe);
+        self.monster.extend(other.monster);
+        self.weapon.extend(other.weapon);
+    }
+
+    fn is_empty(&self) -> bool {
+        self.accessory.is_empty() && self.robe.is_empty() && self.monster.is_empty() && self.weapon.is_empty()
+    }
+
+    /// The `customLuaTables` entry for Config.local.js.
+    fn config_entry(&self) -> String {
+        let pairs = |list: &[(String, String)]| {
+            list.iter()
+                .map(|(id, name)| format!("['System/{id}', 'System/{name}']"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        let mut parts = Vec::new();
+        for (key, list) in [("accessory", &self.accessory), ("robe", &self.robe), ("monster", &self.monster)] {
+            if !list.is_empty() {
+                parts.push(format!("{key}: [{}]", pairs(list)));
+            }
+        }
+        if !self.weapon.is_empty() {
+            let files = self.weapon.iter().map(|f| format!("'System/{f}'")).collect::<Vec<_>>().join(", ");
+            parts.push(format!("weapon: [{files}]"));
+        }
+        format!("\tcustomLuaTables: {{ {} }},\n", parts.join(", "))
+    }
+}
+
+/// One mod's view-table files, before they are paired up.
+#[derive(Default)]
+struct ViewFiles {
+    files: std::collections::BTreeMap<(&'static str, &'static str), String>,
+}
+
+impl ViewFiles {
+    fn has(&self, kind: &'static str, role: &'static str) -> bool {
+        self.files.contains_key(&(kind, role))
+    }
+
+    fn set(&mut self, kind: &'static str, role: &'static str, file: String) {
+        self.files.insert((kind, role), file);
+    }
+
+    /// Pair each id file with its name file. A name table whose keys are plain
+    /// numbers needs no id file, but the client always loads one first, so it
+    /// gets an empty stand-in. An id file with no names is only a warning.
+    fn pair(self, merged: &Path, mod_name: &str) -> Result<ViewTables, String> {
+        let mut out = ViewTables::default();
+        for kind in ["accessory", "robe", "monster"] {
+            let id = self.files.get(&(kind, "id")).cloned();
+            let Some(name) = self.files.get(&(kind, "name")).cloned() else {
+                if id.is_some() {
+                    eprintln!("mods: {mod_name} has a {kind} id table in System/ but no name table beside it, so it does nothing");
+                }
+                continue;
+            };
+            let id = match id {
+                Some(id) => id,
+                None => {
+                    // One stand-in per mod and table, never shared: the client
+                    // mounts each id file under its own name while it loads, and
+                    // two loads of one name at once unmount it from under each
+                    // other, which leaves its Lua state unusable (every table
+                    // after that fails with "memory access out of bounds").
+                    let stub = format!("ids-none-{kind}-{}.lua", safe_name(mod_name));
+                    fs::write(merged.join(&stub), "-- An id table for a name table that needs none.\n")
+                        .map_err(|e| format!("writing {stub}: {e}"))?;
+                    stub
+                }
+            };
+            let entry = (id, name);
+            match kind {
+                "accessory" => out.accessory.push(entry),
+                "robe" => out.robe.push(entry),
+                _ => out.monster.push(entry),
+            }
+        }
+        if let Some(weapon) = self.files.get(&("weapon", "table")) {
+            out.weapon.push(weapon.clone());
+        }
+        Ok(out)
+    }
+}
+
+/// A mod name as part of a file name, as the item tables do it.
+fn safe_name(mod_name: &str) -> String {
+    mod_name
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
+        .collect()
+}
+
+/// Which view table a file in `System/` is, by the client's own file names:
+/// `accname.lub`, `jobname.lua`, `accessoryid_custom.lub`, ...
+fn view_table(name: &str) -> Option<(&'static str, &'static str)> {
+    let lower = name.to_lowercase();
+    if !(lower.ends_with(".lua") || lower.ends_with(".lub")) {
+        return None;
+    }
+    // Longer prefixes first: spriterobeid and spriterobename share a start.
+    const TABLES: [(&str, &str, &str); 7] = [
+        ("accessoryid", "accessory", "id"),
+        ("accname", "accessory", "name"),
+        ("spriterobeid", "robe", "id"),
+        ("spriterobename", "robe", "name"),
+        ("npcidentity", "monster", "id"),
+        ("jobname", "monster", "name"),
+        ("weapontable", "weapon", "table"),
+    ];
+    TABLES
+        .iter()
+        .find(|(prefix, _, _)| lower.starts_with(prefix))
+        .map(|(_, kind, role)| (*kind, *role))
 }
 
 /// `OngoingQuestInfoList.lub`, `OngoingQuestInfoList_True.lub` -- the quest
@@ -822,6 +978,7 @@ fn write_client_config(
     plugins: &[(String, String)],
     item_tables: &[String],
     quest_tables: &[String],
+    view_tables: &ViewTables,
     text: GameText,
     packetver: &str,
 ) -> Result<(), String> {
@@ -882,6 +1039,9 @@ fn write_client_config(
             .join(", ");
         insert_before_close(body, &format!("\tcustomQuestInfo: [{list}],\n"))
     };
+    // The sprite tables behind new monsters and item looks: after the base,
+    // in mod order, the last to define an id wins.
+    let body = if view_tables.is_empty() { body } else { insert_before_close(body, &view_tables.config_entry()) };
     let out = if plugins.is_empty() {
         body
     } else {
@@ -1363,7 +1523,7 @@ mod tests {
         write(&src.join("itemInfo.lua"), "MOD ADDITIONS");
         write(&src.join("OngoingQuests.lub"), "other table");
 
-        let (added, _) = copy_system_layer(&src, &merged, "my-mod").unwrap();
+        let (added, _, _) = copy_system_layer(&src, &merged, "my-mod").unwrap();
 
         assert_eq!(added, vec!["itemInfo-my-mod.lua".to_string()]);
         // The base is untouched...
@@ -1395,7 +1555,7 @@ mod tests {
         write(&merged.join("OngoingQuestInfoList.lub"), "BASE");
         write(&src.join("OngoingQuestInfoList.lub"), "MOD QUESTS");
         write(&src.join("OngoingQuestInfoList_True.lub"), "MORE QUESTS");
-        let (items, quests) = copy_system_layer(&src, &merged, "story").unwrap();
+        let (items, quests, _) = copy_system_layer(&src, &merged, "story").unwrap();
         assert!(items.is_empty());
         assert_eq!(
             quests,
@@ -1404,6 +1564,71 @@ mod tests {
         assert_eq!(fs::read_to_string(merged.join("OngoingQuestInfoList.lub")).unwrap(), "BASE");
         assert_eq!(fs::read_to_string(merged.join("OngoingQuestInfoList-story.lub")).unwrap(), "MOD QUESTS");
         assert_eq!(fs::read_to_string(merged.join("OngoingQuestInfoList-story.2.lub")).unwrap(), "MORE QUESTS");
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// Two pairs that need a stand-in id table each get their own: the client
+    /// mounts id files by name, and a shared one broke every table after it.
+    #[test]
+    fn stand_in_id_tables_are_never_shared() {
+        let tmp = std::env::temp_dir().join(format!("ro-sysvs-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&tmp);
+        let merged = tmp.join("merged");
+        fs::create_dir_all(&merged).unwrap();
+        let a = tmp.join("a/System");
+        write(&a.join("accname.lub"), "AccNameTable = { [5001] = \"_x\" }");
+        write(&a.join("jobname.lub"), "JobNameTable = { [25001] = \"PORING\" }");
+        let (_, _, views) = copy_system_layer(&a, &merged, "a").unwrap();
+        let mut stubs = vec![views.accessory[0].0.clone(), views.monster[0].0.clone()];
+        stubs.sort();
+        stubs.dedup();
+        assert_eq!(stubs.len(), 2, "{stubs:?}");
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// A new monster's sprite and a new headgear's look are rows added to the
+    /// client's tables, not replacements of them: each file is kept aside under
+    /// the mod's name and paired, and the base is untouched.
+    #[test]
+    fn view_tables_are_kept_aside_paired_and_listed_in_mod_order() {
+        let tmp = std::env::temp_dir().join(format!("ro-sysv-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&tmp);
+        let merged = tmp.join("merged");
+        fs::create_dir_all(&merged).unwrap();
+        write(&merged.join("accname.lub"), "BASE");
+        let a = tmp.join("a/System");
+        write(&a.join("npcidentity.lub"), "jobtbl.JT_MY_MOB = 31001");
+        write(&a.join("jobname.lub"), "JobNameTable = { [jobtbl.JT_MY_MOB] = \"MY_MOB\" }");
+        write(&a.join("accname.lua"), "AccNameTable = { [2001] = \"_my_hat\" }");
+        write(&a.join("weapontable.lub"), "WeaponNameTable = {}");
+        write(&a.join("spriterobeid.lub"), "an id table with no names");
+        let b = tmp.join("b/System");
+        write(&b.join("accessoryid.lub"), "ACCESSORY_IDs = { ACCESSORY_B = 2002 }");
+        write(&b.join("accname.lub"), "AccNameTable = { [ACCESSORY_IDs.ACCESSORY_B] = \"_b_hat\" }");
+
+        let (items, quests, first) = copy_system_layer(&a, &merged, "a").unwrap();
+        assert!(items.is_empty() && quests.is_empty());
+        let (_, _, second) = copy_system_layer(&b, &merged, "b").unwrap();
+        assert_eq!(first.monster, vec![("npcidentity-a.lub".to_string(), "jobname-a.lub".to_string())]);
+        // A name table keyed by plain numbers gets an empty id table to load.
+        assert_eq!(first.accessory, vec![("ids-none-accessory-a.lua".to_string(), "accname-a.lua".to_string())]);
+        assert!(merged.join("ids-none-accessory-a.lua").is_file());
+        assert_eq!(first.weapon, vec!["weapontable-a.lub".to_string()]);
+        // An id table with nothing to name is dropped, not half-loaded.
+        assert!(first.robe.is_empty());
+        assert_eq!(fs::read_to_string(merged.join("accname.lub")).unwrap(), "BASE");
+
+        let mut all = ViewTables::default();
+        all.extend(first);
+        all.extend(second);
+        assert_eq!(
+            all.config_entry(),
+            "\tcustomLuaTables: { accessory: [['System/ids-none-accessory-a.lua', 'System/accname-a.lua'], \
+             ['System/accessoryid-b.lub', 'System/accname-b.lub']], \
+             monster: [['System/npcidentity-a.lub', 'System/jobname-a.lub']], \
+             weapon: ['System/weapontable-a.lub'] },\n"
+        );
+        assert!(ViewTables::default().is_empty());
         let _ = fs::remove_dir_all(&tmp);
     }
 
@@ -1433,7 +1658,7 @@ mod tests {
         write(&src.join("itemInfo.lua"), "FIRST");
         write(&src.join("itemInfo_C.lua"), "SECOND");
         write(&src.join("LuaFiles514/itemInfo.lua"), "NESTED");
-        let (added, _) = copy_system_layer(&src, &merged, "m").unwrap();
+        let (added, _, _) = copy_system_layer(&src, &merged, "m").unwrap();
         assert_eq!(added, vec!["itemInfo-m.lua".to_string(), "itemInfo-m.2.lua".to_string()]);
         assert_eq!(fs::read_to_string(merged.join("itemInfo-m.lua")).unwrap(), "FIRST");
         assert_eq!(fs::read_to_string(merged.join("itemInfo-m.2.lua")).unwrap(), "SECOND");
@@ -1461,7 +1686,7 @@ mod tests {
         fs::write(cfg.root.join("config/Config.local.js"), "window.ROConfigLocal = {\n\tskipIntro: true\n};\n").unwrap();
         let tables = vec!["itemInfo-a.lua".to_string(), "itemInfo-b.lua".to_string()];
         let quests = vec!["OngoingQuestInfoList-a.lub".to_string(), "OngoingQuestInfoList-b.lub".to_string()];
-        write_client_config(&cfg, &web, &[], &tables, &quests, GameText::English, crate::packetver::default()).unwrap();
+        write_client_config(&cfg, &web, &[], &tables, &quests, &ViewTables::default(), GameText::English, crate::packetver::default()).unwrap();
         let body = fs::read_to_string(web.join("Config.local.js")).unwrap();
         assert!(
             body.contains("customItemInfo: ['System/itemInfo-b.lua', 'System/itemInfo-a.lua', 'System/itemInfo.lua', 'System/itemInfo_true.lub'],"),
@@ -1515,7 +1740,7 @@ mod tests {
             // shape the loader sees never depends on whether options exist.
             ("plain".to_string(), String::new()),
         ];
-        write_client_config(&cfg, &web, &plugins, &[], &[], GameText::English, crate::packetver::default()).unwrap();
+        write_client_config(&cfg, &web, &plugins, &[], &[], &ViewTables::default(), GameText::English, crate::packetver::default()).unwrap();
         let body = fs::read_to_string(web.join("Config.local.js")).unwrap();
         assert!(
             body.contains("'wasd-movement': { path: 'plugins/wasd-movement/index', pars: { \"show_controls_button\": false } }"),

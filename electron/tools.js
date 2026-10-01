@@ -26,6 +26,61 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFile } = require('node:child_process');
 
+// A client table, as text: the translation's are UTF-8, older ones and many
+// a mod's are CP949 (EUC-KR). Decoded one file at a time, since the item
+// tables below mix the two.
+function decode(buf) {
+	try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch { return new TextDecoder('euc-kr').decode(buf); }
+}
+
+const quoted = text => [...text.matchAll(/'([^']+)'/g)].map(m => m[1]);
+
+// What the generated client config says -- the same lists the game reads.
+function clientConfig(web) {
+	try { return fs.readFileSync(path.join(web, 'Config.local.js'), 'utf8'); } catch { return ''; }
+}
+
+/**
+ * The client's item tables, mods' included, as one text. The client lists
+ * them newest mod first and base last, and keeps the *first* definition of an
+ * item; the Tools pages keep the *last* one they parse. So they are joined in
+ * the reverse order, and a mod's item -- new or renamed -- shows as it does in
+ * game. `web` is the served asset root (state/assets).
+ */
+function clientItemInfo(web) {
+	const listed = /customItemInfo:\s*\[([^\]]*)\]/.exec(clientConfig(web));
+	// With no mod item tables the config names none, and the client reads the
+	// first base table it finds.
+	const base = ['System/itemInfo.lua', 'System/itemInfo.lub', 'System/itemInfo_true.lua', 'System/itemInfo_true.lub'];
+	const exists = rel => fs.existsSync(path.join(web, rel));
+	const tables = listed ? quoted(listed[1]).filter(exists) : base.filter(exists).slice(0, 1);
+	if (tables.length === 0) throw new Error('The client\'s item table is not there yet. Start the game once, then try again.');
+	return Buffer.from(tables.reverse().map(rel => decode(fs.readFileSync(path.join(web, rel)))).join('\n'), 'utf8');
+}
+
+/**
+ * Mods' monster sprite tables (customLuaTables.monster: an npcidentity-style
+ * id file and a jobname-style name file each), as id -> sprite name, later
+ * mods over earlier ones as the client merges them.
+ */
+function clientMonsterSprites(web) {
+	const tables = /customLuaTables:\s*\{([^\n]*)\}/.exec(clientConfig(web));
+	const listed = tables && /monster:\s*\[((?:\s*\[[^\]]*\]\s*,?)*)\]/.exec(tables[1]);
+	const out = {};
+	if (!listed) return out;
+	const read = f => { try { return decode(fs.readFileSync(f)); } catch { return ''; } };
+	for (const pair of listed[1].matchAll(/\[([^\]]*)\]/g)) {
+		const [idFile, nameFile] = quoted(pair[1]).map(rel => path.join(web, rel));
+		const ids = {};
+		for (const m of read(idFile).matchAll(/\b(JT_[A-Za-z0-9_]+)\s*=\s*(\d+)/g)) ids[m[1]] = m[2];
+		for (const m of read(nameFile).matchAll(/\[\s*(?:jobtbl\.)?([A-Za-z0-9_]+)\s*\]\s*=\s*"([^"]+)"/g)) {
+			const id = /^\d+$/.test(m[1]) ? m[1] : ids[m[1]];
+			if (id) out[id] = m[2];
+		}
+	}
+	return out;
+}
+
 const SCHEME = 'ro-tool';
 const PARTITION = 'persist:ro-tools';
 const ROOT = path.join(__dirname, '..', 'tools');
@@ -90,15 +145,8 @@ function createTools(deps) {
 		});
 	}
 
-	// The client's item table, the one the game itself reads.
-	function itemInfo() {
-		const dir = path.join(deps.stateDir(), 'assets', 'System');
-		for (const name of ['itemInfo.lua', 'itemInfo.lub', 'itemInfo_true.lua', 'itemInfo_true.lub']) {
-			const file = path.join(dir, name);
-			if (fs.existsSync(file)) return fs.readFileSync(file);
-		}
-		throw new Error('The client\'s item table is not there yet. Start the game once, then try again.');
-	}
+	const itemInfo = () => clientItemInfo(path.join(deps.stateDir(), 'assets'));
+	const modMonsterSprites = () => clientMonsterSprites(path.join(deps.stateDir(), 'assets'));
 
 	// AegisName -> icon name, for the monster browser's drops: the server's
 	// item tables give AegisName -> id, the client's gives id -> icon.
@@ -129,7 +177,7 @@ function createTools(deps) {
 	// DB/Monsters/MonsterTable.js, shipped beside the client by package.sh).
 	let monsterSprites = null;
 	function monsterTable() {
-		if (monsterSprites) return monsterSprites;
+		if (monsterSprites) return { ...monsterSprites, ...modMonsterSprites() };
 		const candidates = [
 			path.join(deps.runtimeDir(), 'client-tables', 'MonsterTable.js'),
 			// Running from source before package.sh has been run.
@@ -139,7 +187,11 @@ function createTools(deps) {
 		if (!file) throw new Error('The client\'s monster table is missing from this build.');
 		const out = {};
 		for (const m of fs.readFileSync(file, 'utf8').matchAll(/^\s*(\d+)\s*:\s*'([^']+)'/gm)) out[m[1]] = m[2];
-		return (monsterSprites = out);
+		// Mods' new monsters over the built-in table, as the client merges them.
+		// Not cached with the built-ins: a mod can be switched on while the
+		// window is open.
+		monsterSprites = out;
+		return { ...out, ...modMonsterSprites() };
 	}
 
 	// The log viewer (#202): its stream, and the two things it may ask of the
@@ -283,4 +335,4 @@ function createTools(deps) {
 	};
 }
 
-module.exports = { createTools, schemePrivileges, SCHEME, TOOLS };
+module.exports = { createTools, schemePrivileges, SCHEME, TOOLS, clientItemInfo, clientMonsterSprites };
