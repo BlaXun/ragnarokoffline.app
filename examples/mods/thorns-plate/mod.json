@@ -2,6 +2,6 @@
   "name": "thorns-plate",
   "version": "1.0.0",
   "author": "Ragnarok Offline",
-  "description": "A heavy plate armor that reflects a slice of physical damage back on melee or ranged attackers. Magical hits pass through untouched. Demonstrates filtering item() hooks by c.weapon_type.",
-  "requires": { "app": ">=1.3.9", "era": "any" }
+  "description": "A heavy plate armor that makes physical attackers bleed. Magical hits pass through untouched. Demonstrates filtering item() hooks by c.weapon_type.",
+  "requires": { "app": ">=1.4.0", "era": "any" }
 }

@@ -11,7 +11,7 @@ tbl = {
 			"of ^800080Bleeding^000000 (percent of their MaxHP, every tick).",
 			"",
 			"Magical and misc attacks pass through at full damage,",
-			"and no reflect fires.",
+			"and no bleeding.",
 			"",
 			"Vit +3",
 			"Defense: 55",

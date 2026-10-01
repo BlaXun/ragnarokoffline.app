@@ -10,7 +10,7 @@ and misc damage passes through. One `item(...)` hook, in
   `"weapon"`, `"magic"` or `"misc"`, matching rAthena's `BF_WEAPON`,
   `BF_MAGIC` and `BF_MISC` masks. One guard clause at the top of the
   hook is all it takes to make the effect physical-only.
-- **Gating by damage amount.** The hook only reflects on hits over 10
+- **Gating by damage amount.** The hook only fires on hits over 10
   damage. A `0`-damage grazing hit does not fire the bleeding effect.
 - **Delivering damage with a status instead of a direct call.** The
   item framework exposes `c:drain()`, `c:heal()`, `c:status()` and
@@ -44,7 +44,7 @@ the attacker/target identity (`c.caster`, `c.target`).
 Watch the log. Only the PecoPeco hits print:
 
 ```
-[Info]: Lua: thorns-plate: reflected onto PecoPeco (34 dmg, weapon)
+[Info]: Lua: thorns-plate: Thorns Plate: bled PecoPeco (34 dmg, weapon)
 ```
 
 Horong casts Fire Bolt and nothing fires on the plate side.

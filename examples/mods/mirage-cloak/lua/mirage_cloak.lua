@@ -35,9 +35,9 @@ item("Mirage_Cloak", {
       return
     end
 
-    -- Pick one of the five. math.random is deterministic enough for a
-    -- game effect, and it uses the sandbox's own PRNG so a mod cannot
-    -- de-sync the server with it.
+    -- Pick one of the five. math.random is Lua's own generator, which is
+    -- fine for picking from a list; for a chance out of 10000, c:chance(n)
+    -- uses the server's random numbers like any other proc.
     local curse = CURSES[math.random(#CURSES)]
     c:status(curse[1], 10000, curse[2], 1, "caster")
     log("Mirage Cloak:", c.caster.name, curse[3], "for missing")
