@@ -55,6 +55,10 @@ server is never ported; we bring the platform it is tested on.
   `config/VENDOR_PINS` to it. Do **not** add it to `patch-client.sh` or
   `apply-server-mods.sh`; those carry only what is ours (the population engine,
   the stylist, extension hooks, app wording).
+- **Open fork PRs against `ragnarokoffline`, not `master`.** Both forks'
+  default branch is `master`, a mirror of upstream, so GitHub suggests the wrong
+  base. A PR against it picks up every upstream commit the fork hasn't merged
+  (rathena#17 arrived with 67). Each fork's own `CLAUDE.md` says the same.
 - `ragnarokoffline` refuses force-pushes. Releases pin commits on it, so it only
   moves forward, and newer upstream is **merged** in, never rebased.
 - Newer upstream comes in weekly, as pull requests that stop short of merging:
@@ -64,6 +68,24 @@ server is never ported; we bring the platform it is tested on.
   place, and anything done there is lost.
 - roBrowserLegacy checks files out with CRLF. A whole-file diff means something
   rewrote the line endings.
+
+### Server extensions: optional server behaviour, switched on from a mod
+
+When a change to how the server behaves should be optional, it goes behind a
+**server extension** in the rAthena fork, not into an unconditional core edit and
+not into `apply-server-mods.sh`. An extension is an entry in the fork's
+`db/extension_db.yml`, off by default, with optional typed values. The code
+checks `extension_enabled("<id>")` / `extension_int(...)` in C++, or
+`getextension("<id>")` / `getextensionvalue(...)` in scripts.
+
+A mod turns one on by shipping `db/extension_db.yml` (`Id`, `Enabled: true`,
+`Values`). The app merges it into the server's `db/import/` like any other
+table. `@extensions` and `@extensioninfo <id>` show what's on in game.
+
+The full guide, for both adding one in the fork and using one from a mod, is
+[doc/extensions.md](https://github.com/Flux159/rathena/blob/ragnarokoffline/doc/extensions.md)
+in the fork. A mod that depends on an extension needs an app version whose
+pinned fork has it.
 
 ### The seam where bugs actually live
 
