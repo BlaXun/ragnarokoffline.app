@@ -6,7 +6,7 @@ rebuild, no compiler, no Docker.
 ```
 <app data>/state/mods/my-mod/
 ├── mod.json     name, version, author, description, what it requires
-├── db/          server tables: mob stats, item stats, drops, skills
+├── db/          server tables: mob stats, item stats, drops, skills — new ones too
 ├── npc/         server scripts: NPCs, warps, monster spawns, quests
 ├── lua/         skill hooks: damage formulas, accuracy, what a hit does
 ├── conf/        a few server settings, from a short allowlist
@@ -399,6 +399,117 @@ in a directory nothing opens.
 every key, how the headcount is divided between maps, which tables are still
 unreachable, and the two ways this data fails without the server saying
 anything.
+
+## Making new things: items, monsters, and how they look
+
+A mod can add items and monsters that exist in no client and no server, with
+ids of their own. Nothing is replaced: every stock item and monster keeps its
+own entry. A new thing needs up to three layers: `db/` for what it *does*,
+`System/` for what the client *calls* it and *draws*, and `npc/` to put it in
+the world.
+
+[`examples/mods/custom-monster`](../examples/mods/custom-monster) has one of
+each: a monster, a headgear with its own look, and a card that casts a spell.
+
+### Ids
+
+| | Use | Why there |
+|---|---|---|
+| Monsters | **25000–31998** | rAthena accepts 1001–3998 and 20021–31998 and keeps 3999–20020 for player clones. Its own monsters reach about 22700 and grow with each update. |
+| Items | **50000–99999** | Item ids are 32-bit. Stock items sit below 32409 and from 100000 up, so this block is empty. |
+| Headgear/garment looks (`View:`) | **5000+** | Stock view ids stop at 2822. |
+
+Pick a number in the middle rather than the first one, since other authors
+start at the start too. If two enabled mods define the same id, Settings →
+Mods says so under the one whose version isn't in effect.
+
+### A new item
+
+`db/item_db.yml` says what it is and does; `System/itemInfo.lua` holds its
+name, description and icon, **only your entries**. The app lists your table
+ahead of the client's own, so nothing else changes.
+[`examples/mods/custom-item`](../examples/mods/custom-item) explains the
+details: which icon a resource name gives you, and how to rename a stock
+item.
+
+What an item *does* is its `Script:`, rAthena's item script. The common
+forms:
+
+| Script | Effect |
+|---|---|
+| `bonus bStr,5;` `bonus bMaxHPrate,10;` | stats (`doc/item_bonus.txt` in rAthena lists them all) |
+| `bonus2 bAddRace,RC_Undead,20;` | +20% damage against a race |
+| `bonus3 bAutoSpell,"AS_SONICBLOW",5,50;` | 5% chance to cast Sonic Blow Lv 5 **when you attack** |
+| `bonus3 bAutoSpellWhenHit,"CR_REFLECTSHIELD",1,30;` | 3% chance to cast Reflect Shield **when you are hit** |
+| `bonus4 bAutoSpellOnSkill,"MG_FIREBOLT","MG_COLDBOLT",3,200;` | 20% chance to follow Fire Bolt with Cold Bolt Lv 3 |
+| `autobonus "{ bonus bAtk,50; }",10,5000;` | 1% on attack: +50 ATK for 5 seconds |
+| `itemheal rand(120,180),0;` | a potion |
+
+The chances in `bAutoSpell…` and `autobonus` are out of 1000. Anything a bonus can't express
+("only below 30% HP", "every fifth hit") is what [Lua](#lua--changing-how-a-skill-works)
+is for.
+
+### A new monster
+
+`db/mob_db.yml` with the new id, and a spawn in `npc/`:
+
+```
+prt_fild08,0,0	monster	Lunar Poring	25001,8,60000,30000
+```
+
+What it looks like is up to you:
+
+- **A stock monster's look, no client change:** `db/mob_avail.yml` tells the
+  server to show it as another monster.
+  ```yaml
+  Body:
+    - Mob: LUNAR_PORING
+      Sprite: POPORING
+  ```
+  The server sends Poporing's id, so the client never learns the new one:
+  the monster's name still comes from the server, but tools that go by id
+  see the stock monster.
+- **Its own entry on the client:** `System/jobname.lub` maps the new id to a
+  sprite, with only your rows:
+  ```lua
+  JobNameTable = {
+  	[25001] = "LUNAR_PORING",
+  }
+  ```
+  `LUNAR_PORING` can be a stock sprite's name (`POPORING`), or your own art
+  in `data/sprite/monster/lunar_poring.spr` and `.act`. The official format,
+  `System/npcidentity.lub` defining `jobtbl.JT_LUNAR_PORING = 25001` with
+  `[jobtbl.JT_LUNAR_PORING]` in `jobname.lub`, works too. Add to `jobtbl`
+  rather than replacing it.
+
+### A new look for headgear, garments and weapons
+
+An equipment item's `View:` is a number; the client turns it into a sprite
+through a table, and a mod adds rows to those tables the same way:
+
+| Equipment | Files in `System/` | Art, if it's your own |
+|---|---|---|
+| Headgear | `accname.lub` (+ `accessoryid.lub` for named ids) | `data/sprite/accessory/남/남_<name>.spr`, `여/여_<name>.spr` |
+| Garments | `spriterobename.lub` (+ `spriterobeid.lub`) | `data/sprite/robe/…` |
+| Weapons | `weapontable.lub` | `data/sprite/human/…` |
+
+```lua
+AccNameTable = {
+	[5001] = "_리본",   -- Moon_Ribbon's View: 5001 looks like the Ribbon
+}
+```
+
+**Save these three tables in CP949, not UTF-8,** whenever a name in them is
+Korean. They name the client's own sprite files byte for byte; a UTF-8 copy
+names a file that isn't there and the item is invisible on you. An ASCII
+name for your own art has no such problem. The sex folders and file prefix
+(`남`, `여`) have no ASCII alias yet.
+
+### Checking your work
+
+**Settings → Tools → Item browser** and **Monster browser** read the same
+tables the client does, your mods' included: a new item appears with its
+name and icon, and a new monster with its sprite and drops.
 
 ## npc/ — adding things to the world
 
@@ -1045,7 +1156,7 @@ items:
 ```lua
 -- my-mod/System/itemInfo.lua, saved as UTF-8
 tbl = {
-	[30001] = {
+	[50001] = {
 		unidentifiedDisplayName = "Bottle",
 		unidentifiedResourceName = "빨간포션",
 		identifiedDisplayName = "Islander Brew",
@@ -1175,7 +1286,171 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 | `api.actions.perform(name, payload)` | Native actions: `attack`, `target` (toggle auto-target), `interact`, `pickup`, `menu` (game options), `shortcut` with `{ index: 0…35 }`, `shortcut:assign` and `storage:transfer` (below), or `window` with an allowed `{ name }`. Returns whether the action was dispatched, not whether the server accepted it. |
 | `api.targeting.pick({ type, label })` | Raises the client's own target cursor and resolves to a frozen `{ classId, gid, name, kind }` for what the player clicks, or `null` for ESC, empty ground, a client too old to offer it, or the player starting a skill of their own (their action wins). `type` is `mob` (default), `player` or `any`; NPCs cannot be picked. One pick at a time: a new one cancels the last, and so does disposal. |
 | `api.server.command(text)` | Sends an `@` or `#` command as if the player had typed it in chat, so the server allows exactly what the player's group allows. Anything else is refused; returns whether it was sent. |
+| `api.graphics.registerPass({ name, fragment, uniforms, enabled })` | A full-screen GLSL pass over each frame, after bloom and before anti-aliasing. Returns a function that removes it; it also goes when the plugin does. See [Graphics passes](#graphics-passes). |
+| `api.ui.window({ id, title, width, height, resizable })` | A window of the plugin's own; fill its `body`. `show`, `hide`, `toggle`, `isOpen`, `setTitle`, `onClose`. See [Windows and server requests](#windows-and-server-requests). |
+| `api.items.search(text, limit)` / `.get(id)` / `.icon(id)` | Items from the client's own tables, mods' included: `{ id, name, description, slots }`, and an icon URL for an `<img>`. |
+| `api.server.request(command, text, { timeout })` | Ask the mod's server script for something; resolves with its answer. See [Windows and server requests](#windows-and-server-requests). |
 | `api.cleanup(fn)` | Register idempotent cleanup immediately after allocating a resource. The returned function can release it early. Runs on failure, scope replacement and page teardown. |
+
+### Graphics passes
+
+`api.graphics.registerPass` runs a GLSL fragment shader over every frame of the
+3D view. Write `void main()` and set `fragColor`; everything else is provided:
+
+| | |
+|---|---|
+| `vUv` | where on screen, 0..1 |
+| `uTexture` | the frame so far |
+| `uDepth`, `uHasDepth`, `linearDepth(uv)` | the scene's depth, and the distance from the camera at a point. `uHasDepth` is false on WebGL 1, where there is none |
+| `uResolution`, `uTime` | pixels, seconds |
+| `uSunDirection`, `uSunColor`, `uAmbient` | the map's light |
+| `uLights[i]`, `uLightColors[i]`, `uLightCount` | up to 32 of the map's lamps and torches already on screen: `xy` position, `z` radius, nearest first |
+
+```js
+export default function init(parameters, api) {
+    api.graphics.registerPass({
+        name: 'Sepia',
+        fragment: `
+            uniform float uAmount;
+            void main() {
+                vec3 c = texture(uTexture, vUv).rgb;
+                vec3 sepia = vec3(dot(c, vec3(0.393, 0.769, 0.189)), dot(c, vec3(0.349, 0.686, 0.168)), dot(c, vec3(0.272, 0.534, 0.131)));
+                fragColor = vec4(mix(c, sepia, uAmount), 1.0);
+            }`,
+        uniforms: () => ({ uAmount: parameters.amount / 100 }),
+    });
+}
+```
+
+Some things have to be drawn inside the 3D scene rather than over the
+finished frame: grass among the models, other water, a shadow map. A
+**map hook** does that, with `api.graphics.hook`:
+
+```js
+api.graphics.hook({
+    name: 'Grass',
+    init(gl, map) { /* the map's ground is ready: build buffers */ },
+    render(stage, ctx) { if (stage === 'models') { /* draw */ } },
+    free(gl) { /* the map, or the mod, is going away: delete what you made */ },
+});
+```
+
+| | |
+|---|---|
+| `render(stage, ctx)` | each frame, at each stage: `'begin'` before the ground (draw into targets of your own, then `ctx.restoreTarget()`), `'ground'` the ground is drawn, `'models'` the map's models are drawn and the sprites not yet, `'end'` everything is drawn. With `replaces: ['water']`, also `'water'`, where you draw the water in the client's place |
+| `ctx` | `gl`, `modelView`, `projection`, `fog`, `light`, `tick`, `player` (position), `lightmap`, and `drawScene(view, projection)` (sky, ground and models again, depth tested, into whatever is bound), `drawModelsDepth(program)` (the models with your program: `aPosition`, `aTextureCoord`), `restoreTarget()`, `createProgram(vertex, fragment)` |
+| `init(gl, map)` | `map`: `name`, `width`, `height`; per ground cell `cellTexture`, `cellHeights`, `cellUv`; `textureNames`; `groundTextures()` (atlas, lightmap); `water()` (mesh, animation frames, waves, level; `null` without water); `altitude` (`cellType`, `cellHeight`, `TYPE`); `lights` |
+| `light(light)` | return `{ ambient: [r,g,b], diffuse: [r,g,b] }` to light this frame with a sun and sky of your own (a warmer sun, a cooler sky), `null` for the map's |
+| `free(gl)` | delete every buffer, texture, program and framebuffer you made: the map is going away, or your mod is |
+
+A hook that throws is taken out (and freed), and says so in the console; it
+never takes the frame down. Hooks go with the mod that added them.
+
+Lighting per map, for instance -- warm in the fields, the map's own
+underground:
+
+```js
+let sun = null;
+api.on('map:enter', ({ name }) => {
+    sun = name.includes('_dun') ? null : { ambient: [0.16, 0.2, 0.3], diffuse: [1.1, 0.92, 0.68] };
+});
+api.graphics.hook({ name: 'Sunlight', light: () => sun });
+```
+
+**glTF models in place of the map's.** `api.models.replace` draws a glTF
+2.0 model (`.glb`, or `.gltf` with its files beside it) wherever a map
+places one of the client's own models:
+
+```js
+const here = file => new URL(file, import.meta.url).href;   // beside index.js
+api.models.replace({
+    '나무잡초꽃/나무01.rsm': { url: here('tree_oak.glb'), size: 1, colors: { leafsGreen: [0.33, 0.55, 0.2] } },
+});
+```
+
+The key is the model's file under `data/model/` (Korean and all, `/` or
+`\`). Every placement, on every map, gets the glTF instead: fitted to the
+original's height (`size` multiplies that; `scale` sets an exact scale),
+standing on its base, turned as it was, and lit by the map's sun, ambient
+light and fog. `colors` replaces named materials' base colour. It applies
+to maps loaded after the call, so call it when the plugin starts.
+
+Supported: triangle meshes with normals and texture coordinates, node
+hierarchies, base colour factors and textures, alpha mask and blend. Not
+skins, animation, morph targets or extensions. Keep models light -- a
+field may place the same tree a few hundred times (they are instanced: one
+draw per material). `examples/mods/gltf-trees` replaces two field trees
+with Kenney's Nature Kit trees (CC0).
+
+**Higher-resolution textures.** A texture pack replaces a texture by
+shipping a larger file at the same path, e.g.
+`data/texture/필드바닥/prt_흙02.bmp` at 1024x1024 (the Korean path is the
+client's own; `link-assets` serves it the way the client asks for it). The
+client shrinks every ground texture to 256x256 in the map's atlas; with
+Graphics+ "High-resolution ground" on, the atlas is rebuilt at up to four
+times that, capped at 4096x4096 (every texture in the atlas is scaled, so a
+map with many textures gets 512). The gain shows close up: at the default
+zoom a ground tile is about 64 pixels on screen. Replace a map's whole set,
+including the hand-painted edge tiles, or the new texture's tile shows next
+to the old ones. `examples/mods/hd-ground-texture` replaces Prontera field
+dirt with a CC0 texture from ambientCG.
+
+Graphics+ is the worked example: its grass (`grass.js`), water and
+reflections (`water.js`, `reflection.js`) and shadows (`shadows.js`) are
+each a map hook. Its sunlight is the example above as settings: off
+everywhere by default, "Warm sunlight" to turn it on for every map, and
+"Sunlight per map" for the exceptions -- `izlude:100 prt_fild*:80` to warm
+only those maps, or `*_dun*:0` to leave dungeons alone when it is on
+everywhere.
+
+`uniforms()` is called every frame and returns your own uniforms by name
+(numbers, or arrays of 2, 3, 4 or 16). `enabled()` turns the pass off without
+removing it. A shader that doesn't compile is reported in the client log and
+stays off; it can't affect anything outside the picture.
+[`mods/graphics-plus`](../mods/graphics-plus) is a complete one: grading,
+lamp glow, haze, tone mapping and more in a single pass.
+
+### Windows and server requests
+
+`api.ui.window` gives a plugin a window in the game's style: a title bar to
+drag it by, a close button, a corner to resize it, and a `body` element that is
+the plugin's to fill. It sits in its own shadow root, so a mod's CSS and the
+game's never meet. The game remembers where the player left it, and typing in
+it doesn't move the character or fire shortcuts.
+
+```js
+const win = api.ui.window({ id: 'notes', title: 'Notes', width: 300, height: 200 });
+win.body.innerHTML = '<textarea style="width:100%;height:100%"></textarea>';
+win.show();
+```
+
+When a window needs something only the server knows, `api.server.request`
+asks the mod's own NPC script. The script binds an @command and answers with
+`dispbottom` lines in a fixed form; the client collects them, hands their text
+to the plugin, and keeps them out of chat:
+
+```c
+-	script	MyMod	-1,{
+OnInit:
+	bindatcmd "mymod", strnpcinfo(3) + "::OnQuery", 0, 99;
+	end;
+OnQuery:
+	// .@atcmd_parameters$[0] is the request's number; the rest is what the plugin sent.
+	dispbottom "@@reply " + .@atcmd_parameters$[0] + " 1/1 " + getmonsterinfo(.@atcmd_parameters$[1], MOB_LV);
+	end;
+}
+```
+
+```js
+const level = await api.server.request('mymod', 'Poring');   // "1"
+```
+
+A long answer can be split: `@@reply <n> 1/3 …`, `2/3 …`, `3/3 …`, and the
+parts are joined in order. A request that gets no answer rejects after its
+timeout (5 seconds by default). Only the server can send these lines, because
+anything a player says arrives with their name in front of it.
+[`mods/ingame-database`](../mods/ingame-database) is a complete one: an item
+and monster lookup window.
 
 Allowed window actions currently cover Inventory, Equipment, SkillList, Quest,
 WorldMap, PartyFriends, WinStats and already-open Storage. Set `{ name, open: true }`
