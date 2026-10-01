@@ -47,6 +47,7 @@ export function readState(value) {
         characterId: Number.isInteger(state.characterId) && state.characterId > 0 ? state.characterId : null,
         characterName: typeof state.characterName === 'string' ? state.characterName.slice(0, 32) : '',
         refusals: Number.isInteger(state.refusals) && state.refusals > 0 ? Math.min(state.refusals, 99) : 0,
+        plainHttpNoted: state.plainHttpNoted === true,
     };
 }
 
@@ -263,7 +264,15 @@ export function createAutologin(api, parameters = {}, env = globalThis) {
         if (rememberedThisLogin) return;
         rememberedThisLogin = true;
         api.account.remember().then(
-            result => save({ remembered: true, username: result.username }),
+            result => {
+                save({ remembered: true, username: result.username });
+                // Once: a LAN address over plain HTTP. The cookie is HttpOnly,
+                // but the network can see it.
+                if (result.secure === false && !state.plainHttpNoted) {
+                    save({ plainHttpNoted: true });
+                    tell('Remembered over plain HTTP: anyone on this network could read it. For more safety, ask the host for their HTTPS sharing link.');
+                }
+            },
             error => {
                 // Not offered here (a LAN join, an old client): say nothing.
                 if (error?.code !== 'unavailable' && error?.code !== 'unsupported') tell(`This login could not be remembered: ${error.message}`);

@@ -1232,14 +1232,20 @@ await api.account.forget();                     // revoke it, here and on the se
 the friend gateway, for a friend — to keep a random credential for the account
 the page is logged in to now. The page's proof is the session it is in (the
 login server's web auth token), so a mod cannot remember an account it is not
-playing. The credential stays with the app (a file of its own) or in an
-HttpOnly cookie; no script in the page can read it. `resume()` trades it for a
+playing. The credential stays with the app (a file of its own, for the host's
+window) or in an HttpOnly cookie on the origin the game was loaded from: a
+`__Host-` Secure one through the HTTPS sharing link (quick tunnel or the host's
+own domain), or, for a LAN join, a plain-HTTP one that the asset server's
+`/_friend/remember/` route hands to the app. No script in the page can read
+it. `remember()` resolves `{ username, secure }`, and `secure` is false only
+on a plain-HTTP LAN origin. `resume()` trades it for a
 one-time login token (60 seconds, one use) to hand straight to the login
 screen's `view.login`. It rejects with `.code` `'none'`, `'revoked'` (it is
 already forgotten) or `'unavailable'` (the server is not up; try later).
 Changing an account's password or disabling it in Settings → Accounts revokes
-all of its remembered logins. On a LAN join or any other host, `status()` says
-`available: false`.
+all of its remembered logins. Where nothing answers, `status()` says
+`available: false`. That covers a LAN join while the host has LAN off, an
+older host, and any other server.
 
 See [`mods/autologin`](../mods/autologin), which uses all three.
 

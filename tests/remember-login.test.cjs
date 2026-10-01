@@ -121,12 +121,12 @@ test('the host window: the credential lives in a file of the app’s own, per er
   } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });
 
-async function gatewayFixture(t, remember) {
-  const gateway = new FriendGateway({ origin: 'https://play.example.com', upstreamPort: 9, register: async () => {}, remember });
+async function gatewayFixture(t, remember, origin = 'https://play.example.com') {
+  const gateway = new FriendGateway({ origin, upstreamPort: 9, register: async () => {}, remember });
   const port = await gateway.start(0);
   t.after(() => gateway.stop());
   const request = (url, { method = 'GET', headers = {}, body } = {}) => new Promise((resolve, reject) => {
-    const req = http.request({ host: '127.0.0.1', port, path: url, method, headers: { host: 'play.example.com', ...headers } }, res => {
+    const req = http.request({ host: '127.0.0.1', port, path: url, method, headers: { host: new URL(origin).host, ...headers } }, res => {
       let text = ''; res.on('data', chunk => text += chunk); res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, text, json: () => JSON.parse(text) }));
     }); req.on('error', reject); req.end(body);
   });
@@ -172,6 +172,30 @@ test('a gateway without remembered logins answers 404, so the client says it is 
   assert.equal((await f.post(await f.session(), 'status')).status, 404);
 });
 
+for (const [kind, origin] of [['a quick trycloudflare tunnel', 'https://calm-river-1234.trycloudflare.com'], ['the host’s own domain (named tunnel)', 'https://play.my-guild.example']])
+test(`through ${kind} the cookie is always __Host- and Secure, whatever the request claims`, async t => {
+  const { run } = fakeSupervisor();
+  const f = await gatewayFixture(t, createRememberLogin({ run }), origin);
+  const friend = await f.session();
+  const tunnel = /^__Host-ro-remember=[^;]*; Path=\/; Secure; HttpOnly; SameSite=Strict; Max-Age=\d+$/;
+  // A header saying "plain HTTP" changes nothing: the gateway only ever
+  // answers through the HTTPS tunnel, and decides by that, not by headers.
+  const claim = { 'x-forwarded-proto': 'http', 'x-forwarded-for': '192.168.1.30' };
+  const send = (route, cookie, body = {}) => f.request('/_friend/remember/' + route, { method: 'POST',
+    headers: { cookie, origin: f.gateway.origin, 'content-type': 'application/json', ...claim }, body: JSON.stringify(body) });
+  const issued = await send('issue', friend, { accountId: '2000001', webToken: WEB_TOKEN });
+  assert.match(issued.headers['set-cookie'][0], tunnel);
+  const remembered = issued.headers['set-cookie'][0].split(';')[0];
+  const resumed = await send('resume', `${friend}; ${remembered}`);
+  assert.match(resumed.headers['set-cookie'][0], tunnel, 'refreshed on use, still Secure');
+  const forgot = await send('forget', `${friend}; ${remembered}`);
+  assert.match(forgot.headers['set-cookie'][0], tunnel, 'cleared the same way');
+  for (const response of [issued, resumed, forgot]) assert.ok(!/ro-remember-\d/.test(response.headers['set-cookie'][0]), 'never the LAN cookie');
+  // The LAN cookie is not read here either: a tunnel request carrying one is not remembered.
+  const lanCookie = `ro-remember-3338=${'A'.repeat(43)}`;
+  assert.equal((await send('status', `${friend}; ${lanCookie}`)).json().remembered, false);
+});
+
 test('api.account goes to the app in the host’s own window and to the gateway anywhere else', async () => {
   const { createAccount } = await import('../patches/client/RememberLogin.mjs');
   const invoked = [], fetched = [];
@@ -180,7 +204,7 @@ test('api.account goes to the app in the host’s own window and to the gateway 
   const session = () => ({ accountId: 2000001, webToken: WEB_TOKEN });
   const local = createAccount({ session, invoke, fetch, origin: () => 'http://127.0.0.1:3338' });
   assert.deepEqual(await local.status(), { available: true, remembered: true });
-  assert.deepEqual(await local.remember(), { username: 'player_one' });
+  assert.deepEqual(await local.remember(), { username: 'player_one', secure: true });
   assert.deepEqual(invoked.at(-1), ['remember_login', { action: 'issue', accountId: '2000001', webToken: WEB_TOKEN }]);
   assert.equal((await local.resume()).token, '~AbCdEfGhIjKlMnOpQrStUv');
   assert.equal(fetched.length, 0);
@@ -259,7 +283,7 @@ test('the first game: nothing is driven, and the login and the character are rem
   assert.deepEqual(c.hooks, {}, 'the screens are the client’s');
   c.enterMap(150001, 'Hero');
   await settle();
-  assert.deepEqual(c.state(), { remembered: true, username: 'player_one', characterId: 150001, characterName: 'Hero', refusals: 0 });
+  assert.deepEqual(c.state(), { remembered: true, username: 'player_one', characterId: 150001, characterName: 'Hero', refusals: 0, plainHttpNoted: false });
   // Warping is not a new login.
   c.enterMap(150001, 'Hero');
   await settle();
@@ -431,4 +455,25 @@ test('the client runtime: api.account goes through the bridge, and exit reaches 
   assert.deepEqual(await bare.account.status(), { available: false, remembered: false });
   await assert.rejects(bare.account.remember(), error => error.code === 'unavailable');
   assert.deepEqual(asked, ['resume', 'forget']);
+});
+
+test('over plain HTTP (a LAN address) the player is told once that the network can see it', async () => {
+  const { createAutologin } = await import('../mods/autologin/client/index.js');
+  const notes = [];
+  const c = fakeClient({ account: { remember: async () => ({ username: 'lan_player', secure: false }) } });
+  c.env.document = { body: { appendChild: node => notes.push(node.textContent) }, createElement: () => ({ style: {}, remove() {} }) };
+  createAutologin(c.api, {}, c.env);
+  c.enterMap(150001, 'Hero');
+  await settle();
+  assert.equal(notes.length, 1);
+  assert.match(notes[0], /plain HTTP/);
+  assert.equal(c.state().plainHttpNoted, true);
+  // Not again, on a later login.
+  const again = fakeClient({ prefs: { state: c.state() }, account: { remember: async () => ({ username: 'lan_player', secure: false }) } });
+  const more = [];
+  again.env.document = { body: { appendChild: node => more.push(node.textContent) }, createElement: () => ({ style: {}, remove() {} }) };
+  createAutologin(again.api, {}, again.env);
+  again.enterMap(150001, 'Hero');
+  await settle();
+  assert.equal(more.length, 0);
 });

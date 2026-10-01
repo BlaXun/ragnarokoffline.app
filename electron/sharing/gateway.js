@@ -20,8 +20,7 @@ const BINDING = '__Host-ro-sign-in';
 // no script in the game page -- a mod's included -- can read it; only this
 // gateway can exchange it, and only for a one-time login token.
 const REMEMBER = '__Host-ro-remember';
-const REMEMBER_DAYS = 30;
-const CREDENTIAL = /^[A-Za-z0-9_-]{43}$/;
+const RememberRoutes = require('./remember-routes');
 const html = value => String(value).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 const cookieValue = (req, name) => {
   const values = String(req.headers.cookie || '').split(';').map(s => s.trim()).filter(s => s.startsWith(name + '='));
@@ -351,35 +350,16 @@ class FriendGateway {
   async rememberRequest(req, res, entry) {
     if (!this.remember) return this.reply(res, 404, { error: 'Not found' });
     const route = req.url.slice('/_friend/remember/'.length);
-    if (req.method !== 'POST' || !['status', 'issue', 'resume', 'forget'].includes(route)) return this.reply(res, 404, { error: 'Not found' });
+    if (req.method !== 'POST' || !RememberRoutes.ROUTES.includes(route)) return this.reply(res, 404, { error: 'Not found' });
     if (!this.sameOrigin(req) || req.headers['content-type'] !== 'application/json') return this.reply(res, 403, { error: 'Open the original invitation link' });
     let input; try { input = JSON.parse(await body(req, 1024)); } catch { return this.reply(res, 400, { error: 'Invalid request' }); }
     if (this.closed || this.session(req) !== entry) return this.reply(res, 401, { error: 'A current invitation is required' });
-    const saved = cookieValue(req, REMEMBER);
-    const credential = CREDENTIAL.test(saved || '') ? saved : null;
-    const cookie = value => ({ 'set-cookie': `${REMEMBER}=${value || ''}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${value ? REMEMBER_DAYS * 86400 : 0}` });
-    if (route === 'status') return this.reply(res, 200, { ok: true, available: true, remembered: Boolean(credential) });
-    // Bounded like sign-in tokens: a page left open cannot mint them in a loop.
-    entry.remembers = (entry.remembers || []).filter(time => time > this.now() - 60000);
-    if (entry.remembers.length >= 10) return this.reply(res, 429, { ok: false, code: 'unavailable', error: 'Too many requests. Try again in a minute.' });
-    entry.remembers.push(this.now());
-    const failed = (error, headers = {}) => this.reply(res, 200, { ok: false, code: error.code || 'unavailable', error: error.message || 'The game server could not be reached.' }, undefined, headers);
-    if (route === 'issue') {
-      try {
-        const result = await this.remember.issue(input, credential);
-        return this.reply(res, 200, { ok: true, username: result.username }, undefined, cookie(result.credential));
-      } catch (error) { return failed(error); }
-    }
-    if (route === 'resume') {
-      try {
-        const result = await this.remember.resume(credential);
-        // Used, so it lasts another REMEMBER_DAYS here as it does in the database.
-        return this.reply(res, 200, { ok: true, username: result.username, token: result.token }, undefined, cookie(credential));
-      } catch (error) { return failed(error, ['revoked', 'none'].includes(error.code) && credential ? cookie(null) : {}); }
-    }
-    // forget: the cookie goes whatever the supervisor says.
-    try { await this.remember.forget(credential); } catch { /* lapses unused */ }
-    return this.reply(res, 200, { ok: true }, undefined, cookie(null));
+    // Bounded per invitation session, like sign-in tokens: a page left open
+    // cannot mint them in a loop.
+    entry.rememberLimit ||= RememberRoutes.createLimiter(this.now);
+    const result = await RememberRoutes.answer({ route, input, credential: cookieValue(req, REMEMBER), remember: this.remember, allow: () => entry.rememberLimit('session') });
+    const headers = result.cookie === undefined ? {} : { 'set-cookie': `${REMEMBER}=${result.cookie || ''}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${result.cookie ? RememberRoutes.DAYS * 86400 : 0}` };
+    return this.reply(res, result.status, result.body, undefined, headers);
   }
   upgrade(req, socket, head) {
     const entry = this.session(req);

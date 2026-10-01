@@ -39,9 +39,9 @@ mod stores could be used as it.
 - **The app keeps a remembered-login credential**: 256 random bits, made by the
   app when you first reach the map. In your own game window it is kept in a file
   of the app's (`state/remembered-login.json`, one per era), outside the page's
-  storage. When you play on a friend's world through their invitation link,
-  their gateway keeps it in an HttpOnly cookie. No script in the page, this
-  mod's included, can read it.
+  storage. Everyone else's browser keeps it in an HttpOnly cookie that the
+  world's host sets (see the next section). No script in the page, this mod's
+  included, can read it.
 - **The server keeps only its SHA-256**, in `app_remembered_logins`, with the
   account it belongs to.
 - **The mod keeps** (in the page's own storage) whether a login is remembered,
@@ -58,12 +58,32 @@ right now. It does that with the session token the login server gave the client
 at login, which the server already uses to prove an account to its own web
 services. So a mod cannot get a credential for an account it is not playing.
 
-## Where it works
+## Where it works, and how the credential is kept there
 
-- **Your own world, in the app**: yes.
-- **A friend's world through their invitation link**, in the app or a browser:
-  yes, while their invitation lasts.
-- **A LAN join**, or any other way of reaching a server: the mod does nothing.
+Every player of a world, on their own device:
+
+| How you reach the world | Where the credential is kept |
+|---|---|
+| **Your own world, in the app** | a file of the app's, asked for over the app's IPC |
+| **Through the host's sharing link over HTTPS**: a quick `trycloudflare.com` tunnel, or the host's own domain (a named tunnel) | `__Host-ro-remember`: **Secure**, HttpOnly, SameSite=Strict, Path=/. Set by the friend gateway, the only HTTPS the app serves, so every HTTPS player gets this cookie. |
+| **A LAN join** (`http://<host's LAN address>:<port>`), only while the host has LAN turned on | `ro-remember-<port>`: HttpOnly, SameSite=Strict, Path=/_friend/remember/. The host's asset server hands that path to the app (`APP_PROXY_PREFIX`), which answers with the same routes the gateway uses. |
+
+The split is decided by **which of the app's own listeners the request came
+in on**, never by anything the request says about itself. The gateway always
+sets the Secure cookie. The LAN endpoint is reached only through the asset
+server's plain-HTTP listener and never sets or reads the gateway's cookie.
+
+**Over plain HTTP the cookie cannot be Secure.** Scripts still cannot read it,
+but anyone who can watch that network can see it, just as they can see the
+game's own login packets. The mod says so once when it first remembers you
+over plain HTTP. If that matters to you, ask the host for their HTTPS sharing
+link. The same goes for a custom DNS name pointed straight at the host's port
+without TLS: it is plain HTTP and is treated as LAN. A TLS proxy of your own
+in front of the LAN port is refused rather than given the weaker cookie. Use
+the app's tunnel or your own domain through it instead.
+
+Anywhere else, such as a LAN join while the host has LAN off, or another
+server, the mod does nothing.
 
 Needs a login server that accepts one-time tokens (our rAthena fork,
 `login-tokens`). One that does not refuses the token; after two refusals in a
