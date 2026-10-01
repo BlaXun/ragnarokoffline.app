@@ -140,7 +140,119 @@ export function createRuntime({ storage, report = (...args) => console.error(...
             // cannot speak in the player's voice, and gated server-side by the
             // player's own group like any command they could type themselves.
             // Returns whether it was sent, not whether the server accepted it.
+            // Graphics passes: a full-screen GLSL fragment shader run on each
+            // frame (GraphicsPasses.mjs supplies the frame, its depth, the
+            // sun and the map's lights). Removed when the plugin is.
+            graphics: Object.freeze({
+                registerPass(spec) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!spec || typeof spec !== 'object') throw new TypeError('registerPass takes { name, fragment, uniforms?, enabled? }');
+                    const pass = {
+                        name: typeof spec.name === 'string' && spec.name ? spec.name.slice(0, 80) : 'pass',
+                        fragment: spec.fragment,
+                        uniforms: typeof spec.uniforms === 'function' ? spec.uniforms : undefined,
+                        enabled: typeof spec.enabled === 'function' ? spec.enabled : undefined,
+                    };
+                    if (typeof pass.fragment !== 'string' || !pass.fragment.includes('main') || pass.fragment.length > 65536)
+                        throw new TypeError('registerPass: fragment must be GLSL with a main(), under 64 KB');
+                    if (typeof bridge.registerPass !== 'function') return () => {};
+                    const remove = bridge.registerPass(pass, error => report(`[Plugin ${name}] ${pass.name}`, error));
+                    return cleanup(() => remove?.());
+                },
+                // Code that draws in the map renderer (MapHooks.js in the
+                // fork): { name, init(gl, map), render(stage, ctx),
+                // free(gl), light(light), replaces: ['water'] }. Taken out
+                // and freed with the plugin, and by the renderer if it throws.
+                hook(spec) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!spec || typeof spec !== 'object') throw new TypeError('hook takes { name, init?, render?, free?, light?, replaces? }');
+                    const fn = key => (typeof spec[key] === 'function' ? spec[key].bind(spec) : undefined);
+                    const replaces = Array.isArray(spec.replaces) ? spec.replaces.filter(stage => stage === 'water') : [];
+                    const checked = {
+                        name: `${name}: ${typeof spec.name === 'string' && spec.name ? spec.name.slice(0, 80) : 'hook'}`,
+                        init: fn('init'), render: fn('render'), free: fn('free'), light: fn('light'), replaces,
+                    };
+                    if (typeof bridge.graphicsHook !== 'function') return () => {};
+                    const remove = bridge.graphicsHook(checked);
+                    return cleanup(() => remove?.());
+                },
+                supported: () => Boolean(bridge.graphicsSupported?.()),
+                lights: () => freeze(copy(bridge.mapLights?.() || [])),
+            }),
+            // Map models drawn as glTF/GLB instead (GltfModels.mjs): names of
+            // RSM files under data/model/, each to { url, size?, scale? }.
+            // For maps loaded from now on; undone with the plugin.
+            models: Object.freeze({
+                replace(map) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!map || typeof map !== 'object') throw new TypeError("replace takes { 'folder/name.rsm': { url } }");
+                    const checked = {};
+                    for (const [model, spec] of Object.entries(map)) {
+                        if (typeof model !== 'string' || !/\.rsm2?$/i.test(model)) throw new TypeError(`replace: ${model} is not an .rsm name`);
+                        const url = typeof spec === 'string' ? spec : spec?.url;
+                        if (typeof url !== 'string' || !url) throw new TypeError(`replace: ${model} needs a url`);
+                        checked[model] = {
+                            url: String(new URL(url, location.href)),
+                            size: Number.isFinite(spec?.size) ? spec.size : undefined,
+                            scale: Number.isFinite(spec?.scale) ? spec.scale : undefined,
+                            colors: spec?.colors && typeof spec.colors === 'object'
+                                ? Object.fromEntries(Object.entries(spec.colors).filter(([, c]) => Array.isArray(c) && c.length >= 3 && c.every(Number.isFinite)).map(([k, c]) => [String(k), c.slice(0, 3).map(v => Math.min(Math.max(v, 0), 4))]))
+                                : undefined,
+                        };
+                    }
+                    if (typeof bridge.replaceModels !== 'function') return () => {};
+                    const remove = bridge.replaceModels(checked, error => report(`[Plugin ${name}] models`, error));
+                    return cleanup(() => remove?.());
+                },
+            }),
+            // A window of the plugin's own: a titled, draggable frame whose
+            // body (in its own shadow root) the plugin fills. Remembered where
+            // the player left it; typing in it doesn't move the character.
+            ui: Object.freeze({
+                window(spec) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!spec || typeof spec.id !== 'string' || !/^[A-Za-z0-9_-]{1,40}$/.test(spec.id)) throw new TypeError('window needs an id of letters, digits, - or _');
+                    const size = (value, fallback) => Number.isFinite(value) ? Math.min(Math.max(value, 120), 2000) : fallback;
+                    const checked = {
+                        id: spec.id,
+                        title: typeof spec.title === 'string' ? spec.title.slice(0, 80) : spec.id,
+                        width: size(spec.width, 360),
+                        height: size(spec.height, 280),
+                        resizable: spec.resizable !== false,
+                    };
+                    if (typeof bridge.createWindow !== 'function') throw new Error('this client cannot open plugin windows');
+                    const handle = bridge.createWindow(name, checked, {
+                        suspendInput: () => api.input.suspend(),
+                        load: key => api.preferences.get(key, null),
+                        save: (key, value) => { try { api.preferences.set(key, value); } catch { /* storage full or off: forget the position */ } },
+                    });
+                    cleanup(() => handle.destroy());
+                    return Object.freeze({
+                        body: handle.body,
+                        show: () => handle.show(), hide: () => handle.hide(), toggle: () => handle.toggle(),
+                        isOpen: () => handle.isOpen(), setTitle: text => handle.setTitle(text),
+                        onClose: fn => typeof fn === 'function' ? handle.onClose(fn) : () => {},
+                    });
+                },
+            }),
+            // The client's item tables: what the game itself shows.
+            items: Object.freeze({
+                search: (text, limit = 50) => freeze(copy(bridge.searchItems?.(String(text ?? ''), Math.min(Math.max(Number(limit) || 50, 1), 200)) || [])),
+                get: id => { const item = Number.isInteger(id) ? bridge.item?.(id) : null; return item ? freeze(copy(item)) : null; },
+                icon: id => Promise.resolve(Number.isInteger(id) ? bridge.itemIcon?.(id) ?? null : null),
+            }),
             server: Object.freeze({
+                // Ask the mod's server script for something: it answers an
+                // @command (bindatcmd) with @@reply lines (dispbottom).
+                // Resolves with their text; see docs/MODDING.md.
+                request(command, text = '', options = {}) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (typeof command !== 'string' || !/^[a-z][a-z0-9_]{1,23}$/.test(command)) throw new TypeError('request: command must be a lowercase @command name');
+                    if (typeof text !== 'string' || text.length > 200 || /[\r\n]/.test(text)) throw new TypeError('request: text must be one line of at most 200 characters');
+                    if (typeof bridge.serverRequest !== 'function') return Promise.reject(new Error('this client cannot make server requests'));
+                    const timeout = Math.min(Math.max(Number(options.timeout) || 5000, 500), 30000);
+                    return bridge.serverRequest(command, text, timeout);
+                },
                 command(text) {
                     if (disposed) throw new Error(`Plugin ${name} is disposed`);
                     if (typeof text !== 'string') return false;
