@@ -152,8 +152,11 @@ function action(name, value) {
 // selectable: 'mob' (default, the taming flag), 'player' (friendly actors) or
 // 'any'. NPCs are not skill-targetable and so cannot be picked. Only one
 // selection runs at a time (the component is a singleton), so a second pick or
-// a plugin disposal cancels the pending one.
+// a plugin disposal cancels the pending one, and so does the client raising
+// the cursor for itself (a skill from the skill list, a taming item): the
+// player's own action wins, and the plugin gets null.
 let activePick = null;
+let settingPick = false;
 // Requested target type -> the client's skill-target flags. Evaluated at call
 // time: SkillTargetSelection.TYPE is filled during the component's lazy init.
 function flagForType(type) {
@@ -215,7 +218,8 @@ function beginTargeting(options) {
         };
         const label = typeof options?.label === 'string' && options.label ? options.label.slice(0, 40) : 'Select a target';
         SkillTargetSelection.append();
-        SkillTargetSelection.set({ SKID: -10, level: 0 }, flagForType(options?.type), label);
+        settingPick = true;
+        try { SkillTargetSelection.set({ SKID: -10, level: 0 }, flagForType(options?.type), label); } finally { settingPick = false; }
     });
 }
 function cancelTargeting() {
@@ -244,6 +248,14 @@ export function init() {
     installed = true;
     // Test harness only; inert unless scripts/rotest opted this page in.
     installAgentHook();
+    // Any other set() is the client targeting for itself. Hand it back its own
+    // callbacks first, or the pending plugin pick would swallow the click and
+    // the skill would never be cast.
+    const clientSet = SkillTargetSelection.set;
+    SkillTargetSelection.set = function () {
+        if (activePick && !settingPick) settleTargeting(null);
+        return clientSet.apply(this, arguments);
+    };
     // Emit item:use so mods can react to a consumable being used. The id is the
     // item type (ITID), resolved from the live inventory at send time -- before
     // the server consumes the stack. Wrapping the send keeps this independent of
