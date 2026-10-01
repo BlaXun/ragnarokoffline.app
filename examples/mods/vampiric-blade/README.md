@@ -46,9 +46,9 @@ Equip the sword:
 ## Try it
 
 ```
-@item 30101
+@item 50101
 @useskill 0 0 0  // nothing, just to equip
-@equip 30101     // if the inventory window is awkward from the console
+@equip 50101     // if the inventory window is awkward from the console
 @monster PORING 20
 ```
 

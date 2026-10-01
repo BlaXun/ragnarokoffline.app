@@ -35,8 +35,8 @@ the attacker/target identity (`c.caster`, `c.target`).
 ## Try it
 
 ```
-@item 30301
-@equip 30301
+@item 50301
+@equip 50301
 @monster PECOPECO 15      // physical attackers
 @monster HORONG 15        // magical attackers
 ```

@@ -18,7 +18,7 @@ prontera,153,180,4	script	Cloak Weaver#mirage	4_F_02,{
 		close;
 	}
 	delitem 909, 1;
-	getitem 30201, 1;
+	getitem 50201, 1;
 	mes "[Cloak Weaver]";
 	mes "Dodge well. The curse rides on misses.";
 	close;

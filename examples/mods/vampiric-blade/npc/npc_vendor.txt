@@ -18,7 +18,7 @@ prontera,155,180,4	script	Blade Keeper#vampiric	4_M_02,{
 		close;
 	}
 	delitem 909, 1;
-	getitem 30101, 1;
+	getitem 50101, 1;
 	mes "[Blade Keeper]";
 	mes "Hold it tight. It feeds on either side.";
 	close;

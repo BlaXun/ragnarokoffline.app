@@ -2,7 +2,7 @@
 -- resource names reuse an existing weapon's art so the mod does not need
 -- to ship new sprites. Save this file as UTF-8.
 tbl = {
-	[30101] = {
+	[50101] = {
 		unidentifiedDisplayName = "Sword",
 		unidentifiedResourceName = "·ÕÀº½Î¹Þ",
 		identifiedDisplayName = "Vampiric Blade",

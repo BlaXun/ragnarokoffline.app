@@ -1,5 +1,5 @@
 tbl = {
-	[30301] = {
+	[50301] = {
 		unidentifiedDisplayName = "Armor",
 		unidentifiedResourceName = "°©¿Ê",
 		identifiedDisplayName = "Thorns Plate",

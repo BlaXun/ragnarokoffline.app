@@ -31,8 +31,8 @@ Three example mods, three filter patterns:
 ## Try it
 
 ```
-@item 30401
-@equip 30401
+@item 50401
+@equip 50401
 @monster HORONG 15        // magical attackers (Fire Bolt)
 @monster PECOPECO 15      // physical attackers
 ```

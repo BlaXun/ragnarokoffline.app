@@ -1,7 +1,7 @@
 -- Mirage Cloak -- client-side name and description. Resource reuses an
 -- existing garment's art.
 tbl = {
-	[30201] = {
+	[50201] = {
 		unidentifiedDisplayName = "Garment",
 		unidentifiedResourceName = "¸ÁÅä",
 		identifiedDisplayName = "Mirage Cloak",

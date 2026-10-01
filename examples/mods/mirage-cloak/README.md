@@ -56,8 +56,8 @@ Equip the cloak:
 ## Try it
 
 ```
-@item 30201
-@equip 30201
+@item 50201
+@equip 50201
 @monster PECOPECO 30
 ```
 

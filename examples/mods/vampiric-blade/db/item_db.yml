@@ -6,7 +6,7 @@ Header:
   Version: 3
 
 Body:
-  - Id: 30101
+  - Id: 50101
     AegisName: Vampiric_Blade
     Name: Vampiric Blade
     Type: Weapon
