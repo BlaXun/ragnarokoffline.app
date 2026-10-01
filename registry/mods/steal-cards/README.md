@@ -16,8 +16,8 @@ reason a Thief learns Steal in the first place.
 ## Why the skill ignores cards to begin with
 
 `Steal` (`TF_STEAL`) is `pc_steal_item` in `vendor/rathena/src/map/pc.cpp`. It
-walks the target monster's `Drops[]` table, filters out every entry marked
-`steal_protected`, and picks one of the rest by weight. rAthena's stock
+walks the target monster's `Drops[]` table in slot order, skips every entry
+marked `steal_protected`, and gives the first one whose own roll succeeds. rAthena's stock
 `db/re/mob_db.yml` and `db/pre-re/mob_db.yml` both mark **every card drop as
 `StealProtected: true`**, so the eligible list is always Jellopy and Sticky
 Mucus and never the card. The C code does the right thing; the data locks the
@@ -57,10 +57,16 @@ value automatically. Spell `Rate:` on an override only when you want to
 pin a specific card's drop weight — note it affects both the on-kill roll
 and Steal, since both pull from the same `Drops[]` entry.
 
-`pc_steal_item` weights each eligible drop by its own rate (multiplied by the
-skill's dexterity/luck term and its skill-level base rate), so a 0.01% card
-is much rarer than the mob's junk drops, but rarely more than a few casts per
-stealing session on the lower-tier mobs.
+**What the odds really are.** After the skill's own success check (DEX and
+skill level), `pc_steal_item` rolls each stealable drop in slot order and
+stops at the first success, and a monster can be stolen from only once. The
+card is usually the last slot, so it is only rolled when every drop before it
+has failed: on a Poring at 1x rates that is 30% (Jellopy misses) × the other
+five misses × 0.2%, about **0.05% per successful steal, one Poring in ~2,000**.
+The rates are the server's adjusted ones, so raising the common-item drop rate
+makes cards *harder* to steal, and a monster with any earlier drop at 100%
+(Jellopy at 1.5x and above) never yields its card to Steal at all. The card
+drops rate in the server settings raises the card's own roll.
 
 ### Why the override is this small
 
@@ -81,10 +87,10 @@ Install the folder, restart the server (Settings → Restart server, since only
    'db/import/mob_db.yml'`. Fewer entries means part of the file didn't parse.
 2. Roll a Thief, learn Steal, find a Poring. `@whodrops 4001` (Poring Card)
    lists Poring at its rate.
-3. Cast Steal on Porings until one gives up the card. At Poring's stock
-   `Rate: 20` (0.2%) and the skill's own dexterity term, plan on fifty to
-   two hundred casts on a fresh Thief; a higher-level one with Luk gear
-   gets there faster.
+3. Cast Steal on Porings until one gives up the card -- at 1x rates, on the
+   order of two thousand Porings (see the odds above). To check the mod
+   rather than your patience, raise **Card drops** in the server
+   settings, or try a monster whose earlier drops are rare.
 
 If Steal still only returns Jellopy and Apple, check the log for a YAML parse
 error and check that the target monster's Id is in `db/mob_db.yml`.
