@@ -69,6 +69,13 @@
       "description": "Maps that differ from the setting above, as name:strength (0-100), e.g. \"alberta:70 izlude:0\". * matches anything; the first match wins."
     },
     {
+      "key": "hd_ground",
+      "type": "boolean",
+      "default": true,
+      "label": "High-resolution ground",
+      "description": "When a texture pack gives a map larger ground textures, keep their full detail (the client otherwise shrinks every ground texture to 256x256). Does nothing on maps without them."
+    },
+    {
       "key": "grass",
       "type": "number",
       "default": 50,

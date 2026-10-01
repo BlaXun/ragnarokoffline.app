@@ -1270,6 +1270,19 @@ api.on('map:enter', ({ name }) => {
 api.graphics.hook({ name: 'Sunlight', light: () => sun });
 ```
 
+**Higher-resolution textures.** A texture pack replaces a texture by
+shipping a larger file at the same path, e.g.
+`data/texture/필드바닥/prt_흙02.bmp` at 1024x1024 (the Korean path is the
+client's own; `link-assets` serves it the way the client asks for it). The
+client shrinks every ground texture to 256x256 in the map's atlas; with
+Graphics+ "High-resolution ground" on, the atlas is rebuilt at up to four
+times that, capped at 4096x4096 (every texture in the atlas is scaled, so a
+map with many textures gets 512). The gain shows close up: at the default
+zoom a ground tile is about 64 pixels on screen. Replace a map's whole set,
+including the hand-painted edge tiles, or the new texture's tile shows next
+to the old ones. `examples/mods/hd-ground-texture` replaces Prontera field
+dirt with a CC0 texture from ambientCG.
+
 Graphics+ is the worked example: its grass (`grass.js`), water and
 reflections (`water.js`, `reflection.js`) and shadows (`shadows.js`) are
 each a map hook. Its sunlight is the example above as settings: off

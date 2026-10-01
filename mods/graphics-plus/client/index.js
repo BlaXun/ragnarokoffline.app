@@ -9,6 +9,7 @@
 import { grassHook } from './grass.js';
 import { waterHook } from './water.js';
 import { shadowsHook } from './shadows.js';
+import { groundHdHook } from './ground-hd.js';
 
 const FRAGMENT = `
 uniform float uGrade, uGlow, uFog, uTonemap, uVignette, uTilt, uFringe, uDrops;
@@ -200,6 +201,8 @@ export default function init(parameters, api) {
         // (Izlude), on others the waves are what makes the water (Alberta).
         detail: perMap(parameters?.water_detail_maps, percent('water_detail')),
     }));
+    // Texture packs' larger ground textures, at their own resolution.
+    if (parameters?.hd_ground !== false) api.graphics.hook(groundHdHook());
     if (percent('grass') > 0) api.graphics.hook(grassHook({
         // Ground textures whose names say grass: the client's are Korean
         // (풀 grass, 잔디 lawn, 초원 meadow, 들판 field), a mod's often English.
