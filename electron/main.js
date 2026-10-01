@@ -1503,6 +1503,9 @@ function gameTitle() {
 // Kept in the owner process so a failed/terminated game renderer cannot lose
 // its recovery reason. Loading the boot page never retries automatically.
 let gameFailure = null;
+// Each time launch_game has put the client in the game window. Read by
+// Settings → Mods through game_status.
+let gameLaunches = 0;
 function showGameFailure(win, message) {
 	if (tearingDown || !win || win.isDestroyed() || win !== windows.game || win.recoveryLoading) return;
 	gameFailure = message;
@@ -2782,8 +2785,13 @@ const handlers = {
 			if (error.code !== 'ERR_ABORTED') showGameFailure(win, 'The game page could not load. Check the host connection, then retry.');
 			throw error;
 		}
+		gameLaunches++;
 		win.setTitle(gameTitle());
 	},
+	// Whether a game window is open, and how many times the client has loaded
+	// in it. Settings → Mods compares the count with the one it saw when
+	// Apply finished, to know when "reopen the game" has been done.
+	game_status: () => ({ open: !!(windows.game && !windows.game.isDestroyed()), launches: gameLaunches }),
 
 	// Dialogs — the return shape the pages branch on: a path string, an array
 	// when multiple, null when cancelled.
