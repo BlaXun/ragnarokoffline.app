@@ -16,8 +16,9 @@ reason a Thief learns Steal in the first place.
 ## Why the skill ignores cards to begin with
 
 `Steal` (`TF_STEAL`) is `pc_steal_item` in `vendor/rathena/src/map/pc.cpp`. It
-walks the target monster's `Drops[]` table, filters out every entry marked
-`steal_protected`, and picks one of the rest by weight. rAthena's stock
+
+walks the target monster's `Drops[]` table in slot order, skips every entry
+marked `steal_protected`, and gives the first one whose own roll succeeds. rAthena's stock
 `db/re/mob_db.yml` and `db/pre-re/mob_db.yml` both mark **every card drop as
 `StealProtected: true`**, so the eligible list is always Jellopy and Sticky
 Mucus and never the card. The C code does the right thing; the data locks the
@@ -44,7 +45,7 @@ changes is the one flag on Slot 7.
 
 **The `Index:` matches the card's real slot in the stock table** — 7 for
 Poring, 6 for Ghostring, 8 for many second-job monsters. The generator reads
-`vendor/rathena/db/re/mob_db.yml` and copies the index verbatim, so the
+the pinned `vendor/rathena/db/re/mob_db.yml` and copies the index verbatim, so the
 override lands on the same drop the on-kill roll uses. Nothing is duplicated
 and nothing else moves.
 
@@ -57,10 +58,16 @@ value automatically. Spell `Rate:` on an override only when you want to
 pin a specific card's drop weight — note it affects both the on-kill roll
 and Steal, since both pull from the same `Drops[]` entry.
 
-`pc_steal_item` weights each eligible drop by its own rate (multiplied by the
-skill's dexterity/luck term and its skill-level base rate), so a 0.01% card
-is much rarer than the mob's junk drops, but rarely more than a few casts per
-stealing session on the lower-tier mobs.
+**What the odds really are.** After the skill's own success check (DEX and
+skill level), `pc_steal_item` rolls each stealable drop in slot order and
+stops at the first success, and a monster can be stolen from only once. The
+card is usually the last slot, so it is only rolled when every drop before it
+has failed: on a Poring at 1x rates that is 30% (Jellopy misses) × the other
+five misses × 0.2%, about **0.05% per successful steal, one Poring in ~2,000**.
+The rates are the server's adjusted ones, so raising the common-item drop rate
+makes cards *harder* to steal, and a monster with any earlier drop at 100%
+(Jellopy at 1.5x and above) never yields its card to Steal at all. The card
+drops rate in the server settings raises the card's own roll.
 
 ### Why the override is this small
 
@@ -81,38 +88,43 @@ Install the folder, restart the server (Settings → Restart server, since only
    'db/import/mob_db.yml'`. Fewer entries means part of the file didn't parse.
 2. Roll a Thief, learn Steal, find a Poring. `@whodrops 4001` (Poring Card)
    lists Poring at its rate.
-3. Cast Steal on Porings until one gives up the card. At Poring's stock
-   `Rate: 20` (0.2%) and the skill's own dexterity term, plan on fifty to
-   two hundred casts on a fresh Thief; a higher-level one with Luk gear
-   gets there faster.
+3. Cast Steal on Porings until one gives up the card -- at 1x rates, on the
+   order of two thousand Porings (see the odds above). To check the mod
+   rather than your patience, raise **Card drops** in the server
+   settings, or try a monster whose earlier drops are rare.
 
 If Steal still only returns Jellopy and Apple, check the log for a YAML parse
 error and check that the target monster's Id is in `db/mob_db.yml`.
 
+## Renewal only
+
+rAthena ships two mob tables, `db/re/mob_db.yml` and `db/pre-re/mob_db.yml`,
+and they do **not** agree on where the card sits: of the 451 monsters with a
+card in both, 97 have it in a different slot (Hornet's is 7 in renewal and 6
+in pre-renewal). The override names a slot, not an item, so on a pre-renewal
+server it would unprotect whatever drop happens to be in that slot and leave
+the card protected. A mod cannot ship a table per era, so `mod.json` asks for
+`"era": "renewal"` and the app refuses it on a pre-renewal world, saying so.
+
 ## Regenerating the table
 
-`generate.py` reads rAthena's own `mob_db.yml` and rewrites `db/mob_db.yml`.
-Run it when the vendor pin moves, or when you want to change the criteria.
+`db/mob_db.yml` is generated, and committed: the mod works as it is, and
+nothing a player installs runs Python. The generator lives outside the mod
+folder, at
+[`registry/tools/steal-cards/generate.py`](../../tools/steal-cards/generate.py),
+and needs only the Python standard library. Run it from the repository root
+when `config/VENDOR_PINS` moves rAthena, or to change the criteria:
 
 ```sh
-# beside a checked-out vendor tree
-./generate.py ../../../vendor/rathena/db/re/mob_db.yml
-
-# or against a copy elsewhere
-./generate.py ~/rathena/db/re/mob_db.yml --out db/mob_db.yml
+scripts/vendor-fetch.sh rathena vendor/rathena    # the pinned commit
+python3 registry/tools/steal-cards/generate.py    # rewrites db/mob_db.yml
+python3 registry/tools/steal-cards/generate.py --check   # or: is it current?
 ```
 
-PyYAML is the only requirement: `pip install pyyaml`. The generator writes to
-`db/mob_db.yml` next to itself by default.
-
-**Renewal versus pre-renewal.** rAthena ships two mob tables that differ in
-level, HP, damage and a handful of drops — `db/re/mob_db.yml` and
-`db/pre-re/mob_db.yml`. The supervisor mounts whichever era the app is running
-in, and `db/import` layers over that one. Both tables agree on the *card*
-slot for the mobs both include, so generating from either produces the same
-override for the mobs it covers; renewal adds ~200 monsters that pre-renewal
-does not have, and those entries are simply unused in pre-renewal. Generating
-from `db/re/mob_db.yml` is the wider choice.
+It reads `vendor/rathena/db/re/mob_db.yml` (`--source` for another copy),
+writes the rAthena commit it read into the output's header, and warns when
+that is not the commit `config/VENDOR_PINS` pins. Then regenerate the index
+(`python3 scripts/mod-index.py`) and raise `version` in `mod.json`.
 
 ### What the generator excludes
 
@@ -126,8 +138,7 @@ from `db/re/mob_db.yml` is the wider choice.
 **`Class: Boss` is not enough.** 539 monsters carry `Class: Boss` without
 being MVPs: mini-bosses, boss-class field monsters, event bosses. Their cards
 stay in the mod. If you want a stricter version — no bosses at all, however
-minor — add `if mob.get("Class") == "Boss": return True` at the top of
-`is_mvp()` and rerun.
+minor — add `or mob["class"] == "Boss"` to `is_mvp()` and rerun.
 
 ## What this mod is not
 
@@ -137,7 +148,7 @@ minor — add `if mob.get("Class") == "Boss": return True` at the top of
   own stock drop rate (unchanged by this mod) — the skill's base success rate
   applies on top.
 - **It does not make MVP cards stealable.** They are excluded by design. If
-  you want them in too, edit `is_mvp()` in `generate.py` to `return False` and
+  you want them in too, make `is_mvp()` in `generate.py` return `False` and
   rerun.
 - **It does not touch drops that are not cards.** Card equipment drops
   (Poring Hat, etc.) stay steal-protected if they were, and stealable if they
