@@ -35,6 +35,7 @@
 #include <common/timer.hpp>
 #include <common/utils.hpp>
 #include "battle.hpp"
+#include "chrif.hpp"
 #include "clif.hpp"
 #include "intif.hpp"
 #include "itemdb.hpp"
@@ -4978,10 +4979,12 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 			(void)pop_companion_hand_back(owner, shell, i, LOG_TYPE_TRADE);
 		}
 	}
-	if (equipped_any) {
-		// The gear-hash poll will pick up the change and re-snapshot to the DB.
+	if (equipped_any)
 		ShowInfo("population_engine: companion %u equipped traded gear\n", shell->status.char_id);
-	}
+	// Write the companion's half now rather than on the next gear poll: trade_tradecommit saves
+	// the owner's half straight after this, and a crash between two saves seconds apart is how
+	// an item ends up on neither side.
+	population_engine_persist_companion_gear(shell);
 }
 
 // Goal 2 (gear return): unequip every worn item on the shell and hand each
@@ -5011,7 +5014,11 @@ int population_engine_companion_return_gear(map_session_data *owner, map_session
 	if (returned > 0) {
 		ShowInfo("population_engine: returned %d worn item(s) from companion %u to owner %u\n",
 			returned, shell->status.char_id, owner->status.account_id);
-		// Gear-hash poll will re-snapshot the now-empty equipment to the DB.
+		// Save both halves now. Left to the owner's autosave and the gear poll, a crash in
+		// between loses the item (companion row already empty, owner not yet saved) or
+		// duplicates it. Owner first: if anything is lost to a crash here, it is a duplicate.
+		chrif_save(owner, CSAVE_INVENTORY);
+		population_engine_persist_companion_gear(shell);
 	}
 	return returned;
 }

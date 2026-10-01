@@ -38,3 +38,14 @@ test('the trade and gear-return paths go through hand-back instead of deleting t
 		assert.ok(body.includes('pop_companion_hand_back('), `${sig} must return items through hand-back`);
 	}
 });
+
+test('both halves of a move are saved straight away, not on the next poll', () => {
+	const back = functionBody('int population_engine_companion_return_gear(');
+	const save = back.indexOf('chrif_save(owner, CSAVE_INVENTORY)');
+	const persist = back.indexOf('population_engine_persist_companion_gear(shell)');
+	assert.ok(save > 0 && persist > 0, 'gear return must save the owner and the companion row');
+	assert.ok(save < persist, 'owner first, so a crash in between duplicates rather than loses');
+	// The trade path: stock trade_tradecommit saves the owner after this hook returns.
+	assert.ok(functionBody('void population_engine_companion_equip_traded(').includes('population_engine_persist_companion_gear(shell)'),
+		'a trade must write the companion row immediately');
+});
