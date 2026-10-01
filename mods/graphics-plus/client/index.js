@@ -156,10 +156,10 @@ function mapName(name) {
 }
 
 /**
- * How strong the warm sunlight is on a map, 0..1: the first entry of a list
- * like "prt_fild*:90 *_dun*:0" whose name matches, else the default.
+ * How strong a setting is on a map, 0..1: the first entry of a list like
+ * "prt_fild*:90 *_dun*:0" whose name matches, else the default.
  */
-export function sunlightFor(list, fallback) {
+export function perMap(list, fallback) {
     const entries = String(list ?? '').split(/[\s,]+/).filter(Boolean).map(entry => {
         const [pattern, value] = entry.split(':');
         const amount = Number(value);
@@ -194,7 +194,12 @@ export default function init(parameters, api) {
     // Drawn in the map renderer itself, each by a map hook of its own
     // (grass.js, water.js, shadows.js): only the ones switched on.
     if (percent('shadows') > 0) api.graphics.hook(shadowsHook(percent('shadows')));
-    if (percent('water') > 0) api.graphics.hook(waterHook({ reflection: percent('water') }));
+    if (percent('water') > 0) api.graphics.hook(waterHook({
+        reflection: percent('water'),
+        // The map's own waves on top: on some maps the plain mirror is best
+        // (Izlude), on others the waves are what makes the water (Alberta).
+        detail: perMap(parameters?.water_detail_maps, percent('water_detail')),
+    }));
     if (percent('grass') > 0) api.graphics.hook(grassHook({
         // Ground textures whose names say grass: the client's are Korean
         // (풀 grass, 잔디 lawn, 초원 meadow, 들판 field), a mod's often English.
@@ -209,7 +214,7 @@ export default function init(parameters, api) {
     // Warm sunlight: a golden sun and a cooler sky in place of the map's,
     // as strong as the setting says -- or as the map's own entry in
     // "Sunlight per map" says.
-    const sunFor = sunlightFor(parameters?.sunlight_maps, percent('sunlight'));
+    const sunFor = perMap(parameters?.sunlight_maps, percent('sunlight'));
     let sunlight = null;
     const weather = name => {
         raining = !!name && wet(name);

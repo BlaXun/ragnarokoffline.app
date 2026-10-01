@@ -53,6 +53,22 @@
       "description": "Water mirrors the buildings, rocks and sky above it. Draws the map a second time on maps with water, so it costs more than the others. 0 is off."
     },
     {
+      "key": "water_detail",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 100,
+      "label": "Water waves",
+      "description": "The map's own animated waves on top of the reflections, everywhere. 0 shows only the reflections (Izlude's clear look); use the list below for particular maps."
+    },
+    {
+      "key": "water_detail_maps",
+      "type": "string",
+      "default": "alberta:70 comodo:70 *_fild*:50",
+      "label": "Water waves per map",
+      "description": "Maps that differ from the setting above, as name:strength (0-100), e.g. \"alberta:70 izlude:0\". * matches anything; the first match wins."
+    },
+    {
       "key": "grass",
       "type": "number",
       "default": 50,
