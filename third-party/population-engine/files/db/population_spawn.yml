@@ -560,7 +560,7 @@ Body:
       - tur_dun04
     DungeonsPopulation: 50
 
-  - Profile: pve_gunslinger  # 40-99: no second class, so one profile spans the mid and high tiers
+  - Profile: pve_gunslinger
     Towns:
       - aldebaran
       - comodo
@@ -570,16 +570,7 @@ Body:
       - louyang
       - umbala
       - xmas
-      - yuno
-      - einbroch
-      - einbech
-      - lighthalzen
-      - rachel
-      - veins
-      - niflheim
-      - moscovia
-      - ayothaya
-    TownsPopulation: 80
+    TownsPopulation: 50
     Fields:
       - moc_fild01
       - moc_fild02
@@ -592,17 +583,7 @@ Body:
       - cmd_fild02
       - cmd_fild03
       - cmd_fild04
-      - yuno_fild01
-      - yuno_fild02
-      - ein_fild01
-      - ein_fild02
-      - lhz_fild01
-      - lhz_fild02
-      - ra_fild01
-      - ra_fild02
-      - ve_fild01
-      - ve_fild02
-    FieldsPopulation: 110
+    FieldsPopulation: 50
     Dungeons:
       - tur_dun01
       - tur_dun02
@@ -611,38 +592,9 @@ Body:
       - beach_dun
       - beach_dun2
       - beach_dun3
-      - glast_01
-      - gl_chyard
-      - gl_cas01
-      - gl_cas02
-      - gefenia01
-      - gefenia02
-      - gefenia03
-      - gefenia04
-      - abyss_01
-      - abyss_02
-      - abyss_03
-      - thor_v01
-      - thor_v02
-      - thor_v03
-      - odin_tem01
-      - odin_tem02
-      - odin_tem03
-      - lhz_dun01
-      - lhz_dun02
-      - lhz_dun03
-      - juperos_01
-      - juperos_02
-      - tha_t01
-      - tha_t02
-      - tha_t03
-      - ra_san01
-      - ra_san02
-      - ice_dun01
-      - ice_dun02
-    DungeonsPopulation: 95
+    DungeonsPopulation: 35
 
-  - Profile: pve_ninja  # 40-99: no second class, so one profile spans the mid and high tiers
+  - Profile: pve_ninja
     Towns:
       - aldebaran
       - comodo
@@ -652,16 +604,7 @@ Body:
       - louyang
       - umbala
       - xmas
-      - yuno
-      - einbroch
-      - einbech
-      - lighthalzen
-      - rachel
-      - veins
-      - niflheim
-      - moscovia
-      - ayothaya
-    TownsPopulation: 70
+    TownsPopulation: 40
     Fields:
       - lou_fild01
       - ama_fild01
@@ -669,17 +612,7 @@ Body:
       - gef_fild03
       - gef_fild05
       - gef_fild06
-      - yuno_fild01
-      - yuno_fild02
-      - ein_fild01
-      - ein_fild02
-      - lhz_fild01
-      - lhz_fild02
-      - ra_fild01
-      - ra_fild02
-      - ve_fild01
-      - ve_fild02
-    FieldsPopulation: 105
+    FieldsPopulation: 45
     Dungeons:
       - ama_dun01
       - ama_dun02
@@ -692,37 +625,7 @@ Body:
       - in_sphinx3
       - in_sphinx4
       - in_sphinx5
-      - glast_01
-      - gl_church
-      - gl_chyard
-      - gefenia01
-      - gefenia02
-      - gefenia03
-      - gefenia04
-      - abyss_01
-      - abyss_02
-      - abyss_03
-      - thor_v01
-      - thor_v02
-      - odin_tem01
-      - odin_tem02
-      - odin_tem03
-      - lhz_dun01
-      - lhz_dun02
-      - lhz_dun03
-      - juperos_01
-      - juperos_02
-      - jupe_cave
-      - tha_t01
-      - tha_t02
-      - tha_t03
-      - ra_san01
-      - ra_san02
-      - ra_san03
-      - ice_dun01
-      - ice_dun02
-      - ice_dun03
-    DungeonsPopulation: 95
+    DungeonsPopulation: 35
 
   # =========================================================================
   # HIGH TIER (Lv 70–99)
@@ -1350,7 +1253,1196 @@ Body:
       - ice_dun02
     DungeonsPopulation: 60
 
-# RAGNAROKMAC: the import a mod's table arrives through.
-Footer:
-  Imports:
-    - Path: db/import/population_spawn.yml
+  - Profile: pve_gunslinger_high
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_chyard
+      - gl_cas01
+      - gl_cas02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - thor_v03
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - ra_san01
+      - ra_san02
+      - ice_dun01
+      - ice_dun02
+    DungeonsPopulation: 60
+
+  - Profile: pve_ninja_high
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_church
+      - gl_chyard
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - ra_san01
+      - ra_san02
+      - ra_san03
+      - ice_dun01
+      - ice_dun02
+      - ice_dun03
+    DungeonsPopulation: 60
+
+  # =========================================================================
+  # TRANSCENDENT TIER (T4/T5/T6)
+  # T4 shares towns/fields/dungeons with LOW (T1)
+  # T5 shares towns/fields/dungeons with MID (T2)
+  # T6 shares towns/fields/dungeons with HIGH (T3)
+  # =========================================================================
+
+  - Profile: combat_pve_low_trascended   # T4: transcendent first jobs — same as T1
+    Towns:
+      - prontera
+      - izlude
+      - payon
+      - alberta
+      - geffen
+      - morocc
+    TownsPopulation: 200
+    Fields:
+      - gef_fild00
+      - gef_fild01
+      - gef_fild04
+      - gef_fild07
+      - moc_fild07
+      - moc_fild11
+      - moc_fild12
+      - moc_fild18
+      - pay_fild01
+      - pay_fild03
+      - prt_fild01
+      - prt_fild06
+      - prt_fild07
+      - prt_fild08
+    FieldsPopulation: 300
+    Dungeons:
+      - prt_sewb1
+      - prt_sewb2
+      - prt_sewb3
+      - prt_sewb4
+      - iz_dun00
+      - iz_dun01
+      - iz_dun02
+      - gef_dun00
+      - gef_dun01
+      - gef_dun02
+      - orcsdun01
+      - anthell01
+      - anthell02
+      - pay_dun00
+      - pay_dun01
+      - pay_dun02
+      - pay_dun03
+      - pay_dun04
+      - moc_pryd01
+      - moc_pryd02
+    DungeonsPopulation: 300
+
+  - Profile: pve_knight_trascended       # T5: transcendent Knight — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - prt_fild02
+      - prt_fild03
+      - prt_fild04
+      - prt_fild05
+      - prt_fild09
+      - prt_fild10
+      - prt_fild11
+    FieldsPopulation: 80
+    Dungeons:
+      - prt_maze01
+      - prt_maze02
+      - prt_maze03
+      - iz_dun00
+      - iz_dun01
+      - iz_dun02
+      - iz_dun03
+      - iz_dun04
+      - alde_dun01
+      - alde_dun02
+    DungeonsPopulation: 80
+
+  - Profile: pve_paladin_trascended      # T5: transcendent Crusader — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - pay_fild02
+      - pay_fild04
+      - pay_fild05
+      - pay_fild06
+      - pay_fild07
+      - pay_fild08
+      - pay_fild09
+      - pay_fild10
+      - pay_fild11
+    FieldsPopulation: 80
+    Dungeons:
+      - prt_maze01
+      - prt_maze02
+      - prt_maze03
+      - iz_dun00
+      - iz_dun01
+      - iz_dun02
+      - iz_dun03
+      - iz_dun04
+      - alde_dun01
+      - alde_dun02
+    DungeonsPopulation: 80
+
+  - Profile: pve_caster_trascended       # T5: transcendent Wizard / Sage — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - gef_fild02
+      - gef_fild03
+      - gef_fild05
+      - gef_fild06
+      - gef_fild08
+      - gef_fild09
+      - gef_fild10
+      - gef_fild11
+      - gef_fild12
+      - gef_fild13
+      - gef_fild14
+      - moc_fild01
+      - moc_fild02
+      - moc_fild03
+      - moc_fild13
+      - moc_fild16
+      - moc_fild17
+      - moc_fild19
+    FieldsPopulation: 80
+    Dungeons:
+      - gef_dun00
+      - gef_dun01
+      - gef_dun02
+      - gef_dun03
+      - orcsdun01
+      - in_sphinx1
+      - in_sphinx2
+      - in_sphinx3
+    DungeonsPopulation: 80
+
+  - Profile: pve_archer_trascended       # T5: transcendent Hunter / Bard / Dancer — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 150
+    Fields:
+      - pay_fild02
+      - pay_fild04
+      - pay_fild05
+      - pay_fild06
+      - pay_fild07
+      - pay_fild08
+      - pay_fild09
+      - pay_fild10
+      - pay_fild11
+    FieldsPopulation: 80
+    Dungeons:
+      - gef_dun00
+      - gef_dun01
+      - gef_dun02
+      - gef_dun03
+      - orcsdun01
+      - beach_dun
+      - beach_dun2
+      - beach_dun3
+      - alde_dun01
+      - alde_dun02
+    DungeonsPopulation: 80
+
+  - Profile: pve_monk_trascended         # T5: transcendent Monk — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - yuno_fild03
+      - yuno_fild04
+      - gef_fild02
+      - gef_fild03
+      - gef_fild05
+      - gef_fild06
+      - gef_fild08
+      - gef_fild09
+      - gef_fild10
+      - gef_fild11
+      - gef_fild12
+      - gef_fild13
+      - gef_fild14
+      - moc_fild01
+      - moc_fild02
+      - moc_fild03
+      - moc_fild13
+      - moc_fild16
+      - moc_fild17
+      - moc_fild19
+    FieldsPopulation: 80
+    Dungeons:
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - beach_dun
+      - beach_dun2
+      - beach_dun3
+      - tur_dun01
+      - tur_dun02
+    DungeonsPopulation: 80
+
+  - Profile: pve_assassin_trascended     # T5: transcendent Assassin / Assassin Cross — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - moc_fild01
+      - moc_fild02
+      - moc_fild03
+      - moc_fild13
+      - moc_fild16
+      - moc_fild17
+      - moc_fild19
+      - pay_fild02
+      - pay_fild04
+      - pay_fild05
+      - pay_fild06
+      - pay_fild07
+      - pay_fild08
+      - pay_fild09
+      - pay_fild10
+      - pay_fild11
+    FieldsPopulation: 60
+    Dungeons:
+      - in_sphinx1
+      - in_sphinx2
+      - in_sphinx3
+      - in_sphinx4
+      - in_sphinx5
+      - tur_dun01
+      - tur_dun02
+      - tur_dun03
+      - tur_dun04
+      - prt_sewb1
+      - prt_sewb2
+      - prt_sewb3
+      - prt_sewb4
+    DungeonsPopulation: 80
+
+  - Profile: pve_rogue_trascended        # T5: transcendent Rogue — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 40
+    Fields:
+      - pay_fild02
+      - pay_fild04
+      - pay_fild05
+      - pay_fild06
+      - pay_fild07
+      - pay_fild08
+      - pay_fild09
+      - pay_fild10
+      - pay_fild11
+      - gef_fild02
+      - gef_fild03
+      - gef_fild05
+    FieldsPopulation: 50
+    Dungeons:
+      - prt_sewb1
+      - prt_sewb2
+      - prt_sewb3
+      - prt_sewb4
+      - gl_sew01
+      - gl_sew02
+      - gl_sew03
+      - gl_sew04
+      - gl_dun01
+      - gl_dun02
+      - in_sphinx1
+      - in_sphinx2
+      - in_sphinx3
+      - in_sphinx4
+      - in_sphinx5
+    DungeonsPopulation: 70
+
+  - Profile: pve_merchant_cart_trascended  # T5: transcendent Merchant / Blacksmith / Alchemist — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - gef_fild02
+      - gef_fild03
+      - gef_fild05
+      - pay_fild02
+      - pay_fild04
+      - pay_fild05
+      - pay_fild06
+    FieldsPopulation: 25
+    Dungeons:
+      - iz_dun00
+      - iz_dun01
+      - iz_dun02
+      - tur_dun01
+      - tur_dun02
+      - alde_dun01
+      - alde_dun02
+    DungeonsPopulation: 25
+
+  - Profile: pve_taekwon_trascended      # T5: transcendent Taekwon / Star Gladiator / Soul Linker — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - yuno_fild03
+      - yuno_fild04
+      - gef_fild02
+      - gef_fild03
+      - gef_fild05
+      - gef_fild06
+      - gef_fild08
+      - gef_fild09
+      - gef_fild10
+      - gef_fild11
+      - gef_fild12
+      - gef_fild13
+      - gef_fild14
+      - cmd_fild01
+      - cmd_fild02
+      - cmd_fild03
+      - cmd_fild04
+    FieldsPopulation: 70
+    Dungeons:
+      - beach_dun
+      - beach_dun2
+      - beach_dun3
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - tur_dun01
+      - tur_dun02
+      - tur_dun03
+      - tur_dun04
+    DungeonsPopulation: 50
+
+  - Profile: pve_gunslinger_trascended   # T5: transcendent Gunslinger — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 50
+    Fields:
+      - moc_fild01
+      - moc_fild02
+      - moc_fild03
+      - moc_fild13
+      - moc_fild16
+      - moc_fild17
+      - moc_fild19
+      - cmd_fild01
+      - cmd_fild02
+      - cmd_fild03
+      - cmd_fild04
+    FieldsPopulation: 50
+    Dungeons:
+      - tur_dun01
+      - tur_dun02
+      - tur_dun03
+      - tur_dun04
+      - beach_dun
+      - beach_dun2
+      - beach_dun3
+    DungeonsPopulation: 35
+
+  - Profile: pve_ninja_trascended        # T5: transcendent Ninja — same as T2
+    Towns:
+      - aldebaran
+      - comodo
+      - hugel
+      - amatsu
+      - gonryun
+      - louyang
+      - umbala
+      - xmas
+    TownsPopulation: 40
+    Fields:
+      - lou_fild01
+      - ama_fild01
+      - gef_fild02
+      - gef_fild03
+      - gef_fild05
+      - gef_fild06
+    FieldsPopulation: 45
+    Dungeons:
+      - ama_dun01
+      - ama_dun02
+      - ama_dun03
+      - lou_dun01
+      - lou_dun02
+      - lou_dun03
+      - in_sphinx1
+      - in_sphinx2
+      - in_sphinx3
+      - in_sphinx4
+      - in_sphinx5
+    DungeonsPopulation: 35
+
+  - Profile: pve_knight_high_trascended  # T6: transcendent Knight max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - yuno_fild03
+      - yuno_fild04
+      - ein_fild01
+      - ein_fild02
+      - ein_fild03
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ra_fild03
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_in01
+      - gl_church
+      - gl_chyard
+      - gl_cas01
+      - gl_cas02
+      - gl_knt01
+      - gl_knt02
+      - gl_prison
+      - gl_prison1
+      - gl_sew01
+      - gl_sew02
+      - gl_sew03
+      - gl_sew04
+      - gl_dun01
+      - gl_dun02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - thor_v03
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - tha_t04
+      - tha_t05
+      - tha_t06
+      - tha_t07
+      - tha_t08
+      - tha_t09
+      - tha_t10
+      - tha_t11
+      - tha_t12
+    DungeonsPopulation: 60
+
+  - Profile: pve_paladin_high_trascended # T6: transcendent Crusader max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_in01
+      - gl_church
+      - gl_chyard
+      - gl_cas01
+      - gl_cas02
+      - gl_knt01
+      - gl_knt02
+      - gl_prison
+      - gl_prison1
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - thor_v03
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - ra_san01
+      - ra_san02
+      - ra_san03
+      - ra_san04
+      - ra_san05
+    DungeonsPopulation: 60
+
+  - Profile: pve_caster_high_trascended  # T6: transcendent Wizard / Sage max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - yuno_fild03
+      - yuno_fild04
+      - ein_fild01
+      - ein_fild02
+      - ein_fild03
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_church
+      - gl_chyard
+      - gl_cas01
+      - gl_cas02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - thor_v03
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - tha_t04
+      - ra_san01
+      - ra_san02
+      - ra_san03
+      - ra_san04
+      - ra_san05
+    DungeonsPopulation: 60
+
+  - Profile: pve_archer_high_trascended  # T6: transcendent Hunter / Bard / Dancer max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 40
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - yuno_fild03
+      - yuno_fild04
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ra_fild03
+      - ve_fild01
+      - ve_fild02
+      - ve_fild03
+    FieldsPopulation: 80
+    Dungeons:
+      - glast_01
+      - gl_chyard
+      - gl_cas01
+      - gl_cas02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - thor_v03
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - ra_san01
+      - ra_san02
+      - ra_san03
+      - ra_san04
+      - ra_san05
+      - ice_dun01
+      - ice_dun02
+      - ice_dun03
+    DungeonsPopulation: 60
+
+  - Profile: pve_monk_high_trascended    # T6: transcendent Monk max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 20
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 40
+    Dungeons:
+      - glast_01
+      - gl_church
+      - gl_chyard
+      - gl_knt01
+      - gl_knt02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - tha_t01
+      - tha_t02
+      - tha_t03
+    DungeonsPopulation: 60
+
+  - Profile: pve_assassin_high_trascended  # T6: transcendent Assassin / Assassin Cross max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_sew01
+      - gl_sew02
+      - gl_sew03
+      - gl_sew04
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - tha_t04
+      - ice_dun01
+      - ice_dun02
+      - ice_dun03
+    DungeonsPopulation: 60
+
+  - Profile: pve_rogue_high_trascended   # T6: transcendent Rogue max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 20
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 40
+    Dungeons:
+      - glast_01
+      - gl_sew01
+      - gl_sew02
+      - gl_sew03
+      - gl_sew04
+      - gl_dun01
+      - gl_dun02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - ice_dun01
+      - ice_dun02
+      - ice_dun03
+    DungeonsPopulation: 60
+
+  - Profile: pve_merchant_cart_high_trascended  # T6: transcendent Merchant / Blacksmith / Alchemist max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 30
+    Dungeons:
+      - glast_01
+      - gl_cas01
+      - gl_cas02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - ice_dun01
+      - ice_dun02
+    DungeonsPopulation: 60
+
+  - Profile: pve_taekwon_high_trascended # T6: transcendent Taekwon / Star Gladiator / Soul Linker max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 40
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - yuno_fild03
+      - yuno_fild04
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 80
+    Dungeons:
+      - glast_01
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - juperos_01
+      - juperos_02
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - ra_san01
+      - ra_san02
+      - ice_dun01
+      - ice_dun02
+    DungeonsPopulation: 60
+
+  - Profile: pve_gunslinger_high_trascended  # T6: transcendent Gunslinger max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_chyard
+      - gl_cas01
+      - gl_cas02
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - thor_v03
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - ra_san01
+      - ra_san02
+      - ice_dun01
+      - ice_dun02
+    DungeonsPopulation: 60
+
+  - Profile: pve_ninja_high_trascended   # T6: transcendent Ninja max — same as T3
+    Towns:
+      - yuno
+      - einbroch
+      - einbech
+      - lighthalzen
+      - rachel
+      - veins
+      - niflheim
+      - moscovia
+      - ayothaya
+    TownsPopulation: 30
+    Fields:
+      - yuno_fild01
+      - yuno_fild02
+      - ein_fild01
+      - ein_fild02
+      - lhz_fild01
+      - lhz_fild02
+      - ra_fild01
+      - ra_fild02
+      - ve_fild01
+      - ve_fild02
+    FieldsPopulation: 60
+    Dungeons:
+      - glast_01
+      - gl_church
+      - gl_chyard
+      - gefenia01
+      - gefenia02
+      - gefenia03
+      - gefenia04
+      - abyss_01
+      - abyss_02
+      - abyss_03
+      - thor_v01
+      - thor_v02
+      - odin_tem01
+      - odin_tem02
+      - odin_tem03
+      - lhz_dun01
+      - lhz_dun02
+      - lhz_dun03
+      - juperos_01
+      - juperos_02
+      - jupe_cave
+      - tha_t01
+      - tha_t02
+      - tha_t03
+      - ra_san01
+      - ra_san02
+      - ra_san03
+      - ice_dun01
+      - ice_dun02
+      - ice_dun03
+    DungeonsPopulation: 60
