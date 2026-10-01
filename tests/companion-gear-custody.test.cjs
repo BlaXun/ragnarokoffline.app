@@ -84,3 +84,18 @@ test('a job advance never strands player gear in the unpersisted inventory', () 
 		'only the companion\'s own gear is stripped for the new set');
 	assert.match(adv, /if \(pos & keep\)\s*\n\s*return;/, 'the new set must not displace kept player gear');
 });
+
+test('removing a companion deletes that one row and never strands gear the player gave it', () => {
+	assert.ok(!/DELETE FROM `cp_companion_persistence`[^"]*name=/.test(engine),
+		'names are not unique; a delete by name removes every companion sharing it');
+	assert.match(functionBody('bool population_engine_companion_delete('), /AND shell_index=%u/);
+	const patches = path.join(ROOT, 'third-party', 'population-engine', 'patches');
+	const all = fs.readdirSync(patches).filter(f => f.endsWith('.patch')).sort()
+		.map(f => fs.readFileSync(path.join(patches, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
+	assert.match(all, /^\+\s*if \(population_engine_companion_delete\(sd->status\.account_id, index_\)\) \{/m,
+		'remove must pass the resolved index');
+	assert.match(all, /^\+\s*population_engine_companion_return_gear\(sd, live, 0\);/m,
+		'a summoned companion hands player gear back before it is released');
+	assert.match(all, /^\+\s*if \(live == nullptr && population_engine_companion_holds_given_gear\(/m,
+		'one that is not summoned cannot be removed while it still holds player gear');
+});

@@ -3094,7 +3094,9 @@ void population_engine_companion_skill_list(uint32_t owner_account, const char* 
 /// the profile already lists, so it never invents items.
 ///
 /// Returns the new shell's index on success, 0 on failure. The caller owns the
-/// name-clash check: a duplicate name would collide on the table's unique key.
+/// name-clash check. Nothing in the table enforces it - the only unique key is
+/// shell_index - so a duplicate would leave two rows that every by-name command
+/// (summon, favorite, gear...) resolves to whichever MariaDB returns first.
 uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job_id, int quality, const char *name_hint)
 {
 	if (!owner || !owner->state.active) return 0;
@@ -5451,23 +5453,47 @@ int population_engine_companion_set_homunculus(uint32_t owner_account, const cha
 }
 
 
-/// Goal 3 friend list: permanently DELETE a saved companion's row by name.
+/// Goal 3 friend list: permanently DELETE one saved companion's row.
 /// Irreversible — the snapshot (name, gear, stats) is gone. If the companion
 /// is currently summoned, the caller must release the shell first.
-bool population_engine_companion_delete(uint32_t owner_account, const char* name_)
+///
+/// By shell_index, which the caller resolved from the name: names are not unique, and a
+/// DELETE by name removed every companion that happened to share it.
+bool population_engine_companion_delete(uint32_t owner_account, uint32_t shell_index)
 {
-	if (mmysql_handle == nullptr || name_ == nullptr || !name_[0]) return false;
-	char esc_name[48];
-	Sql_EscapeString(mmysql_handle, esc_name, name_);
-	char q[300];
+	if (mmysql_handle == nullptr || shell_index == 0) return false;
+	char q[160];
 	snprintf(q, sizeof(q),
-		"DELETE FROM `cp_companion_persistence` WHERE owner_account_id=%u AND name='%s'",
-		owner_account, esc_name);
+		"DELETE FROM `cp_companion_persistence` WHERE owner_account_id=%u AND shell_index=%u",
+		owner_account, shell_index);
 	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) {
 		Sql_ShowDebug(mmysql_handle);
 		return false;
 	}
 	return (Sql_NumRowsAffected(mmysql_handle) > 0);
+}
+
+/// Does this saved companion hold gear its owner gave it? Read from the row, for a companion
+/// that is not summoned (a live one is asked through pop.companion_given_mask instead).
+bool population_engine_companion_holds_given_gear(uint32_t owner_account, uint32_t shell_index)
+{
+	if (mmysql_handle == nullptr || shell_index == 0) return false;
+	char q[160];
+	snprintf(q, sizeof(q),
+		"SELECT given_mask FROM `cp_companion_persistence` WHERE owner_account_id=%u AND shell_index=%u",
+		owner_account, shell_index);
+	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) {
+		Sql_ShowDebug(mmysql_handle);
+		return false;
+	}
+	bool holds = false;
+	if (SQL_SUCCESS == Sql_NextRow(mmysql_handle)) {
+		char *data = nullptr;
+		Sql_GetData(mmysql_handle, 0, &data, nullptr);
+		holds = data != nullptr && strtoul(data, nullptr, 10) != 0;
+	}
+	Sql_FreeResult(mmysql_handle);
+	return holds;
 }
 
 /// Prints the owner's saved companions (name, job, active, favorite) to the
