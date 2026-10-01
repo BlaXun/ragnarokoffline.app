@@ -1992,6 +1992,14 @@ const handlers = {
 		}
 		return shell.openExternal(url);
 	},
+	// A mod's repository or folder on GitHub, from Find Mods. github.com over
+	// HTTPS and nothing else (mod-source.js githubPage): a homepage anywhere
+	// else is shown as text, not opened.
+	open_github_page: ({ url }) => {
+		const page = require('./mod-source').githubPage(url);
+		if (!page) throw new Error('That is not a GitHub page.');
+		return shell.openExternal(page);
+	},
 	list_mods: async () => {
 		const out = await runStack(['mods']);
 		// Tab-separated, in the order mods.rs writes them. `refused` is its own
