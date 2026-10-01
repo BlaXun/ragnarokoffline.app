@@ -111,6 +111,13 @@ impl Docker {
         }
     }
 
+    /// Run and keep everything: exit status, stdout and stderr. For callers
+    /// that have to report exactly how a command failed.
+    pub fn capture<I, S>(&self, args: I) -> Result<std::process::Output, String>
+    where I: IntoIterator<Item = S>, S: AsRef<OsStr> {
+        self.base().args(args).stdin(Stdio::null()).output().map_err(|e| e.to_string())
+    }
+
     /// Run for effect, discarding both streams. Used where the shell version
     /// wrote `|| true`: a failure that is genuinely not interesting.
     pub fn quiet<I, S>(&self, args: I) -> bool
@@ -253,10 +260,6 @@ impl Docker {
         }
     }
 
-    pub fn image_exists(&self, image: &str) -> bool {
-        self.quiet(["image", "inspect", image])
-    }
-
     pub fn logs(&self, name: &str, tail: &str) -> String {
         // Merged, because rAthena writes progress to both streams and the
         // readiness marker we look for can land on either.
@@ -305,6 +308,16 @@ impl Docker {
         if crate::service_credentials::load(&self.state, era)?.is_some() {
             Ok(vec!["--defaults-extra-file=/run/ragnarok-private/database.cnf".into()])
         } else { Ok(vec!["-uragnarok".into(), "-pragnarok".into()]) }
+    }
+
+    /// Which credentials the app's database user is reached with, for logs.
+    /// Never the password itself.
+    pub fn sql_auth_kind(&self) -> &'static str {
+        match self.sql_auth() {
+            Ok(auth) if auth.iter().any(|a| a.starts_with("--defaults-extra-file=")) => "service credentials (private defaults file)",
+            Ok(_) => "legacy app user (ragnarok, built-in password)",
+            Err(_) => "unknown (service credentials could not be read)",
+        }
     }
 
     pub fn database_client(&self, binary: &str) -> Result<String, String> {

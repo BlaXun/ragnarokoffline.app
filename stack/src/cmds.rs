@@ -1656,7 +1656,7 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
             Ok(()) => phase(cfg, "Saved a backup of the accounts before securing their passwords…"),
             Err(e) => {
                 eprintln!("password hashing postponed: backing up the database first failed: {e}");
-                phase(cfg, "Couldn't back up the accounts before securing their passwords, so they stay as they are for now. It will try again next start.");
+                phase(cfg, &format!("Couldn't back up the accounts before securing their passwords, so they stay as they are for now. It will try again next start. ({e})"));
                 defer_hashing = true;
             }
         }
@@ -2236,26 +2236,25 @@ pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: b
     let backups = cfg.state.join("backups");
     fs::create_dir_all(&backups).map_err(|e| e.to_string())?;
     let tmp = format!("ragnarokmac-{}-{}.sql", std::process::id(), crate::private_fs::random_hex(12)?);
-
     crate::private_fs::directory(&backups)?;
-    // Players have been saved and game services stopped. This also makes the
-    // mixed-engine rAthena tables consistent; --single-transaction alone would
-    // only protect InnoDB, not all of the schema.
-    dk.output([
-        "exec", DB_CONTAINER, "sh", "-c",
-        &format!("umask 077; {} --single-transaction --routines --databases ragnarok > /backups/{tmp}", dk.database_client("mariadb-dump")?),
-    ])
-    // What the database said, not a guess: the next report says what failed.
-    .map_err(|e| match e.trim() {
-        "" => "the database did not produce a dump (is the server running?)".to_string(),
-        said => format!("the database did not produce a dump: {said}"),
-    })?;
 
+    // The dump is written inside the container, in its own /tmp, and copied
+    // out with `docker cp` -- on every platform, not only Windows. Writing it
+    // into the bind-mounted /backups made the host's shared folder (its
+    // owner, its mode, the hypervisor's file sharing) part of whether a
+    // backup could be taken at all, and split the code by OS.
+    let inside = format!("/tmp/{tmp}");
     let staged = backups.join(&tmp);
-    if cfg!(windows) {
-        // No bind mount there, so the dump is inside a named volume; fetch it.
-        dk.copy_out(DB_CONTAINER, &format!("/backups/{tmp}"), &staged)?;
+    let result = dump_database(dk, &inside).and_then(|()| {
+        dk.copy_out(DB_CONTAINER, &inside, &staged)
+            .map_err(|e| { eprintln!("database backup: {e}"); format!("the dump was made but could not be copied out of the database container: {e}") })
+    });
+    dk.quiet(["exec", DB_CONTAINER, "rm", "-f", &inside]);
+    if let Err(e) = result {
+        let _ = fs::remove_file(&staged);
+        return Err(e);
     }
+
     let size = fs::metadata(&staged).map(|m| m.len()).unwrap_or(0);
     if size == 0 {
         let _ = fs::remove_file(&staged);
@@ -2267,11 +2266,93 @@ pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: b
     }
     crate::private_fs::export_file(&staged, Path::new(dest))?;
     let _ = fs::remove_file(&staged);
-    dk.quiet(["exec", DB_CONTAINER, "rm", "-f", &format!("/backups/{tmp}")]);
     if announce {
         println!("wrote {dest} ({})", human(size));
     }
     Ok(())
+}
+
+/// Run mariadb-dump into `inside` (a path in the database container). On
+/// failure, everything needed to tell why goes to the log: the exit code,
+/// mariadb-dump's own words, which credentials it used (never the password),
+/// the server's version, and any table that CHECK TABLE says is damaged.
+/// The error returned is one short line for the loading screen.
+fn dump_database(dk: &Docker, inside: &str) -> Result<(), String> {
+    // Players have been saved and game services stopped. This also makes the
+    // mixed-engine rAthena tables consistent; --single-transaction alone would
+    // only protect InnoDB, not all of the schema.
+    let command = format!("umask 077; {} --single-transaction --routines --databases ragnarok > {inside}", dk.database_client("mariadb-dump")?);
+    let out = dk.capture(["exec", DB_CONTAINER, "sh", "-c", &command])
+        .map_err(|e| format!("the database did not produce a dump: could not run docker: {e}"))?;
+    if out.status.success() {
+        return Ok(());
+    }
+    let code = out.status.code().map(|c| c.to_string()).unwrap_or_else(|| "none".into());
+    let said = String::from_utf8_lossy(&out.stderr).trim().to_string();
+    let version = dk.private_sql("SELECT VERSION();").map(|v| v.trim().to_string()).unwrap_or_else(|_| "unknown (the server did not answer)".into());
+    eprintln!("database backup failed: mariadb-dump exited {code}");
+    eprintln!("database backup: credentials: {}; server version: {version}", dk.sql_auth_kind());
+    eprintln!("database backup: mariadb-dump said: {}", if said.is_empty() { "(nothing)" } else { &said });
+    if let Some(table) = dump_error_table(&said) {
+        eprintln!("database backup: the error names table `{table}`");
+    }
+    match check_tables(dk) {
+        Ok(problems) if problems.is_empty() => eprintln!("database backup: CHECK TABLE found no damaged table"),
+        Ok(problems) => for line in problems { eprintln!("database backup: CHECK TABLE: {line}") },
+        Err(e) => eprintln!("database backup: CHECK TABLE could not run: {e}"),
+    }
+    Err(dump_failure_summary(&code, &said))
+}
+
+/// The loading-screen line: the exit code and mariadb-dump's last word, cut
+/// short. The rest is in the log.
+fn dump_failure_summary(code: &str, said: &str) -> String {
+    let line = said.lines().map(str::trim).filter(|l| !l.is_empty() && !l.starts_with("Warning")).last().unwrap_or("");
+    let line: String = line.chars().take(200).collect();
+    if code == "127" && said.contains("not found") {
+        return "the database did not produce a dump: mariadb-dump is missing from the database image".into();
+    }
+    if line.is_empty() {
+        format!("the database did not produce a dump (mariadb-dump exited {code}; the log has details)")
+    } else {
+        format!("the database did not produce a dump (exit {code}): {line}")
+    }
+}
+
+/// The table a mariadb-dump error is about, if it names one: "when dumping
+/// table `x`", "Table 'x'", or "Table './ragnarok/x'".
+fn dump_error_table(said: &str) -> Option<String> {
+    let valid = |t: &str| !t.is_empty() && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+    for (open, close) in [("table `", '`'), ("Table '", '\''), ("table '", '\'')] {
+        if let Some(start) = said.find(open) {
+            let rest = &said[start + open.len()..];
+            let name = rest.split(close).next().unwrap_or("");
+            let name = name.rsplit('/').next().unwrap_or(name);
+            let name = name.rsplit('.').next().unwrap_or(name);
+            if valid(name) { return Some(name.to_string()); }
+        }
+    }
+    None
+}
+
+/// CHECK TABLE over every table in the game database; returns only the rows
+/// that are not a plain OK, so a crashed or corrupt table shows up by name.
+/// Filtered inside the container to keep the answer small (docker exec's
+/// stdout loses data past 8 KiB under docker-slim).
+fn check_tables(dk: &Docker) -> Result<Vec<String>, String> {
+    let names = dk.private_sql("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE';")?;
+    let names: Vec<&str> = names.lines().map(str::trim)
+        .filter(|n| !n.is_empty() && n.chars().all(|c| c.is_ascii_alphanumeric() || c == '_'))
+        .collect();
+    if names.is_empty() { return Ok(Vec::new()); }
+    let list = names.iter().map(|n| format!("`{n}`")).collect::<Vec<_>>().join(",");
+    let command = format!(
+        "{} --batch --skip-column-names ragnarok -e 'CHECK TABLE {list}' | awk -F '\\t' '$4 != \"OK\" {{ print }}'",
+        dk.database_client("mariadb")?
+    );
+    let out = dk.capture(["exec", DB_CONTAINER, "sh", "-c", &command])?;
+    let text = String::from_utf8_lossy(&out.stdout).into_owned() + &String::from_utf8_lossy(&out.stderr);
+    Ok(text.lines().map(|l| l.trim().replace('\t', " ")).filter(|l| !l.is_empty()).collect())
 }
 
 pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
@@ -2587,6 +2668,23 @@ mod tests {
     }
 
     use super::*;
+
+    #[test]
+    fn a_dump_error_names_its_table() {
+        assert_eq!(dump_error_table("mariadb-dump: Error 1194: Table 'loginlog' is marked as crashed and should be repaired when dumping table `loginlog` at row: 0").as_deref(), Some("loginlog"));
+        assert_eq!(dump_error_table("mariadb-dump: Got error: 145: \"Table './ragnarok/char' is marked as crashed and should be repaired\" when using LOCK TABLES").as_deref(), Some("char"));
+        assert_eq!(dump_error_table("mariadb-dump: Got error: 1045: \"Access denied for user 'ragnarok'@'127.0.0.1' (using password: YES)\" when trying to connect"), None);
+        assert_eq!(dump_error_table(""), None);
+    }
+
+    #[test]
+    fn a_failed_dump_says_what_mariadb_dump_said() {
+        let said = "mariadb-dump: Error 1194: Table 'loginlog' is marked as crashed";
+        assert_eq!(dump_failure_summary("2", said), format!("the database did not produce a dump (exit 2): {said}"));
+        assert!(dump_failure_summary("127", "sh: mariadb-dump: not found").contains("missing"));
+        assert!(dump_failure_summary("1", "").contains("exited 1"));
+        assert!(dump_failure_summary("2", &"x".repeat(1000)).len() < 300);
+    }
 
     #[test]
     fn a_kept_pre_hashing_backup_stops_another_one() {
