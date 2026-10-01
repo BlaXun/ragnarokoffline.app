@@ -81,7 +81,7 @@ test('the selection is threaded through ALL FOUR recall touchpoints', () => {
 	const e = read(ENGINE);
 
 	// 1. the SELECT column list
-	assert.match(e, /shadow_acc_r_nameid, skill_preset"/,
+	assert.match(e, /shadow_acc_r_nameid, skill_preset[,"]/,
 		'the recall SELECT must fetch skill_preset');
 
 	// 2. the row reader must tolerate NULL, which is the "auto" state

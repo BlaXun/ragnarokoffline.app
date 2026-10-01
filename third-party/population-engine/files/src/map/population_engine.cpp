@@ -2451,10 +2451,26 @@ static uint16_t pop_companion_next_job(uint16_t job_id, int32_t base_lv, int32_t
 	return 0;
 }
 
+static uint32_t pop_companion_given_worn(const map_session_data *shell);
+static bool pop_companion_hand_back(map_session_data *owner, map_session_data *shell, int16 i,
+	e_log_pick_type log_type);
+
 static void pop_companion_try_job_advance(map_session_data *sd)
 {
 	const uint16_t next = pop_companion_next_job(sd->status.class_, sd->status.base_level, sd->status.job_level);
 	if (next == 0) return;
+	// Player-given gear the new class cannot wear goes back to the player, so the player has to
+	// be here to take it. Otherwise wait: the next level-up check tries again.
+	map_session_data *owner = sd->pop.companion_owner_account != 0
+		? map_id2sd(sd->pop.companion_owner_account) : nullptr;
+	if (pop_companion_given_worn(sd) != 0 && (owner == nullptr || !owner->state.active))
+		return;
+	std::vector<int16> given_before;
+	for (int16_t i = 0; i < MAX_INVENTORY; ++i) {
+		const struct item &w = sd->inventory.u.items_inventory[i];
+		if (w.nameid && w.equip && (w.equip & sd->pop.companion_given_mask))
+			given_before.push_back(i);
+	}
 	// upper flag: trans jobs (4001+) need JOBL_UPPER
 	const char upper = (next >= 4001 && next <= 4022) ? 1 : 0;
 	const char *old_name = job_name(sd->status.class_);
@@ -2475,11 +2491,21 @@ static void pop_companion_try_job_advance(map_session_data *sd)
 	// still used Acolyte skills). Request an explicit reseed instead.
 	sd->pop.skill_next_use_tick.clear();
 	sd->pop.skills_need_reseed = true;
-	// Re-equip from the new job's Eden set: unequip current gear into the shell's
-	// inventory first (nothing is destroyed), then run the same equip pass spawn uses.
+	// Player-given gear: kept if the new class can wear it, otherwise handed back. pc_jobchange
+	// has already unequipped what the new class cannot use, and the companion's inventory is not
+	// persisted, so anything left there would be gone at the next restart.
+	for (int16 i : given_before) {
+		if (sd->inventory.u.items_inventory[i].equip == 0 && owner != nullptr)
+			(void)pop_companion_hand_back(owner, sd, i, LOG_TYPE_NPC);
+	}
+	sd->pop.companion_given_mask = pop_companion_given_worn(sd);
+	const uint32_t keep = sd->pop.companion_given_mask;
+	// Re-equip the companion's own gear from the new job's Eden set: unequip its old own
+	// gear into the shell's inventory first, then run the same equip pass spawn uses - for the
+	// positions player gear is not occupying.
 	for (int16_t i = 0; i < MAX_INVENTORY; ++i) {
 		struct item &slot = sd->inventory.u.items_inventory[i];
-		if (slot.nameid && slot.equip)
+		if (slot.nameid && slot.equip && !(slot.equip & keep))
 			pc_unequipitem(sd, i, 2);
 	}
 	std::shared_ptr<PopulationEngine> equipment = population_engine_db_for_shell(sd).find(sd->status.class_);
@@ -2488,17 +2514,30 @@ static void pop_companion_try_job_advance(map_session_data *sd)
 		auto pick_pool = [](const std::vector<uint16_t> &pool) -> uint16_t {
 			return pool.empty() ? 0 : pool[rnd() % pool.size()];
 		};
-		population_engine_shell_equip_item(sd, pick_pool(equipment->weapon_pool),      sd->status.char_id, "weapon");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->shield_pool),      sd->status.char_id, "shield");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->armor_pool),       sd->status.char_id, "armor");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->shoes_pool),       sd->status.char_id, "shoes");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->garment_pool),     sd->status.char_id, "garment");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->head_top_pool),    sd->status.char_id, "head_top");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->head_mid_pool),    sd->status.char_id, "head_mid");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->head_bottom_pool), sd->status.char_id, "head_low");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->acc_l_pool),       sd->status.char_id, "acc_l");
-		population_engine_shell_equip_item(sd, pick_pool(equipment->acc_r_pool),       sd->status.char_id, "acc_r");
+		// An own piece never displaces player gear: skip it when it would take a kept position
+		// (a two-handed weapon covers the shield too). Accessories are placed by slot.
+		auto own = [sd, keep](uint16_t nameid, const char *label, uint32 force_pos) {
+			if (nameid == 0)
+				return;
+			const std::shared_ptr<item_data> id = itemdb_exists(nameid);
+			const uint32 pos = force_pos != 0 ? force_pos : (id != nullptr ? id->equip : 0);
+			if (pos & keep)
+				return;
+			population_engine_shell_equip_item(sd, nameid, sd->status.char_id, label, force_pos);
+		};
+		own(pick_pool(equipment->weapon_pool),      "weapon",   0);
+		own(pick_pool(equipment->shield_pool),      "shield",   0);
+		own(pick_pool(equipment->armor_pool),       "armor",    0);
+		own(pick_pool(equipment->shoes_pool),       "shoes",    0);
+		own(pick_pool(equipment->garment_pool),     "garment",  0);
+		own(pick_pool(equipment->head_top_pool),    "head_top", 0);
+		own(pick_pool(equipment->head_mid_pool),    "head_mid", 0);
+		own(pick_pool(equipment->head_bottom_pool), "head_low", 0);
+		own(pick_pool(equipment->acc_l_pool),       "acc_l",    EQP_ACC_L);
+		own(pick_pool(equipment->acc_r_pool),       "acc_r",    EQP_ACC_R);
 	}
+	if (owner != nullptr && !given_before.empty())
+		chrif_save(owner, CSAVE_INVENTORY);
 	status_calc_pc(sd, SCO_FORCE);
 	// RAGNAROKMAC (vehicles): the new class may entitle the shell to a mount, falcon, warg or
 	// mado that the old one did not have (Swordsman -> Knight, Blacksmith -> Mechanic, ...).
@@ -4842,6 +4881,7 @@ static void population_engine_persist_companion_sql(
 		" duty=IF(owner_account_id=VALUES(owner_account_id), duty, 0),"
 		" heal_at=IF(owner_account_id=VALUES(owner_account_id), heal_at, 75),"
 		" emergency_at=IF(owner_account_id=VALUES(owner_account_id), emergency_at, 35),"
+		" given_mask=IF(owner_account_id=VALUES(owner_account_id), given_mask, 0),"
 		" owner_account_id=VALUES(owner_account_id), name=VALUES(name), job_id=VALUES(job_id),"
 		" sex=VALUES(sex), hair_style=VALUES(hair_style), hair_color=VALUES(hair_color),"
 		" cloth_color=VALUES(cloth_color), garment_nameid=VALUES(garment_nameid),"
@@ -4932,6 +4972,19 @@ bool population_engine_companion_can_trade_with(const map_session_data *player, 
 	return true;
 }
 
+/// Positions a companion is wearing player-given gear in: the given mask, narrowed to what is
+/// actually worn so a stale bit (an item broken or unequipped by stock code) never matters.
+static uint32_t pop_companion_given_worn(const map_session_data *shell)
+{
+	uint32_t worn = 0;
+	for (int16 i = 0; i < MAX_INVENTORY; ++i) {
+		const struct item &slot = shell->inventory.u.items_inventory[i];
+		if (slot.nameid && slot.equip && (slot.equip & shell->pop.companion_given_mask))
+			worn |= slot.equip;
+	}
+	return worn;
+}
+
 /// Move one inventory entry from a companion to its owner: into the owner's bag, or onto the
 /// ground at the owner's feet when the bag will not take it. Never deleted - the item was the
 /// player's, and "inventory full" is not a reason for it to stop existing. Returns false (and
@@ -4942,8 +4995,10 @@ static bool pop_companion_hand_back(map_session_data *owner, map_session_data *s
 	struct item &slot = shell->inventory.u.items_inventory[i];
 	if (!slot.nameid || slot.amount <= 0)
 		return false;
-	if (slot.equip && !pc_unequipitem(shell, i, 2))
+	const uint32_t worn = slot.equip;
+	if (worn && !pc_unequipitem(shell, i, 2))
 		return false;
+	shell->pop.companion_given_mask &= ~worn;
 	struct item tmp = slot;
 	tmp.equip = 0;
 	const int32 amount = slot.amount;
@@ -4971,9 +5026,23 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 		struct item_data *id = itemdb_search(slot.nameid);
 		if (!id) continue;
 		if (id->equip) {
-			// Equip it: pc_equipitem by inventory index.
-			(void)pc_equipitem(shell, i, id->equip, false);
-			equipped_any = true;
+			// Player gear this piece pushes off goes back to the player: the companion's
+			// inventory is not persisted, so an item left there is gone at the next restart.
+			std::vector<int16> given_before;
+			for (int16 j = 0; j < MAX_INVENTORY; ++j) {
+				const struct item &w = shell->inventory.u.items_inventory[j];
+				if (w.nameid && w.equip && (w.equip & shell->pop.companion_given_mask))
+					given_before.push_back(j);
+			}
+			if (pc_equipitem(shell, i, id->equip, false) && slot.equip) {
+				shell->pop.companion_given_mask |= slot.equip;
+				equipped_any = true;
+			}
+			for (int16 j : given_before) {
+				if (shell->inventory.u.items_inventory[j].equip == 0)
+					(void)pop_companion_hand_back(owner, shell, j, LOG_TYPE_TRADE);
+			}
+			shell->pop.companion_given_mask = pop_companion_given_worn(shell);
 		} else {
 			// Non-equipment goes back: into the owner's bag, or at their feet when it is full.
 			(void)pop_companion_hand_back(owner, shell, i, LOG_TYPE_TRADE);
@@ -4999,13 +5068,19 @@ int population_engine_companion_return_gear(map_session_data *owner, map_session
 	if (!owner || !shell) return -1;
 	if (!population_engine_is_population_pc(shell->id)) return -1;
 
-	int returned = 0;
+	int returned = 0, kept_own = 0;
 	for (int16 i = 0; i < MAX_INVENTORY; ++i) {
 		struct item &slot = shell->inventory.u.items_inventory[i];
 		if (!slot.nameid || !slot.equip) continue; // equipped only
 		// RAGNAROKMAC: selective gear return — when slot_mask != 0, only items whose
 		// equip bits intersect the mask come back; everything else stays on the companion.
 		if (slot_mask != 0 && !(slot.equip & slot_mask)) continue;
+		// Only what the owner gave. The gear a companion was generated or drafted with is
+		// its own; handing that out would make every draft a free set of equipment.
+		if (!(slot.equip & shell->pop.companion_given_mask)) {
+			++kept_own;
+			continue;
+		}
 		// Unequip (flag 2 = ignore status-change blocks), then into the owner's bag or at
 		// their feet - see pop_companion_hand_back.
 		if (pop_companion_hand_back(owner, shell, i, LOG_TYPE_NPC))
@@ -5020,6 +5095,8 @@ int population_engine_companion_return_gear(map_session_data *owner, map_session
 		chrif_save(owner, CSAVE_INVENTORY);
 		population_engine_persist_companion_gear(shell);
 	}
+	if (returned == 0 && kept_own > 0 && owner->fd > 0)
+		clif_displaymessage(owner->fd, "Only gear you gave a companion comes back; what it is wearing is its own.");
 	return returned;
 }
 
@@ -5092,7 +5169,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		" shadow_shoes_nameid=%u, shadow_acc_l_nameid=%u, shadow_acc_r_nameid=%u,"
 		" base_level=%d, job_level=%d, job_id=%d, str_=%d, agi_=%d, vit_=%d, intl_=%d,"
 		" dex_=%d, luk_=%d, pow_=%d, sta_=%d, wis_=%d, spl_=%d, con_=%d, crt_=%d,"
-		" mode=%d, duty=%d, heal_at=%d, emergency_at=%d%s"
+		" mode=%d, duty=%d, heal_at=%d, emergency_at=%d, given_mask=%u%s"
 		" WHERE owner_account_id=%u AND shell_index=%u",
 		weapon, shield, sd->status.head_top, sd->status.head_mid, sd->status.head_bottom,
 		armor, shoes, acc_l, acc_r,
@@ -5103,6 +5180,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		sd->status.pow, sd->status.sta, sd->status.wis, sd->status.spl, sd->status.con, sd->status.crt,
 		(int)sd->pop.companion_mode, (int)sd->pop.role,
 		(int)sd->pop.companion_heal_at, (int)sd->pop.companion_emergency_at,
+		pop_companion_given_worn(sd),
 		hom_frag,
 		owner, index_);
 	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) {
@@ -6116,7 +6194,7 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 		" pow_, sta_, wis_, spl_, con_, crt_, mode, duty, heal_at, emergency_at,"
 		" costume_top_nameid, costume_mid_nameid, costume_low_nameid, costume_garment_nameid,"
 		" shadow_armor_nameid, shadow_weapon_nameid, shadow_shield_nameid,"
-		" shadow_shoes_nameid, shadow_acc_l_nameid, shadow_acc_r_nameid, skill_preset"
+		" shadow_shoes_nameid, shadow_acc_l_nameid, shadow_acc_r_nameid, skill_preset, given_mask"
 		" FROM `cp_companion_persistence` WHERE owner_account_id=%u AND active=1%s",
 		owner->status.account_id, only_index != 0 ? " AND shell_index=" : "");
 	// The index is a number, so append it rather than parameterising the format.
@@ -6209,6 +6287,7 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 		if (data != nullptr)
 			safestrncpy(presetbuf, data, sizeof(presetbuf));
 		const char* skill_preset = (data != nullptr) ? presetbuf : nullptr;
+		data = next(); const uint32_t given_mask = data != nullptr ? static_cast<uint32_t>(strtoul(data, nullptr, 10)) : 0;
 		if (index_ == 0 || job_id == 0) continue;
 		// DB stores sex as TINYINT (0=SEX_MALE, 1=SEX_FEMALE); the spawn path
 		// expects the 'M'/'F' letters.
@@ -6218,6 +6297,15 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 			namebuf, c_top, c_mid, c_low, c_garment, sh_armor, sh_weapon, sh_shield, sh_shoes, sh_acc_l, sh_acc_r,
 			pow_, sta_, wis_, spl_, con_, crt_, mode_, duty_, heal_at_, emergency_at_,
 			skill_preset);
+		// Which of the re-equipped pieces the player gave: restored here rather than threaded
+		// through recall_one_companion, and narrowed to what the shell actually wears.
+		for (map_session_data *shell : g_population_engine_pcs) {
+			if (shell != nullptr && shell->status.char_id == POPULATION_ENGINE_CHAR_ID_BASE + index_) {
+				shell->pop.companion_given_mask = given_mask;
+				shell->pop.companion_given_mask = pop_companion_given_worn(shell);
+				break;
+			}
+		}
 		recalled++;
 	}
 	if (recalled > 0) {

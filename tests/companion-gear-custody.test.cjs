@@ -10,7 +10,7 @@ const ENGINE = path.join(ROOT, 'third-party', 'population-engine', 'files', 'src
 const engine = fs.readFileSync(ENGINE, 'utf8').replace(/\r\n/g, '\n');
 
 function functionBody(signature) {
-	const i = engine.indexOf(signature);
+	const i = engine.lastIndexOf(signature); // the definition, after any forward declaration
 	assert.ok(i >= 0, `expected to find ${signature}`);
 	const rest = engine.slice(i);
 	const end = rest.indexOf('\n}\n');
@@ -59,4 +59,28 @@ test('recall reads all its rows before it spawns anyone', () => {
 	assert.ok(free > 0 && spawn > free, 'the result must be freed before the first recall');
 	assert.ok(!/Sql_NextRow\([^)]*\)[\s\S]*population_engine_recall_one_companion\(/.test(body.slice(0, free)),
 		'no recall may happen inside the row loop');
+});
+
+test('only gear the owner gave comes back, and the record of it survives a restart', () => {
+	const back = functionBody('int population_engine_companion_return_gear(');
+	assert.match(back, /if \(!\(slot\.equip & shell->pop\.companion_given_mask\)\)/,
+		'gear return must skip what the companion was generated or drafted with');
+	const traded = functionBody('void population_engine_companion_equip_traded(');
+	assert.match(traded, /companion_given_mask \|= slot\.equip/, 'a traded piece must be recorded as given');
+	// persisted, and read back on recall
+	const sql = fs.readFileSync(path.join(ROOT, 'third-party', 'population-engine', 'files', 'sql-files',
+		'population_engine', 'cp_companion_persistence.sql'), 'utf8');
+	assert.match(sql, /`given_mask`\s+INT UNSIGNED\s+NOT NULL DEFAULT 0/);
+	assert.match(functionBody('void population_engine_persist_companion_gear('), /given_mask=%u/);
+	assert.match(functionBody('int population_engine_recall_companions('), /skill_preset, given_mask"/);
+});
+
+test('a job advance never strands player gear in the unpersisted inventory', () => {
+	const adv = functionBody('static void pop_companion_try_job_advance(map_session_data *sd)\n{');
+	assert.ok(adv.indexOf('given_before') < adv.indexOf('pc_jobchange('),
+		'the given pieces must be noted before pc_jobchange unequips what the new class cannot wear');
+	assert.match(adv, /pop_companion_hand_back\(owner, sd, i,/, 'what the new class cannot wear goes back to the owner');
+	assert.match(adv, /if \(slot\.nameid && slot\.equip && !\(slot\.equip & keep\)\)\s*\n\s*pc_unequipitem/,
+		'only the companion\'s own gear is stripped for the new set');
+	assert.match(adv, /if \(pos & keep\)\s*\n\s*return;/, 'the new set must not displace kept player gear');
 });
