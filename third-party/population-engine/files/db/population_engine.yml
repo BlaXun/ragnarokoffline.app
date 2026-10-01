@@ -115,7 +115,7 @@ Body:
     Jobs:
       Priest   : para_mage
     BaseLevel: [35, 58]
-    JobLevel: [25, 50]
+    JobLevel: [20, 40]
     NameProfile: default
     ChatProfile: default
     Hair: [0, 42]
@@ -156,7 +156,7 @@ Body:
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [50, 80]
     Agi: [40, 70]
     Vit: [50, 80]
@@ -180,7 +180,7 @@ Body:
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [40, 70]
     Agi: [10, 40]
     Vit: [40, 70]
@@ -205,7 +205,7 @@ Body:
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [1, 10]
     Agi: [10, 30]
     Vit: [20, 40]
@@ -229,7 +229,7 @@ Body:
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [1, 10]
     Agi: [60, 90]
     Vit: [10, 30]
@@ -250,7 +250,7 @@ Body:
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [60, 90]
     Agi: [10, 30]
     Vit: [60, 90]
@@ -263,17 +263,16 @@ Body:
     FieldBehavior: combat
     DungeonBehavior: combat
 
-  - Profile: pve_assassin         # Assassin / Assassin Cross — katar-focused PvE
+  - Profile: pve_assassin         # Assassin — katar-focused PvE (Assassin Cross is pve_assassin_high)
     Jobs:
-      Assassin     : para_assassin_katar
-      AssassinCross: para_assassin_katar
+      Assassin: para_assassin_katar
     NameProfile: default
     ChatProfile: default
     Hair: [0, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [50, 80]
     Agi: [60, 90]
     Vit: [30, 60]
@@ -295,7 +294,7 @@ Body:
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [40, 70]
     Agi: [60, 90]
     Vit: [20, 50]
@@ -334,18 +333,16 @@ Body:
     Script: |
       setcart;
 
-  - Profile: pve_taekwon          # Taekwon / Star Gladiator / Soul Linker PvE
+  - Profile: pve_taekwon          # Taekwon PvE (Star Gladiator / Soul Linker are pve_taekwon_high)
     Jobs:
-      Taekwon           : para_taekwon
-      StarGladiator     : para_taekwon
-      SoulLinker        : para_mage
+      Taekwon: para_taekwon
     NameProfile: default
     ChatProfile: default
     Hair: [0, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
     BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    JobLevel: [20, 40]
     Str: [60, 90]
     Agi: [60, 90]
     Vit: [40, 70]
@@ -366,8 +363,8 @@ Body:
     Hair: [0, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
-    BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    BaseLevel: [40, 99]
+    JobLevel: [20, 70]
     Str: [20, 50]
     Agi: [50, 80]
     Vit: [20, 50]
@@ -388,14 +385,247 @@ Body:
     Hair: [0, 42]
     HairColor: [0, 131]
     ClothesColor: [0, 699]
-    BaseLevel: [40, 70]
-    JobLevel: [20, 50]
+    BaseLevel: [40, 99]
+    JobLevel: [20, 70]
     Str: [30, 60]
     Agi: [50, 80]
     Vit: [30, 60]
     Int: [50, 80]
     Dex: [60, 90]
     Luk: [30, 60]
+    Flags:
+      - mortal
+    TownBehavior: sit
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+###########################################################################
+# High-level PvE profiles (BaseLevel 70-99, enhanced stats).
+# Use for late-game maps where normal-tier bots would be under-leveled.
+# Each job belongs to one profile, so this tier uses the transcendent classes
+# (and Star Gladiator / Soul Linker) rather than repeating the 2nd classes.
+# Gunslinger and Ninja have no second class; pve_gunslinger / pve_ninja span 40-99.
+###########################################################################
+
+  - Profile: combat_pve_high      # high-tier generalist: High Priest on late maps
+    Jobs:
+      HighPriest: para_mage
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: pve_knight_high
+    Jobs:
+      LordKnight: para_knight_base
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    Str: [70, 99]
+    Agi: [50, 80]
+    Vit: [70, 99]
+    Int: [1, 20]
+    Dex: [50, 80]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+    Script: |
+      setriding;
+
+  - Profile: pve_paladin_high
+    Jobs:
+      Paladin: para_crusader
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    Str: [60, 90]
+    Agi: [30, 60]
+    Vit: [60, 90]
+    Int: [50, 80]
+    Dex: [50, 80]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+    Script: |
+      setriding;
+
+  - Profile: pve_caster_high
+    Jobs:
+      HighWizard: para_mage
+      Professor : para_mage
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    Str: [1, 10]
+    Agi: [20, 50]
+    Vit: [30, 60]
+    Int: [80, 99]
+    Dex: [70, 99]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: pve_archer_high
+    Jobs:
+      Sniper: para_bow
+      Clown : para_bow
+      Gypsy : para_bow
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    Str: [1, 10]
+    Agi: [80, 99]
+    Vit: [30, 60]
+    Int: [30, 60]
+    Dex: [80, 99]
+    Luk: [50, 80]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: pve_monk_high
+    Jobs:
+      Champion: para_monk
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    Str: [70, 99]
+    Agi: [30, 60]
+    Vit: [70, 99]
+    Int: [20, 50]
+    Dex: [80, 99]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: social
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: pve_assassin_high
+    Jobs:
+      AssassinCross: para_assassin_katar
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    Str: [50, 80]
+    Agi: [70, 99]
+    Vit: [40, 70]
+    Int: [30, 60]
+    Dex: [60, 90]
+    Luk: [40, 70]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: pve_rogue_high
+    Jobs:
+      Stalker: para_thief
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 70]
+    Str: [50, 80]
+    Agi: [80, 99]
+    Vit: [30, 60]
+    Int: [30, 60]
+    Dex: [80, 99]
+    Luk: [50, 80]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: pve_merchant_cart_high
+    Jobs:
+      Whitesmith: para_merchant
+      Creator   : para_merchant
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [50, 99]
+    JobLevel: [40, 70]
+    Str: [60, 90]
+    Agi: [30, 60]
+    Vit: [50, 80]
+    Int: [40, 70]
+    Dex: [40, 70]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    FieldBehavior: combat
+    DungeonBehavior: combat
+    Script: |
+      setcart;
+
+  - Profile: pve_taekwon_high
+    Jobs:
+      StarGladiator: para_taekwon
+      SoulLinker   : para_mage
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [70, 99]
+    JobLevel: [40, 50]
+    Str: [70, 99]
+    Agi: [70, 99]
+    Vit: [50, 80]
+    Int: [30, 60]
+    Dex: [60, 90]
+    Luk: [50, 80]
     Flags:
       - mortal
     TownBehavior: sit
