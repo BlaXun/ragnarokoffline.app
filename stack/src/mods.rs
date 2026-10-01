@@ -123,7 +123,18 @@ pub struct Manifest {
     /// what is validated and stored. Checked here for shape and existence so a
     /// typo is a refusal with a reason rather than a button that does nothing.
     pub settings_page: String,
+    /// `"skin"` or `"cursor"`, or empty. Mods of one kind replace the same
+    /// files -- every UI skin overlays the whole interface folder, every
+    /// cursor pack the one cursor sprite -- so a second one switched on would
+    /// leave a patchwork of both. At most one of each kind is on at a time:
+    /// switching one on switches the others of its kind off.
+    pub kind: String,
 }
+
+/// The values `"kind"` may take. Anything else is refused by name, the way a
+/// typo in `requires` is: a skin that silently stops being exclusive is the
+/// kind of mistake that looks like it worked.
+pub const KINDS: &[&str] = &["skin", "cursor"];
 
 /// One declared option. Deliberately three scalar types: anything richer is a
 /// mod's own UI problem, and this has to render without the app knowing what
@@ -181,6 +192,7 @@ impl Default for Manifest {
             requires_mods: Vec::new(),
             after: Vec::new(),
             settings_page: String::new(),
+            kind: String::new(),
         }
     }
 }
@@ -415,6 +427,17 @@ fn read_manifest(dir: &Path) -> Result<Option<Manifest>, String> {
                     ));
                 }
             }
+        }
+    }
+    if let Some(kind) = v.get("kind") {
+        match v.str("kind") {
+            Some(k) if KINDS.contains(&k) => m.kind = k.to_string(),
+            Some(k) => {
+                return Err(format!(
+                    "mod.json: \"kind\" is {k:?}; this build understands \"skin\" and \"cursor\""
+                ))
+            }
+            None => return Err(format!("mod.json: \"kind\" must be \"skin\" or \"cursor\", not {kind}")),
         }
     }
     if v.get("settingsPage").is_some() {
@@ -1003,6 +1026,28 @@ pub fn scan(cfg: &Config) -> Vec<Installed> {
         out.push(Installed { name, dir, status, manifest, bundled });
     }
 
+    // One skin, one cursor pack. `enable` keeps the lists that way, but a
+    // folder dropped in by hand is on by default, so two of a kind can still
+    // both be on here. The one the player chose wins -- named in enabled.txt
+    // -- and otherwise the last in name order, the one whose files would have
+    // won anyway. The others read as switched off, which is what they are.
+    for kind in KINDS {
+        let on: Vec<usize> = (0..out.len())
+            .filter(|&i| out[i].status == Status::On && out[i].manifest.kind == *kind)
+            .collect();
+        let keep = on
+            .iter()
+            .rev()
+            .find(|&&i| enabled.contains(&out[i].name))
+            .or(on.last())
+            .copied();
+        for i in on {
+            if Some(i) != keep {
+                out[i].status = Status::Off;
+            }
+        }
+    }
+
     // A second pass, because a requirement can name a mod the first pass had
     // not reached yet. Only a mod that is actually on can satisfy one: a
     // dependency switched off is as absent as one never installed, and the
@@ -1030,6 +1075,18 @@ pub fn scan(cfg: &Config) -> Vec<Installed> {
         }
     }
     out
+}
+
+/// Whether a folder's `mod.json` is one this build would read, and its
+/// version. A folder with no manifest is refused here even though `scan`
+/// accepts one: this is asked about a release that was published *as* a mod,
+/// and one that lost its manifest is a broken release rather than a bare
+/// folder somebody dropped in.
+pub fn check_dir(dir: &Path) -> Result<String, String> {
+    match read_manifest(dir)? {
+        Some(m) => Ok(m.version),
+        None => Err("it has no mod.json".into()),
+    }
 }
 
 /// The mods that are actually being applied, in merge order.
@@ -1332,7 +1389,10 @@ pub fn assemble(cfg: &Config) -> Result<Assembled, String> {
         }
     }
 
-    let wants_db = !maps.is_empty() || live.iter().any(|m| m.dir.join("db").is_dir());
+    // Lua skill hooks ride the same db/import mount (see write_lua_layer), so
+    // a mod with only lua/ still needs it.
+    let wants_lua = live.iter().any(|m| m.dir.join("lua").is_dir());
+    let wants_db = !maps.is_empty() || wants_lua || live.iter().any(|m| m.dir.join("db").is_dir());
     if wants_db {
         let dst = build.join("db");
         seed_db_import(cfg, &dst)?;
@@ -1344,6 +1404,8 @@ pub fn assemble(cfg: &Config) -> Result<Assembled, String> {
                 copy_tree_owned(&from, &dst, "", Some(&m.name), &mut owners, &mut clashes)?;
             }
         }
+        let named: Vec<(&str, &Path)> = live.iter().map(|m| (m.name.as_str(), m.dir.as_path())).collect();
+        clashes.extend(id_collisions(&named));
         write_clashes(&dst, &clashes);
         if !maps.is_empty() {
             write_map_layer(&dst, &maps)?;
@@ -1364,6 +1426,14 @@ pub fn assemble(cfg: &Config) -> Result<Assembled, String> {
         eprintln!("mods: {e}");
         BTreeMap::new()
     });
+
+    if wants_lua {
+        let mods: Vec<(&str, &Path, &Manifest, Vec<(String, String)>)> = live
+            .iter()
+            .map(|m| (m.name.as_str(), m.dir.as_path(), &m.manifest, effective(&m.manifest, saved.get(&m.name))))
+            .collect();
+        write_lua_layer(&build.join("db"), &mods)?;
+    }
 
     // Stock scripts first, so a mod's own can duplicate or disable them.
     let mut stock: Vec<String> = Vec::new();
@@ -1518,6 +1588,109 @@ fn settings_script(mods: &[(String, Vec<(String, ScriptValue)>)]) -> String {
          \treturn 0;\n\
          }\n",
     );
+    out
+}
+
+// ---------------------------------------------------------------------------
+// Lua skill hooks
+// ---------------------------------------------------------------------------
+
+/// The settings file every mod's Lua can read, through `setting()`.
+pub const LUA_SETTINGS: &str = "mod-settings.lua";
+
+/// A mod's `lua/` folder, laid out for the map server.
+///
+/// The server (our rAthena fork, `src/map/skill_lua.cpp`) runs the files that
+/// `db/import/lua/load.txt` lists, in its order, so that is written here in
+/// mod order -- the same order that decides who wins in `db/` -- with each
+/// mod's files alphabetical within it. `mod-settings.lua` goes first, so a
+/// file can read its settings while it loads.
+///
+/// Inside `db/import` rather than a mount of its own: the map server already
+/// has that folder, and a server that is not ours simply never looks there.
+fn write_lua_layer(db: &Path, mods: &[(&str, &Path, &Manifest, Vec<(String, String)>)]) -> Result<(), String> {
+    let lua = db.join("lua");
+    fs::create_dir_all(&lua).map_err(|e| format!("mods: lua build folder: {e}"))?;
+
+    let mut settings = String::from(
+        "-- Written by Ragnarok Offline on every server start, from Settings -> Mods.\n\
+         -- Do not edit; it is replaced. Read it with setting(\"<mod>\", \"<key>\", <if missing>).\n\
+         MOD_SETTINGS = {\n",
+    );
+    for (name, _, manifest, values) in mods {
+        if values.is_empty() {
+            continue;
+        }
+        settings.push_str(&format!("  [{}] = {{\n", lua_string(name)));
+        for (setting, (key, raw)) in manifest.settings.iter().zip(values) {
+            settings.push_str(&format!("    [{}] = {},\n", lua_string(key), lua_value(&setting.value, raw)));
+        }
+        settings.push_str("  },\n");
+    }
+    settings.push_str("}\n");
+    fs::write(lua.join(LUA_SETTINGS), settings).map_err(|e| format!("mods: {LUA_SETTINGS}: {e}"))?;
+
+    let mut list = format!(
+        "# Written by Ragnarok Offline: <mod><TAB><file under db/import>, run in this order.\n-\tlua/{LUA_SETTINGS}\n"
+    );
+    for (name, dir, _, _) in mods {
+        let from = dir.join("lua");
+        if !from.is_dir() {
+            continue;
+        }
+        let dst = lua.join(name);
+        copy_tree(&from, &dst)?;
+        collect_lua(&dst, &format!("lua/{name}"), name, &mut list);
+    }
+    fs::write(lua.join("load.txt"), list).map_err(|e| format!("mods: lua load.txt: {e}"))
+}
+
+fn collect_lua(dir: &Path, prefix: &str, name: &str, out: &mut String) {
+    let Ok(rd) = fs::read_dir(dir) else { return };
+    let mut entries: Vec<_> = rd.flatten().map(|e| e.path()).collect();
+    entries.sort();
+    for p in entries {
+        let Some(file) = p.file_name().map(|n| n.to_string_lossy().to_string()) else { continue };
+        if p.is_dir() {
+            collect_lua(&p, &format!("{prefix}/{file}"), name, out);
+        } else if p.extension().map(|x| x == "lua").unwrap_or(false) {
+            out.push_str(&format!("{name}\t{prefix}/{file}\n"));
+        }
+    }
+}
+
+/// A setting as a Lua value. Unlike the NPC script version, Lua has real
+/// booleans and fractions, so a checkbox is `true`/`false` (0 would be truthy
+/// in Lua) and 1.5 stays 1.5.
+fn lua_value(declared: &SettingValue, raw: &str) -> String {
+    match declared {
+        SettingValue::Bool(_) => (raw == "true").to_string(),
+        SettingValue::Number(_) => {
+            let n = raw.parse::<f64>().ok().filter(|n| n.is_finite()).unwrap_or(0.0);
+            if n.fract() == 0.0 && n.abs() < 9.0e15 { format!("{}", n as i64) } else { format!("{n}") }
+        }
+        SettingValue::Text(_) => lua_string(&match json::parse(raw) {
+            Ok(json::Value::String(text)) => text,
+            _ => String::new(),
+        }),
+    }
+}
+
+/// A Lua string literal. As with `script_string`, this is where text somebody
+/// typed lands inside code, so nothing in it can end the literal: quotes and
+/// backslashes are escaped and control characters become `\ddd`.
+fn lua_string(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push('"');
+    for c in text.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            c if (c as u32) < 0x20 || c as u32 == 0x7f => out.push_str(&format!("\\{:03}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
     out
 }
 
@@ -1786,6 +1959,76 @@ const CLASHES_FILE: &str = ".clashes.tsv";
 ///
 /// Known while the tree is being built, said after the server starts, so both
 /// kinds of trouble with a mod's tables reach Settings by the same road.
+/// The id namespaces two mods can collide in: every item table is one
+/// namespace (rAthena reads item_db.yml and the item_db_*.yml files into the
+/// same table), and monsters are another.
+fn id_namespace(file: &str) -> Option<&'static str> {
+    let lower = file.to_lowercase();
+    if lower == "mob_db.yml" {
+        Some("monster")
+    } else if lower.starts_with("item_db") && lower.ends_with(".yml") {
+        Some("item")
+    } else {
+        None
+    }
+}
+
+/// Ids in a table's Body: the entries at the top level, `  - Id: <n>`.
+/// Nested lists (Drops, Requires) do not start with `Id:` at that indent.
+fn table_ids(body: &str) -> Vec<u64> {
+    body.lines()
+        .filter_map(|line| line.strip_prefix("  - Id:"))
+        .filter_map(|rest| rest.trim().parse().ok())
+        .collect()
+}
+
+/// Two enabled mods that define the same monster or item id.
+///
+/// Their tables are combined (see copy_tree_owned), and rAthena applies the
+/// entries in mod order, so the later mod's fields win over the earlier's for
+/// that id -- usually two authors who both picked 25001, not a decision anyone
+/// made. Reported under the mod whose definition loses, the same way as a
+/// table that could not be combined. One mod changing a *stock* id is normal
+/// and not reported; two mods changing the same one are, since their fields
+/// mix.
+fn id_collisions(mods: &[(&str, &Path)]) -> Vec<(String, String)> {
+    let mut owner: BTreeMap<(&'static str, u64), String> = BTreeMap::new();
+    let mut found: BTreeMap<(String, String, &'static str), Vec<u64>> = BTreeMap::new();
+    for (name, dir) in mods {
+        let Ok(rd) = fs::read_dir(dir.join("db")) else { continue };
+        let mut files: Vec<_> = rd.flatten().map(|e| e.path()).collect();
+        files.sort();
+        let mut mine: BTreeMap<(&'static str, u64), ()> = BTreeMap::new();
+        for file in files {
+            let Some(ns) = file.file_name().and_then(|f| f.to_str()).and_then(id_namespace) else { continue };
+            let Ok(body) = fs::read_to_string(&file) else { continue };
+            for id in table_ids(&body) {
+                mine.insert((ns, id), ());
+            }
+        }
+        for key in mine.keys() {
+            if let Some(before) = owner.insert(*key, name.to_string()) {
+                if before != *name {
+                    found.entry((before, name.to_string(), key.0)).or_default().push(key.1);
+                }
+            }
+        }
+    }
+    found
+        .into_iter()
+        .map(|((earlier, later, ns), ids)| {
+            let shown: Vec<String> = ids.iter().take(5).map(u64::to_string).collect();
+            let more = if ids.len() > 5 { format!(" and {} more", ids.len() - 5) } else { String::new() };
+            let (noun, plural) = if ns == "item" { ("item", "items") } else { ("monster", "monsters") };
+            let what = if ids.len() == 1 { format!("{noun} {}", shown[0]) } else { format!("{plural} {}{more}", shown.join(", ")) };
+            (
+                earlier.clone(),
+                format!("{later} also defines {what}, so {later}'s version is the one in effect. If they are different {plural}, one of the two mods needs other ids."),
+            )
+        })
+        .collect()
+}
+
 fn write_clashes(dst: &Path, clashes: &[(String, String)]) {
     let mut body = String::new();
     for (owner, message) in clashes {
@@ -2060,7 +2303,7 @@ fn load_report(state: &Path) -> BTreeMap<String, Vec<String>> {
     out
 }
 
-pub fn list(cfg: &Config) -> Vec<[String; 12]> {
+pub fn list(cfg: &Config) -> Vec<[String; 13]> {
     let saved = read_settings(&cfg.state).unwrap_or_default();
     let reported = load_report(&cfg.state);
     scan(cfg)
@@ -2108,6 +2351,9 @@ pub fn list(cfg: &Config) -> Vec<[String; 12]> {
                 } else {
                     one_line(&m.dir.to_string_lossy())
                 },
+                // `skin`, `cursor` or empty. Last, like every addition, so an
+                // older shell reads the columns it knows.
+                m.manifest.kind.clone(),
             ]
         })
         .collect()
@@ -2123,6 +2369,36 @@ pub fn set_enabled(state: &Path, name: &str, on: bool) -> Result<(), String> {
         "# Mods listed here are installed but switched off.")?;
     write_list(state, "enabled.txt", name, on,
         "# Mods listed here are switched on, including any that ship switched off.")
+}
+
+/// Switch a mod on, and every other mod of its `kind` off.
+///
+/// Returns the names switched off, so whoever asked can say so. A mod with no
+/// kind, or one that is not installed, is simply switched on -- `set_enabled`
+/// never needed the folder to exist, and neither does this.
+pub fn enable(cfg: &Config, name: &str) -> Result<Vec<String>, String> {
+    let all = scan(cfg);
+    let kind = all
+        .iter()
+        .find(|m| m.name == name)
+        .map(|m| m.manifest.kind.clone())
+        .unwrap_or_default();
+    set_enabled(&cfg.state, name, true)?;
+    let mut off = Vec::new();
+    if kind.is_empty() {
+        return Ok(off);
+    }
+    let chosen = read_list(&cfg.state, "enabled.txt");
+    for m in all.iter().filter(|m| m.name != name && m.manifest.kind == kind) {
+        // Written for any that is on *or* recorded as chosen: a refused skin
+        // that was ticked would otherwise come back on beside this one the
+        // moment its problem went away.
+        if m.status == Status::On || chosen.contains(&m.name) {
+            set_enabled(&cfg.state, &m.name, false)?;
+            off.push(m.name.clone());
+        }
+    }
+    Ok(off)
 }
 
 /// Forget every choice the player made about a mod: its line in either list
@@ -2584,6 +2860,107 @@ mod tests {
         assert_eq!(script.matches('{').count(), script.matches('}').count());
     }
 
+    #[test]
+    fn lua_files_load_in_mod_order_after_the_settings_they_can_read() {
+        let root = tmp("lua-layer");
+        let a = root.join("a-mod");
+        fs::create_dir_all(a.join("lua/sub")).unwrap();
+        fs::write(a.join("lua/z.lua"), "-- z").unwrap();
+        fs::write(a.join("lua/sub/a.lua"), "").unwrap();
+        fs::write(a.join("lua/notes.txt"), "not code").unwrap();
+        let b = root.join("b-mod");
+        fs::create_dir_all(b.join("lua")).unwrap();
+        fs::write(b.join("lua/b.lua"), "").unwrap();
+        let c = root.join("c-mod");
+        fs::create_dir_all(&c).unwrap();
+
+        let plain = Manifest::default();
+        let tuned = Manifest {
+            settings: vec![
+                setting("on", SettingValue::Bool(true), 0.0, 0.0),
+                setting("rate", SettingValue::Number(1.0), 0.0, 10.0),
+                setting("whole", SettingValue::Number(1.0), 0.0, 10.0),
+                setting("label", SettingValue::Text(String::new()), 0.0, 200.0),
+            ],
+            ..Manifest::default()
+        };
+        let values = vec![
+            ("on".to_string(), "false".to_string()),
+            ("rate".to_string(), "1.5".to_string()),
+            ("whole".to_string(), "3".to_string()),
+            ("label".to_string(), "\"say \\\"hi\\\"\\n\\\\\"".to_string()),
+        ];
+        let db = root.join("db");
+        write_lua_layer(
+            &db,
+            &[("a-mod", &a, &plain, vec![]), ("b-mod", &b, &tuned, values), ("c-mod", &c, &plain, vec![])],
+        )
+        .unwrap();
+
+        let list = fs::read_to_string(db.join("lua/load.txt")).unwrap();
+        let lines: Vec<&str> = list.lines().filter(|l| !l.starts_with('#')).collect();
+        assert_eq!(
+            lines,
+            vec![
+                "-\tlua/mod-settings.lua",
+                "a-mod\tlua/a-mod/sub/a.lua",
+                "a-mod\tlua/a-mod/z.lua",
+                "b-mod\tlua/b-mod/b.lua",
+            ]
+        );
+        assert!(db.join("lua/a-mod/z.lua").is_file());
+
+        let settings = fs::read_to_string(db.join("lua").join(LUA_SETTINGS)).unwrap();
+        assert!(settings.contains("MOD_SETTINGS = {\n"), "{settings}");
+        assert!(settings.contains("  [\"b-mod\"] = {\n"), "{settings}");
+        // Real booleans: in Lua, 0 is true.
+        assert!(settings.contains("    [\"on\"] = false,\n"), "{settings}");
+        assert!(settings.contains("    [\"rate\"] = 1.5,\n"), "{settings}");
+        assert!(settings.contains("    [\"whole\"] = 3,\n"), "{settings}");
+        // What someone typed cannot end the string: quote, newline, backslash.
+        assert!(settings.contains("    [\"label\"] = \"say \\\"hi\\\"\\010\\\\\",\n"), "{settings}");
+        assert!(!settings.contains("a-mod"), "a mod with no settings has no entry");
+    }
+
+    #[test]
+    fn two_mods_defining_the_same_id_are_reported_under_the_one_that_loses() {
+        let root = tmp("id-collisions");
+        let a = root.join("a");
+        let b = root.join("b");
+        let c = root.join("c");
+        fs::create_dir_all(a.join("db")).unwrap();
+        fs::create_dir_all(b.join("db")).unwrap();
+        fs::create_dir_all(c.join("db")).unwrap();
+        let mob = |ids: &[u64]| {
+            let mut s = String::from("Header:\n  Type: MOB_DB\n  Version: 5\n\nBody:\n");
+            for id in ids {
+                s.push_str(&format!("  - Id: {id}\n    AegisName: M{id}\n    Drops:\n      - Item: Jellopy\n        Rate: 10\n"));
+            }
+            s
+        };
+        fs::write(a.join("db/mob_db.yml"), mob(&[25001, 25002, 1002])).unwrap();
+        fs::write(b.join("db/mob_db.yml"), mob(&[25001, 1002])).unwrap();
+        // Items are one namespace across item_db.yml and item_db_*.yml.
+        fs::write(a.join("db/item_db.yml"), "Body:\n  - Id: 50001\n").unwrap();
+        fs::write(c.join("db/item_db_etc.yml"), "Body:\n  - Id: 50001\n  - Id: 50002\n").unwrap();
+
+        let found = id_collisions(&[("a", a.as_path()), ("b", b.as_path()), ("c", c.as_path())]);
+        assert_eq!(
+            found,
+            vec![
+                (
+                    "a".to_string(),
+                    "b also defines monsters 1002, 25001, so b's version is the one in effect. If they are different monsters, one of the two mods needs other ids.".to_string()
+                ),
+                (
+                    "a".to_string(),
+                    "c also defines item 50001, so c's version is the one in effect. If they are different items, one of the two mods needs other ids.".to_string()
+                ),
+            ]
+        );
+        assert!(id_collisions(&[("a", a.as_path())]).is_empty());
+    }
+
     fn setting(key: &str, value: SettingValue, min: f64, max: f64) -> Setting {
         Setting { key: key.into(), label: key.into(), description: String::new(), value, min, max }
     }
@@ -2698,6 +3075,19 @@ mod tests {
 
         // Nothing recorded at all is not an error.
         forget(&state, "never-installed").unwrap();
+    }
+
+    // What the app asks before an update replaces a working copy.
+    #[test]
+    fn a_staged_folder_is_checked_by_the_same_manifest_reader() {
+        let dir = tmp("mod-check");
+        assert_eq!(check_dir(&dir).unwrap_err(), "it has no mod.json");
+        fs::write(dir.join("mod.json"), "{\"version\": \"4.8.0\"}").unwrap();
+        assert_eq!(check_dir(&dir).unwrap(), "4.8.0");
+        fs::write(dir.join("mod.json"), "{\"requires\": {\"appp\": \">=1.0\"}}").unwrap();
+        assert!(check_dir(&dir).unwrap_err().contains("\"appp\""));
+        fs::write(dir.join("mod.json"), "not json").unwrap();
+        assert!(check_dir(&dir).unwrap_err().contains("not valid JSON"));
     }
 
     fn tmp(tag: &str) -> PathBuf {
@@ -2981,5 +3371,83 @@ mod tests {
         let (_, notes) = combine_whole_conf("groups.yml", &entries, &[]);
         assert_eq!(notes.len(), 1, "{notes:?}");
         assert!(notes[0].contains("@mapmove (as \"warp\")"), "{}", notes[0]);
+    }
+
+    fn kind_config(tag: &str) -> Config {
+        let root = tmp(tag);
+        Config {
+            root: root.join("app"),
+            state: root.join("state"),
+            nebula_home: root.join("nebula"),
+            nebula: root.join("unused"),
+            docker: root.join("unused"),
+            image: String::new(),
+            db_image: String::new(),
+            ports: crate::ports::Ports::DEFAULT,
+            app_version: None,
+        }
+    }
+
+    fn install(cfg: &Config, name: &str, manifest: &str) {
+        let dir = cfg.state.join("mods").join(name);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("mod.json"), manifest).unwrap();
+    }
+
+    fn on(cfg: &Config) -> Vec<String> {
+        enabled(cfg).into_iter().map(|m| m.name).collect()
+    }
+
+    #[test]
+    fn kind_is_skin_or_cursor_and_anything_else_is_named() {
+        let d = tmp("kind");
+        for (body, want) in [
+            (r#"{"kind": "skin"}"#, Ok("skin")),
+            (r#"{"kind": "cursor"}"#, Ok("cursor")),
+            (r#"{}"#, Ok("")),
+            (r#"{"kind": "skn"}"#, Err("\"skn\"")),
+            (r#"{"kind": 3}"#, Err("a number")),
+        ] {
+            fs::write(d.join("mod.json"), body).unwrap();
+            match (read_manifest(&d), want) {
+                (Ok(Some(m)), Ok(kind)) => assert_eq!(m.kind, kind, "{body}"),
+                (Err(e), Err(said)) => assert!(e.contains(said), "{body}: {e}"),
+                (got, _) => panic!("{body}: {got:?}"),
+            }
+        }
+    }
+
+    // A skin overlays the whole interface folder, so two at once is a
+    // patchwork. Switching one on switches the other off; mods without a kind,
+    // and mods of the other kind, are left alone.
+    #[test]
+    fn switching_a_skin_on_switches_the_other_skin_off() {
+        let cfg = kind_config("skins");
+        install(&cfg, "skin-a", r#"{"kind": "skin"}"#);
+        install(&cfg, "skin-b", r#"{"kind": "skin"}"#);
+        install(&cfg, "cursor-red", r#"{"kind": "cursor"}"#);
+        install(&cfg, "plain", "{}");
+
+        // Dropped in by hand, nobody has chosen: the later name, whose files
+        // would have won anyway, is the one on.
+        assert_eq!(on(&cfg), ["cursor-red", "plain", "skin-b"]);
+
+        assert_eq!(enable(&cfg, "skin-a").unwrap(), ["skin-b"]);
+        assert_eq!(on(&cfg), ["cursor-red", "plain", "skin-a"]);
+
+        assert_eq!(enable(&cfg, "skin-b").unwrap(), ["skin-a"]);
+        assert_eq!(on(&cfg), ["cursor-red", "plain", "skin-b"]);
+
+        // Off is off: no skin at all is a choice too.
+        set_enabled(&cfg.state, "skin-b", false).unwrap();
+        assert_eq!(on(&cfg), ["cursor-red", "plain"]);
+
+        // A mod with no kind switches nothing else off.
+        assert!(enable(&cfg, "plain").unwrap().is_empty());
+        let rows = list(&cfg);
+        let kind = |name: &str| rows.iter().find(|r| r[1] == name).unwrap()[12].clone();
+        assert_eq!(kind("skin-a"), "skin");
+        assert_eq!(kind("cursor-red"), "cursor");
+        assert_eq!(kind("plain"), "");
     }
 }

@@ -2,6 +2,7 @@
 //!
 //!   ragnarok-stack up|down|status|repair|logs [service] [tail]
 //!   ragnarok-stack backup <file> | restore <file>
+//!   ragnarok-stack backup --full <file> | restore --full <file>
 //!
 //! This replaces scripts/stack.sh. It is a binary rather than a script because
 //! the app ships to Windows, which has no POSIX shell — and a second,
@@ -9,13 +10,16 @@
 //! agree forever and eventually would not. The app and a terminal run the same
 //! code path, as they always have.
 
+mod archive;
 mod assets;
 mod accounts;
 mod agent;
 mod tools;
+mod world;
 mod asset_transaction;
 mod cmds;
 mod crashes;
+mod database;
 mod host;
 mod config;
 mod cp949;
@@ -29,8 +33,11 @@ mod registration;
 mod hosting;
 mod private_fs;
 mod service_credentials;
+mod sign_in;
+mod remember;
 mod operation_lock;
 mod packetver;
+mod ports;
 
 use config::Config;
 use docker::Docker;
@@ -38,8 +45,9 @@ use std::env;
 use std::path::PathBuf;
 use std::process::exit;
 
-const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|agent <command> [args]|export-table <name>\n\
-                     \x20      backup <file>|restore <file>\n\
+const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|mod-check DIR|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|logs --follow <map|char|login|db> [--tail N]|agent <command> [args]|export-table <name>|ports\n\
+                     \x20      db tables|describe <table>|rows|apply (JSON on stdin for rows and apply)\n\
+                     \x20      backup [--full] <file>|restore [--full] <file>\n\
                      \x20      sql [--write] [--file <path>] [<statement>]\n\
                      \x20      accounts (private JSON request on stdin)\n\
                      \x20      link-assets <data.grf> [rdata.grf] [official_data.grf] [bgm-dir]";
@@ -81,6 +89,18 @@ fn main() {
         return;
     }
 
+    // The ports this world listens on, as JSON, for the shell and the test
+    // scripts: they ask rather than parse the variables themselves, so there
+    // is one set of rules (ports.rs). No config and no lock -- like `agent`,
+    // it must answer before anything else is set up.
+    if verb == "ports" {
+        match ports::Ports::from_env() {
+            Ok(p) => println!("{}", p.to_json()),
+            Err(error) => { eprintln!("{error}"); exit(1); }
+        }
+        return;
+    }
+
     if verb == "process-identity" {
         let result = args.get(1).and_then(|s| s.parse::<u32>().ok())
             .ok_or_else(|| "process-identity needs a numeric PID".to_string())
@@ -105,7 +125,8 @@ fn main() {
     // A read is just a query and can run beside anything. `sql --write` stops
     // and starts game services, which is a lifecycle operation and has to
     // queue behind the others.
-    let writes_sql = verb == "sql" && args.iter().any(|a| a == "--write");
+    let writes_sql = (verb == "sql" && args.iter().any(|a| a == "--write"))
+        || (verb == "db" && args.get(1).map(String::as_str) == Some("apply"));
     let _operation = if writes_sql || matches!(verb, "up" | "down" | "repair" | "backup" | "restore" | "accounts" | "secure-services" | "hosting-check" | "sharing-check" | "capture-crashes") {
         match operation_lock::acquire(&cfg.state) {
             Ok(lock) => Some(lock),
@@ -157,12 +178,25 @@ fn main() {
             cmds::status(&dk);
             Ok(())
         }
+        "logs" if args.iter().any(|a| a == "--follow") => match cmds::logs_follow(&dk, &args[1..]) {
+            Ok(code) => exit(code),
+            Err(e) => Err(e),
+        },
         "logs" => {
             cmds::logs(&dk, args.get(1).map(String::as_str).unwrap_or("map"),
                        args.get(2).map(String::as_str).unwrap_or("40"));
             Ok(())
         }
         "sql" => cmds::sql(&cfg, &dk, &args[1..]),
+        // Settings -> Tools -> Database (#200). Reads need no lock; `apply`
+        // stops the game like `sql --write` and holds it (above).
+        "db" => database::run(&cfg, &dk, &args[1..]),
+        // --full is the whole world (world.rs): every era's database, the
+        // settings and the installed mods, in one .tar.gz.
+        "backup" if args.get(1).map(String::as_str) == Some("--full") => match args.get(2) {
+            Some(p) => world::backup(&cfg, &dk, p),
+            None => Err("destination file required".into()),
+        },
         "backup" => match args.get(1) {
             Some(p) => cmds::backup(&cfg, &dk, p),
             None => Err("destination file required".into()),
@@ -183,8 +217,18 @@ fn main() {
             (Some(name), Some(body)) => mods::save_settings(&cfg, name, body),
             _ => Err("mod name and a JSON object of settings required".into()),
         },
-        "mod-enable" | "mod-disable" => match args.get(1) {
-            Some(n) => mods::set_enabled(&cfg.state, n, verb == "mod-enable"),
+        // Switching a skin or cursor pack on switches the others of its kind
+        // off; each one is printed, so the shell can say which.
+        "mod-enable" => match args.get(1) {
+            Some(n) => mods::enable(&cfg, n).map(|off| {
+                for name in off {
+                    println!("switched off {name}");
+                }
+            }),
+            None => Err("mod name required".into()),
+        },
+        "mod-disable" => match args.get(1) {
+            Some(n) => mods::set_enabled(&cfg.state, n, false),
             None => Err("mod name required".into()),
         },
         // The Settings window removes the folder itself (to the system
@@ -193,6 +237,18 @@ fn main() {
         "mod-forget" => match args.get(1) {
             Some(n) => mods::forget(&cfg.state, n),
             None => Err("mod name required".into()),
+        },
+        // A folder that is not in the mods directory yet -- a release the app
+        // has downloaded and staged -- checked by the same manifest reader
+        // `mods` uses, so an update that would stop loading is refused
+        // before it replaces a copy that works.
+        "mod-check" => match args.get(1) {
+            Some(dir) => mods::check_dir(std::path::Path::new(dir)).map(|version| println!("ok\t{version}")),
+            None => Err("folder required".into()),
+        },
+        "restore" if args.get(1).map(String::as_str) == Some("--full") => match args.get(2) {
+            Some(p) => world::restore(&cfg, &dk, p),
+            None => Err("source file required".into()),
         },
         "restore" => match args.get(1) {
             Some(p) => cmds::restore(&cfg, &dk, p),

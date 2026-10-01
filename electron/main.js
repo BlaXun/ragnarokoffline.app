@@ -41,6 +41,7 @@ function getSharingSecrets() {
 function getSharing() {
     return sharing ||= new (require('./sharing/controller').SharingController)({
         directory: path.join(dataRoot(), 'sharing'),
+        ports: gamePorts(),
         // 0 means "until you stop sharing": the gateway treats an infinite
         // lifetime as never expiring, and stopping or replacing still revokes.
         // Reuse the stored invitation so a link already sent to friends keeps
@@ -80,7 +81,7 @@ function getSharing() {
             // that drops the probe is the ordinary case on Windows and used to
             // fail here with a sentence naming neither an address nor a port.
             const probe = require('./listener-probe');
-            lastListenerReport = await probe.probeListeners();
+            lastListenerReport = await probe.probeListeners({ ports: probe.gamePorts(gamePorts()) });
             appLog(`sharing: listener check\n${probe.describe(lastListenerReport)}`);
             const decided = probe.verdict(lastListenerReport);
             if (!decided.shareable) throw Error(decided.message);
@@ -95,7 +96,42 @@ function getSharing() {
             const era = getSettings().prerenewal ? 'prerenewal' : 'renewal';
             return require('./accounts').runAccounts(stackBin(), stackEnv(), { ...request, action: 'invite-create', era });
         }),
+        signIn: () => buildSignIn(),
+        // Remembered logins for a friend (the autologin mod): kept in an
+        // HttpOnly cookie by the gateway, exchanged here like the host's own.
+        remember: () => rememberLogin(),
     });
+}
+// Sign in with Google or Apple (sharing/oidc.js, docs/FRIENDS_SHARING.md):
+// null unless the host has saved their own client credentials, and read once
+// per sharing start. What the gateway may ask the supervisor for is these four
+// actions and nothing else; each goes through the same queue as an invited
+// account, so it never lands halfway through an era switch.
+function buildSignIn() {
+    let credentials;
+    try { credentials = getSharingSecrets().loadSignIn(); }
+    catch (error) { appLog(`sharing: sign-in credentials unavailable: ${error.message}`); return null; }
+    if (!credentials.google && !credentials.apple) return null;
+    const { SignInFlow } = require('./sharing/oidc');
+    const account = request => queueServerOperation(async () => {
+        if (!sharing?.gateway || !['sharing', 'connecting', 'reconnecting'].includes(sharing.state)) throw Error('Sharing stopped');
+        const era = getSettings().prerenewal ? 'prerenewal' : 'renewal';
+        return require('./accounts').runAccounts(stackBin(), stackEnv(), { ...request, era });
+    });
+    return {
+        flow: new SignInFlow({ credentials }),
+        accounts: {
+            find: async identity => {
+                const result = await account({ action: 'identity-find', ...identity });
+                return result.found ? { id: String(result.id), username: result.username } : null;
+            },
+            create: (identity, username) => account({ action: 'identity-create', ...identity, username }),
+            link: (identity, username) => account({ action: 'identity-link', ...identity, username }),
+            // Only the token's hash leaves this process.
+            token: (id, tokenHash) => account({ action: 'login-token', id: String(id), tokenHash }),
+        },
+        checkLogin: ({ username, password }) => require('./sharing/login-token').checkGameLogin({ username, password, port: gamePorts().login }),
+    };
 }
 
 
@@ -143,6 +179,18 @@ function dataRoot() {
 function stackBin() {
 	return path.join(projectRoot(), 'bin', process.platform === 'win32'
 		? 'ragnarok-stack.exe' : 'ragnarok-stack');
+}
+
+// The host ports this copy listens on: 3338/6900/6121/5121/7490 unless the
+// RAGNAROK_OFFLINE_*_PORT variables move them, which is how a test world runs
+// beside the player's app. The supervisor is the one parser (electron/ports.js
+// explains); read once, at startup, so every caller sees the same answer.
+let gamePortsCache = null;
+function gamePorts() {
+	return gamePortsCache ||= require('./ports').readPorts(stackBin(), stackEnv().env);
+}
+function localGameBase() {
+	return `http://127.0.0.1:${gamePorts().asset}`;
 }
 
 function stateDir() {
@@ -628,14 +676,19 @@ async function assetsStart() {
 			return [key, filename, stat.size, stat.mtimeMs];
 		} catch { return [key, filename, 'missing']; }
 	});
+	// Remembered logins for LAN players (sharing/lan-remember.js): the asset
+	// server forwards /_friend/remember/ to a loopback endpoint of ours, only
+	// while hosting with LAN on. Its port is fixed for the life of this
+	// process, so the fingerprint below does not change between starts.
+	const appProxy = client.mode === 'host' && client.lan ? await lanRememberTarget() : null;
 	// Pass every RemoteClient setting explicitly, so .env/default changes
 	// cannot create a different effective server behind the same fingerprint.
 	return assetServer.start({
 		executable: server, cwd: root, stateRoot: stateDir(),
 		environment: {
-			PATH: toolPath(), PORT: '3338',
+			PATH: toolPath(), PORT: String(gamePorts().asset),
 			HOST: client.lan ? '0.0.0.0' : '127.0.0.1',
-			CLIENT_PUBLIC_URL: `http://${advertiseHost()}:3338`,
+			CLIENT_PUBLIC_URL: `http://${advertiseHost()}:${gamePorts().asset}`,
 			NODE_ENV: 'production',
 			SERVER_ROOT: path.resolve(stateDir(), 'assets'),
 			CLIENT_RESPATH: 'resources/', CLIENT_DATAINI: path.resolve(stateDir(), 'asset-config/DATA.INI'),
@@ -658,8 +711,30 @@ async function assetsStart() {
 			RAGNAROK_MANIFEST_ID: sha256(readIfExists(path.join(stateDir(), 'asset-config/DATA.INI'))),
 			RAGNAROK_CLIENT_CONFIG_ID: sha256(readIfExists(path.join(stateDir(), 'assets/Config.local.js'))),
 			RAGNAROK_ASSET_SOURCES_ID: sha256(JSON.stringify(sources)),
+			...(appProxy ? { APP_PROXY_PREFIX: appProxy.prefix, APP_PROXY_TARGET: appProxy.target } : {}),
 		},
 	});
+}
+
+// Started once, on first need; null if it cannot listen (LAN players then see
+// autologin as unavailable, and nothing else changes).
+let lanRememberInstance = null;
+async function lanRememberTarget() {
+	try {
+		if (!lanRememberInstance) {
+			const { LanRemember, PREFIX } = require('./sharing/lan-remember');
+			const server = new LanRemember({
+				remember: rememberLogin(),
+				enabled: () => { const c = getClientPaths(); return c.mode === 'host' && Boolean(c.lan); },
+				log: appLog,
+			});
+			lanRememberInstance = { prefix: PREFIX, target: `127.0.0.1:${await server.start()}` };
+		}
+		return lanRememberInstance;
+	} catch (error) {
+		appLog(`lan remember: not available: ${error.message}`);
+		return null;
+	}
 }
 
 async function assetsStop() { if (sharing) await sharing.stop(); return assetServer.stop(); }
@@ -754,13 +829,13 @@ function advertiseHost() {
 // configured character/map address; keep precisely those three destinations.
 function proxyTargets(client) {
 	const backend = client.lan ? advertiseHost() : '127.0.0.1';
-	return ['127.0.0.1:6900', `${backend}:6121`, `${backend}:5121`];
+	return require('./ports').gameTargets(gamePorts(), backend);
 }
 
 // One public web origin; legacy LAN addresses are normalized by join-address.
 function serveUrl(host) {
 	const authority = host.includes(':') && !host.startsWith('[') ? `[${host}]` : host;
-	return `http://${authority}:3338/`;
+	return `http://${authority}:${gamePorts().asset}/`;
 }
 function joinUrl(hostSpec) { return parseJoinAddress(hostSpec).origin; }
 
@@ -801,7 +876,7 @@ function linkClient(paths) {
 }
 
 async function linkClientOwned(paths) {
-	await assetServer.prepare(stateDir());
+	await assetServer.prepare(stateDir(), gamePorts().asset);
 	const root = projectRoot();
 	// Read each path from *this* process before handing them to bash.
 	//
@@ -970,11 +1045,37 @@ function getSettings() {
 // changes how the server runs and has to go through Apply.
 const APP_PREFERENCES = new Set(['open_settings_first']);
 
+// The AI agent's bearer token, for redaction. Read from its connection file
+// rather than from the agent: it outlives the session that made it, and it is
+// asked for on every log line, so it is looked at no more than once a second.
+let agentTokenCache = { at: 0, tokens: [] };
+function agentTokens() {
+	if (Date.now() - agentTokenCache.at > 1000) {
+		let tokens = [];
+		try {
+			const c = JSON.parse(fs.readFileSync(path.join(stateDir(), 'agent', 'connection.json'), 'utf8'));
+			if (typeof c.token === 'string') tokens = [c.token];
+		} catch { /* no agent set up */ }
+		agentTokenCache = { at: Date.now(), tokens };
+	}
+	return agentTokenCache.tokens;
+}
+
 let toolsSingleton = null;
 function toolsInstance() {
 	if (!toolsSingleton) {
 		toolsSingleton = require('./tools').createTools({
 			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
+			assetPort: () => gamePorts().asset,
+			// The log viewer (#202) shows what Copy diagnostics would, redacted
+			// the same way, and the agent's token besides.
+			nebulaLogsDir: () => path.join(dataRoot(), 'nebula', 'logs'),
+			redact: text => require('./log-stream').redactSecrets(joinSession.redact(text), agentTokens()),
+			openGameDevTools: () => {
+				const game = windows.game;
+				if (!game || game.isDestroyed()) throw new Error('The game window is not open. Press Play first.');
+				game.webContents.openDevTools({ mode: 'detach' });
+			},
 		});
 	}
 	return toolsSingleton;
@@ -988,7 +1089,8 @@ function agentPlay() {
 			BrowserWindow,
 			stateDir,
 			stackBin,
-			gameBase: () => 'http://127.0.0.1:3338',
+			gameBase: localGameBase,
+			port: () => gamePorts().agent,
 			gamePath: GAME_PATH,
 			runAccount: request => require('./accounts').runAccounts(stackBin(), stackEnv(), request),
 			era: () => (getSettings().prerenewal ? 'prerenewal' : 'renewal'),
@@ -1338,7 +1440,7 @@ function makeWindow(id, file, opts) {
 		const guard = (event, legacyUrl) => {
 			const current = getClientPaths();
 			const allowed = current.mode === 'join' && current.join_host
-				? joinUrl(current.join_host) : 'http://127.0.0.1:3338';
+				? joinUrl(current.join_host) : localGameBase();
 			let target;
 			try { target = new URL(event.url || legacyUrl); } catch { event.preventDefault(); return; }
 			if (target.origin !== allowed || target.username || target.password) {
@@ -1450,7 +1552,7 @@ async function nudgeLocalNetworkPermission() {
 	try {
 		// Any attempt to reach a local address is enough; whether it connects
 		// is irrelevant, so this is deliberately short and its result ignored.
-		const sock = require('net').connect({ host: ip, port: 3338 });
+		const sock = require('net').connect({ host: ip, port: gamePorts().asset });
 		sock.setTimeout(1500);
 		const done = () => sock.destroy();
 		sock.on('connect', done);
@@ -1478,6 +1580,9 @@ function gameTitle() {
 // Kept in the owner process so a failed/terminated game renderer cannot lose
 // its recovery reason. Loading the boot page never retries automatically.
 let gameFailure = null;
+// Each time launch_game has put the client in the game window. Read by
+// Settings → Mods through game_status.
+let gameLaunches = 0;
 function showGameFailure(win, message) {
 	if (tearingDown || !win || win.isDestroyed() || win !== windows.game || win.recoveryLoading) return;
 	gameFailure = message;
@@ -1506,25 +1611,91 @@ const openSettings = () => makeWindow('settings', 'settings.html', { width: 700,
 // Installing a mod
 // ---------------------------------------------------------------------------
 
-// One folder, named for the mod. Anything else is a zip somebody built by
-// selecting the files instead of the directory, and unpacking it would strew
-// db/ and npc/ across the mods root.
-function singleTopLevel(names) {
-	const tops = new Set(names.map(n => n.split('/')[0]).filter(Boolean));
-	return tops.size === 1 ? [...tops][0] : null;
+// The zip checks -- zip-slip, links, size, one top-level folder -- live in
+// mod-zip.js, shared with installs from a registry entry's own releases.
+
+// Unpack a .zip (or, for a skin or cursor pack, a .rar) into `tmp`, and
+// return what it held, checked. `ditto` on macOS, `tar` elsewhere: both ship
+// with the OS, and neither needs an archive library in the app. bsdtar --
+// macOS's tar and Windows' tar.exe -- also reads .rar, which is how most
+// cursor packs travel; GNU tar on Linux does not, and says so.
+function unpackArchive(src, tmp) {
+	const { execFileSync } = require('child_process');
+	const rar = /\.rar$/i.test(src);
+	if (process.platform === 'darwin') {
+		if (rar) execFileSync('/usr/bin/tar', ['-xf', src, '-C', tmp]);
+		else execFileSync('ditto', ['-x', '-k', src, tmp]);
+	}
+	// On Windows, by full path: Git's GNU tar is often first on PATH, and it
+	// reads `C:` as a remote host and cannot open a zip at all (#174).
+	else if (process.platform === 'win32') execFileSync(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', src, '-C', tmp]);
+	else {
+		try { execFileSync('tar', ['-xf', src, '-C', tmp]); }
+		catch (e) { throw new Error(rar ? 'This system\'s tar cannot open a .rar. Unpack it, then choose the folder.' : e.message); }
+	}
+
+	const walk = (dir, rel = '') => fs.readdirSync(dir, { withFileTypes: true })
+		.flatMap(e => e.isDirectory()
+			? walk(path.join(dir, e.name), rel ? `${rel}/${e.name}` : e.name)
+			: [rel ? `${rel}/${e.name}` : e.name]);
+	const entries = walk(tmp).filter(n => !n.split('/').some(p => p === '__MACOSX' || p.startsWith('._')));
+	if (!entries.length) throw new Error('That archive is empty.');
+	for (const e of entries) {
+		if (!require('./mod-zip').safeEntryName(e)) throw new Error(`Refusing ${src}: it contains an unsafe path (${e}).`);
+	}
+	return entries;
 }
 
-// Refuse anything that would land outside the destination: `../`, an absolute
-// path, or a drive letter. Zip-slip is the classic way an unpack becomes an
-// arbitrary write.
-function safeEntryName(name) {
-	if (!name || name.startsWith('/') || name.startsWith('\\') || /^[a-zA-Z]:/.test(name)) return null;
-	const parts = name.split('/');
-	if (parts.some(p => p === '..')) return null;
-	return name;
+// Build a mod from an official-format UI skin, or a cursor pack, and switch
+// it on in place of whichever one was on. See ui-skin.js for how each picture
+// is placed. Client-side only, so the asset overlay is rebuilt here and no
+// server restart is asked for: the new art is in front of the client on the
+// next launch, and the overlay fingerprint moving is what clears the files
+// the client cached from the old skin.
+async function installSkinFrom(src) {
+	const skin = require('./ui-skin');
+	const dest = path.join(stateDir(), 'mods');
+	fs.mkdirSync(dest, { recursive: true });
+	const client = getClientPaths();
+	const { index, problems } = skin.uiIndex([client.official_grf, client.rdata_grf, client.data_grf]);
+	for (const p of problems) appLog(`skin import: could not read ${p}`);
+
+	let result;
+	const display = path.basename(src).replace(/\.(zip|rar)$/i, '');
+	if (fs.statSync(src).isDirectory()) {
+		result = skin.buildSkinMod({ srcRoot: skin.skinRoot(src), modsDir: dest, display, index, appVersion: app.getVersion(), source: src });
+	} else {
+		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-skin-'));
+		try {
+			unpackArchive(src, tmp);
+			const root = skin.skinRoot(tmp);
+			// Named for the file the player chose, which is the name they know
+			// it by: the folder inside is as often `cursor7` as `Clear Blue`.
+			result = skin.buildSkinMod({ srcRoot: root, modsDir: dest, display, index, appVersion: app.getVersion(), source: src });
+		} finally {
+			fs.rmSync(tmp, { recursive: true, force: true });
+		}
+	}
+	appLog(`installed ${result.kind} ${result.name} from ${src}: ${result.placed.length} placed, ${result.unplaced.length} not placed`);
+
+	let switched = [];
+	try {
+		const out = await runStack(['mod-enable', result.name]);
+		switched = out.split('\n').map(l => /^switched off (.+)$/.exec(l.trim())).filter(Boolean).map(m => m[1]);
+	} catch (e) {
+		appLog(`mod-enable ${result.name} failed: ${(e && e.message) || e}`);
+	}
+	try {
+		if (clientComplete(client)) await linkClient(client);
+	} catch (e) {
+		appLog(`relinking after the skin import failed: ${(e && e.message) || e}`);
+	}
+	const off = switched.length ? ` Switched off ${switched.join(', ')}.` : '';
+	return `${skin.summary(result)}${off} Restart the app to see it.`;
 }
 
 async function installModFrom(src) {
+	const modZip = require('./mod-zip');
 	const dest = path.join(stateDir(), 'mods');
 	fs.mkdirSync(dest, { recursive: true });
 
@@ -1535,32 +1706,15 @@ async function installModFrom(src) {
 		if (fs.existsSync(target)) throw new Error(`${name} is already installed. Remove it first.`);
 		fs.cpSync(src, target, { recursive: true });
 	} else {
-		// `ditto` on macOS, `tar` elsewhere: both ship with the OS, and neither
-		// needs a zip library in the app. Unpacked to a scratch directory first
-		// so nothing lands in mods/ until it has been checked.
-		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-mod-'));
+		// Unpacked to a scratch directory first so nothing lands in mods/
+		// until it has been checked.
+		const { dir: tmp, files } = modZip.unpack(src);
 		try {
-			const { execFileSync } = require('child_process');
-			if (process.platform === 'darwin') execFileSync('ditto', ['-x', '-k', src, tmp]);
-			// On Windows, by full path: Git's GNU tar is often first on PATH, and it
-			// reads `C:` as a remote host and cannot open a zip at all (#174).
-			else if (process.platform === 'win32') execFileSync(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', src, '-C', tmp]);
-			else execFileSync('tar', ['-xf', src, '-C', tmp]);
-
-			const walk = (dir, rel = '') => fs.readdirSync(dir, { withFileTypes: true })
-				.flatMap(e => e.isDirectory()
-					? walk(path.join(dir, e.name), rel ? `${rel}/${e.name}` : e.name)
-					: [rel ? `${rel}/${e.name}` : e.name]);
-			const entries = walk(tmp).filter(n => !n.split('/').some(p => p === '__MACOSX' || p.startsWith('._')));
-			if (!entries.length) throw new Error('That archive is empty.');
-			for (const e of entries) {
-				if (!safeEntryName(e)) throw new Error(`Refusing ${src}: it contains an unsafe path (${e}).`);
-			}
-			name = singleTopLevel(entries);
+			name = modZip.singleTopLevel(files);
 			if (!name) throw new Error('A mod zip must contain exactly one folder, named for the mod.');
 			const target = path.join(dest, name);
 			if (fs.existsSync(target)) throw new Error(`${name} is already installed. Remove it first.`);
-			fs.cpSync(path.join(tmp, name), target, { recursive: true });
+			modZip.copyTree(path.join(tmp, name), target);
 		} finally {
 			fs.rmSync(tmp, { recursive: true, force: true });
 		}
@@ -1571,15 +1725,107 @@ async function installModFrom(src) {
 	// refused is still installed -- the player may be about to switch era, and
 	// deleting it would be worse -- but they are told now rather than after a
 	// restart that appears to do nothing.
-	let note = '';
+	const note = await refusalNote(name);
+	appLog(`installed mod ${name} from ${src}`);
+	return `Installed ${name}.${note} Apply to restart the server.`;
+}
+
+async function refusalNote(name) {
 	try {
 		const rows = (await runStack(['mods'])).split('\n').filter(Boolean);
 		const row = rows.map(l => l.split('\t')).find(r => r[1] === name);
-		if (row && row[0] === 'refused') note = ` It will not load: ${row[3]}`;
+		if (row && row[0] === 'refused') return ` It will not load: ${row[3]}`;
 	} catch { /* the supervisor may be unavailable; the install still stands */ }
+	return '';
+}
 
-	appLog(`installed mod ${name} from ${src}`);
-	return `Installed ${name}.${note} Apply to restart the server.`;
+// ---------------------------------------------------------------------------
+// Mods published from their author's own repository
+// ---------------------------------------------------------------------------
+
+// Release lookups, keyed by repository, kept a few minutes (mod-source.js) so
+// opening the Mods tab twice does not spend GitHub's hourly allowance twice.
+const sourceReleases = new Map();
+function sourceOptions(extra = {}) {
+	return {
+		api: process.env.RAGNAROK_GITHUB_API || require('./mod-source').GITHUB_API,
+		// Only for pointing tests at a local fake; never set in a shipped app.
+		allow: process.env.RAGNAROK_GITHUB_API ? () => true : undefined,
+		cache: sourceReleases,
+		userAgent: `RagnarokOffline/${app.getVersion()}`,
+		...extra,
+	};
+}
+
+// Install or update a registry entry that points at a GitHub repository.
+//
+// The release is downloaded, checked and staged first -- nothing of it can
+// run from the staging folder -- and only then does the player see what it is
+// and decide. The question is asked here rather than in the settings page: the
+// page renders text the internet wrote, and it is not the one that decides
+// whether somebody else's code goes into the server.
+async function installFromSource(entry) {
+	const source = require('./mod-source');
+	const modsDir = path.join(stateDir(), 'mods');
+	const folder = path.join(modsDir, entry.name);
+	const current = source.readRecord(folder);
+	const present = fs.existsSync(folder);
+	const repo = entry.source.github;
+
+	const release = await source.latestRelease(repo, sourceOptions());
+	const asset = source.pickAsset(release, entry.source.asset);
+	const bytes = await source.download(asset, sourceOptions());
+	const sha256 = source.sha256(bytes);
+	const staged = await source.stage(entry.name, bytes, {
+		modsDir,
+		appVersion: app.getVersion(),
+		validate: dir => runStack(['mod-check', dir]),
+	});
+	let committed = false;
+	try {
+		const version = staged.version || release.tag;
+		const from = current ? (current.version || current.tag) : '';
+		const verb = current ? 'Update' : present ? 'Replace' : 'Install';
+		const message = current
+			? `Update ${entry.name} from ${from} to ${version}?`
+			: present ? `Replace your copy of ${entry.name} with ${version} from GitHub?`
+			: `Install ${entry.name} ${version}?`;
+		const ships = [
+			staged.contents.serverScripts && 'scripts the game server runs (npc/)',
+			staged.contents.clientCode && 'code that runs in the game window (client/)',
+			staged.contents.commands && 'a change to which commands players can use (conf/)',
+		].filter(Boolean);
+		const notes = release.notes.trim();
+		const detail = [
+			`From github.com/${repo}, release ${release.tag}`,
+			`${asset.name}, ${Math.max(1, Math.round(bytes.length / 1024))} KB, sha256 ${sha256.slice(0, 16)}…`,
+			'',
+			'The mod list vouches for this repository, not for each release: '
+				+ (ships.length
+					? `this mod's author can change it without review, and this release ships ${ships.join(', ')}.`
+					: "this mod's author can change it without review."),
+			current || present ? 'Your settings for it and whether it is switched on are kept.' : '',
+			notes ? `\nRelease notes:\n${notes.length > 700 ? notes.slice(0, 700) + '…' : notes}` : '',
+			`\n${release.url}`,
+		].filter(line => line !== '').join('\n');
+		const parent = BrowserWindow.getFocusedWindow() || windows.settings;
+		const question = { type: 'question', buttons: [verb, 'Cancel'], defaultId: 0, cancelId: 1, message, detail };
+		const { response } = parent && !parent.isDestroyed()
+			? await dialog.showMessageBox(parent, question) : await dialog.showMessageBox(question);
+		if (response !== 0) return { name: entry.name, cancelled: true, message: 'Cancelled.' };
+
+		source.commit(staged, { modsDir, record: {
+			repo, tag: release.tag, asset: asset.name, sha256, size: bytes.length,
+			version: staged.version, releaseUrl: release.url, installedAt: new Date().toISOString(),
+		} });
+		committed = true;
+		appLog(`${current ? 'updated' : 'installed'} mod ${entry.name} ${release.tag} from ${repo} (${asset.name}, sha256 ${sha256})`);
+		const note = await refusalNote(entry.name);
+		const done = current ? `Updated ${entry.name} to ${version}.` : `Installed ${entry.name} ${version}.`;
+		return { name: entry.name, version, tag: release.tag, message: `${done}${note} Apply to restart the server.` };
+	} finally {
+		if (!committed) source.discard(staged);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -1740,9 +1986,14 @@ const handlers = {
 	// The registry: an index of reviewed mods in a GitHub repository. Listed
 	// on demand rather than cached, because the interesting failure is a stale
 	// list showing a mod that has since been taken down.
-	list_registry_mods: async () => {
+	list_registry_mods: async ({ fresh } = {}) => {
 		const registry = require('./mod-registry');
-		return registry.list({ url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX });
+		const url = new URL(process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX);
+		// raw.githubusercontent.com caches a file for minutes; a refresh the
+		// player asked for gets today's list. Files still resolve against the
+		// path alone, so installs are unaffected.
+		if (fresh) url.searchParams.set('t', String(Date.now()));
+		return registry.list({ url: url.toString() });
 	},
 	// Pictures come through here rather than being loaded by the settings
 	// window: it is a privileged page, and a list nobody reviewed should not
@@ -1758,12 +2009,58 @@ const handlers = {
 	},
 	install_registry_mod: async ({ name }) => {
 		const registry = require('./mod-registry');
-		const result = await registry.install(name, {
-			url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX,
-			modsDir: path.join(stateDir(), 'mods'),
-		});
+		const url = process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX;
+		const mods = await registry.list({ url });
+		const entry = mods.find(mod => mod.name === name);
+		// Install and update are the same thing for a mod published from its
+		// own repository: fetch the latest release, show it, swap it in.
+		if (entry && entry.source) return installFromSource(entry);
+		const result = await registry.install(name, { url, mods, modsDir: path.join(stateDir(), 'mods') });
 		appLog(`installed mod ${result.name} ${result.version} (${result.files} files)`);
 		return result;
+	},
+	// The latest release of one source entry, for its page in the list. One
+	// lookup, cached with the rest, and only when somebody opens the entry.
+	registry_release: async ({ name }) => {
+		const registry = require('./mod-registry');
+		const source = require('./mod-source');
+		const mods = await registry.list({ url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX });
+		const entry = mods.find(mod => mod.name === name);
+		if (!entry || !entry.source) throw new Error(`${name} is not published from a repository`);
+		const release = await source.latestRelease(entry.source.github, sourceOptions());
+		return { tag: release.tag, url: release.url, publishedAt: release.publishedAt, notes: release.notes.slice(0, 1200) };
+	},
+	// Whether any mod installed from its own repository has a newer release.
+	// Asked when the Mods tab opens and from its button, never in the
+	// background, and it only ever reports: installing is the player's click.
+	check_mod_updates: async ({ fresh } = {}) => {
+		const registry = require('./mod-registry');
+		const source = require('./mod-source');
+		const modsDir = path.join(stateDir(), 'mods');
+		let names = [];
+		try { names = fs.readdirSync(modsDir, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.')).map(e => e.name); }
+		catch { return []; }
+		const installed = names.map(name => ({ name, dir: path.join(modsDir, name) }))
+			.filter(mod => source.readRecord(mod.dir));
+		if (!installed.length) return [];
+		const listing = await registry.list({ url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX });
+		return source.checkUpdates(installed, listing, sourceOptions({ fresh: !!fresh }));
+	},
+	// A release page, opened in the player's browser. Only ever a GitHub
+	// release URL: the address came from GitHub's API, by way of the page.
+	open_release_notes: ({ url }) => {
+		if (typeof url !== 'string' || !/^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9._-]+\/releases\//.test(url)) {
+			throw new Error('That is not a release page.');
+		}
+		return shell.openExternal(url);
+	},
+	// A mod's repository or folder on GitHub, from Find Mods. github.com over
+	// HTTPS and nothing else (mod-source.js githubPage): a homepage anywhere
+	// else is shown as text, not opened.
+	open_github_page: ({ url }) => {
+		const page = require('./mod-source').githubPage(url);
+		if (!page) throw new Error('That is not a GitHub page.');
+		return shell.openExternal(page);
 	},
 	list_mods: async () => {
 		const out = await runStack(['mods']);
@@ -1772,7 +2069,7 @@ const handlers = {
 		// the app would not run it, and the difference is the whole point of
 		// having a reason to show.
 		return out.split('\n').filter(Boolean).map(l => {
-			const [state, name, description, reason, origin, version, author, grants, settings, problems, settingsPage, dir] = l.split('\t');
+			const [state, name, description, reason, origin, version, author, grants, settings, problems, settingsPage, dir, kind] = l.split('\t');
 			return {
 				name,
 				enabled: state === 'on',
@@ -1804,6 +2101,18 @@ const handlers = {
 				// Empty from an older supervisor, which never writes them.
 				settingsPage: settingsPage || '',
 				dir: dir || '',
+				// Where a mod installed from its author's repository came
+				// from, and which release it is. Null for every other mod.
+				source: origin === 'bundled' ? null : (() => {
+					const { readRecord } = require('./mod-source');
+					try {
+						const { modFolder } = require('./mod-remove');
+						return readRecord(modFolder(path.join(stateDir(), 'mods'), name));
+					} catch { return null; }
+				})(),
+				// `skin` or `cursor`: at most one of each is on, and Settings
+				// draws them as a choice rather than as independent switches.
+				kind: kind || '',
 			};
 		});
 	},
@@ -1834,6 +2143,34 @@ const handlers = {
 		if (!picked) return 'Cancelled.';
 		const src = Array.isArray(picked) ? picked[0] : picked;
 		return installModFrom(src);
+	},
+	// A UI skin (official client format: a folder of .bmp files, or a zip
+	// of one) or a cursor pack (cursors.spr + cursors.act), made into a mod.
+	// Pictures are data rather than code, but the archive is unpacked with
+	// the same checks as a mod's.
+	install_skin: async () => {
+		let props = ['openFile', 'openDirectory'];
+		// Only macOS offers files and folders in one dialog; elsewhere the
+		// dialog shows one or the other, so ask which.
+		if (process.platform !== 'darwin') {
+			const parent = BrowserWindow.getFocusedWindow();
+			const question = {
+				type: 'question',
+				buttons: ['A folder…', 'A .zip or .rar…', 'Cancel'],
+				defaultId: 0,
+				cancelId: 2,
+				message: 'Install a UI skin or cursor pack from…',
+			};
+			const { response } = parent ? await dialog.showMessageBox(parent, question) : await dialog.showMessageBox(question);
+			if (response === 2) return 'Cancelled.';
+			props = [response === 0 ? 'openDirectory' : 'openFile'];
+		}
+		const r = await dialog.showOpenDialog({
+			properties: props,
+			filters: [{ name: 'Skin folder, .zip or .rar', extensions: ['zip', 'rar'] }],
+		});
+		if (r.canceled || !r.filePaths.length) return 'Cancelled.';
+		return installSkinFrom(r.filePaths[0]);
 	},
 	// Remove a mod the player installed.
 	//
@@ -1992,7 +2329,7 @@ const handlers = {
 			const probe = require('./listener-probe');
 			add('network', [
 				`interfaces  ${probe.localAddresses().join(', ') || 'none (loopback only)'}`,
-				`ports       ${probe.GAME_PORTS.join(', ')}`,
+				`ports       ${probe.gamePorts(gamePorts()).join(', ')}`,
 				'',
 				lastListenerReport
 					? probe.describe(lastListenerReport)
@@ -2279,6 +2616,33 @@ const handlers = {
         getSharing().replaceInvitation();
         return 'New link created. The previous link stopped working and friends using it were disconnected.';
     },
+    // Google/Apple sign-in setup. Only what identifies the client comes back
+    // to the page; the client secret and the .p8 key never leave this process.
+    sign_in_status: () => {
+        let saved = {}, configurationError = '';
+        try { saved = getSharingSecrets().loadSignIn(); } catch (error) { configurationError = error.message; }
+        let hostname = '';
+        try { hostname = getSharingSecrets().load()?.hostname || ''; } catch { /* reported by sharing_status */ }
+        return {
+            configurationError,
+            redirectUri: hostname ? `https://${hostname}/_friend/sign-in/callback` : '',
+            origin: hostname ? `https://${hostname}` : '',
+            google: saved.google ? { clientId: saved.google.clientId } : null,
+            apple: saved.apple ? { servicesId: saved.apple.servicesId, teamId: saved.apple.teamId, keyId: saved.apple.keyId } : null,
+        };
+    },
+    sign_in_save: ({ provider, ...input } = {}) => {
+        const secrets = getSharingSecrets(); secrets.requireStorage();
+        const value = require('./sharing/oidc').validateCredentials(provider, input);
+        secrets.saveSignIn({ ...secrets.loadSignIn(), [provider]: value });
+        return `${provider === 'apple' ? 'Apple' : 'Google'} sign-in saved. It applies the next time you start sharing on your own hostname.`;
+    },
+    sign_in_forget: ({ provider } = {}) => {
+        if (!['google', 'apple'].includes(provider)) throw Error('Unknown sign-in provider');
+        const secrets = getSharingSecrets(), saved = secrets.loadSignIn();
+        delete saved[provider]; secrets.saveSignIn(saved);
+        return `${provider === 'apple' ? 'Apple' : 'Google'} sign-in removed. Accounts made with it keep their characters; it applies the next time you start sharing.`;
+    },
     sharing_forget: async () => { sharingStoppedByHand = true; await getSharing().stop(); getSharingSecrets().forget(); return 'Saved credentials removed. The hostname and stopped tunnel remain in your Cloudflare account for you to remove there.'; },
 	hosting_check: async () => {
 		if (getClientPaths().mode !== 'host') throw new Error('Hosting checks belong to your own server.');
@@ -2286,6 +2650,38 @@ const handlers = {
 	},
 	db_backup: ({ path: p }) => runStack(['backup', p]),
 	db_restore: ({ path: p }) => runStack(['restore', p]),
+	// The whole world: every era's database, settings and installed mods, in
+	// one .tar.gz (stack/src/world.rs). Secrets are never in it.
+	db_backup_full: ({ path: p }) => runStack(['backup', '--full', p]),
+	// The supervisor validates the archive, saves everything as it is now,
+	// restores, and leaves the game stopped. Starting again is the same work
+	// as Apply: the restored settings.json implies battle_conf, the restored
+	// mods a new overlay, so the server is brought up and the client relinked.
+	db_restore_full: async ({ path: p }) => {
+		const client = getClientPaths();
+		if (client.mode === 'join') throw new Error('Restoring belongs to your own server. Switch to hosting your own server first.');
+		const cycleAssets = assetServer.running;
+		if (cycleAssets) await assetsStop();
+		let out;
+		try {
+			out = (await runStack(['restore', '--full', p])).trim();
+		} catch (error) {
+			if (cycleAssets) await assetsStart().catch(() => {});
+			throw error;
+		}
+		try {
+			writeSettingsFiles(getSettings());
+			await runStack(['up']);
+			if (clientComplete(client)) await linkClient(client);
+			if (cycleAssets) await assetsStart();
+		} catch (error) {
+			// The restore itself happened; say so, with the pre-restore path,
+			// rather than letting a start failure read as a failed restore.
+			throw new Error(`${out}\n\nThe server did not start again afterwards: ${error.message || error}`);
+		}
+		return out.replace(/game services are stopped\. Start the server to play the restored world -- the app rebuilds the client's assets as it starts\. /,
+			'the server has been restarted with it. ');
+	},
 
 	// Re-link the client every start: a freshly materialised runtime has no GRF
 	// generated assets or a private archive manifest yet, and only the setup window writes those.
@@ -2422,6 +2818,14 @@ const handlers = {
 		if (getClientPaths().mode !== 'host') throw new Error('Accounts belong to the host. Switch to your own server to manage them.');
 		return require('./accounts').runAccounts(stackBin(), stackEnv(), request);
 	},
+	// Remembered logins for the autologin mod (remember-login.js): the one
+	// handler the game page may call, and only the host's own game page on
+	// its own world -- never a page served by somebody else's host.
+	remember_login: (request, event) => {
+		if (!callerIsLocalGame(event)) return { ok: false, code: 'unavailable', error: 'Remembered logins are only for your own world.' };
+		const era = getSettings().prerenewal ? 'prerenewal' : 'renewal';
+		return require('./remember-login').handleLocal(request, { remember: rememberLogin(), store: rememberStore(), era });
+	},
 	host_ram_mib: () => Math.floor(require('os').totalmem() / (1024 * 1024)),
 	// Whether idle guest memory comes back. vz (macOS) balloons; the krun
 	// backend behind Windows and Linux does not, and is not expected to, so on
@@ -2526,11 +2930,12 @@ const handlers = {
 		// The host's asset server when joining, our own when hosting. Hardcoding
 		// loopback here sent a joining player to a server that does not exist on
 		// their machine.
-		const base = c.mode === 'join' ? joinUrl(c.join_host) : 'http://127.0.0.1:3338';
+		const base = c.mode === 'join' ? joinUrl(c.join_host) : localGameBase();
 		// Before the page loads, not after: the client reads its cache as it
 		// boots, and clearing it out from under a running client would be a
 		// race for no gain.
 		if (c.mode !== 'join') await dropStaleClientCache();
+		localGameOrigin = c.mode === 'join' ? null : new URL(base).origin;
 		const win = openGame();
 		try {
 			await win.loadURL(c.mode === 'join' ? joinSession.url(base) : base + GAME_PATH);
@@ -2538,8 +2943,13 @@ const handlers = {
 			if (error.code !== 'ERR_ABORTED') showGameFailure(win, 'The game page could not load. Check the host connection, then retry.');
 			throw error;
 		}
+		gameLaunches++;
 		win.setTitle(gameTitle());
 	},
+	// Whether a game window is open, and how many times the client has loaded
+	// in it. Settings → Mods compares the count with the one it saw when
+	// Apply finished, to know when "reopen the game" has been done.
+	game_status: () => ({ open: !!(windows.game && !windows.game.isDestroyed()), launches: gameLaunches }),
 
 	// Dialogs — the return shape the pages branch on: a path string, an array
 	// when multiple, null when cancelled.
@@ -2628,14 +3038,45 @@ function appLog(line) {
 // loaded from three exact bundled files and own the controls. The game is
 // loaded over HTTP or HTTPS and gets only what is on this list.
 //
-// It is empty today because the game page needs nothing. Adding a name here is
-// a decision about what a page served by a stranger may do to this machine —
-// not a convenience.
-const GAME_PAGE_HANDLERS = new Set([]);
+// Adding a name here is a decision about what a page served by a stranger may
+// do to this machine — not a convenience.
+//
+// The one name on it, `remember_login`, checks for itself that the page is
+// this app's own game window on its own world (callerIsLocalGame) and answers
+// no to anything else, so a joined host's page gets nothing from it. Even on
+// our own page it can only remember the account that page is already logged
+// in to, and hand back a one-time login token for it.
+const GAME_PAGE_HANDLERS = new Set(['remember_login']);
+
+// The host's own game window, on the host's own world: the main frame of the
+// game window, at the asset server's origin, while not joined to anyone.
+function callerIsLocalGame(event) {
+	const game = windows.game;
+	if (!event || !game || game.isDestroyed() || event.sender !== game.webContents) return false;
+	if (!event.senderFrame || event.senderFrame !== event.sender.mainFrame) return false;
+	if (getClientPaths().mode !== 'host' || !localGameOrigin) return false;
+	try { return new URL(event.senderFrame.url).origin === localGameOrigin; } catch { return false; }
+}
+// The origin launch_game loaded our own world's game page from -- whatever
+// port the asset server is on -- or null while joined to someone else's.
+let localGameOrigin = null;
+
+// Remembered logins (remember-login.js). Each request is one `ragnarok-stack
+// accounts` call, given hashes only; none stops the game.
+let rememberLoginInstance = null;
+function rememberLogin() {
+	return rememberLoginInstance ||= require('./remember-login').createRememberLogin({
+		run: request => require('./accounts').runAccounts(stackBin(), stackEnv(),
+			{ ...request, era: getSettings().prerenewal ? 'prerenewal' : 'renewal' }),
+	});
+}
+function rememberStore() {
+	return require('./remember-login').createFileStore(path.join(stateDir(), 'remembered-login.json'));
+}
 // Includes settings writes before their supervisor call: an era marker must
 // not change halfway through an account operation. Read-only status stays live.
 const SERVER_OPERATIONS = new Set(['sharing_connect', 'sharing_start', 'sharing_forget', 'accounts', 'hosting_check', 'save_settings', 'set_mode', 'set_client_paths', 'start_stack',
-	'stack_up', 'stack_down', 'stack_repair', 'secure_services', 'db_backup', 'db_restore']);
+	'stack_up', 'stack_down', 'stack_repair', 'secure_services', 'db_backup', 'db_restore', 'db_backup_full', 'db_restore_full']);
 // The operations that must never be followed by an automatic resume. Sharing's
 // own verbs answer for themselves, and `stack_down` is a server the player has
 // just taken offline on purpose. Everything else in the set above leaves a
@@ -2702,7 +3143,7 @@ ipcMain.handle('invoke', async (event, name, args) => {
 	try {
 		if (SERVER_OPERATIONS.has(name)) {
 			const result = await queueServerOperation(async () => {
-                if (sharing && ((name === 'accounts' && args?.action !== 'list') || ['set_mode', 'set_client_paths', 'save_settings', 'stack_repair', 'secure_services', 'db_restore'].includes(name))) await sharing.stop();
+                if (sharing && ((name === 'accounts' && args?.action !== 'list') || ['set_mode', 'set_client_paths', 'save_settings', 'stack_repair', 'secure_services', 'db_restore', 'db_restore_full'].includes(name))) await sharing.stop();
                 return fn(args || {});
             });
 			// Every operation above either stops sharing on the way in or
@@ -2714,7 +3155,9 @@ ipcMain.handle('invoke', async (event, name, args) => {
 			if (!NEVER_RESUMES_SHARING.has(name)) resumeSharing(`after ${name}`);
 			return result;
 		}
-		return await fn(args || {});
+		// The event goes along for the one game-page handler that has to know
+		// which page asked (remember_login); every other handler ignores it.
+		return await fn(args || {}, event);
 	} catch (e) {
 		const msg = (e && e.message) || String(e);
 		appLog(`${name} failed: ${msg}`);
@@ -2895,6 +3338,17 @@ app.whenReady().then(() => {
 	// Before anything reads a path: an existing install still has its data
 	// under the old folder name.
 	migrateDataRoot();
+	// A port override the supervisor refuses stops the launch here, rather
+	// than letting this copy fall back onto the ports of the app it was moved
+	// away from. Without an override this reads nothing and cannot fail.
+	try {
+		const ports = gamePorts();
+		if (require('./ports').overridden()) appLog(`ports overridden: ${JSON.stringify(ports)}`);
+	} catch (e) {
+		dialog.showErrorBox('Ragnarok Offline', e.message);
+		app.exit(1);
+		return;
+	}
 	// An AppImage installs nothing, so without this there is no icon to click
 	// the second time -- see linux-desktop-entry.js. Idempotent, and it reports
 	// rather than throws, because a launcher entry must never stop a launch.
