@@ -31,6 +31,7 @@ mod hosting;
 mod private_fs;
 mod service_credentials;
 mod sign_in;
+mod remember;
 mod operation_lock;
 mod packetver;
 

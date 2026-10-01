@@ -2,7 +2,7 @@ import { createMovement } from './MovementCore.mjs';
 
 import { SCREENS } from './PregameViews.mjs';
 
-const EVENTS = new Set(['map:enter', 'map:leave', 'connection', 'ui:append', 'ui:remove', 'movement:clear', 'preferences:change', 'item:use']);
+const EVENTS = new Set(['map:enter', 'map:leave', 'connection', 'ui:append', 'ui:remove', 'movement:clear', 'preferences:change', 'item:use', 'exit']);
 const copy = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 function freeze(value) {
     if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); }
@@ -192,6 +192,25 @@ export function createRuntime({ storage, report = (...args) => console.error(...
                     return Promise.resolve(bridge.screenImage?.(path) ?? null);
                 },
             }),
+            // A remembered login (RememberLogin.mjs): the app or the friend
+            // gateway keeps a credential the page never sees, and trades it
+            // for a one-time login token. For the autologin mod; any plugin
+            // may use it, and none can read the credential or a password.
+            account: Object.freeze({
+                status: () => Promise.resolve(bridge.account?.status() ?? { available: false, remembered: false })
+                    .then(value => freeze(copy(value))),
+                remember() {
+                    if (disposed) return Promise.reject(new Error(`Plugin ${name} is disposed`));
+                    if (!bridge.account) return Promise.reject(Object.assign(new Error('This client cannot remember logins'), { code: 'unavailable' }));
+                    return bridge.account.remember().then(value => freeze(copy(value)));
+                },
+                resume() {
+                    if (disposed) return Promise.reject(new Error(`Plugin ${name} is disposed`));
+                    if (!bridge.account) return Promise.reject(Object.assign(new Error('This client cannot remember logins'), { code: 'unavailable' }));
+                    return bridge.account.resume().then(value => freeze(copy(value)));
+                },
+                forget: () => Promise.resolve(bridge.account?.forget() ?? false),
+            }),
             server: Object.freeze({
                 command(text) {
                     if (disposed) throw new Error(`Plugin ${name} is disposed`);
@@ -221,6 +240,14 @@ export function createRuntime({ storage, report = (...args) => console.error(...
         // sends, so it carries the item's type id (ITID), resolved from the live
         // inventory before the server consumes the stack.
         useItem(itemId) { if (Number.isInteger(itemId)) emit('item:use', Object.freeze({ itemId })); },
+        // The player chose to leave: { to: 'charSelect' | 'login', from:
+        // 'escape' | 'charSelect' } (the fork's UI/ExitHooks.js). Not sent
+        // for a disconnect.
+        exit(event) {
+            const to = event?.to, from = event?.from;
+            if (!['charSelect', 'login'].includes(to)) return;
+            emit('exit', Object.freeze({ to, from: String(from || '') }));
+        },
         connection(status, kind) {
             connection = Object.freeze({ status, kind });
             if (status !== 'connected') {
