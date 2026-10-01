@@ -615,7 +615,7 @@ if the unit has died by then:
 | `c:drain()` | apply the attacker's HP/SP drain item bonuses to this hit's damage — what a weapon attack already does. Direction is fixed (attacker drains defender) |
 | `c:heal(hp, sp, who)` | restore a unit; `sp` defaults to `0`; `who` is `"caster"` (default, the attacker) or `"target"` (the defender). An `on_hit_taken` hook that restores its wearer passes `"target"` |
 | `c:status("SC_STUN", rate, ms, val1, who)` | start a status; `who` is `"target"` (default) or `"caster"`; `rate` is out of 10000; `val1` defaults to `1` |
-| `c:cast("MG_FIREBOLT", level, who)` | cast a skill the way `bAutoSpell` does, at `"target"` (default) or `"caster"`. No Lua hook runs during that cast, so a hook that casts a damaging skill cannot set itself off again |
+| `c:cast("MG_FIREBOLT", level, who)` | cast a skill the way `bAutoSpell` does, at `"target"` (default) or `"caster"`. No Lua hook runs during that cast, so a hook that casts a bolt cannot set itself off again. A ground skill's later ticks (Storm Gust) do run hooks: an `on_attack` that casts one should check `c.skill_id` |
 | `c:polymorph()` | Hylozoist Card's effect: the target becomes a random monster. Bosses and status-immune monsters are left alone |
 
 Three functions work anywhere:
