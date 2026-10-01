@@ -25,15 +25,15 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "4351f70e160b92f8301739f531fcff645590ebcfd4de5d4fc7ed435e1dcb4fe6"
+          "sha256": "41bf812d670f32ad1641f1e1b171a20ed33fb5bd94e2f9604f42e2667a1fc008"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "aa472094a10095546b0f64ebf5c2e79583a8ca30ebdabaea0235600fb469da2a"
+          "sha256": "65998dffa84ae55470b28231d7f1d990ffbc50b72196e263ecb4fc712feb133e"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "bce91f9df2627ffbfd084f7571b0631ed817671ad7320ca944ad51bef0c65a99"
+          "sha256": "20b3d15e771766dfe8ad32d2277c4eb358f8456997760d7f3f34783868a14d9f"
         },
         {
           "path": "images/exp-card.png",
@@ -49,7 +49,7 @@
         },
         {
           "path": "npc/exp_card.txt",
-          "sha256": "ba26c43579fafd0bc109d65ca935c21b79a6cc6417e4347b90e4c3add2d6ccdf"
+          "sha256": "e06490d46d57710a922eb67fffdb3f584e98725fb8bebb1a4264d8b0536bd774"
         }
       ]
     },

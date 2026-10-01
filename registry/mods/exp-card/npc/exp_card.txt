@@ -13,8 +13,8 @@
 // against whatever mobs the player is fighting without any per-mob tuning.
 //
 // Item id layout, matching db/item_db.yml:
-//   30051..30060  Base_Exp_Card_1  .. Base_Exp_Card_10
-//   30061..30070  Job_Exp_Card_1   .. Job_Exp_Card_10
+//   50051..50060  Base_Exp_Card_1  .. Base_Exp_Card_10
+//   50061..50070  Job_Exp_Card_1   .. Job_Exp_Card_10
 //
 // The drop uses makeitemowned, a native rAthena script command on our
 // pin: first_charid defaults to the attached player's char_id, so
@@ -52,7 +52,7 @@ OnNPCKillEvent:
 	// Pick the card FAMILY -- 50/50 between base and job. rand(2) returns
 	// 0 or 1, so the ternary picks the right id base for the family.
 	.@is_job = rand(2);
-	.@item = (.@is_job ? 30060 : 30050) + .@card_lv;
+	.@item = (.@is_job ? 50060 : 50050) + .@card_lv;
 
 	// Attached RID is the drop recipient. getmapxy with no explicit type
 	// defaults to BL_PC and reads the attached player's position, which is

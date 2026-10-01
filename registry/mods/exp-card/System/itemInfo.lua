@@ -1,4 +1,4 @@
--- What the client calls items 30051..30070 and the art it draws. Added to
+-- What the client calls items 50051..50070 and the art it draws. Added to
 -- the client's customItemInfo ahead of the base table (see docs/MODDING.md,
 -- System/), so a table holding these twenty entries is all it needs -- the
 -- client registers every entry in `tbl` itself. Saved as UTF-8.
@@ -69,7 +69,7 @@ for level = 1, 10 do
 		"^ffffff_^000000",
 		"Weight: ^777777 1 ^000000"
 	}
-	tbl[30050 + level] = {
+	tbl[50050 + level] = {
 		unidentifiedDisplayName = baseName,
 		unidentifiedResourceName = RESOURCE,
 		unidentifiedDescriptionName = baseDesc,
@@ -79,7 +79,7 @@ for level = 1, 10 do
 		slotCount = 0,
 		ClassNum = 0
 	}
-	tbl[30060 + level] = {
+	tbl[50060 + level] = {
 		unidentifiedDisplayName = jobName,
 		unidentifiedResourceName = RESOURCE,
 		unidentifiedDescriptionName = jobDesc,
