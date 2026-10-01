@@ -34,7 +34,7 @@ The interesting part is the seam: *clicking a monster* is a client thing, while
 
 | Step | Layer | What happens |
 |---|---|---|
-| You use a Bounty Marker | `db/item_db.yml` | A plain `Usable` item (id 30050). Using it is consumed like any potion. |
+| You use a Bounty Marker | `db/item_db.yml` | A plain `Usable` item (id 50071). Using it is consumed like any potion. |
 | The cursor becomes the target picker | `client/index.js` | The plugin hears the app's `item:use` event, and for our item calls `api.targeting.pick()` — the same native target cursor taming items raise. |
 | You click a monster | `client/index.js` | `pick()` resolves with the monster's **class id**; the plugin sends `@bounty <id>`. |
 | A dialog lists the drops; you choose | `npc/bounty.txt` | `@bounty` (bound with `bindatcmd`) reads the drops with `getmobdrops`, works out each one's kill goal from its rate, and shows them with `select()`; your choice is stored in permanent character variables. |

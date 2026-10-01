@@ -11,7 +11,7 @@
 // On an app too old to have the picker it bows out, and the server side (the
 // Bounty Broker and the @bounty command) still works on its own.
 
-const BOUNTY_MARKER_ID = 30050;
+const BOUNTY_MARKER_ID = 50071;
 
 export default function init(parameters, api) {
 	if (!api || typeof api.on !== 'function' ||

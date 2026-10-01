@@ -13,7 +13,7 @@ Header:
   Version: 3
 
 Body:
-  - Id: 30050
+  - Id: 50071
     AegisName: Bounty_Marker
     Name: Bounty Marker
     Type: Usable

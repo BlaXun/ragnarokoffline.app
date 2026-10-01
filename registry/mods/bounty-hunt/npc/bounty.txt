@@ -28,7 +28,7 @@
 // A place to buy Bounty Markers, so the mod is playable without GM commands.
 // -1 as the price means "use the item_db Buy price" (2000z). You can also just
 // @item Bounty_Marker.
-prontera,152,187,4	shop	Bounty Broker#bh	4_F_KAFRA1,30050:-1
+prontera,152,187,4	shop	Bounty Broker#bh	4_F_KAFRA1,50071:-1
 
 // A floating, invisible NPC (sprite -1) that owns the command and the counter.
 -	script	bounty_ctrl	-1,{
