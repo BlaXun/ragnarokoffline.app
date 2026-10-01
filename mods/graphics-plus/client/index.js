@@ -193,7 +193,7 @@ export default function init(parameters, api) {
 
     // Drawn in the map renderer itself, each by a map hook of its own
     // (grass.js, water.js, shadows.js): only the ones switched on.
-    if (percent('shadows') > 0) api.graphics.hook(shadowsHook(percent('shadows')));
+    if (percent('shadows') > 0 || percent('occlusion') > 0) api.graphics.hook(shadowsHook(percent('shadows'), percent('occlusion')));
     if (percent('water') > 0) api.graphics.hook(waterHook({
         reflection: percent('water'),
         // The map's own waves on top: on some maps the plain mirror is best

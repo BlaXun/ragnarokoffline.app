@@ -84,7 +84,16 @@
       "min": 0,
       "max": 100,
       "label": "Shadows",
-      "description": "Buildings and trees cast shadows from the map's sun onto the ground, on top of the soft ones the map already has. 0 is off."
+      "description": "Shadows from buildings and trees in the map's sun, on the ground and on other buildings, where the map has none baked in. 0 is off."
+    },
+    {
+      "key": "occlusion",
+      "type": "number",
+      "default": 60,
+      "min": 0,
+      "max": 100,
+      "label": "Contact shadows",
+      "description": "Soft darkening where walls meet the ground, under eaves and around crates and trees (ambient occlusion). 0 is off."
     },
     {
       "key": "fog",
