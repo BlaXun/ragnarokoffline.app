@@ -75,6 +75,44 @@ Body:
 /// leaves; the zero date is what a permissive `sql_mode` can turn it into.
 const MISSING_BIRTHDATE: &str = "(birthdate IS NULL OR birthdate='0000-00-00')";
 
+/// The login server stores passwords as salted one-way hashes (the rAthena
+/// fork's src/login/password.hpp) and records, in `pass_flags`, what the plain
+/// text was like before it went: bit 1 weak, bit 2 the shipped default. A
+/// password this app has just written is plain text until the login server
+/// hashes it, at the next login or start-up -- so every check reads the flags
+/// for a hashed row and the plain text otherwise.
+const HASHED: &str = "user_pass LIKE '$pbkdf2-sha256$%'";
+
+/// Is this row's password the shipped default ("ragnarok")?
+pub(crate) fn default_password_sql() -> String {
+    format!("IF({HASHED}, (pass_flags & 2) <> 0, BINARY user_pass=0x7261676e61726f6b)")
+}
+
+/// Is this row's password weak? The same rule the login server records: not
+/// 8-23 printable characters, blank, or the account's own name.
+pub(crate) fn weak_password_sql() -> String {
+    format!("IF({HASHED}, (pass_flags & 1) <> 0, OCTET_LENGTH(user_pass) NOT BETWEEN 8 AND 23 OR BINARY user_pass REGEXP '[^ -~]' OR TRIM(user_pass)='' OR LOWER(user_pass)=LOWER(userid))")
+}
+
+/// Room for a hash, and the flags column, on a database made before hashing.
+/// The login server makes the same change when it starts; doing it here as
+/// well means the checks above work before it ever has. Idempotent.
+/// Whether this database still has plain-text passwords: no `pass_flags`
+/// column yet, so the login server has never hashed them. The first start
+/// of a 1.4.0 on a world made by an earlier release.
+pub fn passwords_unhashed(dk: &Docker) -> Result<bool, String> {
+    let out = dk
+        .private_sql("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'login' AND COLUMN_NAME = 'pass_flags';")
+        .map_err(|e| format!("checking the accounts table: {e}"))?;
+    Ok(out.lines().filter_map(|line| line.trim().parse::<u32>().ok()).last() == Some(0))
+}
+
+pub fn ensure_password_columns(dk: &Docker) -> Result<(), String> {
+    dk.private_sql("ALTER TABLE login MODIFY user_pass varchar(128) NOT NULL DEFAULT ''; ALTER TABLE login ADD COLUMN IF NOT EXISTS pass_flags tinyint(3) unsigned NOT NULL DEFAULT 0 AFTER user_pass;")
+        .map(|_| ())
+        .map_err(|e| format!("preparing the accounts table for hashed passwords: {e}"))
+}
+
 fn field<'a>(request: &'a Value, key: &str) -> Result<&'a str, String> {
     request
         .str(key)
@@ -208,7 +246,7 @@ pub(crate) fn verify_era(cfg: &Config, dk: &Docker, era: &str) -> Result<(), Str
 }
 
 fn list(dk: &Docker, era: &str) -> Result<String, String> {
-    let output = dk.private_sql(&format!("SELECT account_id,HEX(userid),group_id,state,(BINARY user_pass=0x7261676e61726f6b),{MISSING_BIRTHDATE} FROM login WHERE sex<>'S' ORDER BY account_id LIMIT 251;"))?;
+    let output = dk.private_sql(&format!("SELECT account_id,HEX(userid),group_id,state,{},{MISSING_BIRTHDATE} FROM login WHERE sex<>'S' ORDER BY account_id LIMIT 251;", default_password_sql()))?;
     let mut rows = Vec::new();
     for line in output.lines().filter(|l| !l.is_empty()) {
         let values: Vec<_> = line.split('\t').collect();

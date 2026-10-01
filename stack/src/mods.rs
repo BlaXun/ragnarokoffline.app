@@ -1347,6 +1347,8 @@ pub fn assemble(cfg: &Config) -> Result<Assembled, String> {
                 copy_tree_owned(&from, &dst, "", Some(&m.name), &mut owners, &mut clashes)?;
             }
         }
+        let named: Vec<(&str, &Path)> = live.iter().map(|m| (m.name.as_str(), m.dir.as_path())).collect();
+        clashes.extend(id_collisions(&named));
         write_clashes(&dst, &clashes);
         if !maps.is_empty() {
             write_map_layer(&dst, &maps)?;
@@ -1900,6 +1902,76 @@ const CLASHES_FILE: &str = ".clashes.tsv";
 ///
 /// Known while the tree is being built, said after the server starts, so both
 /// kinds of trouble with a mod's tables reach Settings by the same road.
+/// The id namespaces two mods can collide in: every item table is one
+/// namespace (rAthena reads item_db.yml and the item_db_*.yml files into the
+/// same table), and monsters are another.
+fn id_namespace(file: &str) -> Option<&'static str> {
+    let lower = file.to_lowercase();
+    if lower == "mob_db.yml" {
+        Some("monster")
+    } else if lower.starts_with("item_db") && lower.ends_with(".yml") {
+        Some("item")
+    } else {
+        None
+    }
+}
+
+/// Ids in a table's Body: the entries at the top level, `  - Id: <n>`.
+/// Nested lists (Drops, Requires) do not start with `Id:` at that indent.
+fn table_ids(body: &str) -> Vec<u64> {
+    body.lines()
+        .filter_map(|line| line.strip_prefix("  - Id:"))
+        .filter_map(|rest| rest.trim().parse().ok())
+        .collect()
+}
+
+/// Two enabled mods that define the same monster or item id.
+///
+/// Their tables are combined (see copy_tree_owned), and rAthena applies the
+/// entries in mod order, so the later mod's fields win over the earlier's for
+/// that id -- usually two authors who both picked 25001, not a decision anyone
+/// made. Reported under the mod whose definition loses, the same way as a
+/// table that could not be combined. One mod changing a *stock* id is normal
+/// and not reported; two mods changing the same one are, since their fields
+/// mix.
+fn id_collisions(mods: &[(&str, &Path)]) -> Vec<(String, String)> {
+    let mut owner: BTreeMap<(&'static str, u64), String> = BTreeMap::new();
+    let mut found: BTreeMap<(String, String, &'static str), Vec<u64>> = BTreeMap::new();
+    for (name, dir) in mods {
+        let Ok(rd) = fs::read_dir(dir.join("db")) else { continue };
+        let mut files: Vec<_> = rd.flatten().map(|e| e.path()).collect();
+        files.sort();
+        let mut mine: BTreeMap<(&'static str, u64), ()> = BTreeMap::new();
+        for file in files {
+            let Some(ns) = file.file_name().and_then(|f| f.to_str()).and_then(id_namespace) else { continue };
+            let Ok(body) = fs::read_to_string(&file) else { continue };
+            for id in table_ids(&body) {
+                mine.insert((ns, id), ());
+            }
+        }
+        for key in mine.keys() {
+            if let Some(before) = owner.insert(*key, name.to_string()) {
+                if before != *name {
+                    found.entry((before, name.to_string(), key.0)).or_default().push(key.1);
+                }
+            }
+        }
+    }
+    found
+        .into_iter()
+        .map(|((earlier, later, ns), ids)| {
+            let shown: Vec<String> = ids.iter().take(5).map(u64::to_string).collect();
+            let more = if ids.len() > 5 { format!(" and {} more", ids.len() - 5) } else { String::new() };
+            let (noun, plural) = if ns == "item" { ("item", "items") } else { ("monster", "monsters") };
+            let what = if ids.len() == 1 { format!("{noun} {}", shown[0]) } else { format!("{plural} {}{more}", shown.join(", ")) };
+            (
+                earlier.clone(),
+                format!("{later} also defines {what}, so {later}'s version is the one in effect. If they are different {plural}, one of the two mods needs other ids."),
+            )
+        })
+        .collect()
+}
+
 fn write_clashes(dst: &Path, clashes: &[(String, String)]) {
     let mut body = String::new();
     for (owner, message) in clashes {
@@ -2758,6 +2830,45 @@ mod tests {
         // What someone typed cannot end the string: quote, newline, backslash.
         assert!(settings.contains("    [\"label\"] = \"say \\\"hi\\\"\\010\\\\\",\n"), "{settings}");
         assert!(!settings.contains("a-mod"), "a mod with no settings has no entry");
+    }
+
+    #[test]
+    fn two_mods_defining_the_same_id_are_reported_under_the_one_that_loses() {
+        let root = tmp("id-collisions");
+        let a = root.join("a");
+        let b = root.join("b");
+        let c = root.join("c");
+        fs::create_dir_all(a.join("db")).unwrap();
+        fs::create_dir_all(b.join("db")).unwrap();
+        fs::create_dir_all(c.join("db")).unwrap();
+        let mob = |ids: &[u64]| {
+            let mut s = String::from("Header:\n  Type: MOB_DB\n  Version: 5\n\nBody:\n");
+            for id in ids {
+                s.push_str(&format!("  - Id: {id}\n    AegisName: M{id}\n    Drops:\n      - Item: Jellopy\n        Rate: 10\n"));
+            }
+            s
+        };
+        fs::write(a.join("db/mob_db.yml"), mob(&[25001, 25002, 1002])).unwrap();
+        fs::write(b.join("db/mob_db.yml"), mob(&[25001, 1002])).unwrap();
+        // Items are one namespace across item_db.yml and item_db_*.yml.
+        fs::write(a.join("db/item_db.yml"), "Body:\n  - Id: 50001\n").unwrap();
+        fs::write(c.join("db/item_db_etc.yml"), "Body:\n  - Id: 50001\n  - Id: 50002\n").unwrap();
+
+        let found = id_collisions(&[("a", a.as_path()), ("b", b.as_path()), ("c", c.as_path())]);
+        assert_eq!(
+            found,
+            vec![
+                (
+                    "a".to_string(),
+                    "b also defines monsters 1002, 25001, so b's version is the one in effect. If they are different monsters, one of the two mods needs other ids.".to_string()
+                ),
+                (
+                    "a".to_string(),
+                    "c also defines item 50001, so c's version is the one in effect. If they are different items, one of the two mods needs other ids.".to_string()
+                ),
+            ]
+        );
+        assert!(id_collisions(&[("a", a.as_path())]).is_empty());
     }
 
     fn setting(key: &str, value: SettingValue, min: f64, max: f64) -> Setting {
