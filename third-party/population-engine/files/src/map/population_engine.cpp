@@ -566,11 +566,12 @@ static void population_engine_load_shell_homunculus(map_session_data *sd, int *e
 /// `hom_create_request` does and hand it to `hom_alloc()`, which is the map-side alloc/attach
 /// and touches nothing off-server.
 ///
-/// `sd->status.hom_id` is deliberately left at 0. Every char-server call in the stock code is
-/// keyed on `hom_id`, so 0 turns them all into no-ops against real data: the row delete in
-/// `unit_free`'s BL_HOM case, and the load at login in `pc.cpp`. It follows that nothing stock
-/// can ever load or save this pet, so its own state has to be persisted separately - the
-/// companion's level and exp are the engine's to keep.
+/// `sd->status.hom_id` is deliberately left at 0, which keeps the load at login in `pc.cpp` from
+/// firing and makes the row delete in `unit_free`'s BL_HOM case match nothing. It does NOT make
+/// a save harmless: the char server reads hom_id 0 as a new homunculus and INSERTs a row, so
+/// patch 0012 drops that save request for population accounts. Nothing stock can
+/// load or save this pet, so its own state is persisted separately - the companion's level and
+/// exp are the engine's to keep.
 ///
 /// Idempotent: a shell that already has one is left alone, so this is safe on every recall.
 static void population_engine_sync_shell_homunculus(map_session_data *sd)

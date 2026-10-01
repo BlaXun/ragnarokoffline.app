@@ -151,3 +151,16 @@ test('@companion dump reports the pet, so it is read rather than judged', () => 
 	assert.ok(dl > 0, 'the dump function must exist');
 	assert.ok(src.indexOf('@SHELLHOM') > dl, 'the pet line must live inside the dump function');
 });
+
+test('a shell\'s pet is never saved through the char server', () => {
+	// hom_id 0 does not make hom_save a no-op: the char server's mapif_homunculus_save() treats
+	// hom_id 0 as a new homunculus and INSERTs a row on every save (vaporize, call, unit_free).
+	// The request has to be dropped on the map side, keyed on the shell's account range.
+	const patches = path.join(ROOT, 'third-party', 'population-engine', 'patches');
+	const all = fs.readdirSync(patches).filter(f => f.endsWith('.patch')).sort()
+		.map(f => fs.readFileSync(path.join(patches, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
+	const hunk = all.match(/int32 intif_homunculus_requestsave\( uint32 account_id, const s_homunculus\* sh \)\n \{\n([\s\S]*?)\n \s*if \(CheckForCharServer\(\)\)/);
+	assert.ok(hunk, 'a patch must guard intif_homunculus_requestsave before it reaches the char server');
+	assert.match(hunk[1], /^\+\s*if \(IS_POPULATION_ENGINE_ACCOUNT_ID\(account_id\)\)\n\+\s*return 0;/m,
+		'the guard must drop the request for population accounts');
+});

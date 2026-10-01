@@ -56,10 +56,12 @@ made.
 scaled `*10`, `intimacy = 2100`, `hunger = 32`, `char_id = sd->status.char_id`) exactly as
 `hom_create_request` does — then call `hom_alloc` instead of the intif call.
 
-**`sd->status.hom_id` stays 0.** This is load-bearing: every char-server call is keyed on
-`hom_id`, so with 0 they become no-ops against real data — including `unit.cpp:4148`, which
-would otherwise delete a homunculus row when the block is freed. It also keeps the login load
-at `pc.cpp:2491` from firing for a shell.
+**`sd->status.hom_id` stays 0.** That keeps the login load at `pc.cpp:2491` from firing for a
+shell, and makes the row delete in `unit.cpp:4148` match nothing. It does **not** make a save a
+no-op: the char server's `mapif_homunculus_save()` reads `hom_id == 0` as a new homunculus and
+INSERTs a `homunculus` row (and its `skill_homunculus` rows) on every `hom_save()`. Patch 0012
+therefore drops `intif_homunculus_requestsave()` for population accounts, as `chrif_save` and
+`intif_saveregistry` already do.
 
 **Gate.** `pc_checkskill(sd, AM_CALLHOMUN) > 0` — the alchemist line's own skill
 (`db/re/skill_db.yml:6824`), the same shape as `HT_FALCON` / `RA_WUGMASTERY` in the vehicle
@@ -168,7 +170,7 @@ growth is readable.
 
 | Trap | Handling |
 | --- | --- |
-| `hom_vaporize()` calls `hom_save()` → char-server save | Harmless with `hom_id = 0`; our own schema is the persistence, never this |
+| `hom_vaporize()`, `hom_call()` and `unit_free()` call `hom_save()` → char-server save | **Not** harmless: with `hom_id = 0` the char server INSERTs a new row each time. Patch 0012 drops the request for population accounts; our own schema is the persistence |
 | `unit.cpp:4148` deletes the row on free | Safe only while `hom_id == 0` — assert it |
 | `clif_send_homdata` guards `master == nullptr` but **not** `fd <= 0` | A shell has no client; verify what `clif_send` does with the shell's fd before relying on stock notify paths |
 | Hunger/intimacy timers call save paths | Short-circuit for shells |
