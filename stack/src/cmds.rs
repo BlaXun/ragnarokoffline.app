@@ -1037,25 +1037,103 @@ fn image_bundle_fingerprint(mut reader: impl Read) -> Result<String, String> {
     Ok(format!("{hash:016x}"))
 }
 
+/// The image ids a bundle carries, per tag: what `docker image inspect`
+/// must say each tag points at once the bundle is really loaded.
+///
+/// Two ids are accepted per tag because Docker reports either, depending on
+/// its image store: the classic store's id is the digest of the image config
+/// (manifest.json's `Config`), the containerd store's is the manifest's
+/// digest (index.json). Both are read from the bundle itself, so nothing
+/// here trusts the engine to have done what it was asked.
+fn bundle_image_ids(reader: impl Read) -> Result<Vec<(String, String)>, String> {
+    let bad = || "Cannot read the server image bundle".to_string();
+    let gz = crate::archive::GzipReader::new(std::io::BufReader::with_capacity(256 * 1024, reader)).map_err(|_| bad())?;
+    let mut tar = crate::archive::TarReader::new(gz);
+    let mut ids = Vec::new();
+    let tag = |name: &str| name.strip_prefix("docker.io/").unwrap_or(name).to_string();
+    while let Some(entry) = tar.next_entry().map_err(|_| bad())? {
+        let path = entry.path.trim_start_matches("./");
+        if (path != "manifest.json" && path != "index.json") || entry.size > 1024 * 1024 { continue; }
+        let mut text = String::new();
+        (&mut tar).take(entry.size).read_to_string(&mut text).map_err(|_| bad())?;
+        let parsed = crate::json::parse(&text).map_err(|_| bad())?;
+        let list = match (path, &parsed) {
+            ("manifest.json", crate::json::Value::Array(images)) => images.clone(),
+            ("index.json", _) => match parsed.get("manifests") { Some(crate::json::Value::Array(m)) => m.clone(), _ => Vec::new() },
+            _ => Vec::new(),
+        };
+        for image in &list {
+            if path == "manifest.json" {
+                let Some(config) = image.str("Config") else { continue };
+                let digest = config.rsplit('/').next().unwrap_or(config);
+                let id = if digest.starts_with("sha256:") { digest.to_string() } else { format!("sha256:{digest}") };
+                if let Some(crate::json::Value::Array(tags)) = image.get("RepoTags") {
+                    for t in tags { if let crate::json::Value::String(t) = t { ids.push((tag(t), id.clone())); } }
+                }
+            } else if let (Some(digest), Some(name)) = (image.str("digest"), image.get("annotations").and_then(|a| a.str("io.containerd.image.name"))) {
+                ids.push((tag(name), digest.to_string()));
+            }
+        }
+    }
+    Ok(ids)
+}
+
+/// What a tag points at now, or None when it is not there.
+fn image_id(dk: &Docker, image: &str) -> Option<String> {
+    dk.output(["image", "inspect", "-f", "{{.Id}}", image]).ok()
+        .map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+}
+
+/// Whether every tag the server needs points at the image the bundle carries.
+fn images_match(expected: &[(String, String)], actual: &[(&str, Option<String>)]) -> bool {
+    actual.iter().all(|(tag, id)| match id {
+        Some(id) => expected.iter().any(|(t, e)| t == tag && e == id),
+        None => false,
+    })
+}
+
+/// The marker recording a verified load: the bundle's bytes and the ids the
+/// tags were seen to point at afterwards. Compared against the ids now, so a
+/// tag that moved -- or a load that never replaced it -- is loaded again.
+fn image_marker(fingerprint: &str, actual: &[(&str, Option<String>)]) -> String {
+    let ids: Vec<String> = actual.iter().map(|(tag, id)| format!("{tag}={}", id.as_deref().unwrap_or("-"))).collect();
+    format!("v2:{fingerprint}:{}\n", ids.join(":"))
+}
+
 fn ensure_images(cfg: &Config, dk: &Docker) -> Result<(), String> {
-    let present = dk.image_exists(&cfg.image) && dk.image_exists(&cfg.db_image);
+    let tags = [cfg.image.as_str(), cfg.db_image.as_str()];
+    let current = |dk: &Docker| tags.iter().map(|t| (*t, image_id(dk, t))).collect::<Vec<_>>();
+    let before = current(dk);
+    let present = before.iter().all(|(_, id)| id.is_some());
     let bundle = cfg.root.join("dist/images.tar.gz");
     if !bundle.exists() {
         if present { return Ok(()); }
         return Err(format!("no server images, and no bundle at {}", bundle.display()));
     }
-    let fingerprint = image_bundle_fingerprint(fs::File::open(&bundle).map_err(|_| "Cannot open the server image bundle")?)?;
-    let identity = format!("v1:{fingerprint}:{}:{}\n", cfg.image, cfg.db_image);
+    let open = || fs::File::open(&bundle).map_err(|_| "Cannot open the server image bundle".to_string());
+    let fingerprint = image_bundle_fingerprint(open()?)?;
     let marker = cfg.state.join("image-bundle.id");
-    if present && fs::read_to_string(&marker).ok().as_deref() == Some(identity.as_str()) { return Ok(()); }
-    phase(cfg, "Loading the bundled server images…");
-    // Always use Docker's owned-engine transport, including Windows' loopback
-    // proxy. Existing fixed image tags are replaced when bundled bytes change.
-    dk.load_bundle(&bundle, || dk.image_exists(&cfg.image) && dk.image_exists(&cfg.db_image))?;
-    if !dk.image_exists(&cfg.image) || !dk.image_exists(&cfg.db_image) {
-        return Err(format!("image load did not produce {} and {}", cfg.image, cfg.db_image));
+    if present && fs::read_to_string(&marker).ok().as_deref() == Some(image_marker(&fingerprint, &before).as_str()) { return Ok(()); }
+    let expected = bundle_image_ids(open()?)?;
+    if let Some(tag) = tags.iter().find(|t| !expected.iter().any(|(e, _)| e == *t)) {
+        return Err(format!("the server image bundle does not contain {tag}"));
     }
-    fs::write(marker, identity).map_err(|_| "Cannot record the loaded server image bundle".to_string())
+    // Skip the load when the tags already point at this bundle (a marker from an older release, say).
+    if !images_match(&expected, &before) {
+        phase(cfg, "Loading the bundled server images…");
+        // "Done" is the bundle's own images being in place -- not merely some
+        // image under each tag. On an upgrade the previous release's images
+        // already carry both tags, and treating that as done killed the
+        // loader five seconds in, leaving every upgraded install on the image
+        // it first installed while recording the new bundle as loaded.
+        dk.load_bundle(&bundle, || images_match(&expected, &current(dk)))?;
+    }
+    let after = current(dk);
+    if !images_match(&expected, &after) {
+        let stale: Vec<&str> = after.iter().filter(|(t, id)| !expected.iter().any(|(e, x)| e == t && Some(x) == id.as_ref())).map(|(t, _)| *t).collect();
+        return Err(format!("loading the bundled server images did not replace {}; start again to retry", stale.join(" and ")));
+    }
+    fs::write(marker, image_marker(&fingerprint, &after)).map_err(|_| "Cannot record the loaded server image bundle".to_string())
 }
 
 /// The Kafra teleport prices are hardcoded in the NPC script with no config
@@ -2477,6 +2555,35 @@ mod tests {
         let second = super::image_bundle_fingerprint(&b"same-size-new"[..]).unwrap();
         assert_ne!(first, second);
         assert_eq!(first, super::image_bundle_fingerprint(&b"same-size-old"[..]).unwrap());
+    }
+
+    /// A bundle laid out as `docker save` writes one: blobs, then the two
+    /// indexes. Both kinds of id are read, under the tag Docker reports.
+    #[test]
+    fn bundle_image_ids_come_from_both_indexes() {
+        let manifest = br#"[{"Config":"blobs/sha256/aaa","RepoTags":["ragnarokmac/mariadb:11.4"],"Layers":[]},{"Config":"blobs/sha256/bbb","RepoTags":["ragnarokmac/rathena:20221005"]}]"#;
+        let index = br#"{"schemaVersion":2,"manifests":[{"digest":"sha256:ccc","annotations":{"io.containerd.image.name":"docker.io/ragnarokmac/mariadb:11.4"}}]}"#;
+        let mut tar = crate::archive::TarWriter::new(crate::archive::GzipWriter::new(Vec::new()).unwrap());
+        tar.file("blobs/sha256/aaa", 3, 0, &b"xyz"[..]).unwrap();
+        tar.file("manifest.json", manifest.len() as u64, 0, &manifest[..]).unwrap();
+        tar.file("index.json", index.len() as u64, 0, &index[..]).unwrap();
+        let bytes = tar.finish().unwrap().finish().unwrap();
+        let ids = super::bundle_image_ids(&bytes[..]).unwrap();
+        let has = |t: &str, id: &str| ids.iter().any(|(a, b)| a == t && b == id);
+        assert!(has("ragnarokmac/mariadb:11.4", "sha256:aaa"));
+        assert!(has("ragnarokmac/mariadb:11.4", "sha256:ccc"));
+        assert!(has("ragnarokmac/rathena:20221005", "sha256:bbb"));
+
+        // The bug: the old images still answer to both tags. That is not done.
+        let old = [("ragnarokmac/mariadb:11.4", Some("sha256:old".to_string())), ("ragnarokmac/rathena:20221005", Some("sha256:bbb".to_string()))];
+        assert!(!super::images_match(&ids, &old));
+        let new = [("ragnarokmac/mariadb:11.4", Some("sha256:ccc".to_string())), ("ragnarokmac/rathena:20221005", Some("sha256:bbb".to_string()))];
+        assert!(super::images_match(&ids, &new));
+        assert!(!super::images_match(&ids, &[("ragnarokmac/mariadb:11.4", None)]));
+        // A marker from before ids were recorded never matches, so an install
+        // the old check left on stale images is verified on its next start.
+        assert_ne!(super::image_marker("f", &new), "v1:f:ragnarokmac/rathena:20221005:ragnarokmac/mariadb:11.4\n");
+        assert_ne!(super::image_marker("f", &new), super::image_marker("f", &old));
     }
 
     use super::*;

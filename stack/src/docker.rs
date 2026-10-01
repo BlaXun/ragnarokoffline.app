@@ -211,8 +211,11 @@ impl Docker {
     /// in, the process held 0.03s of CPU and killing it let startup continue
     /// with the images already present.
     ///
-    /// So `done` is the real completion test: the images the caller asked for
-    /// exist. A loader that exits first is still the fast path; one that hangs
+    /// So `done` is the real completion test, and it has to be the *bundle's*
+    /// images under the tags, compared by id (see `ensure_images`). "The tags
+    /// exist" is true from the first second of every upgrade, because the
+    /// previous release's images carry them -- which is how 1.1.1 to 1.4.1
+    /// killed the loader after five seconds and kept the old images. A loader that exits first is still the fast path; one that hangs
     /// after doing its work no longer costs anything. It is checked on a slower
     /// cadence than the child is polled because each call runs a docker
     /// command.
