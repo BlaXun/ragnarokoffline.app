@@ -1,8 +1,8 @@
 {
   "name": "blaze-shield-classchange",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Ragnarok Offline",
   "description": "Let Hylozoist Card (bClassChange) roll its 1% polymorph on every Blaze Shield pillar hit. Off until you turn it on.",
   "default": "off",
-  "requires": { "app": ">=1.2.6", "era": "any" }
+  "requires": { "app": ">=1.3.9", "era": "any" }
 }
