@@ -24,6 +24,10 @@ const args = process.argv.slice(2);
 const state = process.env.FAKE_STATE;
 const dbFile = process.env.FAKE_DB;
 const backups = path.join(state, 'backups');
+// The container's own /tmp, where backups are dumped before `docker cp` brings them out.
+const containerTmp = path.join(state, 'container-tmp');
+fs.mkdirSync(containerTmp, { recursive: true });
+const inContainer = file => (file.startsWith('/tmp/') ? path.join(containerTmp, path.basename(file)) : path.join(backups, path.basename(file)));
 const hex = s => Buffer.from(s, 'utf8').toString('hex').toUpperCase();
 const unhex = h => Buffer.from(h, 'hex').toString('utf8');
 
@@ -128,23 +132,30 @@ if (verb === 'exec') {
 	if (container !== 'ragnarok-db') process.exit(1);
 	if (program === 'mariadb') { process.stdout.write(throughSlimExec(answer(stdin()))); process.exit(0); }
 	if (program === 'rm') {
-		for (const f of more.filter(a => a.startsWith('/backups/'))) fs.rmSync(path.join(backups, path.basename(f)), { force: true });
+		for (const f of more.filter(a => a.startsWith('/backups/') || a.startsWith('/tmp/'))) fs.rmSync(inContainer(f), { force: true });
 		process.exit(0);
 	}
 	if (program === 'sh' && more[0] === '-c') {
 		const command = more[1];
-		const target = command.match(/> \/backups\/([A-Za-z0-9._-]+)/);
+		const target = command.match(/> (\/(?:backups|tmp)\/[A-Za-z0-9._-]+)/);
 		if (!target) process.exit(2);
 		if (/mariadb-dump /.test(command)) {
-			fs.writeFileSync(path.join(backups, target[1]), '-- fake dump of `char`\n' + fs.readFileSync(dbFile, 'utf8'));
+			fs.writeFileSync(inContainer(target[1]), '-- fake dump of `char`\n' + fs.readFileSync(dbFile, 'utf8'));
 			process.exit(0);
 		}
 		const errors = command.match(/2> \/backups\/([A-Za-z0-9._-]+)/);
-		fs.writeFileSync(path.join(backups, target[1]), answer(stdin()));
+		fs.writeFileSync(inContainer(target[1]), answer(stdin()));
 		if (errors) fs.writeFileSync(path.join(backups, errors[1]), '');
 		process.exit(0);
 	}
 	process.exit(1);
+}
+// docker cp ragnarok-db:/tmp/<dump> <name>, run from the destination folder.
+if (verb === 'cp' && args[1] && args[1].startsWith('ragnarok-db:')) {
+	const from = inContainer(args[1].slice('ragnarok-db:'.length));
+	if (!fs.existsSync(from)) process.exit(1);
+	fs.copyFileSync(from, path.resolve(process.cwd(), args[2]));
+	process.exit(0);
 }
 // ps, stop, start, logs: nothing is running but the database.
 process.exit(0);

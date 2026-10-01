@@ -51,7 +51,12 @@ fn main() {
         }
         ["exec", "ragnarok-db", "sh", "-c", script] => {
             let data = volumes.join(format!("{}.sql", current()));
-            if let Some((_, file)) = script.split_once("> /backups/") {
+            if let Some((_, file)) = script.split_once("> /tmp/") {
+                // The container's own /tmp: `docker cp` brings the dump out.
+                let tmp = root.join("container-tmp");
+                fs::create_dir_all(&tmp).unwrap();
+                fs::copy(&data, tmp.join(file.trim())).unwrap();
+            } else if let Some((_, file)) = script.split_once("> /backups/") {
                 fs::copy(&data, backups.join(file.trim())).unwrap();
             } else if let Some((_, file)) = script.split_once("< /backups/") {
                 fs::copy(backups.join(file.trim()), &data).unwrap();
@@ -61,6 +66,10 @@ fn main() {
         }
         ["exec", "ragnarok-db", "rm", "-f", _] => {}
         // Windows: the dump comes out, or the staged backups go in, by `cp`.
+        ["cp", from, to] if from.starts_with("ragnarok-db:/tmp/") => {
+            let name = from.rsplit('/').next().unwrap();
+            fs::copy(root.join("container-tmp").join(name), Path::new(to)).unwrap();
+        }
         ["cp", from, to] if from.starts_with("ragnarok-db:/backups/") => {
             let name = from.rsplit('/').next().unwrap();
             fs::copy(backups.join(name), Path::new(to)).unwrap();
