@@ -739,6 +739,41 @@ fn db_volume(cfg: &Config) -> String {
     if is_prerenewal(cfg) { "ragnarokmac-db-prere".into() } else { "ragnarokmac-db".into() }
 }
 
+/// Create and start the database container on one era's volume.
+///
+/// Split out of `up` so a whole-world backup or restore can reach the era
+/// that is not running (see `with_era_database`) through exactly the mounts,
+/// credentials and image a normal start uses.
+fn start_database(cfg: &Config, dk: &Docker, volume: &str, credentials: Option<&crate::service_credentials::Credentials>) -> Result<(), String> {
+    dk.remove_container(DB_CONTAINER);
+    let mut mounts = vec![
+        Mount::Bind {
+            host: cfg.state.join("sql"),
+            container: "/docker-entrypoint-initdb.d".into(),
+            ro: true,
+        },
+        // A named volume rather than a bind: backups have to survive on
+        // Windows too, where a host directory cannot be mounted, and the
+        // dump is fetched back out with `cp`.
+        if cfg!(windows) {
+            Mount::Volume { name: "ragnarokmac-backups".into(), container: "/backups".into() }
+        } else {
+            Mount::Bind { host: cfg.state.join("backups"), container: "/backups".into(), ro: false }
+        },
+        Mount::Volume { name: volume.to_string(), container: "/var/lib/mysql".into() },
+    ];
+    let mut opts: Vec<String> = ["--network", NET, "-e", "MARIADB_DATABASE=ragnarok", "-e", "MARIADB_USER=ragnarok"].iter().map(|s| s.to_string()).collect();
+    if let Some(credentials) = credentials {
+        mounts.push(Mount::Bind { host: credentials.directory.clone(), container: crate::service_credentials::CONTAINER_DIR.into(), ro: true });
+        opts.extend(["-e", "MARIADB_ROOT_PASSWORD_FILE=/run/ragnarok-private/root.secret", "-e", "MARIADB_PASSWORD_FILE=/run/ragnarok-private/database.secret"].iter().map(|s| s.to_string()));
+    } else {
+        opts.extend(["-e", "MARIADB_ROOT_PASSWORD=ragnarok", "-e", "MARIADB_PASSWORD=ragnarok"].iter().map(|s| s.to_string()));
+    }
+    dk.run_container(DB_CONTAINER, &cfg.db_image, &[], &mounts, &opts)
+        .map_err(|e| format!("starting the database: {e}"))?;
+    Ok(())
+}
+
 /// The uncompressed size a gzip file claims, from its ISIZE trailer.
 ///
 /// The last four bytes of a gzip stream are the uncompressed length. Reading
@@ -1090,6 +1125,83 @@ fn zero_numbers(line: &str) -> String {
     out
 }
 
+/// The population engine's companion table: `CREATE TABLE IF NOT EXISTS` from the one copy
+/// of the schema, then the columns that table gained while the feature was developed, for a
+/// database made before them -- `CREATE ... IF NOT EXISTS` leaves an existing table alone.
+/// One round trip, safe on a fresh database, an old one, and every start after.
+///
+/// Only new objects: nothing of rAthena's is altered and no existing row is rewritten, so
+/// there is nothing one-way here and no backup to take. An earlier release ignores the table.
+const COMPANION_SCHEMA: &str =
+    include_str!("../../third-party/population-engine/files/sql-files/population_engine/cp_companion_persistence.sql");
+
+const COMPANION_COLUMNS: &[(&str, &str)] = &[
+    ("garment_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("option_", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("name", "VARCHAR(24) NOT NULL DEFAULT ''"),
+    ("acc_l_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("acc_r_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("costume_top_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("costume_mid_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("costume_low_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("costume_garment_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("shadow_armor_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("shadow_weapon_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("shadow_shield_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("shadow_shoes_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("shadow_acc_l_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    ("shadow_acc_r_nameid", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    // v5: 4th-job trait stats, grown by the companion growth system.
+    ("pow_", "SMALLINT NOT NULL DEFAULT 0"),
+    ("sta_", "SMALLINT NOT NULL DEFAULT 0"),
+    ("wis_", "SMALLINT NOT NULL DEFAULT 0"),
+    ("spl_", "SMALLINT NOT NULL DEFAULT 0"),
+    ("con_", "SMALLINT NOT NULL DEFAULT 0"),
+    ("crt_", "SMALLINT NOT NULL DEFAULT 0"),
+    // v6: party orders -- stance, duty and the support healer thresholds.
+    ("mode", "TINYINT NOT NULL DEFAULT 1"),
+    ("duty", "TINYINT NOT NULL DEFAULT 0"),
+    ("heal_at", "TINYINT NOT NULL DEFAULT 75"),
+    ("emergency_at", "TINYINT NOT NULL DEFAULT 35"),
+    // v7: the player's own skill selection for this companion. NULL means
+    // "never chosen" so an upgrade keeps every existing companion on the
+    // class preset list, which is the behaviour it had before the selector.
+    ("skill_preset", "TEXT NULL DEFAULT NULL"),
+    // v8: the companion's homunculus. hom_enabled NULL means "never chosen", which
+    // is ON for the alchemist line because the pet is part of the class; 0 is an
+    // explicit no, so an upgrade cannot re-enable a pet a player switched off.
+    ("hom_enabled", "TINYINT NULL DEFAULT NULL"),
+    ("hom_class", "INT NOT NULL DEFAULT 0"),
+    ("hom_level", "SMALLINT NOT NULL DEFAULT 0"),
+    ("hom_exp", "BIGINT NOT NULL DEFAULT 0"),
+    // v9: which worn positions hold gear the owner gave. Only those come back through
+    // @companion gear; 0 for an existing row, so its generated gear stays its own.
+    ("given_mask", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    // v10: companions belong to a character, not an account. 0 on an existing row means
+    // "saved before this"; the first character of that account to log in claims it.
+    ("owner_char_id", "INT UNSIGNED NOT NULL DEFAULT 0"),
+];
+
+/// Indexes added after the table first shipped, as (name, columns).
+const COMPANION_INDEXES: &[(&str, &str)] = &[
+    ("idx_owner_char", "`owner_account_id`, `owner_char_id`"),
+];
+
+fn companion_table_sql() -> String {
+    let added: Vec<String> = COMPANION_COLUMNS
+        .iter()
+        .map(|(column, definition)| format!("ADD COLUMN IF NOT EXISTS `{column}` {definition}"))
+        .chain(COMPANION_INDEXES.iter().map(|(name, columns)| format!("ADD INDEX IF NOT EXISTS `{name}` ({columns})")))
+        .collect();
+    format!("{COMPANION_SCHEMA}\nALTER TABLE `cp_companion_persistence` {};\n", added.join(", "))
+}
+
+fn ensure_companion_table(dk: &Docker) -> Result<(), String> {
+    dk.private_sql(&companion_table_sql())
+        .map(|_| ())
+        .map_err(|e| format!("preparing the companion table: {e}"))
+}
+
 /// Poll for the thing actually depended on — the database answering queries —
 /// rather than a container healthcheck.
 fn wait_for_db(dk: &Docker) -> Result<(), String> {
@@ -1106,7 +1218,7 @@ fn wait_for_db(dk: &Docker) -> Result<(), String> {
     Err("timed out waiting for the database schema".into())
 }
 
-/// The map-server listens on 5121 long before it is usable: it then reads its
+/// The map-server listens on its port long before it is usable: it then reads its
 /// maps and the whole npc tree, and only afterwards registers those maps with
 /// the char-server. A character logging in during that window is told "Map is
 /// not available" and bounced. The container being Up is not readiness; the
@@ -1440,32 +1552,7 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     }
 
     if !dk.is_running(DB_CONTAINER) {
-        dk.remove_container(DB_CONTAINER);
-        let mut mounts = vec![
-            Mount::Bind {
-                host: cfg.state.join("sql"),
-                container: "/docker-entrypoint-initdb.d".into(),
-                ro: true,
-            },
-            // A named volume rather than a bind: backups have to survive on
-            // Windows too, where a host directory cannot be mounted, and the
-            // dump is fetched back out with `cp`.
-            if cfg!(windows) {
-                Mount::Volume { name: "ragnarokmac-backups".into(), container: "/backups".into() }
-            } else {
-                Mount::Bind { host: cfg.state.join("backups"), container: "/backups".into(), ro: false }
-            },
-            Mount::Volume { name: want_volume.clone(), container: "/var/lib/mysql".into() },
-        ];
-        let mut opts: Vec<String> = ["--network", NET, "-e", "MARIADB_DATABASE=ragnarok", "-e", "MARIADB_USER=ragnarok"].iter().map(|s| s.to_string()).collect();
-        if let Some(credentials) = &credentials {
-            mounts.push(Mount::Bind { host: credentials.directory.clone(), container: crate::service_credentials::CONTAINER_DIR.into(), ro: true });
-            opts.extend(["-e", "MARIADB_ROOT_PASSWORD_FILE=/run/ragnarok-private/root.secret", "-e", "MARIADB_PASSWORD_FILE=/run/ragnarok-private/database.secret"].iter().map(|s| s.to_string()));
-        } else {
-            opts.extend(["-e", "MARIADB_ROOT_PASSWORD=ragnarok", "-e", "MARIADB_PASSWORD=ragnarok"].iter().map(|s| s.to_string()));
-        }
-        dk.run_container(DB_CONTAINER, &cfg.db_image, &[], &mounts, &opts)
-            .map_err(|e| format!("starting the database: {e}"))?;
+        start_database(cfg, dk, &want_volume, credentials.as_ref())?;
     }
     // After a successful start, so a failed one does not record a database
     // that is not running.
@@ -1473,6 +1560,26 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     phase(cfg, "Starting the database…");
     if let Some(credentials) = &credentials { migrate_service_credentials(dk, credentials)?; }
     wait_for_db(dk)?;
+    // The login server turns plain-text passwords into salted hashes the
+    // first time it starts on a world from before 1.4.0, and that can't be
+    // undone: an earlier release can no longer log those accounts in. Keep a
+    // copy of the database as it was, first. The game servers are not up yet.
+    if crate::accounts::passwords_unhashed(dk)? {
+        let backups = cfg.state.join("backups");
+        crate::private_fs::directory(&backups)?;
+        let copy = backups.join(format!("before-password-hashing-{}.sql", crate::private_fs::random_hex(8)?));
+        backup_snapshot(cfg, dk, &copy.to_string_lossy(), false)
+            .map_err(|e| format!("backing up the database before hashing passwords: {e}"))?;
+        phase(cfg, "Saved a backup of the accounts before securing their passwords…");
+    }
+    crate::accounts::ensure_password_columns(dk)?;
+    // Sign in with Google or Apple: the login server's one-time token table and
+    // our identity table. Before the game servers, so the login server never
+    // starts without the table it checks tokens against.
+    crate::sign_in::ensure_sign_in_tables(dk)?;
+    // Remembered logins for the autologin mod (remember.rs): exchanged for
+    // the login tokens of the table above, so made after it.
+    crate::remember::ensure_remember_table(dk)?;
 
     // Only sql/03-account.sql seeds the GM, during first database creation.
     // An existing database may intentionally have renamed, disabled or deleted
@@ -1491,6 +1598,11 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
            PRIMARY KEY (`id`)
          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
     );
+
+    // Companion persistence, after the database is up and before any game server
+    // can read it. An error stops the start: a map server without this table logs a
+    // failed query on every recall and snapshot, and nothing on screen says why.
+    ensure_companion_table(dk)?;
 
     // Every client arrives through the WebSocket proxy, so every connection has
     // the same source address; rAthena's per-IP flood protection trips on sight
@@ -1575,6 +1687,11 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     if scope == crate::hosting::Scope::Friends {
         login_config.push_str("ipban_dynamic_pass_failure_ban: no\n");
     }
+    // The listen ports go last in each file: rAthena keeps the last assignment,
+    // so nothing earlier -- a mod's allowlisted settings included -- can move
+    // a server off the port the client will be sent to (ports.rs).
+    let ports = cfg.ports;
+    login_config.push_str(&ports.login_conf());
     write_conf(&conf, "login_conf.txt", &login_config)?;
     if scope.internet() { crate::hosting::require_game_policy(cfg, dk)?; }
 
@@ -1585,9 +1702,10 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     let instant_deletion = crate::registration::instant_character_deletion(&cfg.state)?;
     write_conf(&conf, "char_conf.txt",
         &format!("login_ip: ragnarok-login\nchar_ip: {advertise}\npincode_enabled: no\n{}\
-                  {start_point}\n{}{}", crate::registration::character_config(instant_deletion),
+                  {start_point}\n{}{}{}", crate::registration::character_config(instant_deletion),
                   conf_lines(&mods, "char_conf.txt"),
-                  credentials.as_ref().map(|c| format!("userid: s1\npasswd: {}\n", c.interserver)).unwrap_or_default()))?;
+                  credentials.as_ref().map(|c| format!("userid: s1\npasswd: {}\n", c.interserver)).unwrap_or_default(),
+                  ports.char_conf()))?;
 
     let product = if cfg!(target_os = "macos") { "RagnarokMac" }
         else if cfg!(windows) { "RagnarokWindows" }
@@ -1596,12 +1714,12 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     write_conf(&conf, "motd.txt",
         &format!("Welcome to {product} Offline! Please report any bugs on Github\n"))?;
     write_conf(&conf, "map_conf.txt",
-        &format!("char_ip: ragnarok-char\nmap_ip: {advertise}\nmotd_txt: conf/import/motd.txt\n{}{}{}{}",
+        &format!("char_ip: ragnarok-char\nmap_ip: {advertise}\nmotd_txt: conf/import/motd.txt\n{}{}{}{}{}",
                  conf_lines(&mods, "map_conf.txt"), mods.map_lines, mods.npc_lines,
-                 credentials.as_ref().map(|c| format!("userid: s1\npasswd: {}\n", c.interserver)).unwrap_or_default()))?;
+                 credentials.as_ref().map(|c| format!("userid: s1\npasswd: {}\n", c.interserver)).unwrap_or_default(),
+                 ports.map_conf()))?;
 
-    let endpoint = format!(
-        "{{\"host\":\"{advertise}\",\"login\":6900,\"char\":6121,\"map\":5121}}\n");
+    let endpoint = endpoint_json(&advertise, &ports);
     fs::write(cfg.state.join("endpoint.json"), &endpoint)
         .map_err(|e| format!("writing endpoint.json: {e}"))?;
     // The game page reads this from the asset server's static root. It exists
@@ -1626,9 +1744,12 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     // all three: packets.hpp is compiled into login and char as well as map.
     let era = if is_prerenewal(cfg) { "-prere" } else { "" };
     let ver = crate::packetver::suffix(packetver);
-    run_server(cfg, dk, "ragnarok-login", 6900, &format!("/rathena/login-server{ver}"), lan)?;
-    run_server(cfg, dk, "ragnarok-char", 6121, &format!("/rathena/char-server{era}{ver}"), lan)?;
-    run_server(cfg, dk, "ragnarok-map", 5121, &format!("/rathena/map-server{era}{ver}"), lan)?;
+    // Published one to one: each server listens inside its container on the
+    // very port it is reached on, because that is the number it hands the
+    // client (login names char's, char names map's).
+    run_server(cfg, dk, "ragnarok-login", ports.login, &format!("/rathena/login-server{ver}"), lan)?;
+    run_server(cfg, dk, "ragnarok-char", ports.char, &format!("/rathena/char-server{era}{ver}"), lan)?;
+    run_server(cfg, dk, "ragnarok-map", ports.map, &format!("/rathena/map-server{era}{ver}"), lan)?;
     phase(cfg, "Loading maps and NPCs…");
     wait_for_maps(dk)?;
     // After the map server has read its tables and before anyone is told the
@@ -1640,9 +1761,17 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     // The one string a host pastes to a friend. Printed rather than only
     // written, so it is visible from a terminal too.
     if lan {
-        println!("join address: http://{advertise}:3338/");
+        println!("join address: http://{advertise}:{}/", ports.asset);
     }
     Ok(())
+}
+
+/// What `up` tells the shell about where the game servers are.
+fn endpoint_json(advertise: &str, ports: &crate::ports::Ports) -> String {
+    format!(
+        "{{\"host\":\"{advertise}\",\"login\":{},\"char\":{},\"map\":{},\"asset\":{}}}\n",
+        ports.login, ports.char, ports.map, ports.asset
+    )
 }
 
 pub fn down(cfg: &Config, dk: &Docker) -> Result<(), String> {
@@ -2080,6 +2209,100 @@ pub(crate) fn load_dump(cfg: &Config, dk: &Docker, src: &Path) -> Result<(), Str
     r.map(|_| ())
 }
 
+/// The volume an era's characters live in. See `db_volume`.
+pub(crate) fn era_volume(era: &str) -> &'static str {
+    if era == "prerenewal" { "ragnarokmac-db-prere" } else { "ragnarokmac-db" }
+}
+
+/// Whether an era has a database at all: one that was never started has no
+/// volume, and nothing to back up.
+pub(crate) fn era_volume_exists(dk: &Docker, era: &str) -> bool {
+    dk.quiet(["volume", "inspect", era_volume(era)])
+}
+
+fn stop_database(dk: &Docker) -> Result<(), String> {
+    if dk.is_running(DB_CONTAINER)
+        && (dk.output(["stop", "-t", "30", DB_CONTAINER]).is_err() || dk.is_running(DB_CONTAINER))
+    {
+        return Err("Could not stop the database cleanly".into());
+    }
+    dk.remove_container(DB_CONTAINER);
+    Ok(())
+}
+
+/// Bring `ragnarok-db` up on one era's volume, the way `up` does, and wait
+/// until it answers.
+fn open_era_database(cfg: &Config, dk: &Docker, era: &str) -> Result<(), String> {
+    let volume = era_volume(era);
+    // sql_auth reads the marker to choose the era's credentials, so it names
+    // what is about to run before anything connects.
+    fs::write(cfg.state.join(".db-volume"), volume).map_err(|e| format!("recording the database volume: {e}"))?;
+    let credentials = crate::service_credentials::load(&cfg.state, era)?;
+    if let Some(credentials) = &credentials {
+        credentials.write_files()?;
+    }
+    fs::create_dir_all(cfg.state.join("backups")).map_err(|e| e.to_string())?;
+    start_database(cfg, dk, volume, credentials.as_ref())?;
+    if let Some(credentials) = &credentials {
+        migrate_service_credentials(dk, credentials)?;
+    }
+    wait_for_db(dk)
+}
+
+/// Run `operation` against `era`'s database, whichever era is running.
+///
+/// Only one database container runs at a time, and every database call in
+/// this file talks to it by name. So reaching the other era means stopping
+/// the running database, starting the same container on the other volume,
+/// and afterwards putting the original back -- including when `operation`
+/// failed. Game services must already be stopped: they would otherwise be
+/// talking to the wrong era's characters in between.
+pub(crate) fn with_era_database<T>(
+    cfg: &Config,
+    dk: &Docker,
+    era: &str,
+    operation: impl FnOnce() -> Result<T, String>,
+) -> Result<T, String> {
+    let marker = cfg.state.join(".db-volume");
+    let running = fs::read_to_string(&marker).map(|s| s.trim().to_string()).unwrap_or_default();
+    if running == era_volume(era) && dk.is_running(DB_CONTAINER) {
+        return operation();
+    }
+    let original = if running == era_volume("prerenewal") { "prerenewal" } else { "renewal" };
+    let result = stop_database(dk)
+        .and_then(|_| open_era_database(cfg, dk, era))
+        .and_then(|_| operation());
+    let back = stop_database(dk).and_then(|_| open_era_database(cfg, dk, original));
+    match (result, back) {
+        (result, Ok(())) => result,
+        (Ok(_), Err(error)) => Err(format!(
+            "The {era} database was handled, but the {original} database did not start again: {error}. Start the server to recover."
+        )),
+        (Err(first), Err(error)) => Err(format!(
+            "{first}. The {original} database also did not start again: {error}. Start the server to recover."
+        )),
+    }
+}
+
+/// After a dump has been loaded, make its interserver login the one this
+/// install's servers use. A dump carries the `s1` row of the install it came
+/// from, and that is somebody else's password.
+pub(crate) fn adopt_loaded_dump(cfg: &Config, dk: &Docker, era: &str) -> Result<(), String> {
+    match crate::service_credentials::load(&cfg.state, era)? {
+        Some(credentials) => migrate_service_credentials(dk, &credentials),
+        // An era without managed credentials runs rAthena's stock s1/p1.
+        None => dk
+            .root_sql("UPDATE login SET user_pass='p1' WHERE account_id=1 AND BINARY userid='s1' AND sex='S';", true)
+            .map(|_| ()),
+    }
+}
+
+/// Stop the game servers without restarting them: a restore leaves them
+/// stopped, for the shell (or the player) to start once everything is back.
+pub(crate) fn stop_game(cfg: &Config, dk: &Docker) -> Result<(), String> {
+    stop_game_services(cfg, dk).map_err(|_| "Could not stop the game servers cleanly; nothing was restored.".to_string())
+}
+
 /// The escape hatch for a shipped user with no terminal and no docker CLI.
 ///
 /// Everything here is also done by `up`. This exists for the case automation
@@ -2176,7 +2399,7 @@ pub fn logs_follow(dk: &Docker, args: &[String]) -> Result<i32, String> {
     })
 }
 
-fn human(bytes: u64) -> String {
+pub(crate) fn human(bytes: u64) -> String {
     const U: [&str; 4] = ["B", "KB", "MB", "GB"];
     let mut v = bytes as f64;
     let mut i = 0;
@@ -2189,6 +2412,23 @@ fn human(bytes: u64) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    /// What the shell reads to learn where this world's servers are. The
+    /// default install's file keeps its keys and values, with the asset port
+    /// added.
+    #[test]
+    fn the_endpoint_names_the_configured_ports() {
+        let moved = crate::ports::Ports { asset: 13338, login: 16900, char: 16121, map: 15121, agent: 17490 };
+        assert_eq!(
+            super::endpoint_json("127.0.0.1", &moved),
+            "{\"host\":\"127.0.0.1\",\"login\":16900,\"char\":16121,\"map\":15121,\"asset\":13338}\n"
+        );
+        let parsed = crate::json::parse(&super::endpoint_json("192.168.1.20", &crate::ports::Ports::DEFAULT)).unwrap();
+        assert_eq!(parsed.str("host"), Some("192.168.1.20"));
+        for (key, port) in [("login", 6900.0), ("char", 6121.0), ("map", 5121.0), ("asset", 3338.0)] {
+            assert!(matches!(parsed.get(key), Some(crate::json::Value::Number(n)) if *n == port), "{key}");
+        }
+    }
 
     #[test]
     fn logs_follow_names_only_game_services() {
@@ -2341,5 +2581,27 @@ mod tests {
     fn ignores_a_failure_that_names_no_holder() {
         assert!(port_holders("nebula up failed: the virtual machine did not come up").is_empty());
         assert!(port_holders("tcp 7462 is already in use by nebulad pid (NEBULA_HOME=/x)").is_empty());
+    }
+
+    #[test]
+    fn a_fresh_companion_table_and_an_upgraded_one_agree() {
+        // Every column the upgrade adds is declared by the CREATE, with the same definition,
+        // so a fresh install and an upgraded one end up with the same table.
+        let squash = |s: &str| s.split_whitespace().collect::<Vec<_>>().join(" ");
+        let schema = squash(COMPANION_SCHEMA);
+        for (column, definition) in COMPANION_COLUMNS {
+            let declared = format!("`{column}` {}", squash(definition));
+            assert!(schema.contains(&declared), "the CREATE must declare {declared}");
+        }
+        for (name, columns) in COMPANION_INDEXES {
+            let declared = format!("KEY `{name}` ({})", squash(columns));
+            assert!(schema.contains(&declared), "the CREATE must declare {declared}");
+        }
+        let sql = companion_table_sql();
+        assert!(sql.len() <= crate::docker::SQL_INPUT_LIMIT, "the migration must fit one call");
+        assert_eq!(sql.matches("ADD INDEX IF NOT EXISTS").count(), COMPANION_INDEXES.len());
+        assert_eq!(sql.matches("ALTER TABLE").count(), 1, "one ALTER, not one call per column");
+        assert_eq!(sql.matches("ADD COLUMN IF NOT EXISTS").count(), COMPANION_COLUMNS.len());
+        assert!(!sql.contains("REPLACE") && !sql.contains("DROP"), "only new objects, nothing one-way");
     }
 }

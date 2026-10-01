@@ -26,6 +26,61 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFile } = require('node:child_process');
 
+// A client table, as text: the translation's are UTF-8, older ones and many
+// a mod's are CP949 (EUC-KR). Decoded one file at a time, since the item
+// tables below mix the two.
+function decode(buf) {
+	try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch { return new TextDecoder('euc-kr').decode(buf); }
+}
+
+const quoted = text => [...text.matchAll(/'([^']+)'/g)].map(m => m[1]);
+
+// What the generated client config says -- the same lists the game reads.
+function clientConfig(web) {
+	try { return fs.readFileSync(path.join(web, 'Config.local.js'), 'utf8'); } catch { return ''; }
+}
+
+/**
+ * The client's item tables, mods' included, as one text. The client lists
+ * them newest mod first and base last, and keeps the *first* definition of an
+ * item; the Tools pages keep the *last* one they parse. So they are joined in
+ * the reverse order, and a mod's item -- new or renamed -- shows as it does in
+ * game. `web` is the served asset root (state/assets).
+ */
+function clientItemInfo(web) {
+	const listed = /customItemInfo:\s*\[([^\]]*)\]/.exec(clientConfig(web));
+	// With no mod item tables the config names none, and the client reads the
+	// first base table it finds.
+	const base = ['System/itemInfo.lua', 'System/itemInfo.lub', 'System/itemInfo_true.lua', 'System/itemInfo_true.lub'];
+	const exists = rel => fs.existsSync(path.join(web, rel));
+	const tables = listed ? quoted(listed[1]).filter(exists) : base.filter(exists).slice(0, 1);
+	if (tables.length === 0) throw new Error('The client\'s item table is not there yet. Start the game once, then try again.');
+	return Buffer.from(tables.reverse().map(rel => decode(fs.readFileSync(path.join(web, rel)))).join('\n'), 'utf8');
+}
+
+/**
+ * Mods' monster sprite tables (customLuaTables.monster: an npcidentity-style
+ * id file and a jobname-style name file each), as id -> sprite name, later
+ * mods over earlier ones as the client merges them.
+ */
+function clientMonsterSprites(web) {
+	const tables = /customLuaTables:\s*\{([^\n]*)\}/.exec(clientConfig(web));
+	const listed = tables && /monster:\s*\[((?:\s*\[[^\]]*\]\s*,?)*)\]/.exec(tables[1]);
+	const out = {};
+	if (!listed) return out;
+	const read = f => { try { return decode(fs.readFileSync(f)); } catch { return ''; } };
+	for (const pair of listed[1].matchAll(/\[([^\]]*)\]/g)) {
+		const [idFile, nameFile] = quoted(pair[1]).map(rel => path.join(web, rel));
+		const ids = {};
+		for (const m of read(idFile).matchAll(/\b(JT_[A-Za-z0-9_]+)\s*=\s*(\d+)/g)) ids[m[1]] = m[2];
+		for (const m of read(nameFile).matchAll(/\[\s*(?:jobtbl\.)?([A-Za-z0-9_]+)\s*\]\s*=\s*"([^"]+)"/g)) {
+			const id = /^\d+$/.test(m[1]) ? m[1] : ids[m[1]];
+			if (id) out[id] = m[2];
+		}
+	}
+	return out;
+}
+
 const SCHEME = 'ro-tool';
 const PARTITION = 'persist:ro-tools';
 const ROOT = path.join(__dirname, '..', 'tools');
@@ -73,7 +128,15 @@ const schemePrivileges = { scheme: SCHEME, privileges: { standard: true, secure:
  *   BrowserWindow, session, net, shell, stackBin(), stackEnv(), stateDir(), runtimeDir(), log(text), icon
  *   and, for the log viewer: nebulaLogsDir(), redact(text), openGameDevTools()
  */
+// The asset origin the tool pages name (ASSET_ORIGIN in tools/*/*.html). A
+// copy whose asset server was moved (electron/ports.js) answers somewhere
+// else, so requests to this one are sent on to wherever that is.
+const PAGE_ASSET_HOST = '127.0.0.1:3338';
+
 function createTools(deps) {
+	const assetHost = () => `127.0.0.1:${deps.assetPort ? deps.assetPort() : 3338}`;
+	const isAsset = url => url.host === PAGE_ASSET_HOST || url.host === assetHost();
+	const toAsset = href => { const url = new URL(href); url.host = assetHost(); return url.toString(); };
 	const windows = new Map();
 	// Converted icons, by path: the item list asks for hundreds at a time.
 	const pngCache = new Map();
@@ -90,15 +153,8 @@ function createTools(deps) {
 		});
 	}
 
-	// The client's item table, the one the game itself reads.
-	function itemInfo() {
-		const dir = path.join(deps.stateDir(), 'assets', 'System');
-		for (const name of ['itemInfo.lua', 'itemInfo.lub', 'itemInfo_true.lua', 'itemInfo_true.lub']) {
-			const file = path.join(dir, name);
-			if (fs.existsSync(file)) return fs.readFileSync(file);
-		}
-		throw new Error('The client\'s item table is not there yet. Start the game once, then try again.');
-	}
+	const itemInfo = () => clientItemInfo(path.join(deps.stateDir(), 'assets'));
+	const modMonsterSprites = () => clientMonsterSprites(path.join(deps.stateDir(), 'assets'));
 
 	// AegisName -> icon name, for the monster browser's drops: the server's
 	// item tables give AegisName -> id, the client's gives id -> icon.
@@ -129,7 +185,7 @@ function createTools(deps) {
 	// DB/Monsters/MonsterTable.js, shipped beside the client by package.sh).
 	let monsterSprites = null;
 	function monsterTable() {
-		if (monsterSprites) return monsterSprites;
+		if (monsterSprites) return { ...monsterSprites, ...modMonsterSprites() };
 		const candidates = [
 			path.join(deps.runtimeDir(), 'client-tables', 'MonsterTable.js'),
 			// Running from source before package.sh has been run.
@@ -139,7 +195,11 @@ function createTools(deps) {
 		if (!file) throw new Error('The client\'s monster table is missing from this build.');
 		const out = {};
 		for (const m of fs.readFileSync(file, 'utf8').matchAll(/^\s*(\d+)\s*:\s*'([^']+)'/gm)) out[m[1]] = m[2];
-		return (monsterSprites = out);
+		// Mods' new monsters over the built-in table, as the client merges them.
+		// Not cached with the built-ins: a mod can be switched on while the
+		// window is open.
+		monsterSprites = out;
+		return { ...out, ...modMonsterSprites() };
 	}
 
 	// The log viewer (#202): its stream, and the two things it may ask of the
@@ -198,7 +258,7 @@ function createTools(deps) {
 				if (sprite) {
 					// data/sprite/몬스터/ ("monster"): the asset server resolves the
 					// Korean folder and the GRFs' lowercase names.
-					const url = `http://127.0.0.1:3338/data/sprite/${encodeURIComponent('몬스터')}/${encodeURIComponent(sprite[1].toLowerCase())}.${sprite[2]}`;
+					const url = `http://${assetHost()}/data/sprite/${encodeURIComponent('몬스터')}/${encodeURIComponent(sprite[1].toLowerCase())}.${sprite[2]}`;
 					const res = await deps.net.fetch(url, { bypassCustomProtocolHandlers: true });
 					if (!res.ok) return respond(`no sprite ${sprite[1]}`, 'text/plain', 404);
 					return respond(Buffer.from(await res.arrayBuffer()), 'application/octet-stream');
@@ -218,17 +278,17 @@ function createTools(deps) {
 		// and let everything else through.
 		ses.protocol.handle('http', async request => {
 			const url = new URL(request.url);
-			if (url.host === '127.0.0.1:3338' && url.pathname === '/item-icons.js') {
+			if (isAsset(url) && url.pathname === '/item-icons.js') {
 				try { return respond(await itemIcons(), TYPES['.js']); } catch (e) {
 					deps.log(`tools: item icons: ${e.message}`);
 					return respond('/* ' + e.message.replace(/\*\//g, '') + ' */', TYPES['.js'], 503);
 				}
 			}
 			// The game's .bmp pictures, with their magenta turned transparent.
-			if (url.host === '127.0.0.1:3338' && /\.bmp$/i.test(url.pathname)) {
+			if (isAsset(url) && /\.bmp$/i.test(url.pathname)) {
 				const key = url.pathname;
 				if (!pngCache.has(key)) {
-					const res = await deps.net.fetch(request.url, { bypassCustomProtocolHandlers: true });
+					const res = await deps.net.fetch(toAsset(request.url), { bypassCustomProtocolHandlers: true });
 					if (!res.ok) return res;
 					const original = Buffer.from(await res.arrayBuffer());
 					const png = require('./bmp').bmpToPng(original);
@@ -238,6 +298,8 @@ function createTools(deps) {
 				const hit = pngCache.get(key);
 				return new Response(hit.body, { headers: { 'content-type': hit.type, 'cache-control': 'max-age=3600' } });
 			}
+			// The pages only read from the asset server, so a moved one is a GET.
+			if (isAsset(url) && url.host !== assetHost()) return deps.net.fetch(toAsset(request.url), { bypassCustomProtocolHandlers: true });
 			return deps.net.fetch(request, { bypassCustomProtocolHandlers: true });
 		});
 		handlersReady = true;
@@ -283,4 +345,4 @@ function createTools(deps) {
 	};
 }
 
-module.exports = { createTools, schemePrivileges, SCHEME, TOOLS };
+module.exports = { createTools, schemePrivileges, SCHEME, TOOLS, clientItemInfo, clientMonsterSprites };
