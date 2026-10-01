@@ -11,7 +11,7 @@ tbl = {
 		identifiedDescriptionName = {
 			"A ribbon spun from moonlight.",
 			"MDEF +5",
-			"When hit, 3% chance to cast ^0000FFHeal^000000 Lv 3 on yourself.",
+			"When hit below 30% HP, 20% chance to cast ^0000FFHeal^000000 Lv 5 on yourself.",
 			"Class: ^777777Headgear^000000",
 			"Defense: ^7777772^000000",
 			"Location: ^777777Upper^000000",

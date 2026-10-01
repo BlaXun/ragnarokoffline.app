@@ -3,7 +3,8 @@
 # 100000 up, so nothing stock is in this block or will land in it.
 #
 #   Moon_Ribbon        a headgear with a *view* id of its own (5001), which
-#                      System/accname.lub turns into a look on your head.
+#                      System/accname.lub turns into a look on your head, and
+#                      a heal-when-hurt in Lua (lua/moon_ribbon.lua).
 #   Lunar_Poring_Card  a card that casts a spell when you attack. rAthena item
 #                      scripts do this natively -- no Lua needed.
 Header:
@@ -25,8 +26,8 @@ Body:
     View: 5001
     Script: |
       bonus bMdef,5;
-      // 3% chance to cast Heal Lv 3 on yourself when something hits you.
-      bonus3 bAutoSpellWhenHit,"AL_HEAL",3,30;
+      // Its heal is in lua/moon_ribbon.lua: only below 30% HP, which an
+      // item script can't express.
   - Id: 50103
     AegisName: Lunar_Poring_Card
     Name: Lunar Poring Card
