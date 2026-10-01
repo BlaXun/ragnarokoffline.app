@@ -131,3 +131,18 @@ test('persistence never reaches the char server and never invents a hom_id', () 
 	assert.ok(!/intif_homunculus_[a-z_]+\s*\(/.test(body.replace(/`intif_homunculus_create`/g, '')),
 		'no char-server call may be introduced');
 });
+
+test('creating a row that already exists keeps the player\'s choices', () => {
+	// REPLACE deletes and re-inserts, so re-inviting an expelled companion reset every column the
+	// statement does not list: the skill selection, the pet switch and its level, favorite, stance,
+	// duty and heal thresholds. The row write must be an upsert that leaves them alone.
+	const body = functionBody(engine, 'static void population_engine_persist_companion_sql(');
+	assert.ok(!/REPLACE INTO/.test(codeOnly(body)), 'the companion row must not be written with REPLACE');
+	assert.match(body, /ON DUPLICATE KEY UPDATE/, 'the companion row must be an upsert');
+	const update = body.slice(body.indexOf('ON DUPLICATE KEY UPDATE'));
+	for (const kept of ['skill_preset', 'hom_enabled', 'hom_level', 'hom_exp', 'favorite', 'mode', 'duty', 'heal_at', 'emergency_at'])
+		assert.match(update, new RegExp(` ${kept}=IF\\(owner_account_id=VALUES\\(owner_account_id\\), ${kept},`),
+			`${kept} must survive a re-invite by the same owner`);
+	assert.ok(update.indexOf('emergency_at=IF(') < update.indexOf(' owner_account_id=VALUES(owner_account_id)'),
+		'the owner comparisons must run before owner_account_id is overwritten');
+});

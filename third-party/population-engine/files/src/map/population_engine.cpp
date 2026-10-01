@@ -4803,13 +4803,21 @@ static void population_engine_persist_companion_sql(
 	int dex, int luk, int pow_, int sta_, int wis_, int spl_, int con_, int crt_, int16_t map_id)
 {
 	if (mmysql_handle == nullptr) return;
-	char q[2304];
+	char q[4096];
 	char esc_name[48];
 	Sql_EscapeString(mmysql_handle, esc_name, name_ != nullptr ? name_ : "");
 	// sex is TINYINT in the DDL (0=SEX_MALE, 1=SEX_FEMALE); writing the letters
 	// 'M'/'F' was rejected with ERROR 1366 on strict servers.
-	snprintf(q, sizeof(q),
-		"REPLACE INTO `cp_companion_persistence`"
+	//
+	// INSERT ... ON DUPLICATE KEY UPDATE, not REPLACE: REPLACE deletes the old row and inserts
+	// a new one, so re-inviting a companion that already has a row (expelled, then invited
+	// again) reset everything this statement does not list - the player's skill selection,
+	// the homunculus switch and the pet's level, favorite, stance, duty and heal thresholds.
+	// Those are kept for the same owner and reset only when the row changes hands. The
+	// assignments run left to right, so the owner comparisons come before owner_account_id
+	// is overwritten. Costume and shadow slots are left to the gear snapshot.
+	const int written = snprintf(q, sizeof(q),
+		"INSERT INTO `cp_companion_persistence`"
 		"(owner_account_id, shell_index, name, job_id, sex, hair_style, hair_color,"
 		" cloth_color, garment_nameid, option_, weapon_nameid, shield_nameid,"
 		" head_top_nameid, head_mid_nameid, head_bottom_nameid, armor_nameid,"
@@ -4821,13 +4829,41 @@ static void population_engine_persist_companion_sql(
 		" agi_, vit_, intl_, dex_, luk_, pow_, sta_, wis_, spl_, con_, crt_, map_id, active)"
 		" VALUES(%u,%u,'%s',%d,%d,%d,%d,%d,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,"
 		"%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%d,%d,"
-		"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,1)",
+		"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,1)"
+		" ON DUPLICATE KEY UPDATE"
+		" skill_preset=IF(owner_account_id=VALUES(owner_account_id), skill_preset, NULL),"
+		" hom_enabled=IF(owner_account_id=VALUES(owner_account_id), hom_enabled, NULL),"
+		" hom_class=IF(owner_account_id=VALUES(owner_account_id), hom_class, 0),"
+		" hom_level=IF(owner_account_id=VALUES(owner_account_id), hom_level, 0),"
+		" hom_exp=IF(owner_account_id=VALUES(owner_account_id), hom_exp, 0),"
+		" favorite=IF(owner_account_id=VALUES(owner_account_id), favorite, 0),"
+		" mode=IF(owner_account_id=VALUES(owner_account_id), mode, 1),"
+		" duty=IF(owner_account_id=VALUES(owner_account_id), duty, 0),"
+		" heal_at=IF(owner_account_id=VALUES(owner_account_id), heal_at, 75),"
+		" emergency_at=IF(owner_account_id=VALUES(owner_account_id), emergency_at, 35),"
+		" owner_account_id=VALUES(owner_account_id), name=VALUES(name), job_id=VALUES(job_id),"
+		" sex=VALUES(sex), hair_style=VALUES(hair_style), hair_color=VALUES(hair_color),"
+		" cloth_color=VALUES(cloth_color), garment_nameid=VALUES(garment_nameid),"
+		" option_=VALUES(option_), weapon_nameid=VALUES(weapon_nameid),"
+		" shield_nameid=VALUES(shield_nameid), head_top_nameid=VALUES(head_top_nameid),"
+		" head_mid_nameid=VALUES(head_mid_nameid), head_bottom_nameid=VALUES(head_bottom_nameid),"
+		" armor_nameid=VALUES(armor_nameid), shoes_nameid=VALUES(shoes_nameid),"
+		" acc_l_nameid=VALUES(acc_l_nameid), acc_r_nameid=VALUES(acc_r_nameid),"
+		" base_level=VALUES(base_level), job_level=VALUES(job_level), str_=VALUES(str_),"
+		" agi_=VALUES(agi_), vit_=VALUES(vit_), intl_=VALUES(intl_), dex_=VALUES(dex_),"
+		" luk_=VALUES(luk_), pow_=VALUES(pow_), sta_=VALUES(sta_), wis_=VALUES(wis_),"
+		" spl_=VALUES(spl_), con_=VALUES(con_), crt_=VALUES(crt_), map_id=VALUES(map_id),"
+		" active=1",
 		owner_account, index_, esc_name, job_id, sex, hair_style, hair_color, cloth_color,
 		garment_nameid, option_, weapon, shield, head_top, head_mid, head_bottom,
 		armor, shoes, acc_l, acc_r, 0u, 0u, 0u, 0u,
 		0u, 0u, 0u, 0u, 0u, 0u,
 		base_level, job_level, str, agi, vit, intl, dex, luk,
 		pow_, sta_, wis_, spl_, con_, crt_, map_id);
+	if (written <= 0 || static_cast<size_t>(written) >= sizeof(q)) {
+		ShowError("population_engine: persist companion index %u: statement does not fit\n", index_);
+		return;
+	}
 	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) {
 		Sql_ShowDebug(mmysql_handle);
 		ShowError("population_engine: persist companion index %u for owner %u FAILED\n",
