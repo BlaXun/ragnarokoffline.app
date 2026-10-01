@@ -39,7 +39,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::exit;
 
-const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|logs --follow <map|char|login|db> [--tail N]|agent <command> [args]|export-table <name>\n\
+const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-check [--lan]|secure-services [--lan] [--ram MiB]|mods|mod-enable NAME|mod-disable NAME|mod-forget NAME|mod-check DIR|up [--lan] [--ram MiB]|down|repair [--lan] [--ram MiB]|status|logs [service] [tail]|logs --follow <map|char|login|db> [--tail N]|agent <command> [args]|export-table <name>\n\
                      \x20      db tables|describe <table>|rows|apply (JSON on stdin for rows and apply)\n\
                      \x20      backup <file>|restore <file>\n\
                      \x20      sql [--write] [--file <path>] [<statement>]\n\
@@ -203,6 +203,14 @@ fn main() {
         "mod-forget" => match args.get(1) {
             Some(n) => mods::forget(&cfg.state, n),
             None => Err("mod name required".into()),
+        },
+        // A folder that is not in the mods directory yet -- a release the app
+        // has downloaded and staged -- checked by the same manifest reader
+        // `mods` uses, so an update that would stop loading is refused
+        // before it replaces a copy that works.
+        "mod-check" => match args.get(1) {
+            Some(dir) => mods::check_dir(std::path::Path::new(dir)).map(|version| println!("ok\t{version}")),
+            None => Err("folder required".into()),
         },
         "restore" => match args.get(1) {
             Some(p) => cmds::restore(&cfg, &dk, p),

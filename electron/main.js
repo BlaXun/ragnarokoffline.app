@@ -1531,25 +1531,10 @@ const openSettings = () => makeWindow('settings', 'settings.html', { width: 700,
 // Installing a mod
 // ---------------------------------------------------------------------------
 
-// One folder, named for the mod. Anything else is a zip somebody built by
-// selecting the files instead of the directory, and unpacking it would strew
-// db/ and npc/ across the mods root.
-function singleTopLevel(names) {
-	const tops = new Set(names.map(n => n.split('/')[0]).filter(Boolean));
-	return tops.size === 1 ? [...tops][0] : null;
-}
-
-// Refuse anything that would land outside the destination: `../`, an absolute
-// path, or a drive letter. Zip-slip is the classic way an unpack becomes an
-// arbitrary write.
-function safeEntryName(name) {
-	if (!name || name.startsWith('/') || name.startsWith('\\') || /^[a-zA-Z]:/.test(name)) return null;
-	const parts = name.split('/');
-	if (parts.some(p => p === '..')) return null;
-	return name;
-}
-
+// The zip checks -- zip-slip, links, size, one top-level folder -- live in
+// mod-zip.js, shared with installs from a registry entry's own releases.
 async function installModFrom(src) {
+	const modZip = require('./mod-zip');
 	const dest = path.join(stateDir(), 'mods');
 	fs.mkdirSync(dest, { recursive: true });
 
@@ -1560,32 +1545,15 @@ async function installModFrom(src) {
 		if (fs.existsSync(target)) throw new Error(`${name} is already installed. Remove it first.`);
 		fs.cpSync(src, target, { recursive: true });
 	} else {
-		// `ditto` on macOS, `tar` elsewhere: both ship with the OS, and neither
-		// needs a zip library in the app. Unpacked to a scratch directory first
-		// so nothing lands in mods/ until it has been checked.
-		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-mod-'));
+		// Unpacked to a scratch directory first so nothing lands in mods/
+		// until it has been checked.
+		const { dir: tmp, files } = modZip.unpack(src);
 		try {
-			const { execFileSync } = require('child_process');
-			if (process.platform === 'darwin') execFileSync('ditto', ['-x', '-k', src, tmp]);
-			// On Windows, by full path: Git's GNU tar is often first on PATH, and it
-			// reads `C:` as a remote host and cannot open a zip at all (#174).
-			else if (process.platform === 'win32') execFileSync(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', src, '-C', tmp]);
-			else execFileSync('tar', ['-xf', src, '-C', tmp]);
-
-			const walk = (dir, rel = '') => fs.readdirSync(dir, { withFileTypes: true })
-				.flatMap(e => e.isDirectory()
-					? walk(path.join(dir, e.name), rel ? `${rel}/${e.name}` : e.name)
-					: [rel ? `${rel}/${e.name}` : e.name]);
-			const entries = walk(tmp).filter(n => !n.split('/').some(p => p === '__MACOSX' || p.startsWith('._')));
-			if (!entries.length) throw new Error('That archive is empty.');
-			for (const e of entries) {
-				if (!safeEntryName(e)) throw new Error(`Refusing ${src}: it contains an unsafe path (${e}).`);
-			}
-			name = singleTopLevel(entries);
+			name = modZip.singleTopLevel(files);
 			if (!name) throw new Error('A mod zip must contain exactly one folder, named for the mod.');
 			const target = path.join(dest, name);
 			if (fs.existsSync(target)) throw new Error(`${name} is already installed. Remove it first.`);
-			fs.cpSync(path.join(tmp, name), target, { recursive: true });
+			modZip.copyTree(path.join(tmp, name), target);
 		} finally {
 			fs.rmSync(tmp, { recursive: true, force: true });
 		}
@@ -1596,15 +1564,107 @@ async function installModFrom(src) {
 	// refused is still installed -- the player may be about to switch era, and
 	// deleting it would be worse -- but they are told now rather than after a
 	// restart that appears to do nothing.
-	let note = '';
+	const note = await refusalNote(name);
+	appLog(`installed mod ${name} from ${src}`);
+	return `Installed ${name}.${note} Apply to restart the server.`;
+}
+
+async function refusalNote(name) {
 	try {
 		const rows = (await runStack(['mods'])).split('\n').filter(Boolean);
 		const row = rows.map(l => l.split('\t')).find(r => r[1] === name);
-		if (row && row[0] === 'refused') note = ` It will not load: ${row[3]}`;
+		if (row && row[0] === 'refused') return ` It will not load: ${row[3]}`;
 	} catch { /* the supervisor may be unavailable; the install still stands */ }
+	return '';
+}
 
-	appLog(`installed mod ${name} from ${src}`);
-	return `Installed ${name}.${note} Apply to restart the server.`;
+// ---------------------------------------------------------------------------
+// Mods published from their author's own repository
+// ---------------------------------------------------------------------------
+
+// Release lookups, keyed by repository, kept a few minutes (mod-source.js) so
+// opening the Mods tab twice does not spend GitHub's hourly allowance twice.
+const sourceReleases = new Map();
+function sourceOptions(extra = {}) {
+	return {
+		api: process.env.RAGNAROK_GITHUB_API || require('./mod-source').GITHUB_API,
+		// Only for pointing tests at a local fake; never set in a shipped app.
+		allow: process.env.RAGNAROK_GITHUB_API ? () => true : undefined,
+		cache: sourceReleases,
+		userAgent: `RagnarokOffline/${app.getVersion()}`,
+		...extra,
+	};
+}
+
+// Install or update a registry entry that points at a GitHub repository.
+//
+// The release is downloaded, checked and staged first -- nothing of it can
+// run from the staging folder -- and only then does the player see what it is
+// and decide. The question is asked here rather than in the settings page: the
+// page renders text the internet wrote, and it is not the one that decides
+// whether somebody else's code goes into the server.
+async function installFromSource(entry) {
+	const source = require('./mod-source');
+	const modsDir = path.join(stateDir(), 'mods');
+	const folder = path.join(modsDir, entry.name);
+	const current = source.readRecord(folder);
+	const present = fs.existsSync(folder);
+	const repo = entry.source.github;
+
+	const release = await source.latestRelease(repo, sourceOptions());
+	const asset = source.pickAsset(release, entry.source.asset);
+	const bytes = await source.download(asset, sourceOptions());
+	const sha256 = source.sha256(bytes);
+	const staged = await source.stage(entry.name, bytes, {
+		modsDir,
+		appVersion: app.getVersion(),
+		validate: dir => runStack(['mod-check', dir]),
+	});
+	let committed = false;
+	try {
+		const version = staged.version || release.tag;
+		const from = current ? (current.version || current.tag) : '';
+		const verb = current ? 'Update' : present ? 'Replace' : 'Install';
+		const message = current
+			? `Update ${entry.name} from ${from} to ${version}?`
+			: present ? `Replace your copy of ${entry.name} with ${version} from GitHub?`
+			: `Install ${entry.name} ${version}?`;
+		const ships = [
+			staged.contents.serverScripts && 'scripts the game server runs (npc/)',
+			staged.contents.clientCode && 'code that runs in the game window (client/)',
+			staged.contents.commands && 'a change to which commands players can use (conf/)',
+		].filter(Boolean);
+		const notes = release.notes.trim();
+		const detail = [
+			`From github.com/${repo}, release ${release.tag}`,
+			`${asset.name}, ${Math.max(1, Math.round(bytes.length / 1024))} KB, sha256 ${sha256.slice(0, 16)}…`,
+			'',
+			'The mod list vouches for this repository, not for each release: '
+				+ (ships.length
+					? `this mod's author can change it without review, and this release ships ${ships.join(', ')}.`
+					: "this mod's author can change it without review."),
+			current || present ? 'Your settings for it and whether it is switched on are kept.' : '',
+			notes ? `\nRelease notes:\n${notes.length > 700 ? notes.slice(0, 700) + '…' : notes}` : '',
+			`\n${release.url}`,
+		].filter(line => line !== '').join('\n');
+		const parent = BrowserWindow.getFocusedWindow() || windows.settings;
+		const question = { type: 'question', buttons: [verb, 'Cancel'], defaultId: 0, cancelId: 1, message, detail };
+		const { response } = parent && !parent.isDestroyed()
+			? await dialog.showMessageBox(parent, question) : await dialog.showMessageBox(question);
+		if (response !== 0) return { name: entry.name, cancelled: true, message: 'Cancelled.' };
+
+		source.commit(staged, { modsDir, record: {
+			repo, tag: release.tag, asset: asset.name, sha256, size: bytes.length,
+			version: staged.version, releaseUrl: release.url, installedAt: new Date().toISOString(),
+		} });
+		committed = true;
+		appLog(`${current ? 'updated' : 'installed'} mod ${entry.name} ${release.tag} from ${repo} (${asset.name}, sha256 ${sha256})`);
+		const note = await refusalNote(entry.name);
+		const done = current ? `Updated ${entry.name} to ${version}.` : `Installed ${entry.name} ${version}.`;
+		return { name: entry.name, version, tag: release.tag, message: `${done}${note} Apply to restart the server.` };
+	} finally {
+		if (!committed) source.discard(staged);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -1783,12 +1843,50 @@ const handlers = {
 	},
 	install_registry_mod: async ({ name }) => {
 		const registry = require('./mod-registry');
-		const result = await registry.install(name, {
-			url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX,
-			modsDir: path.join(stateDir(), 'mods'),
-		});
+		const url = process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX;
+		const mods = await registry.list({ url });
+		const entry = mods.find(mod => mod.name === name);
+		// Install and update are the same thing for a mod published from its
+		// own repository: fetch the latest release, show it, swap it in.
+		if (entry && entry.source) return installFromSource(entry);
+		const result = await registry.install(name, { url, mods, modsDir: path.join(stateDir(), 'mods') });
 		appLog(`installed mod ${result.name} ${result.version} (${result.files} files)`);
 		return result;
+	},
+	// The latest release of one source entry, for its page in the list. One
+	// lookup, cached with the rest, and only when somebody opens the entry.
+	registry_release: async ({ name }) => {
+		const registry = require('./mod-registry');
+		const source = require('./mod-source');
+		const mods = await registry.list({ url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX });
+		const entry = mods.find(mod => mod.name === name);
+		if (!entry || !entry.source) throw new Error(`${name} is not published from a repository`);
+		const release = await source.latestRelease(entry.source.github, sourceOptions());
+		return { tag: release.tag, url: release.url, publishedAt: release.publishedAt, notes: release.notes.slice(0, 1200) };
+	},
+	// Whether any mod installed from its own repository has a newer release.
+	// Asked when the Mods tab opens and from its button, never in the
+	// background, and it only ever reports: installing is the player's click.
+	check_mod_updates: async ({ fresh } = {}) => {
+		const registry = require('./mod-registry');
+		const source = require('./mod-source');
+		const modsDir = path.join(stateDir(), 'mods');
+		let names = [];
+		try { names = fs.readdirSync(modsDir, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.')).map(e => e.name); }
+		catch { return []; }
+		const installed = names.map(name => ({ name, dir: path.join(modsDir, name) }))
+			.filter(mod => source.readRecord(mod.dir));
+		if (!installed.length) return [];
+		const listing = await registry.list({ url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX });
+		return source.checkUpdates(installed, listing, sourceOptions({ fresh: !!fresh }));
+	},
+	// A release page, opened in the player's browser. Only ever a GitHub
+	// release URL: the address came from GitHub's API, by way of the page.
+	open_release_notes: ({ url }) => {
+		if (typeof url !== 'string' || !/^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9._-]+\/releases\//.test(url)) {
+			throw new Error('That is not a release page.');
+		}
+		return shell.openExternal(url);
 	},
 	list_mods: async () => {
 		const out = await runStack(['mods']);
@@ -1829,6 +1927,15 @@ const handlers = {
 				// Empty from an older supervisor, which never writes them.
 				settingsPage: settingsPage || '',
 				dir: dir || '',
+				// Where a mod installed from its author's repository came
+				// from, and which release it is. Null for every other mod.
+				source: origin === 'bundled' ? null : (() => {
+					const { readRecord } = require('./mod-source');
+					try {
+						const { modFolder } = require('./mod-remove');
+						return readRecord(modFolder(path.join(stateDir(), 'mods'), name));
+					} catch { return null; }
+				})(),
 			};
 		});
 	},
