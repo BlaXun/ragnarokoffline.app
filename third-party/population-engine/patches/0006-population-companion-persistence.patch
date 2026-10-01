@@ -83,8 +83,6 @@ diff --git a/src/map/pc.cpp b/src/map/pc.cpp
  		guild_member_joined(sd);
  	if (sd->status.clan_id > 0)
 diff --git a/src/map/trade.cpp b/src/map/trade.cpp
-diff --git a/trade.cpp.bak-pristine b/ro/rathena/src/map/trade.cpp
-index aa89731..acd8da8 100644
 --- a/src/map/trade.cpp
 +++ b/src/map/trade.cpp
 @@ -19,6 +19,7 @@

@@ -171,3 +171,14 @@ test('the SQL statement buffers have room for the grown statements', () => {
 	assert.ok(Number(lastQ[1]) >= 512,
 		`the selection UPDATE buffer must hold a long skill list (found ${lastQ && lastQ[1]})`);
 });
+
+test('a selection too long to store is refused, never stored cut short', () => {
+	const e = read(ENGINE);
+	const i = e.indexOf('static bool pop_companion_format_skill_preset(');
+	assert.ok(i > 0, 'one formatter for the stored list');
+	const body = e.slice(i, e.indexOf('\n}\n', i));
+	assert.match(body, /return false;/, 'overflow must be reported to the caller');
+	assert.ok(!/\bbreak;/.test(body), 'and not end the list early');
+	assert.equal((e.match(/if \(!(?:want_auto && !)?pop_companion_format_skill_preset\(picked, preset, sizeof\(preset\)\)\) \{/g) || []).length, 2,
+		'both the set and the toggle paths must refuse when it does not fit');
+});

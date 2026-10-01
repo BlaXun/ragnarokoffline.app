@@ -2665,6 +2665,26 @@ static std::vector<uint16_t> pop_companion_legal_skill_ids(uint16_t class_, cons
 	return legal;
 }
 
+/// The comma-separated id list stored in skill_preset. Returns false when it does not fit
+/// `cap`, rather than storing a cut-down list the player never chose: a silently dropped
+/// tail is a selection that changes by itself on the next login. The recall reads the
+/// column back into a buffer of the same size.
+static bool pop_companion_format_skill_preset(const std::vector<uint16_t> &picked, char *out, size_t cap)
+{
+	size_t used = 0;
+	out[0] = '\0';
+	for (size_t i = 0; i < picked.size(); ++i) {
+		const int n = snprintf(out + used, cap - used, "%s%u", i > 0 ? "," : "",
+			static_cast<unsigned>(picked[i]));
+		if (n <= 0 || static_cast<size_t>(n) >= cap - used) {
+			out[0] = '\0';
+			return false;
+		}
+		used += static_cast<size_t>(n);
+	}
+	return true;
+}
+
 int population_engine_companion_set_skill_override(uint32_t owner_account, const char* name_,
 	const char* spec, char* out_msg, size_t out_msg_len)
 {
@@ -2773,17 +2793,14 @@ int population_engine_companion_set_skill_override(uint32_t owner_account, const
 	// leave the live shell running a selection that will not survive a relog.
 	{
 		char preset[512];
-		preset[0] = '\0';
-		if (!want_auto) {
-			size_t used = 0;
-			for (size_t i = 0; i < picked.size(); ++i) {
-				const int n = snprintf(preset + used, sizeof(preset) - used, "%s%u",
-					i > 0 ? "," : "", static_cast<unsigned>(picked[i]));
-				if (n <= 0 || static_cast<size_t>(n) >= sizeof(preset) - used)
-					break;
-				used += static_cast<size_t>(n);
-			}
+		if (!want_auto && !pop_companion_format_skill_preset(picked, preset, sizeof(preset))) {
+			if (out_msg != nullptr)
+				safesnprintf(out_msg, out_msg_len,
+					"That is too many skills to save (%zu); choose fewer.", picked.size());
+			return -1;
 		}
+		if (want_auto)
+			preset[0] = '\0';
 		char q[768];
 		if (want_auto)
 			snprintf(q, sizeof(q),
@@ -2957,16 +2974,11 @@ int population_engine_companion_toggle_skill(uint32_t owner_account, const char*
 
 	// Persist, then apply to the live shell through the existing rebuild flag.
 	char preset[512];
-	preset[0] = '\0';
-	{
-		size_t used = 0;
-		for (size_t i = 0; i < picked.size(); ++i) {
-			const int n = snprintf(preset + used, sizeof(preset) - used, "%s%u",
-				i > 0 ? "," : "", static_cast<unsigned>(picked[i]));
-			if (n <= 0 || static_cast<size_t>(n) >= sizeof(preset) - used)
-				break;
-			used += static_cast<size_t>(n);
-		}
+	if (!pop_companion_format_skill_preset(picked, preset, sizeof(preset))) {
+		if (out_msg != nullptr)
+			safesnprintf(out_msg, out_msg_len,
+				"That is too many skills to save (%zu); turn some off first.", picked.size());
+		return -1;
 	}
 	{
 		char q[768];
