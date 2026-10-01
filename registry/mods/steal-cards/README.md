@@ -44,7 +44,7 @@ changes is the one flag on Slot 7.
 
 **The `Index:` matches the card's real slot in the stock table** — 7 for
 Poring, 6 for Ghostring, 8 for many second-job monsters. The generator reads
-`vendor/rathena/db/re/mob_db.yml` and copies the index verbatim, so the
+the pinned `vendor/rathena/db/re/mob_db.yml` and copies the index verbatim, so the
 override lands on the same drop the on-kill roll uses. Nothing is duplicated
 and nothing else moves.
 
@@ -89,30 +89,35 @@ Install the folder, restart the server (Settings → Restart server, since only
 If Steal still only returns Jellopy and Apple, check the log for a YAML parse
 error and check that the target monster's Id is in `db/mob_db.yml`.
 
+## Renewal only
+
+rAthena ships two mob tables, `db/re/mob_db.yml` and `db/pre-re/mob_db.yml`,
+and they do **not** agree on where the card sits: of the 451 monsters with a
+card in both, 97 have it in a different slot (Hornet's is 7 in renewal and 6
+in pre-renewal). The override names a slot, not an item, so on a pre-renewal
+server it would unprotect whatever drop happens to be in that slot and leave
+the card protected. A mod cannot ship a table per era, so `mod.json` asks for
+`"era": "renewal"` and the app refuses it on a pre-renewal world, saying so.
+
 ## Regenerating the table
 
-`generate.py` reads rAthena's own `mob_db.yml` and rewrites `db/mob_db.yml`.
-Run it when the vendor pin moves, or when you want to change the criteria.
+`db/mob_db.yml` is generated, and committed: the mod works as it is, and
+nothing a player installs runs Python. The generator lives outside the mod
+folder, at
+[`registry/tools/steal-cards/generate.py`](../../tools/steal-cards/generate.py),
+and needs only the Python standard library. Run it from the repository root
+when `config/VENDOR_PINS` moves rAthena, or to change the criteria:
 
 ```sh
-# beside a checked-out vendor tree
-./generate.py ../../../vendor/rathena/db/re/mob_db.yml
-
-# or against a copy elsewhere
-./generate.py ~/rathena/db/re/mob_db.yml --out db/mob_db.yml
+scripts/vendor-fetch.sh rathena vendor/rathena    # the pinned commit
+python3 registry/tools/steal-cards/generate.py    # rewrites db/mob_db.yml
+python3 registry/tools/steal-cards/generate.py --check   # or: is it current?
 ```
 
-PyYAML is the only requirement: `pip install pyyaml`. The generator writes to
-`db/mob_db.yml` next to itself by default.
-
-**Renewal versus pre-renewal.** rAthena ships two mob tables that differ in
-level, HP, damage and a handful of drops — `db/re/mob_db.yml` and
-`db/pre-re/mob_db.yml`. The supervisor mounts whichever era the app is running
-in, and `db/import` layers over that one. Both tables agree on the *card*
-slot for the mobs both include, so generating from either produces the same
-override for the mobs it covers; renewal adds ~200 monsters that pre-renewal
-does not have, and those entries are simply unused in pre-renewal. Generating
-from `db/re/mob_db.yml` is the wider choice.
+It reads `vendor/rathena/db/re/mob_db.yml` (`--source` for another copy),
+writes the rAthena commit it read into the output's header, and warns when
+that is not the commit `config/VENDOR_PINS` pins. Then regenerate the index
+(`python3 scripts/mod-index.py`) and raise `version` in `mod.json`.
 
 ### What the generator excludes
 
@@ -126,8 +131,7 @@ from `db/re/mob_db.yml` is the wider choice.
 **`Class: Boss` is not enough.** 539 monsters carry `Class: Boss` without
 being MVPs: mini-bosses, boss-class field monsters, event bosses. Their cards
 stay in the mod. If you want a stricter version — no bosses at all, however
-minor — add `if mob.get("Class") == "Boss": return True` at the top of
-`is_mvp()` and rerun.
+minor — add `or mob["class"] == "Boss"` to `is_mvp()` and rerun.
 
 ## What this mod is not
 
@@ -137,7 +141,7 @@ minor — add `if mob.get("Class") == "Boss": return True` at the top of
   own stock drop rate (unchanged by this mod) — the skill's base success rate
   applies on top.
 - **It does not make MVP cards stealable.** They are excluded by design. If
-  you want them in too, edit `is_mvp()` in `generate.py` to `return False` and
+  you want them in too, make `is_mvp()` in `generate.py` return `False` and
   rerun.
 - **It does not touch drops that are not cards.** Card equipment drops
   (Poring Hat, etc.) stay steal-protected if they were, and stealable if they
