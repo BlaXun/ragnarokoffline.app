@@ -1,5 +1,8 @@
 # bounty-hunt
 
+Attention: This mods adds the **Bounty Marker** item, but it does NOT spawn it in any way.
+That is up to whoever wants to use it on their server!
+
 Use a **Bounty Marker**, the cursor turns into the target picker, and you click
 a monster. A dialog lists that monster's drops with the kills each would take;
 pick one. From then on, every kill of that monster counts up, and once you hit
