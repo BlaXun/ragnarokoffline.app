@@ -82,6 +82,11 @@ next restart):
 Card exp values are hard-coded in `db/item_db.yml` (twenty scripts, one
 per card). Change them there if you want a different curve.
 
+The cards grant exp through `getexp`, which rAthena scales by
+`quest_exp_rate` -- the **Quest EXP** rate in the app's server settings, not
+the kill-exp rate. At 1x a Lv 10 card is exactly 60,000; at 2x it is
+120,000.
+
 ## Requirements
 
 - `requires.app` is **`>=1.3.9`** — the first release whose pinned
@@ -93,13 +98,14 @@ per card). Change them there if you want a different curve.
 
 ## Installing
 
-Copy this folder into your mods directory and restart the app:
+**Settings → Mods → Browse**, find exp-card, install. An installed mod is on;
+untick it under **Settings → Mods** to switch it off again.
+
+Or copy this folder into your mods directory and restart the app:
 
     macOS    ~/Library/Application Support/Ragnarok Offline/state/mods/
     Windows  %APPDATA%\Ragnarok Offline\state\mods\
     Linux    ~/.local/share/Ragnarok Offline/state/mods/
-
-Then enable it under **Settings → Mods** (it ships off by default).
 
 ## Checking it loaded
 

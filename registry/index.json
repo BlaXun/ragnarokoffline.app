@@ -5,7 +5,7 @@
       "name": "exp-card",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. A level 10 card grants roughly 5% of the exp a level-98 character needs for the next level; lower levels scale down linearly. Streamlines offline levelling without touching per-mob drop tables.",
+      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. A level 10 card grants roughly 5% of the exp a level-98 character needs for the next level, and each lower level is about half the one above it. Streamlines offline levelling without touching per-mob drop tables.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/exp-card",
       "tags": [
         "drops",
@@ -24,8 +24,16 @@
       },
       "files": [
         {
+          "path": "README.md",
+          "sha256": "4351f70e160b92f8301739f531fcff645590ebcfd4de5d4fc7ed435e1dcb4fe6"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "aa472094a10095546b0f64ebf5c2e79583a8ca30ebdabaea0235600fb469da2a"
+        },
+        {
           "path": "db/item_db.yml",
-          "sha256": "8a496070850122c2619824575769abef962641ee14a58e0408a14be1a161e143"
+          "sha256": "bce91f9df2627ffbfd084f7571b0631ed817671ad7320ca944ad51bef0c65a99"
         },
         {
           "path": "images/exp-card.png",
@@ -37,19 +45,11 @@
         },
         {
           "path": "mod.json",
-          "sha256": "ce17b8cb5b8246d006ecb02aaf1b1e14251e41dcc1e9b58c32bffbab59948e71"
+          "sha256": "4e7d04f78ecc9dc979f8966abb31e24f828131a01d7c55a3a99d9d7b26eb58e7"
         },
         {
           "path": "npc/exp_card.txt",
-          "sha256": "f2c3e88ac6e1e6cc1b7b665102fb3d56549b5ff4f2348f1b9729e1e366ecc1a0"
-        },
-        {
-          "path": "README.md",
-          "sha256": "615e5f6de450571f3a46dfe99f253fddbd821877eb604fe6c0bd85053f863bfd"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "a5a4c038eb11bc670a6e3c720d3762b84d1913cab85aaf5f3fea32063659171b"
+          "sha256": "ba26c43579fafd0bc109d65ca935c21b79a6cc6417e4347b90e4c3add2d6ccdf"
         }
       ]
     },
@@ -76,7 +76,7 @@
       "files": [
         {
           "path": "db/skill_db.yml",
-          "sha256": "91f4d828f2e161ce9c9418a13f8b1c94c3c238ba025841d0f14dd3b4c0cbe2c2"
+          "sha256": "42dcdf20f7c4b315c03f28a17e8da306ed477500b8c84d7b46e37eb1d39c5098"
         },
         {
           "path": "images/homunculus.png",
@@ -88,7 +88,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "12c15d813f8cf80ef282e24c28fe839ab6d10ea649af9deca5a0414fddbd1657"
+          "sha256": "e256016b9a6e83b3b1fea49f281866c4002f0e5dcfb511fa7d404c920792f8aa"
         }
       ]
     }
