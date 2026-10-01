@@ -147,6 +147,7 @@ jobs:
           name: client
           path: |
             vendor/roBrowserLegacy/dist/Web
+            vendor/roBrowserLegacy/src/DB/Monsters/MonsterTable.js
             vendor/ROenglishRE/Translation
             vendor/ROenglishRE/Addons/Navigation Legacy
           retention-days: 1
