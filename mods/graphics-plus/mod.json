@@ -2,7 +2,7 @@
   "name": "graphics-plus",
   "version": "1.0.0",
   "author": "Ragnarok Offline",
-  "description": "A warmer, deeper look: colour grading, lamp glows from each map's own lights, water that reflects the world, distance haze, tone mapping and a vignette, with tilt-shift, colour fringing and rain to taste. Every effect has its own switch. Also the worked example of api.graphics.",
+  "description": "A different look for the whole game: grass on grassy ground, shadows from buildings and trees, water that reflects the world, lamp glows from each map's own lights, colour grading, distance haze, tone mapping and a vignette, with tilt-shift, colour fringing and rain to taste. Every effect has its own switch. Also the worked example of api.graphics.",
   "default": "off",
   "requires": {
     "app": ">=1.4.0",
@@ -35,6 +35,24 @@
       "max": 100,
       "label": "Water reflections",
       "description": "Water mirrors the buildings, rocks and sky above it. Draws the map a second time on maps with water, so it costs more than the others. 0 is off."
+    },
+    {
+      "key": "grass",
+      "type": "number",
+      "default": 50,
+      "min": 0,
+      "max": 100,
+      "label": "Grass",
+      "description": "Tufts of grass on grassy ground, coloured by the ground under them and swaying in the wind. Higher is denser. 0 is off."
+    },
+    {
+      "key": "shadows",
+      "type": "number",
+      "default": 50,
+      "min": 0,
+      "max": 100,
+      "label": "Shadows",
+      "description": "Buildings and trees cast shadows from the map's sun onto the ground, on top of the soft ones the map already has. 0 is off."
     },
     {
       "key": "fog",

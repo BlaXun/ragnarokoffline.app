@@ -1238,6 +1238,8 @@ on with `api.graphics.configure`:
 | Feature | |
 |---|---|
 | `waterReflection: 0..1` | water mirrors the sky, ground and buildings above it. The map is drawn a second time at half resolution where there's water |
+| `shadows: 0..1` | buildings and trees cast shadows from the map's sun onto the ground, on top of the soft ones baked into the map |
+| `grass: { textures, density, height, width, wind, distance, tint }` | tufts of grass on every ground cell whose texture name contains one of `textures` (the client's are Korean: `'풀'` grass, `'잔디'` lawn), coloured by the ground under them. `density`, `wind` 0..1; `height`, `width`, `distance` in cells; `tint` `[r, g, b]` |
 
 ```js
 api.graphics.configure({ waterReflection: 0.6 });

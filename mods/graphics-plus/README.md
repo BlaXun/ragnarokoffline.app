@@ -7,6 +7,8 @@ A warmer, deeper look for every map, in one pass over the screen:
 | Colour grading | warm light, cool shadows, a little contrast |
 | Lamp glow | a soft halo at each light the map places (lamps, torches, braziers) |
 | Water reflections | water mirrors the buildings, rocks and sky above it (draws the map twice where there's water) |
+| Grass | tufts on grassy ground, coloured by the ground under them, swaying |
+| Shadows | buildings and trees cast shadows from the map's sun onto the ground |
 | Distance haze | far things fade into the map's own light colour (needs WebGL 2) |
 | Tone mapping | bright areas roll off instead of clipping, which matters with bloom |
 | Vignette | darker corners |
@@ -22,5 +24,5 @@ the GLSL in [`client/index.js`](client/index.js). The pass is handed the frame,
 its depth, the map's sun and its point lights already projected onto the
 screen. See docs/MODDING.md, "Graphics passes".
 
-Water reflections are a renderer feature rather than part of the pass:
-`api.graphics.configure({ waterReflection: 0.6 })`.
+Water reflections, grass and shadows are renderer features rather than part
+of the pass: `api.graphics.configure({ waterReflection, grass, shadows })`.

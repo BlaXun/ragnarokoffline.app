@@ -116,9 +116,20 @@ export default function init(parameters, api) {
     }
     const uniforms = strengths(parameters);
     const anything = Object.values(uniforms).some(value => value > 0);
-    // Reflections are drawn inside the renderer, not in this pass.
-    const water = Number(parameters?.water);
-    if (Number.isFinite(water) && water > 0) api.graphics.configure({ waterReflection: Math.min(water, 100) / 100 });
+    // Reflections, grass and shadows are drawn inside the renderer, not in
+    // this pass.
+    const percent = key => { const value = Number(parameters?.[key]); return Number.isFinite(value) ? Math.min(Math.max(value, 0), 100) / 100 : 0; };
+    const features = {};
+    if (percent('water') > 0) features.waterReflection = percent('water');
+    if (percent('shadows') > 0) features.shadows = percent('shadows');
+    if (percent('grass') > 0) features.grass = {
+        // Ground textures whose names say grass: the client's are Korean
+        // (풀 grass, 잔디 lawn, 초원 meadow, 들판 field), a mod's often English.
+        textures: ['풀', '잔디', '초원', '들판', 'grass'],
+        density: percent('grass'),
+        wind: 0.3,
+    };
+    if (Object.keys(features).length) api.graphics.configure(features);
     api.graphics.registerPass({
         name: 'Graphics+',
         fragment: FRAGMENT,
