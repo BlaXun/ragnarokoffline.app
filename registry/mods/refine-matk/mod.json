@@ -2,9 +2,19 @@
   "name": "refine-matk",
   "version": "1.0.0",
   "author": "BlaXun",
-  "description": "Weapon refining also raises MATK, so magic classes get something out of a blacksmith too. Bonus scales with the weapon's tier and counts both hands for dual-wielders. Off until you turn it on.",
-  "default": "off",
-  "requires": { "app": ">=1.2.6", "era": "any" },
+  "description": "Weapon refining also raises MATK, so magic classes get something out of a blacksmith too. Bonus scales with the weapon's tier and counts both hands for dual-wielders.",
+  "requires": { "app": ">=1.3.4", "era": "any" },
+  "tags": [
+    "refine",
+    "magic",
+    "equipment",
+    "balance"
+  ],
+  "icon": "images/icon.png",
+  "screenshots": [
+    "images/refine-matk.png"
+  ],
+  "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/refine-matk",
   "settings": [
     {
       "key": "matk_lv1",

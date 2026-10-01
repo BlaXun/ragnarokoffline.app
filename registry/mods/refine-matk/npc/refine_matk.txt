@@ -13,7 +13,6 @@
 
 OnPCLoginEvent:
 	// Restart the per-player loop cleanly on every login.
-	set @refine_matk_last, -1;
 	deltimer "refine_matk_mgr::OnRefresh";
 	addtimer 500, "refine_matk_mgr::OnRefresh";
 	end;
@@ -56,14 +55,19 @@ OnRefresh:
 		}
 	}
 
-	// Reapply only when the target value changed, so an identical
-	// bonus_script refreshes in place rather than piling up.
-	if (.@bonus > 0 && .@bonus != @refine_matk_last)
-		bonus_script "bonus bMatk," + .@bonus + ";", 6, 0, 1, 0;
-	set @refine_matk_last, .@bonus;
+	// Reapply on every tick. Flag 1024 (BSF_FORCE_REPLACE) makes an
+	// identical bonus_script push its expiry out instead of being
+	// ignored as a duplicate, so the bonus stays up for as long as the
+	// loop runs; without it the first one simply expires after its
+	// duration and an unchanged value is never applied again. Flag 8
+	// drops it on logout rather than saving it to the bonus_script
+	// table. No status icon argument: the default is none (EFST_BLANK),
+	// where 0 would be EFST_PROVOKE's.
+	if (.@bonus > 0)
+		bonus_script "bonus bMatk," + .@bonus + ";", 5, 1032;
 
-	// Keep the buff alive; a 4s tick under the 6s duration means at
-	// most ~2s of overlap when the player swaps to a different refine.
+	// A 4s tick under the 5s duration. When the value changes the old
+	// string is a different bonus_script, which lapses within ~1s.
 	addtimer 4000, "refine_matk_mgr::OnRefresh";
 	end;
 }

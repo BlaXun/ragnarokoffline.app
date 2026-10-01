@@ -3,7 +3,8 @@
 Weapon refining also grants MATK, so a blacksmith is worth visiting as a
 magic-damage class.
 
-**It ships switched off.** Settings → Mods → tick it → Apply, then relog.
+Install it from **Settings → Mods → Browse**, then relog. Untick it under
+**Settings → Mods** to switch it off again.
 
 ## The problem it fixes
 
@@ -85,12 +86,13 @@ one NPC script (`npc/refine_matk.txt`) with three moving parts:
 1. **`OnPCLoginEvent`** starts a per-player refresh loop as soon as the
    character connects.
 2. **The loop** reads `getequipid(EQI_HAND_R)`, `getequiprefinerycnt(EQI_HAND_R)`
-   and the weapon's `ITEMINFO_WEAPONLEVEL`, computes the target MATK, and —
-   only if it changed since the last tick — reapplies it through
-   `bonus_script "bonus bMatk,<n>;"` with a short duration.
-3. **The short duration** is kept alive by the loop refreshing it. Stop
-   refreshing (unequip, log out, disable the mod and relog) and the buff
-   expires in a handful of seconds.
+   and the weapon's `ITEMINFO_WEAPONLEVEL`, computes the target MATK, and
+   applies it every 4 seconds through `bonus_script "bonus bMatk,<n>;"` with
+   a 5-second duration and flag 1024 (`BSF_FORCE_REPLACE`), which makes an
+   identical bonus push its expiry out rather than be dropped as a duplicate.
+3. **The short duration** is kept alive by the loop refreshing it. Swap to a
+   different refine and the old value lapses within about a second; log out
+   and it is dropped (flag 8).
 
 `bonus_script` is used rather than a status-change (SC) so no visible buff
 icon is added to the player's status bar, and so the bonus never fights with
