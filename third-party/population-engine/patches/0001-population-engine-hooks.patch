@@ -670,14 +670,14 @@ diff --git a/src/map/battle.cpp b/src/map/battle.cpp
 index 5420fbd..9322f40 100644
 --- a/src/map/battle.cpp
 +++ b/src/map/battle.cpp
-@@ -33,6 +33,7 @@
+@@ -30,6 +30,7 @@
+ #include "mob.hpp"
+ #include "party.hpp"
+ #include "path.hpp"
++#include "population_engine.hpp"
  #include "pc.hpp"
  #include "pc_groups.hpp"
  #include "pet.hpp"
-+#include "population_engine.hpp"
- #include "./skills/skill_impl.hpp"
- 
- using namespace rathena;
 @@ -8140,6 +8141,26 @@ int32 battle_check_target( const block_list* src, const block_list* target, int3
  		return (flag&state)?1:-1;
  	}
@@ -1239,26 +1239,6 @@ index c05f24b..3e5e42b 100644
 +#include "population_engine.hpp"
  #include "quest.hpp"
  #include "storage.hpp"
- 
-@@ -27859,7 +27860,7 @@ BUILDIN_FUNC(mesemotion){
- 	// Validates emotion range
- 	if (id < ET_SURPRISE || id >= ET_MAX) {
- 		ShowError("buildin_mesemotion: Emotion ID %d is invalid.\n", id);
--		st->state = END;
-+		st->state = END;
- 		return SCRIPT_CMD_FAILURE;
- 	}
- 
-@@ -27870,8 +27871,8 @@ BUILDIN_FUNC(mesemotion){
- 	return SCRIPT_CMD_SUCCESS;
- #else
- 	ShowError( "buildin_mesemotion: This command requires PACKETVER 2023-03-02 or newer.\n" );
--	st->state = END;
--	return SCRIPT_CMD_FAILURE;
-+	st->state = END;
-+	return SCRIPT_CMD_FAILURE;
- #endif
- }
  
 diff --git a/src/map/skill.cpp b/src/map/skill.cpp
 index 27c9e23..d2dfb7c 100755
