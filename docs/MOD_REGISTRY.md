@@ -30,7 +30,8 @@ listing one.
 | Good for | small, stable mods; anything a reviewer should read each time it changes | mods under active development, released often |
 
 Both kinds show up in the same list and install with the same button. A mod
-from its own repository is marked **from GitHub**, and its install dialog says
+from its own repository carries a **GitHub** badge that opens the repository,
+and its install dialog says
 which repository and release it is about to install.
 
 If you are unsure, start with files in this repository. Moving to your own
