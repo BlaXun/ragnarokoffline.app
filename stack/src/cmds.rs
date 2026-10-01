@@ -1564,13 +1564,24 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     // first time it starts on a world from before 1.4.0, and that can't be
     // undone: an earlier release can no longer log those accounts in. Keep a
     // copy of the database as it was, first. The game servers are not up yet.
-    if crate::accounts::passwords_unhashed(dk)? {
-        let backups = cfg.state.join("backups");
+    //
+    // If that backup can't be taken, the world still starts: hashing waits
+    // (`hash_passwords: no` below), passwords stay exactly as they were, and
+    // both are tried again on the next start. Refusing to start would lock
+    // the player out of their world over a backup they never asked for.
+    let backups = cfg.state.join("backups");
+    let mut defer_hashing = false;
+    if !hashing_backup_exists(&backups) && crate::accounts::plaintext_passwords(dk)? {
         crate::private_fs::directory(&backups)?;
         let copy = backups.join(format!("before-password-hashing-{}.sql", crate::private_fs::random_hex(8)?));
-        backup_snapshot(cfg, dk, &copy.to_string_lossy(), false)
-            .map_err(|e| format!("backing up the database before hashing passwords: {e}"))?;
-        phase(cfg, "Saved a backup of the accounts before securing their passwords…");
+        match backup_snapshot(cfg, dk, &copy.to_string_lossy(), false) {
+            Ok(()) => phase(cfg, "Saved a backup of the accounts before securing their passwords…"),
+            Err(e) => {
+                eprintln!("password hashing postponed: backing up the database first failed: {e}");
+                phase(cfg, "Couldn't back up the accounts before securing their passwords, so they stay as they are for now. It will try again next start.");
+                defer_hashing = true;
+            }
+        }
     }
     crate::accounts::ensure_password_columns(dk)?;
     // Sign in with Google or Apple: the login server's one-time token table and
@@ -1690,6 +1701,9 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     // The listen ports go last in each file: rAthena keeps the last assignment,
     // so nothing earlier -- a mod's allowlisted settings included -- can move
     // a server off the port the client will be sent to (ports.rs).
+    if defer_hashing {
+        login_config.push_str("hash_passwords: no\n");
+    }
     let ports = cfg.ports;
     login_config.push_str(&ports.login_conf());
     write_conf(&conf, "login_conf.txt", &login_config)?;
@@ -2126,6 +2140,20 @@ pub fn backup(cfg: &Config, dk: &Docker, dest: &str) -> Result<(), String> {
 
 /// `announce` is off for the safety copies taken on someone else's behalf, so
 /// their line cannot land in the middle of output a caller is parsing.
+/// Whether a backup taken before the first password hashing is already kept:
+/// a non-empty `before-password-hashing-*.sql` in the backups folder. Once
+/// there is one, accounts the app writes later (plain text until the login
+/// server hashes them) don't each set off another full dump.
+fn hashing_backup_exists(backups: &Path) -> bool {
+    fs::read_dir(backups)
+        .map(|entries| entries.flatten().any(|e| {
+            let name = e.file_name().to_string_lossy().into_owned();
+            name.starts_with("before-password-hashing-") && name.ends_with(".sql")
+                && e.metadata().map(|m| m.len() > 0).unwrap_or(false)
+        }))
+        .unwrap_or(false)
+}
+
 pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: bool) -> Result<(), String> {
     let backups = cfg.state.join("backups");
     fs::create_dir_all(&backups).map_err(|e| e.to_string())?;
@@ -2139,7 +2167,11 @@ pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: b
         "exec", DB_CONTAINER, "sh", "-c",
         &format!("umask 077; {} --single-transaction --routines --databases ragnarok > /backups/{tmp}", dk.database_client("mariadb-dump")?),
     ])
-    .map_err(|_| "the database did not produce a dump (is the server running?)".to_string())?;
+    // What the database said, not a guess: the next report says what failed.
+    .map_err(|e| match e.trim() {
+        "" => "the database did not produce a dump (is the server running?)".to_string(),
+        said => format!("the database did not produce a dump: {said}"),
+    })?;
 
     let staged = backups.join(&tmp);
     if cfg!(windows) {
@@ -2448,6 +2480,21 @@ mod tests {
     }
 
     use super::*;
+
+    #[test]
+    fn a_kept_pre_hashing_backup_stops_another_one() {
+        let dir = std::env::temp_dir().join(format!("ro-hashbackup-{}", crate::private_fs::random_hex(6).unwrap()));
+        fs::create_dir_all(&dir).unwrap();
+        assert!(!hashing_backup_exists(&dir), "an empty folder has none");
+        fs::write(dir.join("before-password-hashing-abc.sql"), b"").unwrap();
+        assert!(!hashing_backup_exists(&dir), "an empty file is a failed dump, not a backup");
+        fs::write(dir.join("before-restore-renewal-x.sql"), b"-- dump").unwrap();
+        assert!(!hashing_backup_exists(&dir), "other backups don't count");
+        fs::write(dir.join("before-password-hashing-def.sql"), b"-- dump").unwrap();
+        assert!(hashing_backup_exists(&dir));
+        assert!(!hashing_backup_exists(&dir.join("missing")), "no folder yet");
+        fs::remove_dir_all(&dir).unwrap();
+    }
 
     /// Also a contract with nebula's prose, and the cost of misreading it is
     /// the whole of #119: a departing engine read as gone lets a start run into

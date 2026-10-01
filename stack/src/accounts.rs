@@ -94,19 +94,21 @@ pub(crate) fn weak_password_sql() -> String {
     format!("IF({HASHED}, (pass_flags & 1) <> 0, OCTET_LENGTH(user_pass) NOT BETWEEN 8 AND 23 OR BINARY user_pass REGEXP '[^ -~]' OR TRIM(user_pass)='' OR LOWER(user_pass)=LOWER(userid))")
 }
 
+/// Whether any player account still has a plain-text password -- what the
+/// login server will turn into a hash when it starts. Asked of the rows, not
+/// of the schema: the `pass_flags` column is added below on every start, so
+/// "is the column there" stops meaning "has this world been hashed" the moment
+/// the first start runs, even if that start went no further.
+pub fn plaintext_passwords(dk: &Docker) -> Result<bool, String> {
+    let out = dk
+        .private_sql(&format!("SELECT COUNT(*) FROM login WHERE sex<>'S' AND user_pass<>'' AND NOT ({HASHED});"))
+        .map_err(|e| format!("checking the accounts table: {e}"))?;
+    Ok(out.lines().filter_map(|line| line.trim().parse::<u64>().ok()).last().unwrap_or(0) > 0)
+}
+
 /// Room for a hash, and the flags column, on a database made before hashing.
 /// The login server makes the same change when it starts; doing it here as
 /// well means the checks above work before it ever has. Idempotent.
-/// Whether this database still has plain-text passwords: no `pass_flags`
-/// column yet, so the login server has never hashed them. The first start
-/// of a 1.4.0 on a world made by an earlier release.
-pub fn passwords_unhashed(dk: &Docker) -> Result<bool, String> {
-    let out = dk
-        .private_sql("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'login' AND COLUMN_NAME = 'pass_flags';")
-        .map_err(|e| format!("checking the accounts table: {e}"))?;
-    Ok(out.lines().filter_map(|line| line.trim().parse::<u32>().ok()).last() == Some(0))
-}
-
 pub fn ensure_password_columns(dk: &Docker) -> Result<(), String> {
     dk.private_sql("ALTER TABLE login MODIFY user_pass varchar(128) NOT NULL DEFAULT ''; ALTER TABLE login ADD COLUMN IF NOT EXISTS pass_flags tinyint(3) unsigned NOT NULL DEFAULT 0 AFTER user_pass;")
         .map(|_| ())
