@@ -197,7 +197,15 @@ test('a release that is a RAR is staged like a zip', real, async () => {
 
 test('names with spaces and non-ASCII survive the listing and the unpack', real, () => {
   const listed = modZip.rarEntries(fixture('names.rar'));
-  assert.ok(listed.some(e => e.name.normalize('NFC') === 'my mod/npc/名前 ünï.txt' && e.size === 2), JSON.stringify(listed));
+  // Windows' tar.exe lists non-ASCII through the console code page, so those
+  // characters come back as '?'. The vetting only relies on '/', '..' and ':'
+  // (which survive), and the walk after unpacking re-checks the real names, so
+  // on Windows the listing need only keep the shape: the folder, the space, the
+  // size.
+  const wanted = process.platform === 'win32'
+    ? e => e.name.startsWith('my mod/npc/') && e.name.endsWith('.txt') && e.size === 2
+    : e => e.name.normalize('NFC') === 'my mod/npc/名前 ünï.txt' && e.size === 2;
+  assert.ok(listed.some(wanted), JSON.stringify(listed));
   const { dir, files } = modZip.unpack(fixture('names.rar'));
   try {
     assert.strictEqual(modZip.singleTopLevel(files), 'my mod');
