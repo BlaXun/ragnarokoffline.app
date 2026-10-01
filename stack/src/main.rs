@@ -37,6 +37,7 @@ mod sign_in;
 mod remember;
 mod operation_lock;
 mod packetver;
+mod password;
 mod ports;
 
 use config::Config;

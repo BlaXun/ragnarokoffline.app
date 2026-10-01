@@ -38,7 +38,7 @@ TAG = re.compile(r"^[a-z0-9][a-z0-9-]{0,23}$")
 # accepts in electron/mod-source.js; nothing here talks to GitHub, so this
 # check runs offline and CI never depends on somebody else's repository.
 REPO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9-]{0,38}/(?!\.\.?$)[A-Za-z0-9._-]{1,100}$")
-ASSET = re.compile(r"^[A-Za-z0-9._*?-]{1,100}\.zip$", re.IGNORECASE)
+ASSET = re.compile(r"^[A-Za-z0-9._*?-]{1,100}\.(zip|rar)$", re.IGNORECASE)
 
 
 def read_source(name, source):
@@ -55,7 +55,7 @@ def read_source(name, source):
     if "asset" in source:
         asset = source["asset"]
         if not isinstance(asset, str) or not ASSET.match(asset):
-            raise SystemExit(f"{name}: source.asset must be a .zip file name, with * or ? for the parts that change, e.g. \"my-mod-*.zip\"")
+            raise SystemExit(f"{name}: source.asset must be a .zip or .rar file name, with * or ? for the parts that change, e.g. \"my-mod-*.zip\"")
         out["asset"] = asset
     return out
 

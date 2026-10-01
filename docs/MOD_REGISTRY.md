@@ -93,7 +93,7 @@ registry/mods/standart-npc/
 | `source` field | |
 |---|---|
 | `github` | `owner/repo`. The only repository the app will fetch this mod from |
-| `asset` | optional. Which file of a release is the mod: a name with `*` (any run of characters) and `?` (one character), ending in `.zip`. Matched against the whole asset name, case-insensitively |
+| `asset` | optional. Which file of a release is the mod: a name with `*` (any run of characters) and `?` (one character), ending in `.zip` or `.rar`. Matched against the whole asset name, case-insensitively |
 
 Without `asset`, or when no asset of a release matches it, the app installs
 GitHub's own **Source code (zip)** of the release tag. That works for a
@@ -115,8 +115,8 @@ whichever release is latest — the one in that release's own `mod.json`.
    compares to decide whether there is an update: `v4.8.0` and `4.8.0` are both
    fine, and are compared as dotted numbers (`v4.10.0` is newer than
    `v4.9.0`). Keep tags increasing.
-3. **Attach the mod as a zip** whose name matches your `asset` pattern —
-   `standart-npc-4.8.0.zip`. Either layout works:
+3. **Attach the mod as a zip or a RAR** whose name matches your `asset`
+   pattern — `standart-npc-4.8.0.zip`. Either layout works:
 
    ```
    standart-npc-4.8.0.zip            standart-npc-4.8.0.zip
@@ -126,18 +126,26 @@ whichever release is latest — the one in that release's own `mod.json`.
        └── db/…
    ```
 
-   That is, `mod.json` at the top of the zip, or inside its one top-level
+   That is, `mod.json` at the top of the archive, or inside its one top-level
    folder. Whatever the folder is called, the mod is installed under the
    registry's name, because that is its identity: it is what `disabled.txt`
    lists and what the player's settings are stored under.
+
+   **The file's content decides how it is read, not its extension.** A RAR
+   (version 4 or 5) attached as `my-mod.zip` installs, and so does a zip
+   named `.rar`; anything that is neither is refused. A zip is the safer
+   choice for your players: a RAR needs libarchive's `bsdtar`, which macOS
+   and Windows 10 and 11 ship with but most Linux systems do not
+   (`libarchive-tools` on Debian and Ubuntu), and a player without it is
+   told to install it.
 4. **Publish it as a full release.** Drafts and pre-releases are never offered;
    the app asks GitHub for `releases/latest`, which is the newest non-draft,
    non-prerelease release. Use a pre-release to test something with a few
    people before everyone is offered it.
 
-What the app refuses, so there is no point shipping it: a zip over **50 MB**,
+What the app refuses, so there is no point shipping it: an archive over **50 MB**,
 one that unpacks to more than **96 MB** or **2000 files**, any path that climbs
-out of the folder (`../`), absolute paths, symbolic links, and a `mod.json` the
+out of the folder (`../`), absolute paths, symbolic or hard links, and a `mod.json` the
 app's own manifest reader would refuse (unknown `requires` keys, bad settings).
 
 **`requires.app`** in the release's `mod.json` is checked before anything is
@@ -177,7 +185,7 @@ when asked, so this is hard to reach in practice; when it is reached, the player
 is told when to try again.
 
 The installed copy carries a small `.source.json` (repository, tag, asset name,
-SHA-256 of the downloaded zip, install time). That is how the app knows where
+SHA-256 of the downloaded archive, install time). That is how the app knows where
 to look for updates; a copy installed from a zip by hand has none and is never
 updated over.
 
@@ -199,7 +207,7 @@ The index is generated from these files, never hand-written.
 | `requires.era` | `renewal`, `pre-renewal` or `any` |
 | `requires.mods` | other mods this one cannot work without |
 | `after` | mods you are applied after, so your copy of a shared table wins |
-| `source` | a source entry: `{ "github": "owner/repo", "asset": "pattern.zip" }` |
+| `source` | a source entry: `{ "github": "owner/repo", "asset": "pattern.zip" }` (or `.rar`) |
 
 Pictures are paths inside the registry folder, never URLs. The app fetches them
 from this repository and checks them against the index like any other file, so

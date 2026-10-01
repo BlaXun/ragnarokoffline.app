@@ -1037,25 +1037,103 @@ fn image_bundle_fingerprint(mut reader: impl Read) -> Result<String, String> {
     Ok(format!("{hash:016x}"))
 }
 
+/// The image ids a bundle carries, per tag: what `docker image inspect`
+/// must say each tag points at once the bundle is really loaded.
+///
+/// Two ids are accepted per tag because Docker reports either, depending on
+/// its image store: the classic store's id is the digest of the image config
+/// (manifest.json's `Config`), the containerd store's is the manifest's
+/// digest (index.json). Both are read from the bundle itself, so nothing
+/// here trusts the engine to have done what it was asked.
+fn bundle_image_ids(reader: impl Read) -> Result<Vec<(String, String)>, String> {
+    let bad = || "Cannot read the server image bundle".to_string();
+    let gz = crate::archive::GzipReader::new(std::io::BufReader::with_capacity(256 * 1024, reader)).map_err(|_| bad())?;
+    let mut tar = crate::archive::TarReader::new(gz);
+    let mut ids = Vec::new();
+    let tag = |name: &str| name.strip_prefix("docker.io/").unwrap_or(name).to_string();
+    while let Some(entry) = tar.next_entry().map_err(|_| bad())? {
+        let path = entry.path.trim_start_matches("./");
+        if (path != "manifest.json" && path != "index.json") || entry.size > 1024 * 1024 { continue; }
+        let mut text = String::new();
+        (&mut tar).take(entry.size).read_to_string(&mut text).map_err(|_| bad())?;
+        let parsed = crate::json::parse(&text).map_err(|_| bad())?;
+        let list = match (path, &parsed) {
+            ("manifest.json", crate::json::Value::Array(images)) => images.clone(),
+            ("index.json", _) => match parsed.get("manifests") { Some(crate::json::Value::Array(m)) => m.clone(), _ => Vec::new() },
+            _ => Vec::new(),
+        };
+        for image in &list {
+            if path == "manifest.json" {
+                let Some(config) = image.str("Config") else { continue };
+                let digest = config.rsplit('/').next().unwrap_or(config);
+                let id = if digest.starts_with("sha256:") { digest.to_string() } else { format!("sha256:{digest}") };
+                if let Some(crate::json::Value::Array(tags)) = image.get("RepoTags") {
+                    for t in tags { if let crate::json::Value::String(t) = t { ids.push((tag(t), id.clone())); } }
+                }
+            } else if let (Some(digest), Some(name)) = (image.str("digest"), image.get("annotations").and_then(|a| a.str("io.containerd.image.name"))) {
+                ids.push((tag(name), digest.to_string()));
+            }
+        }
+    }
+    Ok(ids)
+}
+
+/// What a tag points at now, or None when it is not there.
+fn image_id(dk: &Docker, image: &str) -> Option<String> {
+    dk.output(["image", "inspect", "-f", "{{.Id}}", image]).ok()
+        .map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+}
+
+/// Whether every tag the server needs points at the image the bundle carries.
+fn images_match(expected: &[(String, String)], actual: &[(&str, Option<String>)]) -> bool {
+    actual.iter().all(|(tag, id)| match id {
+        Some(id) => expected.iter().any(|(t, e)| t == tag && e == id),
+        None => false,
+    })
+}
+
+/// The marker recording a verified load: the bundle's bytes and the ids the
+/// tags were seen to point at afterwards. Compared against the ids now, so a
+/// tag that moved -- or a load that never replaced it -- is loaded again.
+fn image_marker(fingerprint: &str, actual: &[(&str, Option<String>)]) -> String {
+    let ids: Vec<String> = actual.iter().map(|(tag, id)| format!("{tag}={}", id.as_deref().unwrap_or("-"))).collect();
+    format!("v2:{fingerprint}:{}\n", ids.join(":"))
+}
+
 fn ensure_images(cfg: &Config, dk: &Docker) -> Result<(), String> {
-    let present = dk.image_exists(&cfg.image) && dk.image_exists(&cfg.db_image);
+    let tags = [cfg.image.as_str(), cfg.db_image.as_str()];
+    let current = |dk: &Docker| tags.iter().map(|t| (*t, image_id(dk, t))).collect::<Vec<_>>();
+    let before = current(dk);
+    let present = before.iter().all(|(_, id)| id.is_some());
     let bundle = cfg.root.join("dist/images.tar.gz");
     if !bundle.exists() {
         if present { return Ok(()); }
         return Err(format!("no server images, and no bundle at {}", bundle.display()));
     }
-    let fingerprint = image_bundle_fingerprint(fs::File::open(&bundle).map_err(|_| "Cannot open the server image bundle")?)?;
-    let identity = format!("v1:{fingerprint}:{}:{}\n", cfg.image, cfg.db_image);
+    let open = || fs::File::open(&bundle).map_err(|_| "Cannot open the server image bundle".to_string());
+    let fingerprint = image_bundle_fingerprint(open()?)?;
     let marker = cfg.state.join("image-bundle.id");
-    if present && fs::read_to_string(&marker).ok().as_deref() == Some(identity.as_str()) { return Ok(()); }
-    phase(cfg, "Loading the bundled server images…");
-    // Always use Docker's owned-engine transport, including Windows' loopback
-    // proxy. Existing fixed image tags are replaced when bundled bytes change.
-    dk.load_bundle(&bundle, || dk.image_exists(&cfg.image) && dk.image_exists(&cfg.db_image))?;
-    if !dk.image_exists(&cfg.image) || !dk.image_exists(&cfg.db_image) {
-        return Err(format!("image load did not produce {} and {}", cfg.image, cfg.db_image));
+    if present && fs::read_to_string(&marker).ok().as_deref() == Some(image_marker(&fingerprint, &before).as_str()) { return Ok(()); }
+    let expected = bundle_image_ids(open()?)?;
+    if let Some(tag) = tags.iter().find(|t| !expected.iter().any(|(e, _)| e == *t)) {
+        return Err(format!("the server image bundle does not contain {tag}"));
     }
-    fs::write(marker, identity).map_err(|_| "Cannot record the loaded server image bundle".to_string())
+    // Skip the load when the tags already point at this bundle (a marker from an older release, say).
+    if !images_match(&expected, &before) {
+        phase(cfg, "Loading the bundled server images…");
+        // "Done" is the bundle's own images being in place -- not merely some
+        // image under each tag. On an upgrade the previous release's images
+        // already carry both tags, and treating that as done killed the
+        // loader five seconds in, leaving every upgraded install on the image
+        // it first installed while recording the new bundle as loaded.
+        dk.load_bundle(&bundle, || images_match(&expected, &current(dk)))?;
+    }
+    let after = current(dk);
+    if !images_match(&expected, &after) {
+        let stale: Vec<&str> = after.iter().filter(|(t, id)| !expected.iter().any(|(e, x)| e == t && Some(x) == id.as_ref())).map(|(t, _)| *t).collect();
+        return Err(format!("loading the bundled server images did not replace {}; start again to retry", stale.join(" and ")));
+    }
+    fs::write(marker, image_marker(&fingerprint, &after)).map_err(|_| "Cannot record the loaded server image bundle".to_string())
 }
 
 /// The Kafra teleport prices are hardcoded in the NPC script with no config
@@ -1564,13 +1642,24 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     // first time it starts on a world from before 1.4.0, and that can't be
     // undone: an earlier release can no longer log those accounts in. Keep a
     // copy of the database as it was, first. The game servers are not up yet.
-    if crate::accounts::passwords_unhashed(dk)? {
-        let backups = cfg.state.join("backups");
+    //
+    // If that backup can't be taken, the world still starts: hashing waits
+    // (`hash_passwords: no` below), passwords stay exactly as they were, and
+    // both are tried again on the next start. Refusing to start would lock
+    // the player out of their world over a backup they never asked for.
+    let backups = cfg.state.join("backups");
+    let mut defer_hashing = false;
+    if !hashing_backup_exists(&backups) && crate::accounts::plaintext_passwords(dk)? {
         crate::private_fs::directory(&backups)?;
         let copy = backups.join(format!("before-password-hashing-{}.sql", crate::private_fs::random_hex(8)?));
-        backup_snapshot(cfg, dk, &copy.to_string_lossy(), false)
-            .map_err(|e| format!("backing up the database before hashing passwords: {e}"))?;
-        phase(cfg, "Saved a backup of the accounts before securing their passwords…");
+        match backup_snapshot(cfg, dk, &copy.to_string_lossy(), false) {
+            Ok(()) => phase(cfg, "Saved a backup of the accounts before securing their passwords…"),
+            Err(e) => {
+                eprintln!("password hashing postponed: backing up the database first failed: {e}");
+                phase(cfg, &format!("Couldn't back up the accounts before securing their passwords, so they stay as they are for now. It will try again next start. ({e})"));
+                defer_hashing = true;
+            }
+        }
     }
     crate::accounts::ensure_password_columns(dk)?;
     // Sign in with Google or Apple: the login server's one-time token table and
@@ -1690,6 +1779,9 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     // The listen ports go last in each file: rAthena keeps the last assignment,
     // so nothing earlier -- a mod's allowlisted settings included -- can move
     // a server off the port the client will be sent to (ports.rs).
+    if defer_hashing {
+        login_config.push_str("hash_passwords: no\n");
+    }
     let ports = cfg.ports;
     login_config.push_str(&ports.login_conf());
     write_conf(&conf, "login_conf.txt", &login_config)?;
@@ -2126,26 +2218,43 @@ pub fn backup(cfg: &Config, dk: &Docker, dest: &str) -> Result<(), String> {
 
 /// `announce` is off for the safety copies taken on someone else's behalf, so
 /// their line cannot land in the middle of output a caller is parsing.
+/// Whether a backup taken before the first password hashing is already kept:
+/// a non-empty `before-password-hashing-*.sql` in the backups folder. Once
+/// there is one, accounts the app writes later (plain text until the login
+/// server hashes them) don't each set off another full dump.
+fn hashing_backup_exists(backups: &Path) -> bool {
+    fs::read_dir(backups)
+        .map(|entries| entries.flatten().any(|e| {
+            let name = e.file_name().to_string_lossy().into_owned();
+            name.starts_with("before-password-hashing-") && name.ends_with(".sql")
+                && e.metadata().map(|m| m.len() > 0).unwrap_or(false)
+        }))
+        .unwrap_or(false)
+}
+
 pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: bool) -> Result<(), String> {
     let backups = cfg.state.join("backups");
     fs::create_dir_all(&backups).map_err(|e| e.to_string())?;
     let tmp = format!("ragnarokmac-{}-{}.sql", std::process::id(), crate::private_fs::random_hex(12)?);
-
     crate::private_fs::directory(&backups)?;
-    // Players have been saved and game services stopped. This also makes the
-    // mixed-engine rAthena tables consistent; --single-transaction alone would
-    // only protect InnoDB, not all of the schema.
-    dk.output([
-        "exec", DB_CONTAINER, "sh", "-c",
-        &format!("umask 077; {} --single-transaction --routines --databases ragnarok > /backups/{tmp}", dk.database_client("mariadb-dump")?),
-    ])
-    .map_err(|_| "the database did not produce a dump (is the server running?)".to_string())?;
 
+    // The dump is written inside the container, in its own /tmp, and copied
+    // out with `docker cp` -- on every platform, not only Windows. Writing it
+    // into the bind-mounted /backups made the host's shared folder (its
+    // owner, its mode, the hypervisor's file sharing) part of whether a
+    // backup could be taken at all, and split the code by OS.
+    let inside = format!("/tmp/{tmp}");
     let staged = backups.join(&tmp);
-    if cfg!(windows) {
-        // No bind mount there, so the dump is inside a named volume; fetch it.
-        dk.copy_out(DB_CONTAINER, &format!("/backups/{tmp}"), &staged)?;
+    let result = dump_database(dk, &inside).and_then(|()| {
+        dk.copy_out(DB_CONTAINER, &inside, &staged)
+            .map_err(|e| { eprintln!("database backup: {e}"); format!("the dump was made but could not be copied out of the database container: {e}") })
+    });
+    dk.quiet(["exec", DB_CONTAINER, "rm", "-f", &inside]);
+    if let Err(e) = result {
+        let _ = fs::remove_file(&staged);
+        return Err(e);
     }
+
     let size = fs::metadata(&staged).map(|m| m.len()).unwrap_or(0);
     if size == 0 {
         let _ = fs::remove_file(&staged);
@@ -2157,11 +2266,93 @@ pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: b
     }
     crate::private_fs::export_file(&staged, Path::new(dest))?;
     let _ = fs::remove_file(&staged);
-    dk.quiet(["exec", DB_CONTAINER, "rm", "-f", &format!("/backups/{tmp}")]);
     if announce {
         println!("wrote {dest} ({})", human(size));
     }
     Ok(())
+}
+
+/// Run mariadb-dump into `inside` (a path in the database container). On
+/// failure, everything needed to tell why goes to the log: the exit code,
+/// mariadb-dump's own words, which credentials it used (never the password),
+/// the server's version, and any table that CHECK TABLE says is damaged.
+/// The error returned is one short line for the loading screen.
+fn dump_database(dk: &Docker, inside: &str) -> Result<(), String> {
+    // Players have been saved and game services stopped. This also makes the
+    // mixed-engine rAthena tables consistent; --single-transaction alone would
+    // only protect InnoDB, not all of the schema.
+    let command = format!("umask 077; {} --single-transaction --routines --databases ragnarok > {inside}", dk.database_client("mariadb-dump")?);
+    let out = dk.capture(["exec", DB_CONTAINER, "sh", "-c", &command])
+        .map_err(|e| format!("the database did not produce a dump: could not run docker: {e}"))?;
+    if out.status.success() {
+        return Ok(());
+    }
+    let code = out.status.code().map(|c| c.to_string()).unwrap_or_else(|| "none".into());
+    let said = String::from_utf8_lossy(&out.stderr).trim().to_string();
+    let version = dk.private_sql("SELECT VERSION();").map(|v| v.trim().to_string()).unwrap_or_else(|_| "unknown (the server did not answer)".into());
+    eprintln!("database backup failed: mariadb-dump exited {code}");
+    eprintln!("database backup: credentials: {}; server version: {version}", dk.sql_auth_kind());
+    eprintln!("database backup: mariadb-dump said: {}", if said.is_empty() { "(nothing)" } else { &said });
+    if let Some(table) = dump_error_table(&said) {
+        eprintln!("database backup: the error names table `{table}`");
+    }
+    match check_tables(dk) {
+        Ok(problems) if problems.is_empty() => eprintln!("database backup: CHECK TABLE found no damaged table"),
+        Ok(problems) => for line in problems { eprintln!("database backup: CHECK TABLE: {line}") },
+        Err(e) => eprintln!("database backup: CHECK TABLE could not run: {e}"),
+    }
+    Err(dump_failure_summary(&code, &said))
+}
+
+/// The loading-screen line: the exit code and mariadb-dump's last word, cut
+/// short. The rest is in the log.
+fn dump_failure_summary(code: &str, said: &str) -> String {
+    let line = said.lines().map(str::trim).filter(|l| !l.is_empty() && !l.starts_with("Warning")).last().unwrap_or("");
+    let line: String = line.chars().take(200).collect();
+    if code == "127" && said.contains("not found") {
+        return "the database did not produce a dump: mariadb-dump is missing from the database image".into();
+    }
+    if line.is_empty() {
+        format!("the database did not produce a dump (mariadb-dump exited {code}; the log has details)")
+    } else {
+        format!("the database did not produce a dump (exit {code}): {line}")
+    }
+}
+
+/// The table a mariadb-dump error is about, if it names one: "when dumping
+/// table `x`", "Table 'x'", or "Table './ragnarok/x'".
+fn dump_error_table(said: &str) -> Option<String> {
+    let valid = |t: &str| !t.is_empty() && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+    for (open, close) in [("table `", '`'), ("Table '", '\''), ("table '", '\'')] {
+        if let Some(start) = said.find(open) {
+            let rest = &said[start + open.len()..];
+            let name = rest.split(close).next().unwrap_or("");
+            let name = name.rsplit('/').next().unwrap_or(name);
+            let name = name.rsplit('.').next().unwrap_or(name);
+            if valid(name) { return Some(name.to_string()); }
+        }
+    }
+    None
+}
+
+/// CHECK TABLE over every table in the game database; returns only the rows
+/// that are not a plain OK, so a crashed or corrupt table shows up by name.
+/// Filtered inside the container to keep the answer small (docker exec's
+/// stdout loses data past 8 KiB under docker-slim).
+fn check_tables(dk: &Docker) -> Result<Vec<String>, String> {
+    let names = dk.private_sql("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE';")?;
+    let names: Vec<&str> = names.lines().map(str::trim)
+        .filter(|n| !n.is_empty() && n.chars().all(|c| c.is_ascii_alphanumeric() || c == '_'))
+        .collect();
+    if names.is_empty() { return Ok(Vec::new()); }
+    let list = names.iter().map(|n| format!("`{n}`")).collect::<Vec<_>>().join(",");
+    let command = format!(
+        "{} --batch --skip-column-names ragnarok -e 'CHECK TABLE {list}' | awk -F '\\t' '$4 != \"OK\" {{ print }}'",
+        dk.database_client("mariadb")?
+    );
+    let out = dk.capture(["exec", DB_CONTAINER, "sh", "-c", &command])?;
+    let text = String::from_utf8_lossy(&out.stdout).into_owned() + &String::from_utf8_lossy(&out.stderr);
+    Ok(text.lines().map(|l| l.trim().replace('\t', " ")).filter(|l| !l.is_empty()).collect())
 }
 
 pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
@@ -2447,7 +2638,68 @@ mod tests {
         assert_eq!(first, super::image_bundle_fingerprint(&b"same-size-old"[..]).unwrap());
     }
 
+    /// A bundle laid out as `docker save` writes one: blobs, then the two
+    /// indexes. Both kinds of id are read, under the tag Docker reports.
+    #[test]
+    fn bundle_image_ids_come_from_both_indexes() {
+        let manifest = br#"[{"Config":"blobs/sha256/aaa","RepoTags":["ragnarokmac/mariadb:11.4"],"Layers":[]},{"Config":"blobs/sha256/bbb","RepoTags":["ragnarokmac/rathena:20221005"]}]"#;
+        let index = br#"{"schemaVersion":2,"manifests":[{"digest":"sha256:ccc","annotations":{"io.containerd.image.name":"docker.io/ragnarokmac/mariadb:11.4"}}]}"#;
+        let mut tar = crate::archive::TarWriter::new(crate::archive::GzipWriter::new(Vec::new()).unwrap());
+        tar.file("blobs/sha256/aaa", 3, 0, &b"xyz"[..]).unwrap();
+        tar.file("manifest.json", manifest.len() as u64, 0, &manifest[..]).unwrap();
+        tar.file("index.json", index.len() as u64, 0, &index[..]).unwrap();
+        let bytes = tar.finish().unwrap().finish().unwrap();
+        let ids = super::bundle_image_ids(&bytes[..]).unwrap();
+        let has = |t: &str, id: &str| ids.iter().any(|(a, b)| a == t && b == id);
+        assert!(has("ragnarokmac/mariadb:11.4", "sha256:aaa"));
+        assert!(has("ragnarokmac/mariadb:11.4", "sha256:ccc"));
+        assert!(has("ragnarokmac/rathena:20221005", "sha256:bbb"));
+
+        // The bug: the old images still answer to both tags. That is not done.
+        let old = [("ragnarokmac/mariadb:11.4", Some("sha256:old".to_string())), ("ragnarokmac/rathena:20221005", Some("sha256:bbb".to_string()))];
+        assert!(!super::images_match(&ids, &old));
+        let new = [("ragnarokmac/mariadb:11.4", Some("sha256:ccc".to_string())), ("ragnarokmac/rathena:20221005", Some("sha256:bbb".to_string()))];
+        assert!(super::images_match(&ids, &new));
+        assert!(!super::images_match(&ids, &[("ragnarokmac/mariadb:11.4", None)]));
+        // A marker from before ids were recorded never matches, so an install
+        // the old check left on stale images is verified on its next start.
+        assert_ne!(super::image_marker("f", &new), "v1:f:ragnarokmac/rathena:20221005:ragnarokmac/mariadb:11.4\n");
+        assert_ne!(super::image_marker("f", &new), super::image_marker("f", &old));
+    }
+
     use super::*;
+
+    #[test]
+    fn a_dump_error_names_its_table() {
+        assert_eq!(dump_error_table("mariadb-dump: Error 1194: Table 'loginlog' is marked as crashed and should be repaired when dumping table `loginlog` at row: 0").as_deref(), Some("loginlog"));
+        assert_eq!(dump_error_table("mariadb-dump: Got error: 145: \"Table './ragnarok/char' is marked as crashed and should be repaired\" when using LOCK TABLES").as_deref(), Some("char"));
+        assert_eq!(dump_error_table("mariadb-dump: Got error: 1045: \"Access denied for user 'ragnarok'@'127.0.0.1' (using password: YES)\" when trying to connect"), None);
+        assert_eq!(dump_error_table(""), None);
+    }
+
+    #[test]
+    fn a_failed_dump_says_what_mariadb_dump_said() {
+        let said = "mariadb-dump: Error 1194: Table 'loginlog' is marked as crashed";
+        assert_eq!(dump_failure_summary("2", said), format!("the database did not produce a dump (exit 2): {said}"));
+        assert!(dump_failure_summary("127", "sh: mariadb-dump: not found").contains("missing"));
+        assert!(dump_failure_summary("1", "").contains("exited 1"));
+        assert!(dump_failure_summary("2", &"x".repeat(1000)).len() < 300);
+    }
+
+    #[test]
+    fn a_kept_pre_hashing_backup_stops_another_one() {
+        let dir = std::env::temp_dir().join(format!("ro-hashbackup-{}", crate::private_fs::random_hex(6).unwrap()));
+        fs::create_dir_all(&dir).unwrap();
+        assert!(!hashing_backup_exists(&dir), "an empty folder has none");
+        fs::write(dir.join("before-password-hashing-abc.sql"), b"").unwrap();
+        assert!(!hashing_backup_exists(&dir), "an empty file is a failed dump, not a backup");
+        fs::write(dir.join("before-restore-renewal-x.sql"), b"-- dump").unwrap();
+        assert!(!hashing_backup_exists(&dir), "other backups don't count");
+        fs::write(dir.join("before-password-hashing-def.sql"), b"-- dump").unwrap();
+        assert!(hashing_backup_exists(&dir));
+        assert!(!hashing_backup_exists(&dir.join("missing")), "no folder yet");
+        fs::remove_dir_all(&dir).unwrap();
+    }
 
     /// Also a contract with nebula's prose, and the cost of misreading it is
     /// the whole of #119: a departing engine read as gone lets a start run into

@@ -139,15 +139,15 @@ pub(crate) fn statement(action: &str, request: &Value, password: &str) -> Result
             let name = field(request, "username")?;
             username(name)?;
             let (p, s, e, u) = (hex(i.provider), hex(i.subject), hex(&i.email), hex(name));
+            let (pass, flags) = crate::password::columns(password, name)?;
             format!(
                 "LOCK TABLES login WRITE, login AS existing READ, app_sign_in_identities WRITE, app_sign_in_identities AS linked READ; \
-                 INSERT INTO login (userid,user_pass,sex,email,group_id,birthdate) SELECT {u},{},'M','a@a.com',0,'{DEFAULT_BIRTHDATE}' FROM DUAL \
+                 INSERT INTO login (userid,user_pass,pass_flags,sex,email,group_id,birthdate) SELECT {u},{pass},{flags},'M','a@a.com',0,'{DEFAULT_BIRTHDATE}' FROM DUAL \
                  WHERE NOT EXISTS (SELECT 1 FROM login AS existing WHERE existing.userid={u}) \
                  AND NOT EXISTS (SELECT 1 FROM app_sign_in_identities AS linked WHERE (BINARY linked.provider={p} AND BINARY linked.subject={s}) OR linked.email={e}); \
                  SET @made=ROW_COUNT(), @account=LAST_INSERT_ID(); \
                  INSERT INTO app_sign_in_identities (provider,subject,email,account_id) SELECT {p},{s},{e},@account FROM DUAL WHERE @made=1; \
-                 SELECT @made; UNLOCK TABLES;",
-                hex(password)
+                 SELECT @made; UNLOCK TABLES;"
             )
         }
         // Link an identity to an account whose password the gateway has just
@@ -297,7 +297,7 @@ mod tests {
         assert!(sql.contains("NOT EXISTS (SELECT 1 FROM login AS existing"));
         assert!(sql.contains("OR linked.email="));
         assert!(sql.contains(&format!("'{DEFAULT_BIRTHDATE}'")));
-        assert!(sql.contains(&hex("unusable-secret")));
+        assert!(!sql.contains(&hex("unusable-secret")[2..]));
         assert!(!sql.contains("unusable-secret"));
         assert!(statement("identity-create", &request(",\"username\":\"ragnarok\""), "x").is_err());
         assert!(statement("identity-create", &request(",\"username\":\"new_M\""), "x").is_err());

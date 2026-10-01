@@ -111,6 +111,13 @@ impl Docker {
         }
     }
 
+    /// Run and keep everything: exit status, stdout and stderr. For callers
+    /// that have to report exactly how a command failed.
+    pub fn capture<I, S>(&self, args: I) -> Result<std::process::Output, String>
+    where I: IntoIterator<Item = S>, S: AsRef<OsStr> {
+        self.base().args(args).stdin(Stdio::null()).output().map_err(|e| e.to_string())
+    }
+
     /// Run for effect, discarding both streams. Used where the shell version
     /// wrote `|| true`: a failure that is genuinely not interesting.
     pub fn quiet<I, S>(&self, args: I) -> bool
@@ -211,8 +218,11 @@ impl Docker {
     /// in, the process held 0.03s of CPU and killing it let startup continue
     /// with the images already present.
     ///
-    /// So `done` is the real completion test: the images the caller asked for
-    /// exist. A loader that exits first is still the fast path; one that hangs
+    /// So `done` is the real completion test, and it has to be the *bundle's*
+    /// images under the tags, compared by id (see `ensure_images`). "The tags
+    /// exist" is true from the first second of every upgrade, because the
+    /// previous release's images carry them -- which is how 1.1.1 to 1.4.1
+    /// killed the loader after five seconds and kept the old images. A loader that exits first is still the fast path; one that hangs
     /// after doing its work no longer costs anything. It is checked on a slower
     /// cadence than the child is polled because each call runs a docker
     /// command.
@@ -248,10 +258,6 @@ impl Docker {
             }
             sleep(Duration::from_millis(250));
         }
-    }
-
-    pub fn image_exists(&self, image: &str) -> bool {
-        self.quiet(["image", "inspect", image])
     }
 
     pub fn logs(&self, name: &str, tail: &str) -> String {
@@ -302,6 +308,16 @@ impl Docker {
         if crate::service_credentials::load(&self.state, era)?.is_some() {
             Ok(vec!["--defaults-extra-file=/run/ragnarok-private/database.cnf".into()])
         } else { Ok(vec!["-uragnarok".into(), "-pragnarok".into()]) }
+    }
+
+    /// Which credentials the app's database user is reached with, for logs.
+    /// Never the password itself.
+    pub fn sql_auth_kind(&self) -> &'static str {
+        match self.sql_auth() {
+            Ok(auth) if auth.iter().any(|a| a.starts_with("--defaults-extra-file=")) => "service credentials (private defaults file)",
+            Ok(_) => "legacy app user (ragnarok, built-in password)",
+            Err(_) => "unknown (service credentials could not be read)",
+        }
     }
 
     pub fn database_client(&self, binary: &str) -> Result<String, String> {
