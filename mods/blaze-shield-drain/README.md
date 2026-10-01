@@ -1,15 +1,15 @@
 # blaze-shield-drain
 
-Turns on rAthena's `blaze_shield_drain` extension. That is the whole mod:
-one entry in `db/extension_db.yml`, no scripts, no assets, no client
-plugin.
+Make HP/SP drain bonuses fire on every Blaze Shield pillar hit, not only on
+weapon attacks. One `on_hit` hook, in
+[`lua/blaze_shield.lua`](lua/blaze_shield.lua).
 
-## What flips on
+## What it does
 
-`NJ_KAENSIN`'s pillar ticks route through `battle_drain()`, which is
-otherwise called only from the weapon-attack path. Every item bonus in
-the drain family then fires on each Blaze Shield hit for a Ninja
-channelling the skill:
+Stock rAthena only runs the drain family on weapon attacks, so a Ninja
+channelling Blaze Shield with Moonlight Dagger never gains SP from a pillar.
+The hook calls `c:drain()` on each pillar hit — the same action the
+weapon-attack path already does, so every drain bonus follows along:
 
 - `bonus bSPDrainValue,val` — the motivating case, Moonlight Dagger (3 SP per hit)
 - `bonus bHPDrainValue,val`
@@ -17,28 +17,22 @@ channelling the skill:
 - `bonus2 bSPDrainValueClass,cls,val` and `bonus2 bHPDrainValueClass,cls,val`
 - The drain-rate variants (`bSPDrainRate`, `bHPDrainRate`, and their race variants)
 
-Gated on `sg->skill_id == NJ_KAENSIN` in `skill.cpp`, so Fire Wall
-(which shares the `UNT_KAEN` branch through `UNT_FIREWALL`) is
-untouched. Other Ninja skills and other placed magic skills are
-untouched.
+Scoped to `NJ_KAENSIN`, so Fire Wall and other placed magic skills stay
+stock.
 
 ## Verifying
 
-Roll a Ninja, learn Blaze Shield, equip Moonlight Dagger, cast the
-skill on a group of Porings. With the mod off: SP only decreases. With
-the mod on: SP ticks +3 per pillar hit and stays positive through a
-full field of them.
+Roll a Ninja, learn Blaze Shield, equip Moonlight Dagger, cast the skill on
+a group of Porings. With the mod off: SP only decreases. With the mod on:
+SP ticks +3 per pillar hit and stays positive through a full field of them.
 
 ## Requires
 
-The extension is defined in rAthena — the app builds it when the vendor
-pin is at or ahead of the commit that introduced `blaze_shield_drain`.
-If the running build predates the extension, this mod parses fine and
-does nothing: `extension_enabled()` returns false for unknown ids by
-design, so a mod that names a not-yet-shipped extension fails safe
-rather than throwing.
+App 1.3.9 or newer — the version that added the Lua skill hooks. See
+[docs/MODDING.md → lua/](../../docs/MODDING.md#lua--changing-how-a-skill-works)
+for the hooks, what `c` holds, and what `c:drain()` does.
 
 ## Applying it
 
-`db/` is read when the server starts. Settings → Restart server is
+`lua/` is read when the server starts. Settings → Restart server is
 enough — no app restart, no rebuild.
