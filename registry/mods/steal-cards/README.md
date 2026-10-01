@@ -16,7 +16,6 @@ reason a Thief learns Steal in the first place.
 ## Why the skill ignores cards to begin with
 
 `Steal` (`TF_STEAL`) is `pc_steal_item` in `vendor/rathena/src/map/pc.cpp`. It
-
 walks the target monster's `Drops[]` table in slot order, skips every entry
 marked `steal_protected`, and gives the first one whose own roll succeeds. rAthena's stock
 `db/re/mob_db.yml` and `db/pre-re/mob_db.yml` both mark **every card drop as
