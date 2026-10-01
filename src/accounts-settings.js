@@ -35,7 +35,7 @@
     const missing = birthdayless();
     element("account-birthdates").disabled = busy || !snapshot || !missing;
     element("account-birthdate-detail").textContent = !snapshot
-      ? "Character deletion needs a birthday on the account."
+      ? "Character deletion needs a birthday on the account. Press Refresh accounts above to check which accounts are missing one; this button turns on once they've loaded."
       : missing
         ? `${plural(missing, "account has", "accounts have")} no birthday, so characters on ${missing === 1 ? "it" : "them"} cannot be deleted in the game.`
         : "Every account has a birthday. Enter 20000101 when the game asks for it.";
