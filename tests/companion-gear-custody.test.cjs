@@ -99,3 +99,19 @@ test('removing a companion deletes that one row and never strands gear the playe
 	assert.match(all, /^\+\s*if \(live == nullptr && population_engine_companion_holds_given_gear\(/m,
 		'one that is not summoned cannot be removed while it still holds player gear');
 });
+
+test('a trade with your own companion is auto-accepted only after every stock trade check', () => {
+	const patch = fs.readFileSync(path.join(ROOT, 'third-party', 'population-engine', 'patches',
+		'0006-population-companion-persistence.patch'), 'utf8').replace(/\r\n/g, '\n');
+	const trade = patch.slice(patch.indexOf('+++ b/src/map/trade.cpp'));
+	const hook = trade.indexOf('+\tif (population_engine_companion_can_trade_with(sd, target_sd)) {');
+	assert.ok(hook > 0, 'the auto-accept hook must exist');
+	// It sits right before the request would be sent, i.e. after the no-trade map, GM, busy and
+	// distance checks - so its context is the end of trade_traderequest, not the start.
+	assert.ok(!/\n \tif \(map_getmapflag\(sd->m, MF_NOTRADE\)\) \{/.test(trade.slice(0, hook)),
+		'the hook must not run before the MF_NOTRADE check');
+	assert.ok(trade.slice(0, hook).includes(' \tsd->trade_partner.lv = target_sd->status.base_level;'),
+		'the hook must come after the stock checks, where the partners are set');
+	assert.match(trade.slice(hook, hook + 1500), /state\.storage_flag/,
+		'and it must refuse what trade_tradeack refuses (vending, storage open, ...)');
+});
