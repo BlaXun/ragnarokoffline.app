@@ -487,19 +487,42 @@ skill("MG_FIREBOLT", {
 ```
 
 Every `.lua` file in `lua/` (subfolders too) runs once when the server
-starts, in the same order mods are applied, so where two mods hook the same
-part of the same skill the later one wins — but only that part: one mod's
-`ratio` and another's `on_hit` on the same skill both apply. **Apply**
-restarts the server, so an edited file takes effect then.
+starts, in the same order mods are applied. **Apply** restarts the server,
+so an edited file takes effect then.
+
+**Two mods can hook the same part of the same skill.** Both run, in
+ascending priority order — a mod sets `priority = N` (0..10, default 5)
+in the registration table to say where it goes in the chain; lower runs
+first, ties broken by mod load order (the alphabetical order of folder
+names). `ratio`, `hit` and `element` thread the value through: each hook
+sees the previous one's return as `stock`, so the chain composes.
+`on_hit` runs every hook and each may queue its own drain/heal/status/
+polymorph actions, which are applied together once the hit is dealt. A
+hook that fails is switched off and the rest of the chain carries on.
+
+```lua
+-- my-mod/lua/firebolt.lua: run after mods using the default priority of 5.
+skill("MG_FIREBOLT", {
+  priority = 7,
+  ratio = function(c, stock) return stock + c.caster.int * 2 end,
+})
+```
+
+A mod that registers twice for the same (skill, hook) replaces its own
+previous entry rather than stacking against itself. The `priority` key is
+optional: omit it and the default (5) is used. Priority is per `skill(...)`
+call, applying to every hook declared in that call; a mod wanting different
+priorities for `ratio` and `on_hit` on the same skill makes two calls.
 
 ### The hooks
 
-`skill("<AegisName>", { ... })` takes any of four functions. The name is the
-one in `skill_db.yml` — `MG_FIREBOLT`, not "Fire Bolt".
+`skill("<AegisName>", { ... })` takes any of four functions, and an optional
+`priority` (above). The name is the one in `skill_db.yml` — `MG_FIREBOLT`,
+not "Fire Bolt".
 
 | Hook | Called | Return |
 |---|---|---|
-| `ratio(c, stock)` | when the skill's damage is calculated | the skill's damage percentage; `stock` is the server's own, so `stock * 2` doubles it |
+| `ratio(c, stock)` | when the skill's damage is calculated | the skill's damage percentage; `stock` is the running value — the server's own on the first hook in the chain, the previous hook's return thereafter |
 | `hit(c, stock)` | when a weapon skill's accuracy is calculated | the hit rate bonus |
 | `element(c, stock)` | when the attack's element is decided | an element, e.g. `const("ELE_FIRE")` |
 | `on_hit(c)` | on every hit, once its damage is known | nothing; call the actions below |
