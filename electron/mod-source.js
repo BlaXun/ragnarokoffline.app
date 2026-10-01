@@ -75,7 +75,7 @@ function githubPage(value) {
 function readSource(value) {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
 	if (typeof value.github !== 'string' || !REPO.test(value.github)) return null;
-	if (value.asset !== undefined && (typeof value.asset !== 'string' || !ASSET.test(value.asset) || !/\.zip$/i.test(value.asset))) return null;
+	if (value.asset !== undefined && (typeof value.asset !== 'string' || !ASSET.test(value.asset) || !/\.(zip|rar)$/i.test(value.asset))) return null;
 	return value.asset ? { github: value.github, asset: value.asset } : { github: value.github };
 }
 

@@ -1611,40 +1611,10 @@ const openSettings = () => makeWindow('settings', 'settings.html', { width: 700,
 // Installing a mod
 // ---------------------------------------------------------------------------
 
-// The zip checks -- zip-slip, links, size, one top-level folder -- live in
-// mod-zip.js, shared with installs from a registry entry's own releases.
-
-// Unpack a .zip (or, for a skin or cursor pack, a .rar) into `tmp`, and
-// return what it held, checked. `ditto` on macOS, `tar` elsewhere: both ship
-// with the OS, and neither needs an archive library in the app. bsdtar --
-// macOS's tar and Windows' tar.exe -- also reads .rar, which is how most
-// cursor packs travel; GNU tar on Linux does not, and says so.
-function unpackArchive(src, tmp) {
-	const { execFileSync } = require('child_process');
-	const rar = /\.rar$/i.test(src);
-	if (process.platform === 'darwin') {
-		if (rar) execFileSync('/usr/bin/tar', ['-xf', src, '-C', tmp]);
-		else execFileSync('ditto', ['-x', '-k', src, tmp]);
-	}
-	// On Windows, by full path: Git's GNU tar is often first on PATH, and it
-	// reads `C:` as a remote host and cannot open a zip at all (#174).
-	else if (process.platform === 'win32') execFileSync(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', src, '-C', tmp]);
-	else {
-		try { execFileSync('tar', ['-xf', src, '-C', tmp]); }
-		catch (e) { throw new Error(rar ? 'This system\'s tar cannot open a .rar. Unpack it, then choose the folder.' : e.message); }
-	}
-
-	const walk = (dir, rel = '') => fs.readdirSync(dir, { withFileTypes: true })
-		.flatMap(e => e.isDirectory()
-			? walk(path.join(dir, e.name), rel ? `${rel}/${e.name}` : e.name)
-			: [rel ? `${rel}/${e.name}` : e.name]);
-	const entries = walk(tmp).filter(n => !n.split('/').some(p => p === '__MACOSX' || p.startsWith('._')));
-	if (!entries.length) throw new Error('That archive is empty.');
-	for (const e of entries) {
-		if (!require('./mod-zip').safeEntryName(e)) throw new Error(`Refusing ${src}: it contains an unsafe path (${e}).`);
-	}
-	return entries;
-}
+// The archive checks -- zip-slip, links, size, one top-level folder -- live
+// in mod-zip.js, shared by a mod the player picked, a UI skin or cursor pack,
+// and an install from a registry entry's own releases. Each may be a .zip or
+// a .rar (most cursor packs travel as one); the file's content decides which.
 
 // Build a mod from an official-format UI skin, or a cursor pack, and switch
 // it on in place of whichever one was on. See ui-skin.js for how each picture
@@ -1665,9 +1635,8 @@ async function installSkinFrom(src) {
 	if (fs.statSync(src).isDirectory()) {
 		result = skin.buildSkinMod({ srcRoot: skin.skinRoot(src), modsDir: dest, display, index, appVersion: app.getVersion(), source: src });
 	} else {
-		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-skin-'));
+		const { dir: tmp } = require('./mod-zip').unpack(src);
 		try {
-			unpackArchive(src, tmp);
 			const root = skin.skinRoot(tmp);
 			// Named for the file the player chose, which is the name they know
 			// it by: the folder inside is as often `cursor7` as `Clear Blue`.
@@ -1711,7 +1680,7 @@ async function installModFrom(src) {
 		const { dir: tmp, files } = modZip.unpack(src);
 		try {
 			name = modZip.singleTopLevel(files);
-			if (!name) throw new Error('A mod zip must contain exactly one folder, named for the mod.');
+			if (!name) throw new Error('A mod archive must contain exactly one folder, named for the mod.');
 			const target = path.join(dest, name);
 			if (fs.existsSync(target)) throw new Error(`${name} is already installed. Remove it first.`);
 			modZip.copyTree(path.join(tmp, name), target);
@@ -2130,7 +2099,7 @@ const handlers = {
 	// A mod's own settings page, in a window of its own. What that window can
 	// do is decided in mod-settings-window.js, not here.
 	open_mod_settings: ({ name }) => modSettingsWindows().open(String(name), windows.settings),
-	// Install a mod from a folder or a .zip the player chose.
+	// Install a mod from a folder, or a .zip or .rar, the player chose.
 	//
 	// A mod is not data: it drops scripts and tables into the server's paths and
 	// can ship JavaScript that the game page executes. Installing one is running
@@ -2138,7 +2107,7 @@ const handlers = {
 	// defensively.
 	install_mod: async () => {
 		const picked = await handlers.__dialog_open({
-			filters: [{ name: 'Mod folder or .zip', extensions: ['zip'] }],
+			filters: [{ name: 'Mod folder, .zip or .rar', extensions: ['zip', 'rar'] }],
 		});
 		if (!picked) return 'Cancelled.';
 		const src = Array.isArray(picked) ? picked[0] : picked;
