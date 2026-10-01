@@ -24,7 +24,7 @@
       "files": [
         {
           "path": "db/skill_db.yml",
-          "sha256": "42dcdf20f7c4b315c03f28a17e8da306ed477500b8c84d7b46e37eb1d39c5098"
+          "sha256": "91f4d828f2e161ce9c9418a13f8b1c94c3c238ba025841d0f14dd3b4c0cbe2c2"
         },
         {
           "path": "images/homunculus.png",
@@ -36,7 +36,44 @@
         },
         {
           "path": "mod.json",
-          "sha256": "e256016b9a6e83b3b1fea49f281866c4002f0e5dcfb511fa7d404c920792f8aa"
+          "sha256": "12c15d813f8cf80ef282e24c28fe839ab6d10ea649af9deca5a0414fddbd1657"
+        }
+      ]
+    },
+    {
+      "name": "refine-matk",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Weapon refining also raises MATK, so magic classes get something out of a blacksmith too. Bonus scales with the weapon's tier and counts both hands for dual-wielders. Off until you turn it on.",
+      "homepage": "",
+      "tags": [],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.2.6"
+      },
+      "files": [
+        {
+          "path": "images/icon.png",
+          "sha256": "4a026478f08056c2e02318da32c45a3ddd63adb725de9e36effca98973e0c877"
+        },
+        {
+          "path": "images/refine-matk.png",
+          "sha256": "3cdca590e469d5e601b19ed248a0d52fbab46844daa661eafae3694fbe0f00db"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "4e5e5955104a1b64b3a6fe90c9f5e6aef490ffe194aa4a9a2f4daffe0431303a"
+        },
+        {
+          "path": "npc/refine_matk.txt",
+          "sha256": "7c96322394a6e863ab544cc47e7a39b527712115eb6a7203e17f83c5513b3afd"
+        },
+        {
+          "path": "README.md",
+          "sha256": "a66d31561b021f01b6ede5903daca51ac2800e3eeff08d31d9f61228f8158129"
         }
       ]
     }

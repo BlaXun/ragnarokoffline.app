@@ -1,6 +1,6 @@
 {
   "name": "refine-matk",
-  "version": "1.3.0",
+  "version": "1.0.0",
   "author": "BlaXun",
   "description": "Weapon refining also raises MATK, so magic classes get something out of a blacksmith too. Bonus scales with the weapon's tier and counts both hands for dual-wielders. Off until you turn it on.",
   "default": "off",
