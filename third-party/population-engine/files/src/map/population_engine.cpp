@@ -4931,6 +4931,31 @@ bool population_engine_companion_can_trade_with(const map_session_data *player, 
 	return true;
 }
 
+/// Move one inventory entry from a companion to its owner: into the owner's bag, or onto the
+/// ground at the owner's feet when the bag will not take it. Never deleted - the item was the
+/// player's, and "inventory full" is not a reason for it to stop existing. Returns false (and
+/// leaves the item on the companion) only when it could neither be carried nor dropped.
+static bool pop_companion_hand_back(map_session_data *owner, map_session_data *shell, int16 i,
+	e_log_pick_type log_type)
+{
+	struct item &slot = shell->inventory.u.items_inventory[i];
+	if (!slot.nameid || slot.amount <= 0)
+		return false;
+	if (slot.equip && !pc_unequipitem(shell, i, 2))
+		return false;
+	struct item tmp = slot;
+	tmp.equip = 0;
+	const int32 amount = slot.amount;
+	if (pc_additem(owner, &tmp, amount, log_type) != ADDITEM_SUCCESS
+		&& map_addflooritem(&tmp, amount, owner->m, owner->x, owner->y, 0, 0, 0, 0, 0) == 0) {
+		ShowWarning("population_engine: could not return item %u from companion %u to owner %u; "
+			"it stays on the companion\n", tmp.nameid, shell->status.char_id, owner->status.account_id);
+		return false;
+	}
+	pc_delitem(shell, i, amount, 0, 1, log_type);
+	return true;
+}
+
 // Goal 2 (trade): after traded equipment lands in the companion's inventory,
 // equip every equip-flagged item immediately (the owner gave it to be worn).
 // Items without equip flags (consumables etc) are returned to the owner —
@@ -4949,16 +4974,8 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 			(void)pc_equipitem(shell, i, id->equip, false);
 			equipped_any = true;
 		} else {
-			// Non-equipment: hand it back to the owner.
-			struct item tmp = slot;
-			enum e_additem_result res = pc_additem(owner, &tmp, slot.amount, LOG_TYPE_TRADE, false);
-			if (res == ADDITEM_SUCCESS) {
-				pc_delitem(shell, i, slot.amount, 0, 1, LOG_TYPE_TRADE);
-			} else {
-				ShowWarning("population_engine: companion %u inventory full; returned item %u lost slot %d\n",
-					shell->status.char_id, slot.nameid, i);
-				pc_delitem(shell, i, slot.amount, 0, 1, LOG_TYPE_TRADE);
-			}
+			// Non-equipment goes back: into the owner's bag, or at their feet when it is full.
+			(void)pop_companion_hand_back(owner, shell, i, LOG_TYPE_TRADE);
 		}
 	}
 	if (equipped_any) {
@@ -4986,26 +5003,10 @@ int population_engine_companion_return_gear(map_session_data *owner, map_session
 		// RAGNAROKMAC: selective gear return — when slot_mask != 0, only items whose
 		// equip bits intersect the mask come back; everything else stays on the companion.
 		if (slot_mask != 0 && !(slot.equip & slot_mask)) continue;
-		// Unequip first (flag 2 = ignore status-change blocks) so the equip
-		// bit clears and the stats/looks revert before the move.
-		if (!pc_unequipitem(shell, i, 2)) continue;
-		struct item tmp = slot;
-		tmp.equip = 0;
-		enum e_additem_result res = pc_additem(owner, &tmp, 1, LOG_TYPE_NPC, false);
-		if (res == ADDITEM_SUCCESS) {
-			pc_delitem(shell, i, 1, 0, 1, LOG_TYPE_NPC);
+		// Unequip (flag 2 = ignore status-change blocks), then into the owner's bag or at
+		// their feet - see pop_companion_hand_back.
+		if (pop_companion_hand_back(owner, shell, i, LOG_TYPE_NPC))
 			++returned;
-		} else if (res == ADDITEM_OVERWEIGHT || res == ADDITEM_OVERAMOUNT) {
-			// Owner too heavy / slot cap: drop at owner's feet instead of losing it.
-			pc_delitem(shell, i, 1, 0, 1, LOG_TYPE_NPC);
-			map_addflooritem(&tmp, 1, owner->m, owner->x, owner->y, 0, 0, 0, 0, 0);
-			++returned;
-			ShowWarning("population_engine: owner %u overweight; dropped item %u at feet\n",
-				owner->status.account_id, slot.nameid);
-		} else {
-			ShowWarning("population_engine: failed to return item %u from companion %u (res %d)\n",
-				slot.nameid, shell->status.char_id, res);
-		}
 	}
 	if (returned > 0) {
 		ShowInfo("population_engine: returned %d worn item(s) from companion %u to owner %u\n",
