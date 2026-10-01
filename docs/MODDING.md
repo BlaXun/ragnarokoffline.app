@@ -1034,7 +1034,7 @@ items:
 ```lua
 -- my-mod/System/itemInfo.lua, saved as UTF-8
 tbl = {
-	[30001] = {
+	[50001] = {
 		unidentifiedDisplayName = "Bottle",
 		unidentifiedResourceName = "빨간포션",
 		identifiedDisplayName = "Islander Brew",
