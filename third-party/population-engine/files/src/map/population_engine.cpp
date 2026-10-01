@@ -4847,6 +4847,17 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 // (armor/shoes/acc) re-equipped via shell_equip_item. Release-marking ships in
 // Goal 3 (sets active=0); until then every row is recalled on the owner's login.
 
+/// Escape a companion name for a query. The name is cut to NAME_LENGTH - 1 first, so the
+/// output always fits `out` (escaping can double every byte) whatever length the caller
+/// passed: @companion's argument is wider than a name, so the commands can carry a trailing
+/// word, and a name typed too long must miss rather than overrun a buffer.
+static void pop_escape_name(char (&out)[NAME_LENGTH * 2 + 1], const char *name)
+{
+	char bounded[NAME_LENGTH];
+	safestrncpy(bounded, name != nullptr ? name : "", sizeof(bounded));
+	Sql_EscapeString(mmysql_handle, out, bounded);
+}
+
 static void population_engine_persist_companion_sql(
 	uint32_t owner_account, uint32_t index_, const char* name_, int16_t job_id, int sex,
 	int hair_style, int hair_color, int cloth_color, uint32_t garment_nameid,
@@ -4858,8 +4869,8 @@ static void population_engine_persist_companion_sql(
 {
 	if (mmysql_handle == nullptr) return;
 	char q[4096];
-	char esc_name[48];
-	Sql_EscapeString(mmysql_handle, esc_name, name_ != nullptr ? name_ : "");
+	char esc_name[NAME_LENGTH * 2 + 1];
+	pop_escape_name(esc_name, name_);
 	// sex is TINYINT in the DDL (0=SEX_MALE, 1=SEX_FEMALE); writing the letters
 	// 'M'/'F' was rejected with ERROR 1366 on strict servers.
 	//
@@ -5310,8 +5321,8 @@ void population_engine_deactivate_expelled_companion(int32_t party_id, uint32_t 
 bool population_engine_companion_set_favorite(uint32_t owner_account, const char* name_, bool favorite)
 {
 	if (mmysql_handle == nullptr || name_ == nullptr || !name_[0]) return false;
-	char esc_name[48];
-	Sql_EscapeString(mmysql_handle, esc_name, name_);
+	char esc_name[NAME_LENGTH * 2 + 1];
+	pop_escape_name(esc_name, name_);
 	char q[300];
 	snprintf(q, sizeof(q),
 		"UPDATE `cp_companion_persistence` SET favorite=%d WHERE owner_account_id=%u AND name='%s'",
@@ -5329,8 +5340,8 @@ bool population_engine_companion_find(uint32_t owner_account, const char* name_,
 	uint32_t* out_index, bool* out_active)
 {
 	if (mmysql_handle == nullptr || name_ == nullptr || !name_[0]) return false;
-	char esc_name[48];
-	Sql_EscapeString(mmysql_handle, esc_name, name_);
+	char esc_name[NAME_LENGTH * 2 + 1];
+	pop_escape_name(esc_name, name_);
 	char q[300];
 	snprintf(q, sizeof(q),
 		"SELECT shell_index, active FROM `cp_companion_persistence`"
