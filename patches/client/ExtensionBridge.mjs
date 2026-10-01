@@ -2,6 +2,7 @@
 // Imported by Online, never by GUIComponent or NetworkManager (avoids cycles).
 import Runtime from './ExtensionRuntime.mjs';
 import { install as installAgentHook } from './AgentHook.mjs';
+import * as Pregame from './PregameScreens.mjs';
 import Session from 'Engine/SessionStorage.js';
 import Camera from 'Renderer/Camera.js';
 import Renderer from 'Renderer/Renderer.js';
@@ -351,6 +352,11 @@ export function init() {
         beginTargeting,
         cancelTargeting,
         serverCommand,
+        // The screens before the game (api.screens); PregameScreens.mjs.
+        screensSupported: Pregame.supported,
+        replaceScreen: Pregame.replace,
+        createStage: Pregame.createStage,
+        screenImage: Pregame.image,
     });
     const clear = () => Runtime.movement.clear('focus-lost');
     const compose = () => { composing = true; clear(); };
