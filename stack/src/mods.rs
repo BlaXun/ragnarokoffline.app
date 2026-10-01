@@ -3383,6 +3383,7 @@ mod tests {
             docker: root.join("unused"),
             image: String::new(),
             db_image: String::new(),
+            ports: crate::ports::Ports::DEFAULT,
             app_version: None,
         }
     }
