@@ -247,10 +247,16 @@ options in the Mods tab as before. See
 
 ## Installing a mod
 
-**Settings → Mods → Install a mod…** takes a folder or a `.zip` and puts it in
-the right place. A zip must contain exactly one folder, named for the mod;
-anything with two top-level folders, or with a path that would escape the mods
-directory, is refused rather than unpacked.
+**Settings → Mods → Install a mod…** takes a folder, a `.zip` or a `.rar` and
+puts it in the right place. An archive must contain exactly one folder, named
+for the mod; anything with two top-level folders, a link, or a path that would
+escape the mods directory, is refused rather than unpacked.
+
+What the file is decides how it is opened, not its extension: a RAR named
+`.zip` opens as a RAR. A zip opens everywhere. A RAR is opened with
+libarchive's `bsdtar`, which macOS and Windows 10 and 11 have built in; on
+Linux install it first (`libarchive-tools` on Debian and Ubuntu, `libarchive`
+on Arch and SteamOS) or unpack the archive and choose the folder.
 
 Or do it by hand: drop the folder in the mods directory yourself. Same result.
 
@@ -1063,7 +1069,7 @@ its `basic_interface/` is that folder's `basic_interface/`.
 
 **Settings → Mods → Install a UI skin…** does the conversion. Give it a skin
 folder — the one you would put in the official client's `skin/` directory — or
-a `.zip` of one, and it builds a mod named `skin-<name>`, switches it on, and
+a `.zip` or `.rar` of one, and it builds a mod named `skin-<name>`, switches it on, and
 switches whichever skin was on off. It is client-side only, so there is no
 server restart: restart the app to see it.
 
@@ -1111,9 +1117,9 @@ What a skin cannot change:
 
 The mouse pointer is a sprite, `data/sprite/cursors.spr` and `cursors.act`,
 and a mod that ships those two replaces it. Give **Install a UI skin…** a
-folder or archive holding them — most travel as a `.rar`, which macOS opens
-and Windows' built-in `tar` should; on Linux, or if it refuses, unpack it and
-choose the folder — and it builds a
+folder or archive holding them — most travel as a `.rar`, which macOS and
+Windows open with their built-in `tar`, and Linux with `bsdtar` if it is
+installed; otherwise unpack it and choose the folder — and it builds a
 `cursor-<name>` mod of `"kind": "cursor"`: one cursor pack at a time, alongside
 any skin. A skin folder that carries the two files keeps them in the skin.
 
@@ -1852,5 +1858,5 @@ review: **[Adding a mod to the registry](MOD_REGISTRY.md)**. There are two ways
 in. The mod's folder can live in this repository, and the app downloads it file
 by file and checks every one against its digest. Or the entry can point at your
 own GitHub repository, and the app installs your latest release — the same zip
-you would hand a friend — and offers each newer release to players as an
+(or RAR) you would hand a friend — and offers each newer release to players as an
 update, without another pull request here.
