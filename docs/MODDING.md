@@ -1200,6 +1200,9 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 | `api.targeting.pick({ type, label })` | Raises the client's own target cursor and resolves to a frozen `{ classId, gid, name, kind }` for what the player clicks, or `null` for ESC, empty ground, a client too old to offer it, or the player starting a skill of their own (their action wins). `type` is `mob` (default), `player` or `any`; NPCs cannot be picked. One pick at a time: a new one cancels the last, and so does disposal. |
 | `api.server.command(text)` | Sends an `@` or `#` command as if the player had typed it in chat, so the server allows exactly what the player's group allows. Anything else is refused; returns whether it was sent. |
 | `api.graphics.registerPass({ name, fragment, uniforms, enabled })` | A full-screen GLSL pass over each frame, after bloom and before anti-aliasing. Returns a function that removes it; it also goes when the plugin does. See [Graphics passes](#graphics-passes). |
+| `api.ui.window({ id, title, width, height, resizable })` | A window of the plugin's own; fill its `body`. `show`, `hide`, `toggle`, `isOpen`, `setTitle`, `onClose`. See [Windows and server requests](#windows-and-server-requests). |
+| `api.items.search(text, limit)` / `.get(id)` / `.icon(id)` | Items from the client's own tables, mods' included: `{ id, name, description, slots }`, and an icon URL for an `<img>`. |
+| `api.server.request(command, text, { timeout })` | Ask the mod's server script for something; resolves with its answer. See [Windows and server requests](#windows-and-server-requests). |
 | `api.cleanup(fn)` | Register idempotent cleanup immediately after allocating a resource. The returned function can release it early. Runs on failure, scope replacement and page teardown. |
 
 ### Graphics passes
@@ -1254,6 +1257,48 @@ removing it. A shader that doesn't compile is reported in the client log and
 stays off; it can't affect anything outside the picture.
 [`mods/graphics-plus`](../mods/graphics-plus) is a complete one: grading,
 lamp glow, haze, tone mapping and more in a single pass.
+
+### Windows and server requests
+
+`api.ui.window` gives a plugin a window in the game's style: a title bar to
+drag it by, a close button, a corner to resize it, and a `body` element that is
+the plugin's to fill. It sits in its own shadow root, so a mod's CSS and the
+game's never meet. The game remembers where the player left it, and typing in
+it doesn't move the character or fire shortcuts.
+
+```js
+const win = api.ui.window({ id: 'notes', title: 'Notes', width: 300, height: 200 });
+win.body.innerHTML = '<textarea style="width:100%;height:100%"></textarea>';
+win.show();
+```
+
+When a window needs something only the server knows, `api.server.request`
+asks the mod's own NPC script. The script binds an @command and answers with
+`dispbottom` lines in a fixed form; the client collects them, hands their text
+to the plugin, and keeps them out of chat:
+
+```c
+-	script	MyMod	-1,{
+OnInit:
+	bindatcmd "mymod", strnpcinfo(3) + "::OnQuery", 0, 99;
+	end;
+OnQuery:
+	// .@atcmd_parameters$[0] is the request's number; the rest is what the plugin sent.
+	dispbottom "@@reply " + .@atcmd_parameters$[0] + " 1/1 " + getmonsterinfo(.@atcmd_parameters$[1], MOB_LV);
+	end;
+}
+```
+
+```js
+const level = await api.server.request('mymod', 'Poring');   // "1"
+```
+
+A long answer can be split: `@@reply <n> 1/3 …`, `2/3 …`, `3/3 …`, and the
+parts are joined in order. A request that gets no answer rejects after its
+timeout (5 seconds by default). Only the server can send these lines, because
+anything a player says arrives with their name in front of it.
+[`mods/ingame-database`](../mods/ingame-database) is a complete one: an item
+and monster lookup window.
 
 Allowed window actions currently cover Inventory, Equipment, SkillList, Quest,
 WorldMap, PartyFriends, WinStats and already-open Storage. Set `{ name, open: true }`

@@ -172,7 +172,54 @@ export function createRuntime({ storage, report = (...args) => console.error(...
                 supported: () => Boolean(bridge.graphicsSupported?.()),
                 lights: () => freeze(copy(bridge.mapLights?.() || [])),
             }),
+            // A window of the plugin's own: a titled, draggable frame whose
+            // body (in its own shadow root) the plugin fills. Remembered where
+            // the player left it; typing in it doesn't move the character.
+            ui: Object.freeze({
+                window(spec) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!spec || typeof spec.id !== 'string' || !/^[A-Za-z0-9_-]{1,40}$/.test(spec.id)) throw new TypeError('window needs an id of letters, digits, - or _');
+                    const size = (value, fallback) => Number.isFinite(value) ? Math.min(Math.max(value, 120), 2000) : fallback;
+                    const checked = {
+                        id: spec.id,
+                        title: typeof spec.title === 'string' ? spec.title.slice(0, 80) : spec.id,
+                        width: size(spec.width, 360),
+                        height: size(spec.height, 280),
+                        resizable: spec.resizable !== false,
+                    };
+                    if (typeof bridge.createWindow !== 'function') throw new Error('this client cannot open plugin windows');
+                    const handle = bridge.createWindow(name, checked, {
+                        suspendInput: () => api.input.suspend(),
+                        load: key => api.preferences.get(key, null),
+                        save: (key, value) => { try { api.preferences.set(key, value); } catch { /* storage full or off: forget the position */ } },
+                    });
+                    cleanup(() => handle.destroy());
+                    return Object.freeze({
+                        body: handle.body,
+                        show: () => handle.show(), hide: () => handle.hide(), toggle: () => handle.toggle(),
+                        isOpen: () => handle.isOpen(), setTitle: text => handle.setTitle(text),
+                        onClose: fn => typeof fn === 'function' ? handle.onClose(fn) : () => {},
+                    });
+                },
+            }),
+            // The client's item tables: what the game itself shows.
+            items: Object.freeze({
+                search: (text, limit = 50) => freeze(copy(bridge.searchItems?.(String(text ?? ''), Math.min(Math.max(Number(limit) || 50, 1), 200)) || [])),
+                get: id => { const item = Number.isInteger(id) ? bridge.item?.(id) : null; return item ? freeze(copy(item)) : null; },
+                icon: id => Promise.resolve(Number.isInteger(id) ? bridge.itemIcon?.(id) ?? null : null),
+            }),
             server: Object.freeze({
+                // Ask the mod's server script for something: it answers an
+                // @command (bindatcmd) with @@reply lines (dispbottom).
+                // Resolves with their text; see docs/MODDING.md.
+                request(command, text = '', options = {}) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (typeof command !== 'string' || !/^[a-z][a-z0-9_]{1,23}$/.test(command)) throw new TypeError('request: command must be a lowercase @command name');
+                    if (typeof text !== 'string' || text.length > 200 || /[\r\n]/.test(text)) throw new TypeError('request: text must be one line of at most 200 characters');
+                    if (typeof bridge.serverRequest !== 'function') return Promise.reject(new Error('this client cannot make server requests'));
+                    const timeout = Math.min(Math.max(Number(options.timeout) || 5000, 500), 30000);
+                    return bridge.serverRequest(command, text, timeout);
+                },
                 command(text) {
                     if (disposed) throw new Error(`Plugin ${name} is disposed`);
                     if (typeof text !== 'string') return false;
