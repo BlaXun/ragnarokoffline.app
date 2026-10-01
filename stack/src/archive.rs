@@ -107,14 +107,24 @@ impl Sha256 {
         }
     }
 
-    pub fn hex(mut self) -> String {
+    /// The 32-byte digest. Padding goes in as one `update`, not a byte at a
+    /// time: PBKDF2 (password.rs) finishes hundreds of thousands of these.
+    pub fn digest(mut self) -> [u8; 32] {
         let bits = self.length.wrapping_mul(8);
-        self.update(&[0x80]);
-        while self.filled != 56 {
-            self.update(&[0]);
-        }
+        let pad = if self.filled < 56 { 56 - self.filled } else { 120 - self.filled };
+        let mut padding = [0u8; 64];
+        padding[0] = 0x80;
+        self.update(&padding[..pad]);
         self.update(&bits.to_be_bytes());
-        self.state.iter().map(|w| format!("{w:08x}")).collect()
+        let mut out = [0u8; 32];
+        for (chunk, word) in out.chunks_exact_mut(4).zip(self.state) {
+            chunk.copy_from_slice(&word.to_be_bytes());
+        }
+        out
+    }
+
+    pub fn hex(self) -> String {
+        self.digest().iter().map(|b| format!("{b:02x}")).collect()
     }
 }
 

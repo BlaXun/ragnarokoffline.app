@@ -7,6 +7,12 @@ use std::path::Path;
 const ERROR: &str = "Cannot protect private service files. Use an owner-controlled local filesystem with permissions support.";
 
 pub fn random_hex(bytes: usize) -> Result<String, String> {
+    Ok(random_bytes(bytes)?.iter().map(|byte| format!("{byte:02x}")).collect())
+}
+
+/// `bytes` bytes from the operating system's generator (/dev/urandom,
+/// BCryptGenRandom), never a PRNG seeded here.
+pub fn random_bytes(bytes: usize) -> Result<Vec<u8>, String> {
     let mut value = vec![0u8; bytes];
     #[cfg(unix)]
     File::open("/dev/urandom")
@@ -30,7 +36,7 @@ pub fn random_hex(bytes: usize) -> Result<String, String> {
     }
     #[cfg(not(any(unix, windows)))]
     return Err("System random generation is not supported on this platform".into());
-    Ok(value.iter().map(|byte| format!("{byte:02x}")).collect())
+    Ok(value)
 }
 
 pub fn random_token(length: usize) -> Result<String, String> {

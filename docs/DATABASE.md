@@ -197,7 +197,7 @@ in `vendor/rathena/sql-files/main.sql`; these are the ones worth knowing.
 
 | Table | Holds |
 |---|---|
-| `login` | accounts: `userid`, `user_pass`, `group_id` (99 is GM), `state` (0 normal, 5 banned) |
+| `login` | accounts: `userid`, `user_pass`, `pass_flags`, `group_id` (99 is GM), `state` (0 normal, 5 banned). `user_pass` is a salted PBKDF2 hash (`$pbkdf2-sha256$...`), which Settings → Accounts writes directly. `pass_flags` records whether the password was weak (1) or the default `ragnarok` (2). A plain-text password you set yourself with `--write` still works. The login server hashes it at that account's next login, or when it next starts. It does not check on a timer. Server accounts (`sex` S) stay plain text |
 | `char` | characters, and the pointers to everything attached to one: `homun_id`, `pet_id`, `party_id`, `guild_id` |
 | `inventory`, `cart_inventory`, `storage`, `guild_storage` | items, by `char_id` or `account_id` |
 | `homunculus`, `skill_homunculus` | homunculi and their skills, by `homun_id` |
