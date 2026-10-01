@@ -157,6 +157,20 @@ Settings → Tools → Database is a window onto the same `ragnarok` database.
   rAthena's tables are MyISAM, which cannot roll back, so if any statement
   fails the tool loads that backup again. The error names the change that failed,
   and nothing was saved.
+- **Deleting a row deletes that row and nothing else.** That matters most for
+  `char`. The game's own delete (`char_delete` in `src/char/char.cpp`) also
+  clears the character's `inventory`, `cart_inventory`, `skill`, `hotkey`,
+  `memo`, `quest`, `achievement`, `char_reg_num`, `char_reg_str`, `friends`,
+  `mail`, `sc_data`, `bonus_script` and pets, removes its homunculus and
+  elemental, and leaves its party, guild and marriage. Deleting the `char` row
+  here leaves all of that behind as orphans. Delete a character from the
+  character select screen in the game where you can; the review step says so
+  when a save deletes from `char`.
+
+Its answers come back through a file in `backups/` (`db-browser-*.out`,
+removed once read), not through `docker exec`'s output, which docker-slim cut
+short past 8 KiB: 38 characters of `char` come to ~24 KiB, and that is what made it show
+"The database answered in a form this tool does not read" over an empty grid.
 
 The page never sends SQL for a write, only a list of changes.
 `ragnarok-stack db` builds the statements, with every value hex-encoded:
