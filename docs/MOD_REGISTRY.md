@@ -1,6 +1,6 @@
 # Adding a mod to the registry
 
-Settings → Mods → **Find mods…** lists every mod in this repository's
+Settings → Mods → **Find Mods** lists every mod in this repository's
 [`registry/`](../registry). Getting one listed is a pull request here, and that
 review is what stands between a stranger's code and somebody's game.
 
