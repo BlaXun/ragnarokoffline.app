@@ -9,17 +9,22 @@
 -- values in db/item_db.yml -- twenty scripts there, ten entries here.
 --
 -- identifiedResourceName is the ART, written in Korean the way the client
--- names it. 돋보기 is the Magnifier's icon and sprite, borrowed here so
--- the item needs no art of its own. Swap it for another item's Korean
--- resource name, or ship your own bitmap and sprite, to change the look;
--- a name that matches no file shows an apple icon and is logged in
--- state/assets/logs/missing-files.log.
+-- names it. 스페어카드 ("spare card") is item 779's resource -- the
+-- blank-backed card used by the "Blank Nibble Leon Card" item, and the
+-- closest thing the shipped GRF has to a generic back-of-a-card look.
+-- Verified present: the Magnifier (돋보기) and the Poring Card art
+-- (포링카드) are NOT both in the GRF -- Poring Card's bitmaps are
+-- absent in this distribution and the client logs "Can't get file" for
+-- data/texture/.../item/Æ÷¸µÄ«µå.bmp. If you retarget, swap for another
+-- item's resource name that is actually in the archive, or ship your own
+-- bitmap + sprite; a name that matches no file shows an apple icon and
+-- is logged in state/assets/logs/missing-files.log.
 tbl = {}
 
 -- Roughly geometric growth (~2x per level), anchored at Lv 10 = 60,000
 -- and rounded to clean numbers. See db/item_db.yml for the rationale.
 local EXP_BY_LEVEL = { 100, 250, 500, 1000, 2000, 4000, 7500, 15000, 30000, 60000 }
-local RESOURCE = "돋보기"
+local RESOURCE = "스페어카드"
 
 -- Group thousands with commas so "60,000" reads more comfortably than
 -- "60000" in the tooltip. Lua's string.format has no %'d, so build it by
@@ -51,7 +56,6 @@ for level = 1, 10 do
 		"^ffffff_^000000",
 		"Requires base level ^0000FF" .. requiredLevel .. "^000000 to use.",
 		"Drops on a small chance from any monster you kill.",
-		"Bound to you briefly on drop; nobody else can pick it up first.",
 		"Higher-level monsters drop higher-level cards.",
 		"^ffffff_^000000",
 		"Weight: ^777777 1 ^000000"
@@ -61,7 +65,6 @@ for level = 1, 10 do
 		"^ffffff_^000000",
 		"Requires base level ^0000FF" .. requiredLevel .. "^000000 to use.",
 		"Drops on a small chance from any monster you kill.",
-		"Bound to you briefly on drop; nobody else can pick it up first.",
 		"Higher-level monsters drop higher-level cards.",
 		"^ffffff_^000000",
 		"Weight: ^777777 1 ^000000"

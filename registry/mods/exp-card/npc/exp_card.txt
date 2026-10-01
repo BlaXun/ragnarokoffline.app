@@ -16,10 +16,9 @@
 //   30051..30060  Base_Exp_Card_1  .. Base_Exp_Card_10
 //   30061..30070  Job_Exp_Card_1   .. Job_Exp_Card_10
 //
-// The drop uses makeitemowned from the makeitem_owned server extension
-// (enabled via this mod's db/extension_db.yml). On the server that owns
-// the extension, first_charid defaults to the attached player's char_id,
-// so passing 0 extra args here is exactly what we want. The pickup
+// The drop uses makeitemowned, a native rAthena script command on our
+// pin: first_charid defaults to the attached player's char_id, so
+// passing no extra args here is exactly what we want. The pickup
 // window comes from battle.conf's item_first_get_time -- same knob
 // regular drops use.
 

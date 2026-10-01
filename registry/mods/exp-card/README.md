@@ -84,14 +84,12 @@ per card). Change them there if you want a different curve.
 
 ## Requirements
 
-- `requires.app` is **`>=1.3.8`**.
-- The server must have the **`makeitem_owned` extension** compiled in
-  and registered — that's a rAthena fork commit (branch
-  `makeitem-owned`). The mod ships `db/extension_db.yml` that enables
-  it, but on a server without the extension registered, `makeitemowned`
-  returns failure and the on-kill event logs a one-line error per kill;
-  nothing else on the mod is affected (the items still exist and can be
-  granted with `@item Base_Exp_Card_1` and friends).
+- `requires.app` is **`>=1.3.9`** — the first release whose pinned
+  rAthena ships the native `makeitemowned` script command the on-kill
+  drop uses. On an older build the command does not exist and the
+  on-kill event logs a one-line error per kill; nothing else on the
+  mod is affected (the items still exist and can be granted with
+  `@item Base_Exp_Card_1` and friends).
 
 ## Installing
 
@@ -108,8 +106,6 @@ Then enable it under **Settings → Mods** (it ships off by default).
 - The supervisor prints `mods: exp-card` on start.
 - The map-server log's NPC count goes up by one (`exp_card_ctrl`). A
   parse error names the file and line.
-- `@extensions` in game should list `makeitem_owned` as **on** — this
-  confirms the server-side gate.
 - In game: `@item Base_Exp_Card_10` gives you one, and using it grants
   60,000 base exp; that isolates the item side from the on-kill roll.
 
@@ -119,6 +115,5 @@ Then enable it under **Settings → Mods** (it ships off by default).
 reads the chance from Settings, and an `OnNPCKillEvent` that rolls it,
 picks a card level from `MOB_LV`, flips for family, and calls
 `makeitemowned`. Everything else is item entries (`db/item_db.yml`,
-twenty scripts), their client-side names built with a small loop
-(`System/itemInfo.lua`), and the one-line extension override
-(`db/extension_db.yml`).
+twenty scripts) and their client-side names built with a small loop
+(`System/itemInfo.lua`).

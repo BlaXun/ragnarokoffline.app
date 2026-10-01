@@ -2,6 +2,58 @@
   "version": 1,
   "mods": [
     {
+      "name": "exp-card",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. A level 10 card grants roughly 5% of the exp a level-98 character needs for the next level; lower levels scale down linearly. Streamlines offline levelling without touching per-mob drop tables.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/exp-card",
+      "tags": [
+        "drops",
+        "experience",
+        "leveling",
+        "quality-of-life"
+      ],
+      "icon": "images/icon.png",
+      "screenshots": [
+        "images/exp-card.png"
+      ],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.3.9"
+      },
+      "files": [
+        {
+          "path": "db/item_db.yml",
+          "sha256": "8a496070850122c2619824575769abef962641ee14a58e0408a14be1a161e143"
+        },
+        {
+          "path": "images/exp-card.png",
+          "sha256": "db0708ca853343c748ecab3d9d9b41514fd9479c85281f88170dff0a56437cea"
+        },
+        {
+          "path": "images/icon.png",
+          "sha256": "e222062ad889ad8cf5f253d8eecd3ffbcf00e12d706ae84a532d11bfd9ed9355"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "ce17b8cb5b8246d006ecb02aaf1b1e14251e41dcc1e9b58c32bffbab59948e71"
+        },
+        {
+          "path": "npc/exp_card.txt",
+          "sha256": "f2c3e88ac6e1e6cc1b7b665102fb3d56549b5ff4f2348f1b9729e1e366ecc1a0"
+        },
+        {
+          "path": "README.md",
+          "sha256": "615e5f6de450571f3a46dfe99f253fddbd821877eb604fe6c0bd85053f863bfd"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "a5a4c038eb11bc670a6e3c720d3762b84d1913cab85aaf5f3fea32063659171b"
+        }
+      ]
+    },
+    {
       "name": "no-seed-cost",
       "version": "1.0.1",
       "author": "Ragnarok Offline",
@@ -24,7 +76,7 @@
       "files": [
         {
           "path": "db/skill_db.yml",
-          "sha256": "42dcdf20f7c4b315c03f28a17e8da306ed477500b8c84d7b46e37eb1d39c5098"
+          "sha256": "91f4d828f2e161ce9c9418a13f8b1c94c3c238ba025841d0f14dd3b4c0cbe2c2"
         },
         {
           "path": "images/homunculus.png",
@@ -36,7 +88,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "e256016b9a6e83b3b1fea49f281866c4002f0e5dcfb511fa7d404c920792f8aa"
+          "sha256": "12c15d813f8cf80ef282e24c28fe839ab6d10ea649af9deca5a0414fddbd1657"
         }
       ]
     }
