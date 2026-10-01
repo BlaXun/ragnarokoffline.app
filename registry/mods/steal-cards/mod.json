@@ -1,0 +1,7 @@
+{
+  "name": "steal-cards",
+  "version": "1.0.0",
+  "author": "BlaXun",
+  "description": "Lets the Thief's Steal skill roll for card drops. Ships a curated set of iconic monsters; copy the pattern for the rest.",
+  "requires": { "app": ">=1.3.9", "era": "any" }
+}
