@@ -1272,7 +1272,11 @@ api.graphics.hook({ name: 'Sunlight', light: () => sun });
 
 Graphics+ is the worked example: its grass (`grass.js`), water and
 reflections (`water.js`, `reflection.js`) and shadows (`shadows.js`) are
-each a map hook, and its "Sunlight per map" setting is the one above.
+each a map hook. Its sunlight is the example above as settings: off
+everywhere by default, "Warm sunlight" to turn it on for every map, and
+"Sunlight per map" for the exceptions -- `izlude:100 prt_fild*:80` to warm
+only those maps, or `*_dun*:0` to leave dungeons alone when it is on
+everywhere.
 
 `uniforms()` is called every frame and returns your own uniforms by name
 (numbers, or arrays of 2, 3, 4 or 16). `enabled()` turns the pass off without
