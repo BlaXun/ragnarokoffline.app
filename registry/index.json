@@ -2,6 +2,32 @@
   "version": 1,
   "mods": [
     {
+      "name": "arpg-equipments",
+      "version": "",
+      "author": "Iguera",
+      "description": "Six tiers of special equipment chests, earned by killing monsters based on their level, with extra random mods on the gear. Includes a hub of custom NPCs for advanced crafting and for tuning the chests' drop rates.",
+      "homepage": "https://github.com/igueradx/ARPG-Equipments-Mod",
+      "tags": [
+        "crafting",
+        "endgame",
+        "equipment",
+        "loot",
+        "npc"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "",
+        "app": ""
+      },
+      "source": {
+        "github": "igueradx/ARPG-Equipments-Mod",
+        "asset": "arpg-equipments*.zip"
+      },
+      "files": []
+    },
+    {
       "name": "blaze-shield-classchange",
       "version": "2.0.0",
       "author": "Ragnarok Offline",
