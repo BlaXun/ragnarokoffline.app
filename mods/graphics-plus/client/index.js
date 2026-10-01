@@ -116,6 +116,9 @@ export default function init(parameters, api) {
     }
     const uniforms = strengths(parameters);
     const anything = Object.values(uniforms).some(value => value > 0);
+    // Reflections are drawn inside the renderer, not in this pass.
+    const water = Number(parameters?.water);
+    if (Number.isFinite(water) && water > 0) api.graphics.configure({ waterReflection: Math.min(water, 100) / 100 });
     api.graphics.registerPass({
         name: 'Graphics+',
         fragment: FRAGMENT,

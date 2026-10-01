@@ -159,6 +159,16 @@ export function createRuntime({ storage, report = (...args) => console.error(...
                     const remove = bridge.registerPass(pass, error => report(`[Plugin ${name}] ${pass.name}`, error));
                     return cleanup(() => remove?.());
                 },
+                // Renderer features beyond post-processing, e.g.
+                // { waterReflection: 0.6 }. Withdrawn with the plugin.
+                configure(settings) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!settings || typeof settings !== 'object') throw new TypeError('configure takes an object of features');
+                    if (typeof bridge.configureGraphics !== 'function') return () => {};
+                    const withdraw = bridge.configureGraphics(copy(settings), error => report(`[Plugin ${name}] graphics`, error));
+                    return cleanup(() => withdraw?.());
+                },
+                features: () => freeze(copy(bridge.graphicsFeatures?.() || {})),
                 supported: () => Boolean(bridge.graphicsSupported?.()),
                 lights: () => freeze(copy(bridge.mapLights?.() || [])),
             }),

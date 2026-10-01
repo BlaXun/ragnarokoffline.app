@@ -36,6 +36,24 @@ test('a pass is handed to the bridge checked, and removed when the plugin is dis
     assert.equal(removed, 2, 'disposing the plugin removes what is left');
 });
 
+test('renderer features are configured through the bridge and withdrawn with the plugin', async () => {
+    const { createRuntime } = await runtimeModule;
+    const runtime = createRuntime();
+    const set = [];
+    let withdrawn = 0;
+    runtime.configure({
+        configureGraphics: (settings, report) => { set.push(settings); return () => { withdrawn++; }; },
+        graphicsFeatures: () => ({ waterReflection: 0 }),
+    });
+    const scope = runtime.scope('graphics-plus');
+    scope.api.graphics.configure({ waterReflection: 0.6 });
+    assert.deepEqual(set, [{ waterReflection: 0.6 }]);
+    assert.deepEqual(scope.api.graphics.features(), { waterReflection: 0 });
+    assert.throws(() => scope.api.graphics.configure('water'), TypeError);
+    scope.dispose();
+    assert.equal(withdrawn, 1);
+});
+
 test('what is not a shader is refused before it reaches the GPU', async () => {
     const { createRuntime } = await runtimeModule;
     const runtime = createRuntime();

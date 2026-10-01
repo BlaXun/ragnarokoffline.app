@@ -1232,6 +1232,20 @@ export default function init(parameters, api) {
 }
 ```
 
+Some features live inside the renderer rather than in a pass, and are switched
+on with `api.graphics.configure`:
+
+| Feature | |
+|---|---|
+| `waterReflection: 0..1` | water mirrors the sky, ground and buildings above it. The map is drawn a second time at half resolution where there's water |
+
+```js
+api.graphics.configure({ waterReflection: 0.6 });
+```
+
+If two mods set the same feature, the last one wins, and each mod's setting is
+withdrawn when that mod is. `api.graphics.features()` lists what this client has.
+
 `uniforms()` is called every frame and returns your own uniforms by name
 (numbers, or arrays of 2, 3, 4 or 16). `enabled()` turns the pass off without
 removing it. A shader that doesn't compile is reported in the client log and

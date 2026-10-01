@@ -354,6 +354,8 @@ export function init() {
         serverCommand,
         // Graphics passes (api.graphics); GraphicsPasses.mjs.
         registerPass: Graphics.registerPass,
+        configureGraphics: Graphics.configure,
+        graphicsFeatures: Graphics.features,
         graphicsSupported: Graphics.supported,
         mapLights: Graphics.mapLights,
     });
