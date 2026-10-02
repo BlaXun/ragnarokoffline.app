@@ -59,7 +59,7 @@
 					'This deletes the character row only. Its items (inventory, cart_inventory), skills, hotkeys, ' +
 					'quests, achievements, memos, variables (char_reg_num, char_reg_str), friends, mail, pets and ' +
 					'homunculus stay behind as orphans, and its party, guild and marriage are not left. To remove a ' +
-					'character cleanly, delete it from the character select screen in the game.',
+					'character cleanly, delete it from the character select screen in the game, or with Tools → Control panel.',
 			},
 		},
 	};
