@@ -1067,6 +1067,22 @@ function toolsInstance() {
 		toolsSingleton = require('./tools').createTools({
 			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
 			assetPort: () => gamePorts().asset,
+			// The Control panel (#230). Its writes wait in the same queue as
+			// every other server operation; one that stops the game (a delete)
+			// stops sharing on the way in and offers it back afterwards, as an
+			// account change from Settings does.
+			serverOperation: async (run, { stopsGame } = {}) => {
+				const result = await queueServerOperation(async () => {
+					if (stopsGame && sharing) await sharing.stop();
+					return run();
+				});
+				if (stopsGame) resumeSharing('after a control panel change');
+				return result;
+			},
+			createAccount: request => runServerOperation('accounts', {
+				...request, action: 'create', era: getSettings().prerenewal ? 'prerenewal' : 'renewal',
+			}),
+			context: () => ({ host: getClientPaths().mode === 'host', era: getSettings().prerenewal ? 'prerenewal' : 'renewal' }),
 			// The log viewer (#202) shows what Copy diagnostics would, redacted
 			// the same way, and the agent's token besides.
 			nebulaLogsDir: () => path.join(dataRoot(), 'nebula', 'logs'),
@@ -3059,6 +3075,24 @@ function queueServerOperation(operation) {
 	return pending;
 }
 
+// One of the handlers in SERVER_OPERATIONS, queued. Settings reaches these
+// over IPC; the Control panel (#230) runs `accounts` the same way, so an
+// account made there is made exactly as the Accounts tab makes one.
+async function runServerOperation(name, args) {
+	const result = await queueServerOperation(async () => {
+		if (sharing && ((name === 'accounts' && args?.action !== 'list') || ['set_mode', 'set_client_paths', 'save_settings', 'stack_repair', 'secure_services', 'db_restore', 'db_restore_full'].includes(name))) await sharing.stop();
+		return handlers[name](args || {});
+	});
+	// Every operation above either stops sharing on the way in or
+	// cycles the stack underneath it, and the server is back up by the
+	// time one returns. This is the single place that offers it back,
+	// rather than a call at the end of each handler that the next
+	// handler forgets to copy. Only on success: a failed start is not
+	// a server to share.
+	if (!NEVER_RESUMES_SHARING.has(name)) resumeSharing(`after ${name}`);
+	return result;
+}
+
 // Created on first use: the IPC channels a mod's settings page talks to exist
 // only once a player has opened one.
 let modSettingsController = null;
@@ -3110,20 +3144,7 @@ ipcMain.handle('invoke', async (event, name, args) => {
 	const fn = handlers[name];
 	if (!fn) throw new Error(`unknown command: ${name}`);
 	try {
-		if (SERVER_OPERATIONS.has(name)) {
-			const result = await queueServerOperation(async () => {
-                if (sharing && ((name === 'accounts' && args?.action !== 'list') || ['set_mode', 'set_client_paths', 'save_settings', 'stack_repair', 'secure_services', 'db_restore', 'db_restore_full'].includes(name))) await sharing.stop();
-                return fn(args || {});
-            });
-			// Every operation above either stops sharing on the way in or
-			// cycles the stack underneath it, and the server is back up by the
-			// time one returns. This is the single place that offers it back,
-			// rather than a call at the end of each handler that the next
-			// handler forgets to copy. Only on success: a failed start is not
-			// a server to share.
-			if (!NEVER_RESUMES_SHARING.has(name)) resumeSharing(`after ${name}`);
-			return result;
-		}
+		if (SERVER_OPERATIONS.has(name)) return await runServerOperation(name, args);
 		// The event goes along for the one game-page handler that has to know
 		// which page asked (remember_login); every other handler ignores it.
 		return await fn(args || {}, event);
