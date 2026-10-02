@@ -399,18 +399,27 @@ rostack sql --write "UPDATE login SET state = 0, unban_time = 0 WHERE userid = '
 inside the state folder and is not cleaned up for you. Delete the ones you do
 not want.
 
-For a backup you keep, use Settings → **Save Data** → **Back up…**, which saves
-both eras, your settings and your mods ([below](#backing-up-everything)). The
-running era's database alone, as one `.sql`, is:
+For a backup you keep, use Settings → **Save Data** → **Back up database…**,
+which writes both eras' databases to one `.sql` (and **Restore database…**,
+which asks which eras to put back), or:
 
 ```sh
 rostack backup ~/Desktop/ragnarok.sql
-rostack restore ~/Desktop/ragnarok.sql
+rostack inspect ~/Desktop/ragnarok.sql                 # what it holds, as JSON; changes nothing
+rostack restore ~/Desktop/ragnarok.sql                 # every era in it
+rostack restore ~/Desktop/ragnarok.sql --eras renewal  # only that one
 ```
 
-`restore` replaces the whole database and takes its own pre-restore backup
-first. Both stop the game; `backup` starts it again afterwards and `restore`
-leaves it stopped, so restart the server yourself once a restore is done.
+The file is each era's `mariadb-dump`, one after the other, each beginning with
+its stamp (below). `restore` replaces each chosen era's whole database and
+takes a pre-restore backup of it first, into `state/backups/`. An era whose
+database this install has never created is refused: switch Game era to it and
+start the server once. Both stop the game; `backup` starts it again afterwards
+and `restore` leaves it stopped, so restart the server yourself once a restore
+is done.
+
+A `.sql` from 1.4.3 or before is one era's dump with no stamp. It restores into
+the era that is set now, so switch Game era first if it was the other one.
 
 Before stopping anything, `restore` checks that the file is a dump of a game
 database (it has `char` and `login` tables), and refuses a "Back up
@@ -428,11 +437,11 @@ Every backup records what made it, in a comment near the top:
 -- Ragnarok Offline backup: app 1.4.4, era renewal, packetver 20221005, made 2026-10-02T19:46:28Z
 ```
 
-`app` is the version, `era` whose database it is (in a full backup,
-each era's dump says its own), `packetver` the client version the server ran,
-and `made` the time in UTC. Restore prints it, and refuses a backup of the
-other era before stopping anything: the tables are the same, so it would load,
-and the world would be wrong. Switch Game era first, then restore it.
+`app` is the version, `era` whose database it is (each era's dump says its
+own), `packetver` the client version the server ran, and `made` the time in
+UTC. Restore prints it, and loads each dump into the era its stamp names: the
+tables are the same in both, so a dump in the wrong era would load, and the
+world would be wrong. A file with the same era twice is refused.
 
 Restore also brings an older backup up to date before loading it, by
 running every migration in `stack/src/dump_migrations.rs` newer than the
@@ -444,13 +453,13 @@ pointing at the previous world's accounts; startup makes them again, empty,
 and players sign in afresh. A release that changes what a backup must contain
 adds its migration there; the module's comment says how.
 
-That `.sql` is the database of the era that is running, and nothing else. To
-keep or move a whole world, back up everything.
+That `.sql` is the two databases and nothing else. To keep or move a whole
+world, settings and mods included, back up everything.
 
 ### Backing up everything
 
-Settings → **Save Data** → **Back up…** (and **Restore…**, which asks which
-parts to put back), or:
+Settings → **Save Data** → **Back up everything…** (and **Restore
+everything…**, which asks which parts to put back), or:
 
 ```sh
 rostack backup --full ~/Desktop/my-world.tar.gz

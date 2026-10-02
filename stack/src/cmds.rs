@@ -1523,7 +1523,7 @@ pub fn secure_services(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32
         let backups = cfg.state.join("backups"); crate::private_fs::directory(&backups)?;
         stop_game_services(cfg, dk)?;
         let destination = backups.join(format!("before-service-credentials-{}-{}.sql", crate::service_credentials::era(cfg), crate::private_fs::random_hex(8)?));
-        if let Err(error) = backup(cfg, dk, &destination.to_string_lossy()) {
+        if let Err(error) = backup_snapshot(cfg, dk, &destination.to_string_lossy(), true) {
             return Err(format!("Service credentials were not changed: {error}. Start the server to reconnect."));
         }
         crate::private_fs::protect(&destination, false)?;
@@ -2211,24 +2211,6 @@ pub(crate) fn leading_words(script: &str) -> Vec<String> {
     out
 }
 
-pub fn backup(cfg: &Config, dk: &Docker, dest: &str) -> Result<(), String> {
-    let mut log = StepLog::open(cfg, "backup");
-    let era = crate::service_credentials::era(cfg);
-    log.record(&format!("backing up the {era} database to {dest}, made by Ragnarok Offline {}", cfg.app_version.as_deref().unwrap_or("(unknown version)")));
-    let result = crate::accounts::verify_era(cfg, dk, era).and_then(|()| {
-        log.record("stopping the game services");
-        crate::accounts::with_servers_stopped(cfg, dk, "backup", || backup_snapshot(cfg, dk, dest, true))
-    });
-    match &result {
-        Ok(()) => log.record("done; the game services are back as they were"),
-        Err(e) => log.record(&format!("failed: {e}")),
-    }
-    result.map_err(|e| match &log.path {
-        Some(path) => format!("{e}\n(Every step of this backup is in {}.)", path.display()),
-        None => e,
-    })
-}
-
 /// `announce` is off for the safety copies taken on someone else's behalf, so
 /// their line cannot land in the middle of output a caller is parsing.
 /// Whether a backup taken before the first password hashing is already kept:
@@ -2368,82 +2350,6 @@ fn check_tables(dk: &Docker) -> Result<Vec<String>, String> {
     let out = dk.capture(["exec", DB_CONTAINER, "sh", "-c", &command])?;
     let text = String::from_utf8_lossy(&out.stdout).into_owned() + &String::from_utf8_lossy(&out.stderr);
     Ok(text.lines().map(|l| l.trim().replace('\t', " ")).filter(|l| !l.is_empty()).collect())
-}
-
-pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
-    let mut log = StepLog::open(cfg, "restore");
-    let result = restore_logged(cfg, dk, src, &mut log);
-    if let Err(e) = &result {
-        log.record(&format!("failed: {e}"));
-    }
-    result.map_err(|e| match &log.path {
-        Some(path) => format!("{e}\n(Every step of this restore is in {}.)", path.display()),
-        None => e,
-    })
-}
-
-fn restore_logged(cfg: &Config, dk: &Docker, src: &str, log: &mut StepLog) -> Result<(), String> {
-    let era = crate::service_credentials::era(cfg);
-    let dump = check_dump(Path::new(src))?;
-    log.say(&format!("restoring {src} ({}, {} tables) into the {era} database", human(dump.size), dump.tables.len()));
-    if let Some(note) = &dump.note {
-        log.say(note);
-    }
-    // Migrated before the game stops: a backup this version cannot use is
-    // said while everything is still running.
-    let prepared = crate::dump_migrations::prepare(cfg, Path::new(src))?;
-    log.say(&format!("the backup was {}", prepared.describe_version()));
-    if let Err(e) = prepared.check_era(era) {
-        prepared.cleanup();
-        return Err(e);
-    }
-    let result = restore_prepared(cfg, dk, src, &prepared, log);
-    prepared.cleanup();
-    result
-}
-
-fn restore_prepared(
-    cfg: &Config,
-    dk: &Docker,
-    src: &str,
-    prepared: &crate::dump_migrations::Prepared,
-    log: &mut StepLog,
-) -> Result<(), String> {
-    let era = crate::service_credentials::era(cfg);
-    for done in &prepared.done {
-        log.say(&format!("migrated: {done}"));
-    }
-    crate::accounts::verify_era(cfg, dk, era)?;
-    log.say("stopping the game services");
-    stop_game_services(cfg, dk)?;
-    let backups = cfg.state.join("backups");
-    crate::private_fs::directory(&backups)?;
-    let safety = backups.join(format!("before-restore-{era}-{}.sql", crate::private_fs::random_hex(8)?));
-    log.say("backing up the database as it is now, first");
-    backup_snapshot(cfg, dk, &safety.to_string_lossy(), false)
-        .map_err(|e| format!("Nothing was restored: the backup taken first failed: {e}"))?;
-    log.say(&format!("saved the current database as {}", safety.display()));
-    log.say("loading the backup into the database");
-    if let Err(e) = load_dump(cfg, dk, &prepared.load) {
-        // What the database said is the whole point of reporting this: "may
-        // have partially changed" alone left a player with nothing to act
-        // on, or to send.
-        return Err(format!(
-            "Restore failed: {e}\nThe database may be partly restored. Game services are stopped. \
-             To put it back as it was before, restore {}.",
-            safety.display()
-        ));
-    }
-    log.say("loaded");
-    if let Some(credentials) = crate::service_credentials::load(&cfg.state, era)? {
-        // An older dump may carry the old interserver login. Restore the
-        // managed service row before any subsequent player reconnect.
-        log.say("setting the servers' own database login");
-        migrate_service_credentials(dk, &credentials)?;
-    }
-    log.say("done");
-    println!("restored from {src}; game services are stopped. Restart the server to reconnect. A pre-restore backup was preserved.");
-    Ok(())
 }
 
 /// What `check_dump` found out about a file before anything was stopped.

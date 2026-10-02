@@ -1739,6 +1739,13 @@ async function pickFolderOrArchive(message, filterName) {
 	return r.canceled || !r.filePaths.length ? null : r.filePaths[0];
 }
 
+/** `--eras a,b` for a restore that chose eras; nothing when it did not. */
+function eraArgs(eras) {
+	if (eras === undefined) return [];
+	if (!Array.isArray(eras) || eras.some(e => !['renewal', 'prerenewal'].includes(e))) throw new Error('Unknown era to restore.');
+	return ['--eras', eras.length ? [...new Set(eras)].join(',') : 'none'];
+}
+
 async function refusalNote(name) {
 	try {
 		const rows = (await runStack(['mods'])).split('\n').filter(Boolean);
@@ -2646,8 +2653,10 @@ const handlers = {
 		if (getClientPaths().mode !== 'host') throw new Error('Hosting checks belong to your own server.');
 		return JSON.parse(await runStack(['hosting-check']));
 	},
+	// Both eras' databases in one .sql (stack/src/db_backup.rs).
 	db_backup: ({ path: p }) => runStack(['backup', p]),
-	db_restore: ({ path: p }) => runStack(['restore', p]),
+	db_inspect: async ({ path: p }) => JSON.parse(await runStack(['inspect', p])),
+	db_restore: ({ path: p, eras }) => runStack(['restore', p, ...eraArgs(eras)]),
 	// The whole world: every era's database, settings and installed mods, in
 	// one .tar.gz (stack/src/world.rs). Secrets are never in it.
 	db_backup_full: ({ path: p }) => runStack(['backup', '--full', p]),
@@ -2662,11 +2671,7 @@ const handlers = {
 	db_restore_full: async ({ path: p, eras, settings }) => {
 		const client = getClientPaths();
 		if (client.mode === 'join') throw new Error('Restoring belongs to your own server. Switch to hosting your own server first.');
-		const choice = [];
-		if (eras !== undefined) {
-			if (!Array.isArray(eras) || eras.some(e => !['renewal', 'prerenewal'].includes(e))) throw new Error('Unknown era to restore.');
-			choice.push('--eras', eras.length ? [...new Set(eras)].join(',') : 'none');
-		}
+		const choice = eraArgs(eras);
 		if (settings === false) choice.push('--no-settings');
 		const cycleAssets = assetServer.running;
 		if (cycleAssets) await assetsStop();

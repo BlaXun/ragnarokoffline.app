@@ -254,7 +254,7 @@ fn first_columns(dump: &str, table: &str) -> Vec<i64> {
 
 /// Player accounts (ids from 2000000, as rAthena numbers them; the
 /// server's own login is below that) and characters in one era's dump.
-fn players_and_characters(dump: &str) -> (usize, usize) {
+pub(crate) fn players_and_characters(dump: &str) -> (usize, usize) {
     let accounts = first_columns(dump, "login").into_iter().filter(|id| *id >= 2_000_000).count();
     (accounts, first_columns(dump, "char").len())
 }
@@ -652,10 +652,10 @@ pub fn apply(staged: &Path, manifest: &Manifest, state: &Path) -> Result<(), Str
 // ---------------------------------------------------------------------------
 
 /// A private working folder under state/private, removed however we leave.
-struct Scratch(PathBuf);
+pub(crate) struct Scratch(pub PathBuf);
 
 impl Scratch {
-    fn new(cfg: &Config) -> Result<Scratch, String> {
+    pub(crate) fn new(cfg: &Config) -> Result<Scratch, String> {
         crate::private_fs::directory(&cfg.state)?;
         let private = cfg.state.join("private");
         crate::private_fs::directory(&private)?;
@@ -672,7 +672,7 @@ impl Drop for Scratch {
 }
 
 /// Dump every era's database that exists, the running one first.
-fn dump_all(cfg: &Config, dk: &Docker, into: &Path, running: &'static str) -> Result<Vec<(&'static str, PathBuf)>, String> {
+pub(crate) fn dump_all(cfg: &Config, dk: &Docker, into: &Path, running: &'static str) -> Result<Vec<(&'static str, PathBuf)>, String> {
     let mut out = Vec::new();
     for era in std::iter::once(running).chain(ERAS.into_iter().filter(|e| *e != running)) {
         if era != running && !crate::cmds::era_volume_exists(dk, era) {
@@ -688,7 +688,7 @@ fn dump_all(cfg: &Config, dk: &Docker, into: &Path, running: &'static str) -> Re
     Ok(out)
 }
 
-fn era_name(era: &str) -> &'static str {
+pub(crate) fn era_name(era: &str) -> &'static str {
     if era == "prerenewal" { "pre-renewal" } else { "renewal" }
 }
 

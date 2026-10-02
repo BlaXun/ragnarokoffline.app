@@ -143,6 +143,7 @@
   .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* The first heading in a panel would otherwise sit oddly far from the tabs. */
   .tabpanel > h2:first-child { margin-top: 10px; }
+  h2.section { margin-top: 22px; }
   /* Mods' own header: its two halves on the left, the list-wide buttons on
      the right, pinned just under the section tabs. --tabs-h is the section
      bar's measured height, which grows when that bar wraps. The buttons are a
@@ -589,13 +590,21 @@
   <div class="tabpanel" id="panel-savedata" role="tabpanel" aria-labelledby="tab-savedata" hidden>
   <h2>Save data</h2>
   <div class="card">
-    <div class="row"><span class="name">Characters, settings &amp; mods</span><span class="state" id="s-dbfile">—</span></div>
+    <div class="row"><span class="name">Characters &amp; accounts</span><span class="state" id="s-dbfile">—</span></div>
     <div class="actions">
-      <button id="backup" class="ghost">Back up…</button>
-      <button id="restore" class="ghost">Restore…</button>
+      <button id="backup" class="ghost">Back up database…</button>
+      <button id="restore" class="ghost">Restore database…</button>
       <button id="open-data" class="ghost">Open data folder</button>
     </div>
-    <div class="note" id="db-note">One file with the characters and accounts of both eras, your settings and your installed mods, to keep or to move to another computer. Backing up disconnects players for a moment. Restore shows what the file holds and puts back the parts you choose, saving everything as it is now first. A .sql backup from an older version still restores, into its own era. The file holds your accounts' passwords, so keep it private; your sharing and Cloudflare credentials and your game client's files are never in it.</div>
+    <div class="note" id="db-note">One .sql file with the characters and accounts of both eras, renewal and pre-renewal. Your settings and mods are not in it: use Back up everything for those. Backing up disconnects players for a moment. Restore shows what the file holds and puts back the eras you choose, keeping a copy of what is there now. An older .sql with one era in it restores into the era you have set.</div>
+  </div>
+  <h2 class="section">Everything</h2>
+  <div class="card">
+    <div class="actions">
+      <button id="backup-full" class="ghost">Back up everything…</button>
+      <button id="restore-full" class="ghost">Restore everything…</button>
+    </div>
+    <div class="note" id="full-note">One file with both eras' characters and accounts, <b>your settings and your installed mods</b>, to keep or to move to another computer. Restore everything shows what it holds and puts back the parts you choose, saving everything as it is now first. It never contains your sharing or Cloudflare credentials, and your game client's files are not copied. It does contain your accounts' passwords, so keep it private.</div>
   </div>
   <dialog id="restore-dialog" aria-labelledby="rd-title">
     <form method="dialog">
@@ -604,7 +613,7 @@
       <p class="note" id="rd-made"></p>
       <label class="rd-part"><input type="checkbox" id="rd-renewal" /><span>Renewal characters &amp; accounts</span><span class="state" id="rd-renewal-n"></span></label>
       <label class="rd-part"><input type="checkbox" id="rd-prerenewal" /><span>Pre-renewal characters &amp; accounts</span><span class="state" id="rd-prerenewal-n"></span></label>
-      <label class="rd-part"><input type="checkbox" id="rd-settings" /><span>Settings &amp; installed mods</span><span class="state" id="rd-settings-n"></span></label>
+      <label class="rd-part" id="rd-settings-row"><input type="checkbox" id="rd-settings" /><span>Settings &amp; installed mods</span><span class="state" id="rd-settings-n"></span></label>
       <p class="note">What you leave unticked stays as it is now. Everything as it is now is saved first, and you will be shown where. The server restarts and anyone playing is disconnected.</p>
       <div class="actions">
         <button value="cancel" class="ghost">Cancel</button>
@@ -1200,18 +1209,32 @@ const { save: saveDialog, open: openDialog } = window.__ELECTRON__.dialog;
 
 invoke('data_location').then(p => { if (p) $('s-dbfile').textContent = p; }).catch(() => {});
 
+// Default names carry the date so successive backups do not overwrite each
+// other -- the usual reason a backup feature turns out to be useless.
+const today = () => new Date().toISOString().slice(0, 10);
+const lastLine = out => String(out).trim().split('\n').pop();
+
 $('backup').onclick = async () => {
-  // Default name carries the date so successive backups do not overwrite each
-  // other -- the usual reason a backup feature turns out to be useless.
-  const stamp = new Date().toISOString().slice(0, 10);
-  const path = await saveDialog({ defaultPath: `ragnarokoffline-${stamp}.tar.gz`,
-                                  filters: [{ name: 'Ragnarok Offline backup', extensions: ['gz'] }] });
+  const path = await saveDialog({ defaultPath: `ragnarokoffline-database-${today()}.sql`,
+                                  filters: [{ name: 'Database backup', extensions: ['sql'] }] });
   if (typeof path !== 'string') return;
-  setNote('db-note', 'Backing up both eras, your settings and your mods… players are disconnected for a moment.');
+  setNote('db-note', 'Backing up both eras… players are disconnected for a moment.');
   try {
-    setNote('db-note', (await invoke('db_backup_full', { path })).trim(), 'good');
+    setNote('db-note', (await invoke('db_backup', { path })).trim(), 'good');
   } catch (e) {
     setNote('db-note', String(e && e.message || e), 'bad');
+  }
+};
+
+$('backup-full').onclick = async () => {
+  const path = await saveDialog({ defaultPath: `ragnarokoffline-everything-${today()}.tar.gz`,
+                                  filters: [{ name: 'Ragnarok Offline backup', extensions: ['gz'] }] });
+  if (typeof path !== 'string') return;
+  setNote('full-note', 'Backing up both eras, your settings and your mods… players are disconnected for a moment.');
+  try {
+    setNote('full-note', (await invoke('db_backup_full', { path })).trim(), 'good');
+  } catch (e) {
+    setNote('full-note', String(e && e.message || e), 'bad');
   }
 };
 
@@ -1222,25 +1245,35 @@ function partCount(db) {
   return `${n(db.accounts, 'account')}, ${n(db.characters, 'character')}`;
 }
 
-// What the backup holds, and which parts to put back. Resolves to
-// { eras, settings } or null when cancelled.
-function chooseParts(path, info) {
+const eraWord = era => (era === 'prerenewal' ? 'pre-renewal' : 'renewal');
+
+// What a backup holds, and which parts to put back. `withSettings` adds the
+// settings & mods row (Restore everything). Resolves to { eras, settings },
+// or null when cancelled.
+function chooseParts(path, info, withSettings) {
   const dialog = $('restore-dialog');
+  $('rd-title').textContent = withSettings ? 'Restore everything' : 'Restore database';
   $('rd-file').textContent = path.split(/[\\/]/).pop();
-  const made = [info.app_version ? `Made by Ragnarok Offline ${info.app_version}` : 'Made by an older Ragnarok Offline',
-                info.created ? `on ${info.created.replace('T', ' ').replace(/(:\d\d)Z$/, '$1 UTC')}` : '',
-                info.era ? `while playing ${info.era === 'prerenewal' ? 'pre-renewal' : 'renewal'}` : ''].filter(Boolean).join(' ');
-  $('rd-made').textContent = made + '.';
+  const unstamped = (info.databases || []).some(d => d.stamped === false);
+  const made = unstamped
+    ? `Made before 1.4.4, which did not record its era: it restores into the era you have set, ${eraWord(info.running_era)}.`
+    : [info.app_version ? `Made by Ragnarok Offline ${info.app_version}` : 'Made by an older Ragnarok Offline',
+       info.created ? `on ${info.created.replace('T', ' ').replace(/(:\d\d)Z$/, '$1 UTC')}` : '',
+       info.era ? `while playing ${eraWord(info.era)}` : ''].filter(Boolean).join(' ') + '.';
+  $('rd-made').textContent = made;
   for (const era of ['renewal', 'prerenewal']) {
     const db = (info.databases || []).find(d => d.era === era);
     $(`rd-${era}`).disabled = !db;
     $(`rd-${era}`).checked = !!db;
     $(`rd-${era}-n`).textContent = partCount(db);
   }
+  $('rd-settings-row').hidden = !withSettings;
   const mods = (info.mods || []).length;
-  $('rd-settings').disabled = !info.settings && !mods;
-  $('rd-settings').checked = false;
-  $('rd-settings-n').textContent = info.settings || mods ? `${mods} installed mod${mods === 1 ? '' : 's'}` : 'not in this backup';
+  const hasSettings = !!info.settings || mods > 0;
+  $('rd-settings').disabled = !withSettings || !hasSettings;
+  // "Everything" means everything: settings are ticked unless missing.
+  $('rd-settings').checked = withSettings && hasSettings;
+  $('rd-settings-n').textContent = hasSettings ? `${mods} installed mod${mods === 1 ? '' : 's'}` : 'not in this backup';
   const update = () => {
     $('rd-go').disabled = !['rd-renewal', 'rd-prerenewal', 'rd-settings'].some(id => $(id).checked);
   };
@@ -1251,7 +1284,7 @@ function chooseParts(path, info) {
       if (dialog.returnValue !== 'go') return resolve(null);
       resolve({
         eras: ['renewal', 'prerenewal'].filter(era => $(`rd-${era}`).checked),
-        settings: $('rd-settings').checked,
+        settings: withSettings && $('rd-settings').checked,
       });
     };
     dialog.returnValue = '';
@@ -1261,32 +1294,44 @@ function chooseParts(path, info) {
 
 $('restore').onclick = async () => {
   const path = await openDialog({ multiple: false, directory: false,
-                                  filters: [{ name: 'Ragnarok Offline backup', extensions: ['gz', 'sql'] }] });
+                                  filters: [{ name: 'Database backup', extensions: ['sql'] }] });
   if (typeof path !== 'string') return;
-  // A single-era .sql, from Back up in 1.4.3 and before.
-  if (/\.sql$/i.test(path)) {
-    if (!confirm('Restore this backup?\n\nIt holds the characters and accounts of one era, and they replace the ones that era has now. ' +
-                 'A copy of what is there now is saved first.')) return;
-    setNote('db-note', 'Restoring…');
-    try {
-      setNote('db-note', (await invoke('db_restore', { path })).trim() + ' — restart the server for it to take effect.', 'good');
-    } catch (e) {
-      setNote('db-note', String(e && e.message || e), 'bad');
-    }
-    return;
-  }
   setNote('db-note', 'Reading the backup…');
   let info;
   try {
-    info = await invoke('db_inspect_full', { path });
+    info = await invoke('db_inspect', { path });
   } catch (e) {
     setNote('db-note', String(e && e.message || e), 'bad');
     return;
   }
   setNote('db-note', '');
-  const choice = await chooseParts(path, info);
+  const choice = await chooseParts(path, info, false);
   if (!choice) return;
-  setNote('db-note', 'Restoring… this stops the server, and can take a few minutes.');
+  setNote('db-note', 'Restoring…');
+  try {
+    // The progress lines are in the Log viewer; the last one is the outcome.
+    setNote('db-note', lastLine(await invoke('db_restore', { path, eras: choice.eras })), 'good');
+  } catch (e) {
+    setNote('db-note', String(e && e.message || e), 'bad');
+  }
+};
+
+$('restore-full').onclick = async () => {
+  const path = await openDialog({ multiple: false, directory: false,
+                                  filters: [{ name: 'Ragnarok Offline backup', extensions: ['gz'] }] });
+  if (typeof path !== 'string') return;
+  setNote('full-note', 'Reading the backup…');
+  let info;
+  try {
+    info = await invoke('db_inspect_full', { path });
+  } catch (e) {
+    setNote('full-note', String(e && e.message || e), 'bad');
+    return;
+  }
+  setNote('full-note', '');
+  const choice = await chooseParts(path, info, true);
+  if (!choice) return;
+  setNote('full-note', 'Restoring… this stops the server, and can take a few minutes.');
   try {
     const out = (await invoke('db_restore_full', { path, eras: choice.eras, settings: choice.settings })).trim();
     // Every other panel shows settings read when the window opened, and
@@ -1294,7 +1339,7 @@ $('restore').onclick = async () => {
     alert(out);
     location.reload();
   } catch (e) {
-    setNote('db-note', String(e && e.message || e), 'bad');
+    setNote('full-note', String(e && e.message || e), 'bad');
   }
 };
 

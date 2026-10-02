@@ -48,20 +48,20 @@ protection remain separate work for issue #4.
 ## Backing up and restoring your characters
 
 Accounts and characters live in a MariaDB database inside the microVM, not in a
-file you can copy. Settings has the two buttons that get them in and out:
+file you can copy. Settings → Save data has two kinds of backup:
 
-**Settings → Save data → Back up…** writes one `.tar.gz` wherever you choose:
-the database of *both* eras (accounts, characters, inventories, storage,
-guilds), your settings and your installed mods. Players are disconnected for a
-moment while it is taken. Secrets such as your Cloudflare sharing credentials
-are never in it.
+**Back up database…** writes one `.sql` with the database of *both* eras
+(accounts, characters, inventories, storage, guilds). **Back up everything…**
+writes one `.tar.gz` with the same, plus your settings and your installed mods.
+Players are disconnected for a moment while either is taken. Secrets such as
+your Cloudflare sharing credentials are never in them.
 
-**Settings → Save data → Restore…** opens one and shows what it holds — which
-eras, how many accounts and characters, which mods, which version made it —
-with a checkbox for each part: renewal characters, pre-renewal characters,
-settings and mods. What you leave unticked stays as it is. Everything as it is
-now is saved first. A `.sql` backup from 1.4.3 or before still restores, into
-its own era.
+**Restore database…** and **Restore everything…** open one and show what it
+holds — which eras, how many accounts and characters, which version made it,
+and for everything which mods — with a checkbox for each era (and for settings
+and mods). What you leave unticked stays as it is, and what is there now is
+saved first. A `.sql` backup from 1.4.3 or before holds one era without saying
+which, and restores into the era you have set.
 
 A few things worth knowing:
 
