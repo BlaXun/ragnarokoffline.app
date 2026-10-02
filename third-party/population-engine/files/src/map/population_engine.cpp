@@ -5179,6 +5179,45 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					vend_title_buf.resize(MESSAGE_SIZE - 1);
 				vend_title = vend_title_buf.c_str();
 			}
+			// RAGNAROKMAC: a mod vendor never shows a sign another stall on the map
+			// already shows: another title from its pool if one is free, else the
+			// same with a number ("ores n more 2"), as players do.
+			if (mod_entry != nullptr) {
+				auto in_use = [&](const std::string& t) {
+					for (map_session_data* o : g_population_engine_pcs)
+						if (o && o != sd && o->m == sd->m && o->state.vending && t == o->message)
+							return true;
+					return false;
+				};
+				auto resolve = [&](const std::string& t) {
+					std::string r = t;
+					population_engine_chat_replace_all(r, "{name}", std::string(sd->status.name));
+					if (r.size() >= MESSAGE_SIZE)
+						r.resize(MESSAGE_SIZE - 1);
+					return r;
+				};
+				std::string chosen = vend_title;
+				if (in_use(chosen)) {
+					std::vector<std::string> cands;
+					for (const std::string& t : mod_entry->title_pool)
+						cands.push_back(resolve(t));
+					for (size_t i = cands.size(); i > 1; --i)
+						std::swap(cands[i - 1], cands[rnd() % i]);
+					bool found = false;
+					for (const std::string& c : cands)
+						if (!in_use(c)) { chosen = c; found = true; break; }
+					if (!found) {
+						const std::string base = chosen;
+						for (int n = 2; n < 100; ++n) {
+							const std::string suffix = " " + std::to_string(n);
+							std::string t = base.substr(0, std::min(base.size(), static_cast<size_t>(MESSAGE_SIZE - 1) - suffix.size())) + suffix;
+							if (!in_use(t)) { chosen = t; break; }
+						}
+					}
+				}
+				vend_title_buf = chosen;
+				vend_title = vend_title_buf.c_str();
+			}
 
 			// Build the stock list to use.
 			// Priority: static vendor_cfg stock → dynamic (map mob drops) → built-in defaults.
