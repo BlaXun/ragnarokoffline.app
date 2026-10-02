@@ -1710,9 +1710,10 @@ async function installModFrom(src) {
 	// refused is still installed -- the player may be about to switch era, and
 	// deleting it would be worse -- but they are told now rather than after a
 	// restart that appears to do nothing.
+	const on = await switchOnInstalled(name);
 	const note = await refusalNote(name);
 	appLog(`installed mod ${name} from ${src}`);
-	return `Installed ${name}.${note} Apply to restart the server.`;
+	return `Installed ${name}.${on}${note} Apply to restart the server.`;
 }
 
 /**
@@ -1744,6 +1745,24 @@ function eraArgs(eras) {
 	if (eras === undefined) return [];
 	if (!Array.isArray(eras) || eras.some(e => !['renewal', 'prerenewal'].includes(e))) throw new Error('Unknown era to restore.');
 	return ['--eras', eras.length ? [...new Set(eras)].join(',') : 'none'];
+}
+
+/**
+ * A mod the player has just installed is switched on: pressing Install is
+ * the choice. Without this, a mod whose manifest says `"default": "off"`
+ * (meant for mods that ship with the app) installed and stayed off. Only for
+ * a fresh install -- an update or a reinstall keeps whatever the player chose.
+ * Returns a note to add to the message; failing to switch it on does not undo
+ * the install.
+ */
+async function switchOnInstalled(name) {
+	try {
+		const off = (await runStack(['mod-enable', name])).split('\n').map(l => l.replace(/^switched off /, '').trim()).filter(Boolean);
+		return off.length ? ` Switched off ${off.join(', ')}, which cannot be on with it.` : '';
+	} catch (e) {
+		appLog(`mod-enable ${name} failed: ${(e && e.message) || e}`);
+		return ` It could not be switched on (${(e && e.message) || e}); tick it in the list.`;
+	}
 }
 
 async function refusalNote(name) {
@@ -1836,9 +1855,10 @@ async function installFromSource(entry) {
 		} });
 		committed = true;
 		appLog(`${current ? 'updated' : 'installed'} mod ${entry.name} ${release.tag} from ${repo} (${asset.name}, sha256 ${sha256})`);
+		const on = present ? '' : await switchOnInstalled(entry.name);
 		const note = await refusalNote(entry.name);
 		const done = current ? `Updated ${entry.name} to ${version}.` : `Installed ${entry.name} ${version}.`;
-		return { name: entry.name, version, tag: release.tag, message: `${done}${note} Apply to restart the server.` };
+		return { name: entry.name, version, tag: release.tag, message: `${done}${on}${note} Apply to restart the server.` };
 	} finally {
 		if (!committed) source.discard(staged);
 	}
@@ -2031,9 +2051,11 @@ const handlers = {
 		// Install and update are the same thing for a mod published from its
 		// own repository: fetch the latest release, show it, swap it in.
 		if (entry && entry.source) return installFromSource(entry);
+		const present = fs.existsSync(path.join(stateDir(), 'mods', name));
 		const result = await registry.install(name, { url, mods, modsDir: path.join(stateDir(), 'mods') });
 		appLog(`installed mod ${result.name} ${result.version} (${result.files} files)`);
-		return result;
+		const on = present ? '' : await switchOnInstalled(result.name);
+		return on ? { ...result, message: `Installed ${result.name} ${result.version}.${on} Apply to restart the server.` } : result;
 	},
 	// The latest release of one source entry, for its page in the list. One
 	// lookup, cached with the rest, and only when somebody opens the entry.

@@ -94,7 +94,8 @@ pub struct Manifest {
     /// Whether the mod is on before the player has said anything about it.
     ///
     /// Only meaningful for mods that ship with the app: a mod somebody went to
-    /// the trouble of installing should be on. A *bundled* one that changes how
+    /// the trouble of installing should be on, so the shell records it as
+    /// switched on when it is installed (`switchOnInstalled` in electron/main.js). A *bundled* one that changes how
     /// the game is played -- free warps, instant job changes -- should be
     /// offered rather than applied, so it declares `"default": "off"` and waits
     /// to be ticked.
