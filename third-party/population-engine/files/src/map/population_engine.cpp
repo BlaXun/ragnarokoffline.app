@@ -2288,6 +2288,8 @@ struct PopModVendorSettings {
 	int callouts = -1;         ///< population_vendor_callouts: 0 off, 1 on
 	int callout_min_sec = -1;
 	int callout_max_sec = -1;
+	int respect_limit = -1;    ///< population_vendor_limit: 0 = spawn even when the population is full
+	int price_pct = -1;        ///< population_vendor_price: every listed price × this / 100
 };
 static std::vector<PopModVendorSettings> g_pop_mod_vendor_settings;
 /// Breaks ties when a total is smaller than the number of blocks, so which
@@ -2335,6 +2337,27 @@ void population_engine_set_mod_vendor_callouts(const char* prefix, int on, int m
 	e.callout_max_sec = max_sec > 0 ? max_sec : -1;
 	ShowInfo("Population engine: mod vendors '%s*': callouts %s, every %d-%d s.\n",
 		e.prefix.c_str(), on ? "on" : "off", e.callout_min_sec, e.callout_max_sec);
+}
+
+void population_engine_set_mod_vendor_limit(const char* prefix, int respect) {
+	PopModVendorSettings& e = pop_mod_vendor_settings_for_prefix(prefix);
+	e.respect_limit = respect ? 1 : 0;
+	ShowInfo("Population engine: mod vendors '%s*': %s the population limit.\n",
+		e.prefix.c_str(), respect ? "respect" : "ignore");
+}
+
+void population_engine_set_mod_vendor_price(const char* prefix, int pct) {
+	PopModVendorSettings& e = pop_mod_vendor_settings_for_prefix(prefix);
+	e.price_pct = pct > 0 ? std::min(pct, 100000) : -1;
+	ShowInfo("Population engine: mod vendors '%s*': prices at %d%%.\n", e.prefix.c_str(), pct > 0 ? e.price_pct : 100);
+}
+
+/// The price level a mod vendor's mod set, in percent (100 = as listed).
+static int pop_mod_vendor_price_pct(const PopulationVendorEntry* mod_entry) {
+	if (mod_entry == nullptr)
+		return 100;
+	const PopModVendorSettings* st = pop_mod_vendor_settings_for_key(mod_entry->key);
+	return st && st->price_pct > 0 ? st->price_pct : 100;
 }
 
 /// A mod vendor shell's callout pace: its settings, else its entry, else 0
@@ -2406,9 +2429,11 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 	if (!battle_config.population_engine_vending_enable)
 		return;
 	static std::unordered_set<std::string> warned_no_profile;
-	auto out_of_room = [&]() {
-		return (pbudget != nullptr && *pbudget == 0) || g_population_engine_count.load() >= max_global;
-	};
+	// Out of this tick's budget ends the pass; the population limit only stops
+	// the vendors whose mod respects it (the default), so check per entry.
+	bool respect = true;
+	auto budget_out = [&]() { return pbudget != nullptr && *pbudget == 0; };
+	auto limit_hit = [&]() { return respect && g_population_engine_count.load() >= max_global; };
 	auto spent = [&]() { if (pbudget != nullptr && *pbudget > 0) --*pbudget; };
 	const int density = battle_config.population_engine_density_pct;
 	auto scaled = [&](size_t n, bool opt_in) -> size_t {
@@ -2422,6 +2447,10 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 		const PopulationVendorEntry& entry = kv.second;
 		if (entry.spawns.empty())
 			continue;
+		{
+			const PopModVendorSettings* st = pop_mod_vendor_settings_for_key(entry.key);
+			respect = !(st && st->respect_limit == 0);
+		}
 		const PopulationEngine* prof = population_vendor_pop_db().find_by_vendor_key(entry.key);
 		if (prof == nullptr) {
 			if (warned_no_profile.insert(entry.key).second)
@@ -2455,7 +2484,8 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 					population_engine_shell_release(psd);
 			}
 
-			if (out_of_room()) return;
+			if (budget_out()) return;
+			if (limit_hit()) goto next_entry;
 			if (!pop_map_is_live(m))
 				continue;
 
@@ -2463,7 +2493,8 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 				// Fixed seats: one shell per seat. Scaling down fills the first N.
 				const size_t seats = target;
 				for (size_t i = 0; i < seats; ++i) {
-					if (out_of_room()) return;
+					if (budget_out()) return;
+					if (limit_hit()) goto next_entry;
 					const int16_t seat = static_cast<int16_t>(i);
 					if (population_engine_count_mod_shells(m, sp.spawn_id, seat) > 0)
 						continue;
@@ -2495,7 +2526,8 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 			if (total_cells == 0)
 				continue;
 			for (; cur < target; ++cur) {
-				if (out_of_room()) return;
+				if (budget_out()) return;
+				if (limit_hit()) goto next_entry;
 				bool placed = false;
 				for (int attempt = 0; attempt < 40 && !placed; ++attempt) {
 					uint64_t r = static_cast<uint64_t>(rnd()) % total_cells;
@@ -2524,6 +2556,7 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 					break; // no free cell this tick; try again next pass
 			}
 		}
+	next_entry:;
 	}
 }
 
@@ -5232,7 +5265,8 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Static && !vendor_cfg->stock.empty()) {
 				// Static vending: use exactly the YAML-defined stock.
 				for (const auto &vs : vendor_cfg->stock)
-					stock.push_back({ vs.nameid, vs.amount, vs.price, &vs });
+					stock.push_back({ vs.nameid, vs.amount,
+						static_cast<uint32_t>(std::min<int64_t>(static_cast<int64_t>(vs.price) * pop_mod_vendor_price_pct(mod_entry) / 100, MAX_ZENY)), &vs });
 
 			} else if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Pool && !vendor_cfg->pool.empty()) {
 				// RAGNAROKMAC: Pool vending. Pick pick_count distinct items from
@@ -5284,6 +5318,8 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					}
 				}
 
+				// RAGNAROKMAC: the mod's price level (population_vendor_price).
+				const int price_pct = pop_mod_vendor_price_pct(mod_entry);
 				auto roll_price = [&](const PopulationVendorStock& vs) -> uint32_t {
 					if (vs.price == 0) return 0;
 					int64_t p, band_lo;
@@ -5298,6 +5334,10 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 							const int factor = (100 - jitter) + static_cast<int>(rnd() % (2 * jitter + 1));
 							p = p * factor / 100;
 						}
+					}
+					if (price_pct != 100) {
+						p = p * price_pct / 100;
+						band_lo = band_lo * price_pct / 100;
 					}
 					const bool plain = vs.refine_max == 0 && vs.element == 0 && vs.stars == 0 && vs.cards.empty();
 					if (plain && vendor_cfg->undercut_chance > 0 &&

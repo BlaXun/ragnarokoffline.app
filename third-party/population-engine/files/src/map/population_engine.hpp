@@ -192,6 +192,12 @@ void population_engine_set_mod_vendor_total(const char* prefix, int total);
 void population_engine_set_mod_vendor_rotation(const char* prefix, int minutes);
 /// RAGNAROKMAC: callouts on/off and their pace for those vendors; script: population_vendor_callouts.
 void population_engine_set_mod_vendor_callouts(const char* prefix, int on, int min_sec, int max_sec);
+/// RAGNAROKMAC: whether those vendors wait for room under the population limit
+/// (the default) or spawn anyway; script: population_vendor_limit.
+void population_engine_set_mod_vendor_limit(const char* prefix, int respect);
+/// RAGNAROKMAC: those vendors' price level in percent (100 = as listed);
+/// script: population_vendor_price.
+void population_engine_set_mod_vendor_price(const char* prefix, int pct);
 
 struct block_list;
 /// Arena PvP: classify the relation between two block_list entities so that
