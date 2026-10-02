@@ -26,8 +26,13 @@ Two vendors on the west sidewalk at `x=147`, each pinned to its own spot:
 
 - **`pv_general_gear`** (`y=136..152`, Merchant) — ~22 common gear and
   consumables, 6–10 per shell.
-- **`pv_forge_supplies`** (`y=155..170`, Alchemist) — ores, elemental stones
+- **`pv_forge_supplies`** (`y=155..170`, Whitesmith) — ores, elemental stones
   and upgrade materials, 5–8 per shell.
+
+The engine's own generic vendors (`field_drops`, `dungeon_drops`) still run
+alongside these — they're wanted as plain "player selling their loot" stalls.
+Our two just take one job each from them (Merchant, Whitesmith); the generics
+keep their other job (HighMerchant, Blacksmith) and still spawn.
 
 Each vendor:
 
@@ -63,8 +68,18 @@ Agreed scope that is **not** in this MVP yet:
    far (general goods + forge supplies). Each additional theme is another
    `VendorKey:` block here plus a `Profile:` on a distinct job in
    `population_vendor_pop.yml`. Multiple placements per map now work, so each
-   can have its own spot. (Distinct jobs matter: the vendor-job → VendorKey map
-   is global and last-wins, so two vendors on the same job collide.)
+   can have its own spot.
+   - **Job budget:** only the Merchant tree + Super Novice can actually vend,
+     and each vendor needs its own job (the job → VendorKey map is global,
+     last-wins). Vending-capable jobs: Merchant, Blacksmith, Alchemist,
+     HighMerchant, Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo,
+     SuperNovice, HyperNovice (12). The engine's generics use 4
+     (Merchant/HighMerchant/Blacksmith/Whitesmith) and we share two of those,
+     leaving ~8 free jobs → ~8 more themed vendors before the model runs out.
+   - **Past that ceiling** we'd want an engine change letting a
+     `VendorPlacement` name its `VendorKey` directly (and the engine pick a job
+     from that vendor's Profile), removing the one-job-per-vendor limit. Planned
+     if the themed set grows large.
 4. MVP cards / god items / event-only / non-tradable blocklist. The current
    pool is hand-authored so nothing from those categories is in it, but a
    future dynamic-pool generator will need to apply filters.

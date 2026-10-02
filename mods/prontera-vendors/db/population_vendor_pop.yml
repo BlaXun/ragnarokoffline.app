@@ -6,10 +6,18 @@
 # VendorKey, and the engine spawns it at that key's VendorPlacement. The two
 # vendors use DIFFERENT jobs on purpose: the vendor job -> VendorKey map is
 # global and last-profile-wins, so two profiles on the same job would collide.
-#   Merchant   -> pv_general_gear   (also overrides the engine's field_drops Merchant)
-#   Alchemist  -> pv_forge_supplies
-# Both are merchant-tree classes, so para_merchant gear fits and they read as
-# merchants in game.
+#   Merchant   -> pv_general_gear    (takes Merchant from field_drops; it keeps HighMerchant)
+#   Whitesmith -> pv_forge_supplies  (takes Whitesmith from dungeon_drops; it keeps Blacksmith)
+# Both are Merchant-tree classes that can actually open a vend (MC_VENDING), so
+# they read as real players. Only the Merchant tree plus Super Novice can vend;
+# the engine force-grants vending to any shell, but using can-vend jobs keeps
+# the illusion. Vending-capable jobs: Merchant, Blacksmith, Alchemist,
+# HighMerchant, Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo,
+# SuperNovice, HyperNovice. The engine's own field_drops/dungeon_drops already
+# use Merchant/HighMerchant/Blacksmith/Whitesmith, so a new themed vendor should
+# take a still-free one (Alchemist, Creator, Mechanic, Genetic, Meister, Biolo,
+# SuperNovice, HyperNovice) — ~8 slots before the one-job-per-vendor model runs
+# out and the engine needs a placement-names-its-vendor option.
 #
 # Jobs:/GearSet references and NameProfile reuse what the population engine
 # already ships (para_merchant GearSet, default NameProfile). The important
@@ -22,6 +30,9 @@ Header:
 
 Body:
   - Profile: pv_general_gear_vendor
+    # Merchant — the classic vendor sprite. This takes Merchant from the
+    # engine's field_drops vendor (last-profile-wins), but field_drops keeps
+    # HighMerchant and still runs as a generic Prontera shop, which is wanted.
     Jobs:
       Merchant: para_merchant
     NameProfile: default
@@ -36,8 +47,11 @@ Body:
       setcart;
 
   - Profile: pv_forge_supplies_vendor
+    # Whitesmith — reads as a smith, fitting an ores/forge stall. This takes
+    # Whitesmith from the engine's dungeon_drops vendor, which keeps Blacksmith
+    # and still runs as a generic shop on prt_mk.
     Jobs:
-      Alchemist: para_merchant
+      Whitesmith: para_merchant
     NameProfile: default
     Hair: [0, 42]
     HairColor: [0, 131]
