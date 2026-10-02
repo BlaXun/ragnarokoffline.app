@@ -81,6 +81,15 @@ mod safe to hand to a stranger:
 need: when both are on, this mod is applied later and wins where the two
 disagree. [Adding a mod to the registry](MOD_REGISTRY.md) covers both.
 
+`"kind": "skin"` or `"kind": "cursor"` marks a mod as one of a set of which
+only one is on at a time: switching it on switches every other mod of the same
+kind off. It is for mods that replace the same files as each other — every UI
+skin overlays the whole interface folder — where two at once would be a
+patchwork. Any other value is refused by name; leave it out for everything
+else. See [UI skins](#ui-skins). (An app from before
+this key ignores it, so a skin still loads there, just without the others
+being switched off.)
+
 A refused mod is **named in Settings, next to the ones that loaded, with the
 reason**:
 
@@ -238,12 +247,21 @@ options in the Mods tab as before. See
 
 ## Installing a mod
 
-**Settings → Mods → Install a mod…** takes a folder or a `.zip` and puts it in
-the right place. A zip must contain exactly one folder, named for the mod;
-anything with two top-level folders, or with a path that would escape the mods
-directory, is refused rather than unpacked.
+**Settings → Mods → Install a mod…** takes a folder, a `.zip` or a `.rar` and
+puts it in the right place. An archive must contain exactly one folder, named
+for the mod; anything with two top-level folders, a link, or a path that would
+escape the mods directory, is refused rather than unpacked.
+
+What the file is decides how it is opened, not its extension: a RAR named
+`.zip` opens as a RAR. A zip opens everywhere. A RAR is opened with
+libarchive's `bsdtar`, which macOS and Windows 10 and 11 have built in; on
+Linux install it first (`libarchive-tools` on Debian and Ubuntu, `libarchive`
+on Arch and SteamOS) or unpack the archive and choose the folder.
 
 Or do it by hand: drop the folder in the mods directory yourself. Same result.
+
+A UI skin or a cursor pack in the official client's format is not a mod yet;
+**Install a UI skin…** makes it one. See [UI skins](#ui-skins).
 
 A mod adds scripts and tables to your server and can run JavaScript in the game
 window. Installing one is running somebody's code — install ones you trust.
@@ -1040,6 +1058,92 @@ for nothing.
   browser, which sniffs content rather than trusting the name, so a JPEG saved
   as `.bmp` works and is roughly a tenth of the size.
 
+## UI skins
+
+A UI skin is a `data/` mod over the client's interface folder,
+`data/texture/유저인터페이스/` — written `data/texture/ui/`. roBrowser draws its
+windows' title bars, buttons, slots, tabs and scroll bars from the pictures
+there, the same names the official client uses, so the official client's skin
+format maps onto it almost one to one: a skin's root is that folder's root, and
+its `basic_interface/` is that folder's `basic_interface/`.
+
+**Settings → Mods → Install a UI skin…** does the conversion. Give it a skin
+folder — the one you would put in the official client's `skin/` directory — or
+a `.zip` or `.rar` of one, and it builds a mod named `skin-<name>`, switches it on, and
+switches whichever skin was on off. It is client-side only, so there is no
+server restart: restart the app to see it.
+
+Skins are often handed around flattened, or made for an older client than your
+GRF, so each picture is **placed against your GRF's own list of names**, read
+from the archive's file table:
+
+1. its own path, if the GRF has a file there (letter case does not matter);
+2. otherwise the root, if the GRF has that name at the root;
+3. otherwise `basic_interface/`, then `login_interface/`;
+4. otherwise the one other folder that has that name, if exactly one does.
+
+A picture that matches nothing is **left out and listed** — in the message
+Settings shows, and in full in `skin-import.txt` in the mod's folder. A file the
+client never asks for would sit in the overlay looking like part of the skin
+and do nothing. So is a second copy of a file already placed. Across 58
+community skins from 2016 this placed 98% of 15,068 pictures; what was left
+out is mostly buttons the client has since dropped or renamed
+(`btn_num*.bmp`, `btn_rec_*.bmp`, `btn_vip.bmp`) and files the skin's author
+had renamed by hand (`equipwin_bg3 (1).bmp`, `#shop.bmp`).
+
+Two things are left out on purpose:
+
+- **`option/`** holds the official client's per-skin choices — alternative
+  bars and buttons the player picks between in that client's own settings.
+  roBrowser has no such setting. To use one, copy its pictures over the mod's
+  own by hand.
+- Anything that is not a picture: read-me files, thumbnails.
+
+What a skin cannot change:
+
+- **Window bodies, fonts and text colours.** roBrowser draws those in CSS, not
+  from pictures. A skin mod can add a `client/index.js` that adopts a
+  stylesheet for them — see [client/](#client--restyling-the-client-itself).
+- **The login window, with most skins.** For the packet versions this app ships
+  the client draws a newer login window (`login_interface/bg_login.tga`,
+  `bt_start_*.bmp`) than any skin made before 2018 carries pictures for. The
+  game windows behind it are the ones a skin restyles.
+
+`"kind": "skin"` in `mod.json` is what makes a skin one of a set: see
+[mod.json](#modjson). A skin you lay out by hand works the same way;
+[`examples/mods/ui-skin`](../examples/mods/ui-skin) is three pictures.
+
+### Cursor packs
+
+The mouse pointer is a sprite, `data/sprite/cursors.spr` and `cursors.act`,
+and a mod that ships those two replaces it. Give **Install a UI skin…** a
+folder or archive holding them — most travel as a `.rar`, which macOS and
+Windows open with their built-in `tar`, and Linux with `bsdtar` if it is
+installed; otherwise unpack it and choose the folder — and it builds a
+`cursor-<name>` mod of `"kind": "cursor"`: one cursor pack at a time, alongside
+any skin. A skin folder that carries the two files keeps them in the skin.
+
+**The pack is only drawn while the game's Graphics option "Show official
+cursor" is on.** Without it the client draws the system pointer and never asks
+for the sprite. It is on unless somebody switched it off, and the mod the
+importer builds switches it back on for you: if the saved option is off, it
+turns it on and reloads the game page once. Its setting, *Turn on "Show
+official cursor"*, lets a player who wants it off keep it off. The client draws
+its cursor from the game's render loop, so expect the system pointer on the
+login screen and the pack's once you are in a map. (Thanks to
+Clarois, whose custom-cursor mod worked out how that option draws the sprite.)
+
+### Switching skins and the client's cache
+
+The client keeps every interface picture it has downloaded, by filename, and
+every skin replaces the same filenames — so a switch would show the old skin's
+pictures from that cache. It does not, because each enabled mod's *name* is
+part of the [overlay fingerprint](#the-client-caches-hard): switching from one
+skin to another, or switching skins off, moves it, and the app clears the
+client's cache on the next launch. Switching back to a skin you had before
+moves it back, which is a second clear and a short re-download, not a stale
+screen.
+
 ## BGM/ — music
 
 `BGM/` is merged over the client's own tracks, so a mod can add a piece of music
@@ -1276,8 +1380,8 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 
 | API | Contract |
 | --- | --- |
-| `api.on(event, listener, { replay: true })` | Returns an unsubscribe function; subscriptions also end at disposal. Events: `map:enter`, `map:leave`, `connection`, `ui:append`, `ui:remove`, `movement:clear`, `preferences:change`, and `item:use` (`{ itemId }`, the item's id, sent when the client asks to use it -- before the server says whether it worked). |
-| `api.snapshot()` | Frozen copy of map, connection, player position/HP/SP, selected target identity/name/HP, camera, packet version and movement counters. Server movement acknowledgements are read-only evidence. |
+| `api.on(event, listener, { replay: true })` | Returns an unsubscribe function; subscriptions also end at disposal. Events: `map:enter`, `map:leave`, `connection`, `ui:append`, `ui:remove`, `movement:clear`, `preferences:change`, `item:use` (`{ itemId }`, the item's id, sent when the client asks to use it -- before the server says whether it worked), and `exit` (`{ to, from }`, the player chose to leave -- [below](#leaving-the-game-and-remembered-logins--exit-and-apiaccount)). |
+| `api.snapshot()` | Frozen copy of map, connection, player position/HP/SP/name/`characterId`, selected target identity/name/HP, camera, packet version and movement counters. Server movement acknowledgements are read-only evidence. |
 | `api.components.current()` | Mounted `{ name, root, host }` descriptors. DOM references support styling; do not retain detached components after `ui:remove`. |
 | `api.preferences.get(key, fallback)` / `.set(key, value)` | JSON values isolated by plugin, browser and server origin. Storage failure is reported by `set`. Do not store secrets. |
 | `api.movement.register(name, onCancel)` | Returns `begin(x,y)`, `update(x,y)`, `end()`, `dispose()`. Screen-up is positive Y. Only a deliberate `begin` can take ownership; a stale `update` cannot. |
@@ -1291,6 +1395,8 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 | `api.items.search(text, limit)` / `.get(id)` / `.icon(id)` | Items from the client's own tables, mods' included: `{ id, name, description, slots }`, and an icon URL for an `<img>`. |
 | `api.server.request(command, text, { timeout })` | Ask the mod's server script for something; resolves with its answer. See [Windows and server requests](#windows-and-server-requests). |
 | `api.cleanup(fn)` | Register idempotent cleanup immediately after allocating a resource. The returned function can release it early. Runs on failure, scope replacement and page teardown. |
+| `api.screens.replace(screen, hook)` / `.stage(canvas)` / `.image(path)` | Draw the login screen, server list, character select or character creation yourself. See [below](#the-screens-before-the-game--apiscreens). |
+| `api.account.status()` / `.remember()` / `.resume()` / `.forget()` | A remembered login the page never holds, traded for a one-time login token. See [below](#leaving-the-game-and-remembered-logins--exit-and-apiaccount). |
 
 ### Graphics passes
 
@@ -1492,6 +1598,158 @@ whole-stack deposit/withdraw controls, with explicit focus buttons between it
 and inventory. Shops reuse the native buy/sell selection, quantity dialog and
 transaction callbacks. Their nested geometry also has a separate phone bank.
 
+### The screens before the game — `api.screens`
+
+A mod can draw the login screen, the server list, character select and
+character creation itself: its own background, its own layout, the character
+standing on a stage of its own. The client's window for that screen is still
+there, hidden, and still does the work — it holds the character list, sends
+the packets, and raises its own dialogs ("wrong password", "delete this
+character?") above whatever the mod drew. The mod gets the screen's data and
+the window's own buttons.
+
+```js
+export default function (params, api) {
+	if (!api.screens?.supported()) return; // an older app: the stock screens stay
+
+	api.screens.replace('charSelect', {
+		show(view) {
+			view.root.innerHTML = `<link rel="stylesheet" href="${new URL('./style.css', import.meta.url)}">
+				<ul class="slots"></ul><canvas width="300" height="300"></canvas><button>Play</button>`;
+			const stage = api.screens.stage(view.root.querySelector('canvas'), { scale: 2 });
+			this.stage = stage;
+			this.update(view);
+			view.root.querySelector('button').onclick = () => this.view.play();
+		},
+		update(view) {
+			this.view = view;
+			view.root.querySelector('.slots').replaceChildren(...view.characters.map(c => {
+				const li = document.createElement('li');
+				li.textContent = `${c.name} — Lv. ${c.level} ${c.jobName}`;
+				li.onclick = () => view.select(c.slot);
+				return li;
+			}));
+			this.stage.clear();
+			if (view.selected) this.stage.add(view.selected.look, { action: 'ready' });
+		},
+		hide() { this.stage.dispose(); },
+	});
+}
+```
+
+`show(view)` runs when the screen opens; `update(view)` whenever its data
+changes — a character arrives, the selection moves, a deletion is answered —
+and without one, `show` is called again on an emptied layer; `hide()` when it
+closes. `view.root` is a shadow root covering the window, above the 3D canvas
+and below every client window. It is emptied and removed when the screen
+closes, so there is nothing to clean up in it.
+
+| screen | data | actions |
+|---|---|---|
+| `login` | `savedId`, `saveId` | `login(user, password, { saveId })`, `signup()`, `exit()` |
+| `serverList` | `servers: [{ index, label }]`, `index` | `select(index)`, `exit()` |
+| `charSelect` | `characters`, `selected`, `index`, `maxSlots`, `sex`, `enabled`, `deleteReservation` | `select(slot)`, `play(slot?)`, `create(slot?)`, `requestDelete(slot?)`, `cancelDelete(slot?)`, `confirmDelete(slot?)`, `exit()` |
+| `charCreate` | `races: [{ job, name, hair: {min,max}, hairColor: {min,max} }]`, `sex`, `chooseSex`, `hasStats` | `create({ name, job, sex, hair, hairColor, stats? })`, `exit()` |
+
+Each action is what the matching button of the client's window does, so the
+same things follow from it: `login` runs the client's login (the password is
+what the login packet carries — a password, or a token a sign-in service gave
+in place of one), `play` the loading screen and the map, `exit` on character
+select asks "are you sure?" first, and a name the server refuses comes back as
+the client's own message box. Arguments are checked first: a slot outside
+`0…maxSlots-1`, a hair style outside the race's range or a job that is not one
+of `races` throws, and the window never sees it.
+
+A character is `{ id, slot, name, job, jobName, level, jobLevel, exp, jobExp,
+hp, maxHp, sp, maxSp, zeny, stats: { str, agi, vit, int, dex, luk }, map,
+mapName, sex, deletePending, look }`. Everything in a view is a frozen copy.
+
+**`api.screens.stage(canvas, { scale })`** draws characters on a canvas of
+yours, the way character select draws its slots. `stage.add(look, place)`
+takes a character's `look` — or any of `job`, `sex`, `head`, `headpalette`,
+`bodypalette`, `weapon`, `shield`, `accessory`, `accessory2`, `accessory3`,
+`robe`, `effectState` — and `place`: `x` and `y` as fractions of the canvas
+(where the feet go; beyond 0…1 crops, which is how a portrait is made),
+`direction` 0…7 (0 faces the viewer), `action` (`idle`, `walk`, `sit`,
+`ready`, `attack`, `hurt`, `die`, `pickup`) and `kind: 'monster'` for a pet
+or a companion beside the character. It returns `{ set(look), place(place),
+action(name), remove() }`. A mount is part of the look: it is the
+`effectState` bits the server sent, and is drawn as the game draws it.
+`stage.dispose()` stops it; disposal of the plugin does too.
+
+**`api.screens.image(path)`** resolves to a URL for a picture in the game
+data — BMPs with their magenta made transparent, as the client draws them —
+or `null`. A bare name is looked up in the interface folder, so
+`api.screens.image('renewalparty/icon_jobs_4008.bmp')` is the Lord Knight
+icon. Use it for the client's own art; ship your own beside `index.js`.
+
+Three things to know:
+
+- **A mod that throws gets the screen taken away from it.** An error in
+  `show`, `update` or `hide` is reported under the plugin's name, the hook is
+  switched off, and the client's own window comes back, so a broken mod never
+  leaves a player unable to log in. Two mods that replace the same screen:
+  the one loaded later draws it, and the other takes over if it goes.
+- **Keys are yours while your screen is up.** The hidden client window
+  ignores them; handle Enter and Escape in your own markup if you want them.
+- **Character creation only sends what the server accepts at creation:**
+  name, job, sex, hair style and hair colour. A body (clothes) colour can be
+  shown on the stage with `bodypalette`, but the server will not store it until
+  a stylist changes it in game.
+
+The hooks themselves are `UI/ScreenHooks.js` in the roBrowser fork:
+`register(screen, { show, update, hide })`, called by each of those windows as
+it opens, changes and closes. `api.screens` is the supported way to reach it.
+See [`examples/mods/pregame-stage`](../examples/mods/pregame-stage).
+
+### Leaving the game, and remembered logins — `exit` and `api.account`
+
+A mod that keeps something in step with where the player is needs to know when
+the player *chose* to leave, as opposed to being disconnected. The `exit` event
+says so, before the client acts:
+
+| `{ to, from }` | The player pressed |
+|---|---|
+| `{ to: 'charSelect', from: 'escape' }` | Escape menu → Character select |
+| `{ to: 'login', from: 'escape' }` | Escape menu → Exit |
+| `{ to: 'login', from: 'charSelect' }` | Cancel (or Escape) on character select, and confirmed |
+
+It is the choice, not the outcome: the server can still refuse to let a
+character leave mid-fight. A disconnect, a kick or a closed window is never
+reported. It comes from `UI/ExitHooks.js` in the roBrowser fork
+(`ExitHooks.on(listener)`, emitted by the Escape window and character select).
+
+`api.account` keeps a login for the player without the page ever holding
+anything that could be replayed later:
+
+```js
+const { available, remembered } = await api.account.status();
+await api.account.remember();                   // in game: remember this account
+const { username, token } = await api.account.resume(); // -> view.login(username, token)
+await api.account.forget();                     // revoke it, here and on the server
+```
+
+`remember()` asks whoever serves the page — the app, for the host's own window;
+the friend gateway, for a friend — to keep a random credential for the account
+the page is logged in to now. The page's proof is the session it is in (the
+login server's web auth token), so a mod cannot remember an account it is not
+playing. The credential stays with the app (a file of its own, for the host's
+window) or in an HttpOnly cookie on the origin the game was loaded from: a
+`__Host-` Secure one through the HTTPS sharing link (quick tunnel or the host's
+own domain), or, for a LAN join, a plain-HTTP one that the asset server's
+`/_friend/remember/` route hands to the app. No script in the page can read
+it. `remember()` resolves `{ username, secure }`, and `secure` is false only
+on a plain-HTTP LAN origin. `resume()` trades it for a
+one-time login token (60 seconds, one use) to hand straight to the login
+screen's `view.login`. It rejects with `.code` `'none'`, `'revoked'` (it is
+already forgotten) or `'unavailable'` (the server is not up; try later).
+Changing an account's password or disabling it in Settings → Accounts revokes
+all of its remembered logins. Where nothing answers, `status()` says
+`available: false`. That covers a LAN join while the host has LAN off, an
+older host, and any other server.
+
+See [`mods/autologin`](../mods/autologin), which uses all three.
+
 ---
 
 ## Applying changes
@@ -1600,5 +1858,5 @@ review: **[Adding a mod to the registry](MOD_REGISTRY.md)**. There are two ways
 in. The mod's folder can live in this repository, and the app downloads it file
 by file and checks every one against its digest. Or the entry can point at your
 own GitHub repository, and the app installs your latest release — the same zip
-you would hand a friend — and offers each newer release to players as an
+(or RAR) you would hand a friend — and offers each newer release to players as an
 update, without another pull request here.

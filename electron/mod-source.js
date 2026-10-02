@@ -55,11 +55,27 @@ const GITHUB_HOST = /^(?:api\.github\.com|github\.com|codeload\.github\.com|[a-z
 
 const onlyGitHub = url => url.protocol === 'https:' && GITHUB_HOST.test(url.hostname);
 
+/**
+ * A page on github.com that the settings window may open in the player's
+ * browser: a repository, or something inside one. The normalised URL, or null.
+ * Nothing but github.com over HTTPS, on the default port, with no credentials:
+ * the address came off a list from the internet, by way of the page.
+ */
+function githubPage(value) {
+	if (typeof value !== 'string' || value.length > 2048) return null;
+	let url;
+	try { url = new URL(value); } catch { return null; }
+	if (url.protocol !== 'https:' || url.hostname !== 'github.com' || url.port || url.username || url.password) return null;
+	const [owner, repo] = url.pathname.split('/').slice(1);
+	if (!owner || !repo || !REPO.test(`${owner}/${repo}`)) return null;
+	return url.toString();
+}
+
 /** A registry entry's `source`, checked; null when it is not one this build understands. */
 function readSource(value) {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
 	if (typeof value.github !== 'string' || !REPO.test(value.github)) return null;
-	if (value.asset !== undefined && (typeof value.asset !== 'string' || !ASSET.test(value.asset) || !/\.zip$/i.test(value.asset))) return null;
+	if (value.asset !== undefined && (typeof value.asset !== 'string' || !ASSET.test(value.asset) || !/\.(zip|rar)$/i.test(value.asset))) return null;
 	return value.asset ? { github: value.github, asset: value.asset } : { github: value.github };
 }
 
@@ -376,4 +392,5 @@ module.exports = {
 	readSource, globToRegExp, get, latestRelease, pickAsset, download, stage, commit, discard,
 	readRecord, checkUpdates, appRequirement, compareVersions, isNewer, contents, sha256,
 	RateLimited, GITHUB_API, ASSET_LIMIT, UNPACKED_LIMIT, MAX_FILES, CACHE_MS, RECORD, onlyGitHub,
+	githubPage,
 };

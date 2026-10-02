@@ -178,6 +178,19 @@ test('the installer for reviewed folders refuses a source entry', async () => {
   await assert.rejects(registry.install('npc-pack', { mods, modsDir: tempDir('refuse') }), /install it from its releases/);
 });
 
+test('Find Mods opens github.com pages and nothing else', () => {
+  for (const ok of ['https://github.com/MondoTruth/standart-npc',
+    'https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/no-seed-cost',
+    'https://github.com/a/b/releases/tag/v1.0.0']) {
+    assert.strictEqual(source.githubPage(ok), ok);
+  }
+  for (const bad of ['http://github.com/a/b', 'https://github.com.evil.example/a/b', 'https://gist.github.com/a/b',
+    'https://user:pw@github.com/a/b', 'https://github.com:8443/a/b', 'https://github.com/', 'https://github.com/a',
+    'https://github.com/a/..', 'https://example.org/a/b', 'file:///etc/passwd', 'javascript:alert(1)', '', null, 42]) {
+    assert.strictEqual(source.githubPage(bad), null, String(bad));
+  }
+});
+
 test('asset patterns match whole names only', () => {
   const re = source.globToRegExp('standart-npc-*.zip');
   assert.ok(re.test('standart-npc-4.8.0.zip'));

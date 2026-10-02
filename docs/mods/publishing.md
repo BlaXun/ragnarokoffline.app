@@ -3,7 +3,7 @@
 **The guide is [Adding a mod to the registry](../MOD_REGISTRY.md).** This page
 is the short version.
 
-Settings → Mods → **Find mods…** lists every mod in this repository's
+Settings → Mods → **Find Mods** lists every mod in this repository's
 `registry/`, and getting one listed is a pull request. That review is the
 security model: a mod can ship server scripts, command permissions and code
 that runs in the game page, and nothing in the app could make an unreviewed one
