@@ -86,6 +86,20 @@ so nothing can be flipped to an NPC for profit, except a "fat-finger": 1 in
 iRO is a high-zeny economy, so some prices are steep for a solo world
 (Elunium ~263k).
 
+### Changing prices
+
+`db/population_vendor_prices/prontera-vendors.csv` is the price list: one row
+per item, `Id,Name,Min,Max`, and every stall that sells the item rolls inside
+that range. Open it in Excel or any editor, change what you like, and restart
+the server; it wins over the prices in the YAML. The Id decides; the Name is
+there to find things. `;` as the separator is fine too (what Excel writes in
+some locales). Refined, forged and carded lines keep the price in
+`population_vendors.yml`, since a +9 isn't priced like a plain one.
+
+The file only prices this mod's vendors (its name is the key prefix), and
+needs an app build with mod price tables; older builds ignore it and use the
+YAML prices.
+
 ## Behaviour
 
 - A stall stays for the rotation time, then packs up; another takes the spot
@@ -103,6 +117,8 @@ spawn databases and the price cache `tools/prices.json`:
 ```
 python3 mods/prontera-vendors/tools/build_vendors.py                   # rebuild from the cache
 python3 mods/prontera-vendors/tools/build_vendors.py --refresh-prices  # fetch prices the cache lacks
+python3 mods/prontera-vendors/tools/build_vendors.py --all-prices      # fetch every tradeable item (~1-2 h)
+python3 mods/prontera-vendors/tools/build_vendors.py --reprice         # rebuild the CSV from market data
 ```
 
 Themes are defined at the top of the script: a hand list, a rule over the
@@ -133,7 +149,9 @@ mods/prontera-vendors/
 ├── README.md
 ├── npc/prontera-vendors.txt     hands the settings to the engine
 ├── db/
-│   ├── population_vendors.yml       themes: pools, prices, spawns (generated)
+│   ├── population_vendors.yml       themes: pools, spawns (generated)
+│   ├── population_vendor_prices/
+│   │   └── prontera-vendors.csv     the price list (Id,Name,Min,Max); edit freely
 │   └── population_vendor_pop.yml    one shell profile per theme (generated)
 └── tools/
     ├── build_vendors.py         the generator

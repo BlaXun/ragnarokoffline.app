@@ -311,31 +311,31 @@ Body:
       - { Item: Fricca_Circlet, Amount: 1, Price: [72000, 84500] }
       - { Item: Beret, Amount: 1, Price: [136000, 159500] }
       - { Item: Elven_Ears, Amount: 1, Price: [7162500, 8408000] }
+      - { Item: Angry_Mouth, Amount: 1, Price: [60500, 71000] }
+      - { Item: Blush, Amount: 1, Price: [5353500, 6284500] }
       - { Item: Goibne's_Helmet, Amount: 1, Price: [505500, 593500] }
+      - { Item: Alarm_Mask, Amount: 1, Price: [10997500, 12910000] }
       - { Item: Sunflower, Amount: 1, Price: [315000, 369500] }
+      - { Item: Gemmed_Crown, Amount: 1, Price: [890000, 1045000] }
       - { Item: Fancy_Flower, Amount: 1, Price: [6800, 7950] }
       - { Item: Mr_Scream, Amount: 1, Price: [17000, 20000] }
       - { Item: Bone_Helm, Amount: 1, Price: [339500, 399000] }
       - { Item: Binoculars, Amount: 1, Price: [504000, 591500] }
       - { Item: Iron_Cane, Amount: 1, Price: [117000, 137500] }
       - { Item: Poo_Poo_Hat, Amount: 1, Price: [38000, 44500] }
+      - { Item: Feather_Beret, Amount: 1, Price: [24500, 29000] }
+      - { Item: Spinx_Helm, Amount: 1, Price: [2120000, 2488500] }
       - { Item: Sunglasses, Amount: 1, Price: [4100, 4850] }
       - { Item: Golden_Gear, Amount: 1, Price: [1790000, 2101500] }
+      - { Item: Ear_Of_Puppy, Amount: 1, Price: [176000, 206500] }
       - { Item: Magestic_Goat, Amount: 1, Price: [13162000, 15451000] }
       - { Item: Wedding_Veil, Amount: 1, Price: [19000, 22000] }
+      - { Item: Dark_Blindfold, Amount: 1, Price: [4646000, 5454000] }
       - { Item: Viking_Helm, Amount: 1, Price: [53000, 62000] }
       - { Item: Cat_Hairband, Amount: 1, Price: [598000, 702000] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
+      - { Item: Assassin_Mask_, Amount: 1, Price: [721000, 846500] }
       - { Item: Satanic_Chain, Amount: 1, Price: [5690000, 6679500] }
-      - { Item: Santa's_Hat, Amount: 1, Price: [96000, 113000] }
-      - { Item: Phantom_Of_Opera, Amount: 1, Price: [175000, 205500] }
-      - { Item: Snowy_Horn, Amount: 1, Price: [20500, 24500] }
-      - { Item: Spirit_Chain, Amount: 1, Price: [11000, 12500] }
-      - { Item: Angelic_Chain, Amount: 1, Price: [6388000, 7499000] }
-      - { Item: Gas_Mask, Amount: 1, Price: [183000, 215000] }
-      - { Item: Tiara, Amount: 1, Price: [1840000, 2160000] }
-      - { Item: Star_Sparkling, Amount: 1, Price: [664000, 779500] }
-      - { Item: Corsair, Amount: 1, Price: [168000, 197500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -586,7 +586,24 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: C_Happy_Peace_Proof, Amount: 1, Price: [10222000, 12000000] }
+      - { Item: Horse_King, Amount: 1, Price: [4600000, 5400000] }
+      - { Item: C_Circlet_Of_Bone, Amount: 1, Price: [4600000, 5400000] }
+      - { Item: C_Santa's_Hat, Amount: 1, Price: [13800000, 16200000] }
+      - { Item: C_Shadow_Handicraft, Amount: 1, Price: [1840000, 2160000] }
+      - { Item: C_Magic_Stone_Hat, Amount: 1, Price: [4599500, 5399500] }
+      - { Item: C_Driver_Band_Y, Amount: 1, Price: [2300000, 2700000] }
+      - { Item: C_Wind_Whisper, Amount: 1, Price: [1840000, 2160000] }
+      - { Item: C_Chilly_Breath, Amount: 1, Price: [11040000, 12960000] }
+      - { Item: C_Dying_Swan, Amount: 1, Price: [1840000, 2160000] }
       - { Item: C_Gryphon_Hat, Amount: 1, Price: [13800000, 16200000] }
+      - { Item: C_Protect_Of_Crown, Amount: 1, Price: [6900000, 8100000] }
+      - { Item: C_Driver_Band_R, Amount: 1, Price: [1840000, 2160000] }
+      - { Item: C_Mitra, Amount: 1, Price: [2760000, 3240000] }
+      - { Item: C_Rune_Circlet, Amount: 1, Price: [4600000, 5400000] }
+      - { Item: C_Minstrel_Song_Hat, Amount: 1, Price: [9200000, 10800000] }
+      - { Item: C_Secret_Society_Hood, Amount: 1, Price: [9200000, 10800000] }
+      - { Item: C_Beelzebub_Crown, Amount: 1, Price: [920000, 1080000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1143,33 +1160,33 @@ Body:
       - { Item: Speed_Up_Potion, Amount: 3, Price: [33500, 39500] }
       - { Item: Fricca_Circlet, Amount: 1, Price: [72000, 84500] }
       - { Item: Morrigane's_Manteau, Amount: 1, Price: [24500, 29000] }
+      - { Item: Anger_Seagod, Amount: 150, Price: [17, 24] }
+      - { Item: Temporal_Crystal, Amount: 150, Price: [17, 24] }
       - { Item: Tae_Goo_Lyeon, Amount: 1, Price: [3087000, 3624000] }
       - { Item: Bloody_Iron_Ball, Amount: 1, Price: [41000, 48500] }
-      - { Item: Leaf_Of_Yggdrasil, Amount: 30, Price: [5500, 6450] }
+      - { Item: Leaf_Of_Yggdrasil, Amount: 10, Price: [5500, 6450] }
       - { Item: Goibne's_Helmet, Amount: 1, Price: [505500, 593500] }
       - { Item: Crescent_Scythe, Amount: 1, Price: [2423000, 2844000] }
       - { Item: Goibne's_Combat_Boots, Amount: 1, Price: [506500, 595000] }
       - { Item: Angel's_Safeguard, Amount: 1, Price: [8250, 9700] }
       - { Item: Flame_Manteau, Amount: 1, Price: [608500, 714500] }
       - { Item: Goibne's_Armor, Amount: 1, Price: [283500, 333000] }
+      - { Item: Gemmed_Crown, Amount: 1, Price: [890000, 1045000] }
       - { Item: Clack_Of_Servival, Amount: 1, Price: [16500, 19000] }
-      - { Item: Valhalla_Flower, Amount: 2, Price: [37311500, 43801000] }
+      - { Item: Woe_White_Potion, Amount: 20, Price: [5500, 6450] }
+      - { Item: Valhalla_Flower, Amount: 1, Price: [37311500, 43801000] }
       - { Item: Cross_Shield, Amount: 1, Price: [1616500, 1897500] }
+      - { Item: Woe_Blue_Potion, Amount: 30, Price: [6400, 7550] }
       - { Item: Grimtooth_, Amount: 1, Price: [2629000, 3086000] }
       - { Item: Holy_Robe, Amount: 1, Price: [4752500, 5579000] }
-      - { Item: White_Dyestuffs, Amount: 1, Price: [459500, 539500] }
+      - { Item: Assassin_Mask_, Amount: 1, Price: [721000, 846500] }
+      - { Item: White_Dyestuffs, Amount: 3, Price: [459500, 539500] }
       - { Item: Alca_Bringer, Amount: 1, Price: [2433000, 2856000] }
       - { Item: Full_Plate_Armor_, Amount: 1, Price: [84500, 99500] }
       - { Item: Bloody_Eater, Amount: 1, Price: [1246000, 1462500] }
       - { Item: Kiss_Of_Angel, Amount: 1, Price: [8250, 9700] }
       - { Item: Exorcism_Bible, Amount: 1, Price: [303500, 356000] }
       - { Item: Angelic_Chain, Amount: 1, Price: [6388000, 7499000] }
-      - { Item: Tiara, Amount: 1, Price: [1840000, 2160000] }
-      - { Item: Apple_Juice, Amount: 20, Price: [5350, 6300] }
-      - { Item: Cursed_Hand, Amount: 1, Price: [7281500, 8547500] }
-      - { Item: Sniping_Suit, Amount: 1, Price: [2508500, 2945000] }
-      - { Item: Luna_Bow, Amount: 1, Price: [825500, 969500] }
-      - { Item: Angel's_Protection, Amount: 1, Price: [8250, 9700] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1198,35 +1215,35 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Old_Card_Album, Amount: 20, Price: [9200, 10500] }
-      - { Item: Elunium, Amount: 2, Price: [242000, 284000] }
-      - { Item: Oridecon, Amount: 10, Price: [56000, 66000] }
-      - { Item: White_Potion, Amount: 20, Price: [920, 1050] }
-      - { Item: Old_Violet_Box, Amount: 3, Price: [394000, 462500] }
+      - { Item: Elunium, Amount: 3, Price: [242000, 284000] }
+      - { Item: Oridecon, Amount: 5, Price: [56000, 66000] }
+      - { Item: White_Potion, Amount: 30, Price: [920, 1050] }
+      - { Item: Old_Violet_Box, Amount: 2, Price: [394000, 462500] }
       - { Item: Variant_Shoes, Amount: 1, Price: [4157000, 4880000] }
-      - { Item: Seed_Of_Yggdrasil, Amount: 5, Price: [107000, 126000] }
+      - { Item: Seed_Of_Yggdrasil, Amount: 10, Price: [107000, 126000] }
       - { Item: Magic_Card_Album, Amount: 30, Price: [9200, 10500] }
       - { Item: Old_Blue_Box, Amount: 5, Price: [72000, 84500] }
       - { Item: Valkyrie_Shoes, Amount: 1, Price: [1867500, 2192000] }
-      - { Item: Yggdrasilberry, Amount: 3, Price: [230500, 270500] }
-      - { Item: Starsand_Of_Witch, Amount: 30, Price: [2550, 3000] }
+      - { Item: Yggdrasilberry, Amount: 2, Price: [230500, 270500] }
+      - { Item: Starsand_Of_Witch, Amount: 10, Price: [2550, 3000] }
       - { Item: Ring_, Amount: 1, Price: [24500, 29000] }
-      - { Item: Steel, Amount: 50, Price: [5650, 6650] }
+      - { Item: Steel, Amount: 10, Price: [5650, 6650] }
       - { Item: Valkyrie_Manteau, Amount: 1, Price: [868500, 1019500] }
       - { Item: Meteo_Plate_Armor, Amount: 1, Price: [1631000, 1915000] }
       - { Item: Destruction_Rod, Amount: 1, Price: [5249500, 6163000] }
       - { Item: Morrigane's_Manteau, Amount: 1, Price: [24500, 29000] }
       - { Item: Bison_Horn, Amount: 1, Price: [2201500, 2584500] }
       - { Item: Ancient_Dagger, Amount: 1, Price: [8443000, 9911500] }
-      - { Item: Oridecon_Stone, Amount: 200, Price: [465, 630] }
-      - { Item: Emperium, Amount: 50, Price: [1, 3] }
+      - { Item: Oridecon_Stone, Amount: 150, Price: [465, 630] }
+      - { Item: Emperium, Amount: 200, Price: [1, 3] }
       - { Item: Elven_Ears, Amount: 1, Price: [7162500, 8408000] }
+      - { Item: Sg_White_Potion_Box, Amount: 5, Price: [27500, 32000] }
       - { Item: Spiritual_Ring, Amount: 1, Price: [398500, 468000] }
+      - { Item: Sg_Blue_Potion_Box, Amount: 5, Price: [46000, 54000] }
       - { Item: Hell_Fire, Amount: 1, Price: [1323000, 1553500] }
       - { Item: Celestial_Robe, Amount: 1, Price: [385500, 452500] }
       - { Item: Morrigane's_Pendant, Amount: 1, Price: [24500, 29000] }
       - { Item: Royal_Jelly, Amount: 3, Price: [44000, 51500] }
-      - { Item: Iron, Amount: 30, Price: [3250, 3850] }
-      - { Item: Hunting_Spear, Amount: 1, Price: [5990000, 7031500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1254,8 +1271,8 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Bloody_Dead_Branch, Amount: 50, Price: [9200, 10500] }
-      - { Item: Branch_Of_Dead_Tree, Amount: 150, Price: [42, 58] }
+      - { Item: Bloody_Dead_Branch, Amount: 30, Price: [9200, 10500] }
+      - { Item: Branch_Of_Dead_Tree, Amount: 50, Price: [42, 58] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1284,8 +1301,8 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Old_Blue_Box, Amount: 5, Price: [72000, 84500] }
-      - { Item: Old_Violet_Box, Amount: 1, Price: [394000, 462500] }
-      - { Item: Old_Card_Album, Amount: 30, Price: [9200, 10500] }
+      - { Item: Old_Violet_Box, Amount: 3, Price: [394000, 462500] }
+      - { Item: Old_Card_Album, Amount: 20, Price: [9200, 10500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1313,8 +1330,8 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Old_Card_Album, Amount: 10, Price: [9200, 10500] }
-      - { Item: Magic_Card_Album, Amount: 30, Price: [9200, 10500] }
+      - { Item: Old_Card_Album, Amount: 50, Price: [9200, 10500] }
+      - { Item: Magic_Card_Album, Amount: 10, Price: [9200, 10500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1371,36 +1388,36 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: S_Breezy_Armor, Amount: 300, Price: [1, 2] }
-      - { Item: S_Immune_Armor, Amount: 100, Price: [1, 2] }
-      - { Item: S_Cri_Hit_Weapon, Amount: 300, Price: [1, 2] }
-      - { Item: S_Healing_Weapon, Amount: 200, Price: [1, 2] }
+      - { Item: S_Breezy_Armor, Amount: 100, Price: [1, 2] }
+      - { Item: S_Immune_Armor, Amount: 50, Price: [1, 2] }
+      - { Item: S_Cri_Hit_Weapon, Amount: 200, Price: [1, 2] }
+      - { Item: S_Healing_Weapon, Amount: 100, Price: [1, 2] }
       - { Item: S_Kingbird_Weapon, Amount: 50, Price: [1, 2] }
       - { Item: S_Liberation_Shoes, Amount: 100, Price: [1, 2] }
-      - { Item: S_Ancient_Armor, Amount: 50, Price: [1, 2] }
-      - { Item: S_Lucky_Weapon, Amount: 200, Price: [1, 2] }
-      - { Item: S_Magical_Earring, Amount: 100, Price: [1, 2] }
-      - { Item: S_Physical_Earring, Amount: 50, Price: [1, 2] }
+      - { Item: S_Ancient_Armor, Amount: 200, Price: [1, 2] }
+      - { Item: S_Lucky_Weapon, Amount: 300, Price: [1, 2] }
+      - { Item: S_Magical_Earring, Amount: 200, Price: [1, 2] }
+      - { Item: S_Physical_Earring, Amount: 300, Price: [1, 2] }
       - { Item: S_Physical_Weapon, Amount: 100, Price: [1, 2] }
-      - { Item: S_Power_Earring, Amount: 200, Price: [1, 2] }
-      - { Item: S_Athena_Shield, Amount: 300, Price: [1, 2] }
-      - { Item: S_Magical_Weapon, Amount: 200, Price: [1, 2] }
+      - { Item: S_Power_Earring, Amount: 300, Price: [1, 2] }
+      - { Item: S_Athena_Shield, Amount: 200, Price: [1, 2] }
+      - { Item: S_Magical_Weapon, Amount: 100, Price: [1, 2] }
       - { Item: S_Critical_Armor, Amount: 300, Price: [1, 2] }
-      - { Item: S_Magical_Pendant, Amount: 100, Price: [1, 2] }
-      - { Item: S_Dexterous_Weapon, Amount: 300, Price: [1, 2] }
-      - { Item: S_Caster_Pendant, Amount: 200, Price: [1, 2] }
-      - { Item: S_Hard_Armor, Amount: 100, Price: [1, 2] }
-      - { Item: S_Wise_Earring, Amount: 300, Price: [1, 2] }
+      - { Item: S_Magical_Pendant, Amount: 50, Price: [1, 2] }
+      - { Item: S_Dexterous_Weapon, Amount: 200, Price: [1, 2] }
+      - { Item: S_Caster_Pendant, Amount: 300, Price: [1, 2] }
+      - { Item: S_Hard_Armor, Amount: 150, Price: [1, 2] }
+      - { Item: S_Wise_Earring, Amount: 200, Price: [1, 2] }
       - { Item: S_Champion_Shoes, Amount: 50, Price: [1, 2] }
-      - { Item: S_Satanic_Shield, Amount: 200, Price: [1, 2] }
-      - { Item: S_Int_Pendant, Amount: 300, Price: [1, 2] }
-      - { Item: S_Int_Earring, Amount: 150, Price: [1, 2] }
-      - { Item: S_Hard_Earring, Amount: 200, Price: [1, 2] }
-      - { Item: S_Dexterous_Armor, Amount: 50, Price: [1, 2] }
-      - { Item: S_Homers_Shield, Amount: 150, Price: [1, 2] }
-      - { Item: S_Athena_Earring, Amount: 100, Price: [1, 2] }
-      - { Item: S_Seraphim_Shoes, Amount: 100, Price: [1, 2] }
-      - { Item: S_Resist_Spell_Pendant, Amount: 50, Price: [1, 2] }
+      - { Item: S_Satanic_Shield, Amount: 150, Price: [1, 2] }
+      - { Item: S_Int_Pendant, Amount: 100, Price: [1, 2] }
+      - { Item: S_Int_Earring, Amount: 100, Price: [1, 2] }
+      - { Item: S_Hard_Earring, Amount: 50, Price: [1, 2] }
+      - { Item: S_Dexterous_Armor, Amount: 150, Price: [1, 2] }
+      - { Item: S_Homers_Shield, Amount: 50, Price: [1, 2] }
+      - { Item: S_Athena_Earring, Amount: 50, Price: [1, 2] }
+      - { Item: S_Seraphim_Shoes, Amount: 150, Price: [1, 2] }
+      - { Item: S_Resist_Spell_Pendant, Amount: 150, Price: [1, 2] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1433,6 +1450,7 @@ Body:
       - { Item: Variant_Shoes, Amount: 1, Price: [4157000, 4880000] }
       - { Item: Cat_Hand_Glove, Amount: 1, Price: [752500, 883500] }
       - { Item: Undershirt, Amount: 1, Price: [70000, 82500] }
+      - { Item: Nab_Cloth, Amount: 1, Price: [4600000, 5400000] }
       - { Item: Stone_Buckler, Amount: 1, Price: [24500, 29000] }
       - { Item: Round_Buckler, Amount: 1, Price: [269000, 316000] }
       - { Item: Elven_Bow, Amount: 1, Price: [13181000, 15473500] }
@@ -1458,7 +1476,6 @@ Body:
       - { Item: Armor_Of_Naga, Amount: 1, Price: [1687500, 1981000] }
       - { Item: Marc_Card, Amount: 1, Price: [1437500, 1687500] }
       - { Item: Morrigane's_Manteau, Amount: 1, Price: [24500, 29000] }
-      - { Item: Shinobi's_Sash, Amount: 1, Price: [37500, 44000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1485,13 +1502,13 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Yggdrasilberry, Amount: 2, Price: [230500, 270500] }
+      - { Item: Yggdrasilberry, Amount: 3, Price: [230500, 270500] }
       - { Item: Seed_Of_Yggdrasil, Amount: 3, Price: [107000, 126000] }
-      - { Item: Leaf_Of_Yggdrasil, Amount: 10, Price: [5500, 6450] }
-      - { Item: Oridecon, Amount: 5, Price: [56000, 66000] }
+      - { Item: Leaf_Of_Yggdrasil, Amount: 50, Price: [5500, 6450] }
+      - { Item: Oridecon, Amount: 10, Price: [56000, 66000] }
       - { Item: Elunium, Amount: 2, Price: [242000, 284000] }
       - { Item: Oridecon_Stone, Amount: 100, Price: [465, 630] }
-      - { Item: Elunium_Stone, Amount: 50, Price: [8200, 9650] }
+      - { Item: Elunium_Stone, Amount: 10, Price: [8200, 9650] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1519,9 +1536,9 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Red_Slim_Potion, Amount: 30, Price: [1800, 2100] }
+      - { Item: Red_Slim_Potion, Amount: 10, Price: [1800, 2100] }
       - { Item: Yellow_Slim_Potion, Amount: 20, Price: [1650, 1900] }
-      - { Item: White_Slim_Potion, Amount: 10, Price: [6950, 8200] }
+      - { Item: White_Slim_Potion, Amount: 50, Price: [6950, 8200] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1561,6 +1578,7 @@ Body:
       - { Item: Pike_, Amount: 1, Price: [2850, 3350] }
       - { Item: Gae_Bolg, Amount: 1, Price: [1005000, 1179500] }
       - { Item: Iron_Cane, Amount: 1, Price: [117000, 137500] }
+      - { Item: Spinx_Helm, Amount: 1, Price: [2120000, 2488500] }
       - { Item: Schweizersabel, Amount: 1, Price: [834500, 980000] }
       - { Item: Spectral_Spear, Amount: 1, Price: [1577000, 1851500] }
       - { Item: Battle_Fork, Amount: 1, Price: [235500, 276500] }
@@ -1569,6 +1587,7 @@ Body:
       - { Item: Guisarme_, Amount: 1, Price: [5950, 7000] }
       - { Item: Bloody_Eater, Amount: 1, Price: [1246000, 1462500] }
       - { Item: Helm_, Amount: 1, Price: [36000, 42500] }
+      - { Item: Engraved_Armor, Amount: 1, Price: [82500, 97000] }
       - { Item: Gungnir, Amount: 1, Price: [6203000, 7282000] }
       - { Item: Javelin_, Amount: 1, Price: [110, 155] }
       - { Item: Muscle_Cutter, Amount: 1, Price: [7327000, 8601500] }
@@ -1577,8 +1596,6 @@ Body:
       - { Item: Spear_, Amount: 1, Price: [1400, 1650] }
       - { Item: Ahlspiess, Amount: 1, Price: [736000, 864000] }
       - { Item: Broad_Sword_, Amount: 1, Price: [91000, 106500] }
-      - { Item: Pole_Axe, Amount: 1, Price: [925000, 1086000] }
-      - { Item: Claymore, Amount: 1, Price: [61000, 71500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1619,6 +1636,7 @@ Body:
       - { Item: Gae_Bolg, Amount: 1, Price: [1005000, 1179500] }
       - { Item: Iron_Cane, Amount: 1, Price: [117000, 137500] }
       - { Item: Herald_Of_GOD, Amount: 1, Price: [1013000, 1189000] }
+      - { Item: Spinx_Helm, Amount: 1, Price: [2120000, 2488500] }
       - { Item: Schweizersabel, Amount: 1, Price: [834500, 980000] }
       - { Item: Cross_Shield, Amount: 1, Price: [1616500, 1897500] }
       - { Item: Spectral_Spear, Amount: 1, Price: [1577000, 1851500] }
@@ -1629,13 +1647,12 @@ Body:
       - { Item: Guisarme_, Amount: 1, Price: [5950, 7000] }
       - { Item: Bloody_Eater, Amount: 1, Price: [1246000, 1462500] }
       - { Item: Helm_, Amount: 1, Price: [36000, 42500] }
+      - { Item: Engraved_Armor, Amount: 1, Price: [82500, 97000] }
       - { Item: Gungnir, Amount: 1, Price: [6203000, 7282000] }
       - { Item: Javelin_, Amount: 1, Price: [110, 155] }
       - { Item: Muscle_Cutter, Amount: 1, Price: [7327000, 8601500] }
       - { Item: Altas_Weapon, Amount: 1, Price: [2553000, 2997000] }
       - { Item: Spear_, Amount: 1, Price: [1400, 1650] }
-      - { Item: Ahlspiess, Amount: 1, Price: [736000, 864000] }
-      - { Item: Broad_Sword_, Amount: 1, Price: [91000, 106500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -1904,6 +1921,7 @@ Body:
       - { Item: Divine_Cross, Amount: 1, Price: [11960000, 14040000] }
       - { Item: Combo_Battle_Glove, Amount: 1, Price: [261000, 306000] }
       - { Item: Holy_Robe, Amount: 1, Price: [4752500, 5579000] }
+      - { Item: Assassin_Mask_, Amount: 1, Price: [721000, 846500] }
       - { Item: Long_Mace, Amount: 1, Price: [1483000, 1740500] }
       - { Item: Book_Of_Billows, Amount: 1, Price: [28500, 34000] }
       - { Item: Nemesis, Amount: 1, Price: [582500, 683500] }
@@ -1920,7 +1938,6 @@ Body:
       - { Item: Ancient_Magic, Amount: 1, Price: [110500, 130000] }
       - { Item: Nurse_Cap, Amount: 1, Price: [159000, 187000] }
       - { Item: Book_Of_Blazing_Sun, Amount: 1, Price: [383500, 450000] }
-      - { Item: Claw_, Amount: 1, Price: [55000, 65000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -2005,6 +2022,7 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Nab_Cloth, Amount: 1, Price: [4600000, 5400000] }
       - { Item: Shinobi's_Sash, Amount: 1, Price: [37500, 44000] }
       - { Item: Inverse_Scale, Amount: 1, Price: [395500, 464500] }
       - { Item: Unholy_Touch, Amount: 1, Price: [131500, 154500] }
@@ -2016,6 +2034,7 @@ Body:
       - { Item: Assassin_Handcuffs, Amount: 1, Price: [46000, 54000] }
       - { Item: Thief_Clothes_, Amount: 1, Price: [61000, 71500] }
       - { Item: Durga, Amount: 1, Price: [5421000, 6363500] }
+      - { Item: Assassin_Mask_, Amount: 1, Price: [721000, 846500] }
       - { Item: Katar_Of_Raging_Blaze, Amount: 1, Price: [37000, 43500] }
       - { Item: Cold_Heart, Amount: 1, Price: [1323000, 1553000] }
       - { Item: Assasin_Dagger, Amount: 1, Price: [1922500, 2257000] }
@@ -2033,8 +2052,6 @@ Body:
       - { Item: Katar_Of_Raging_Blaze_, Amount: 1, Price: [37000, 43500] }
       - { Item: Nab_Hood, Amount: 1, Price: [4600000, 5400000] }
       - { Item: Ghoul_Leg, Amount: 1, Price: [460000, 540000] }
-      - { Item: Bloody_Roar, Amount: 1, Price: [2139000, 2511000] }
-      - { Item: Katar_Of_Piercing_Wind_, Amount: 1, Price: [37000, 43500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -2198,6 +2215,7 @@ Body:
       - { Item: Girl's_Diary, Amount: 1, Price: [1200, 1450] }
       - { Item: Counter_Dagger, Amount: 1, Price: [99000, 116500] }
       - { Item: Legacy_Of_Dragon, Amount: 1, Price: [352500, 414000] }
+      - { Item: Engraved_Armor, Amount: 1, Price: [82500, 97000] }
       - { Item: Star_Sparkling, Amount: 1, Price: [664000, 779500] }
       - { Item: Wing_Of_Eagle, Amount: 1, Price: [276500, 324500] }
       - { Item: Release_Of_Wish, Amount: 1, Price: [232000, 272000] }
@@ -2215,7 +2233,6 @@ Body:
       - { Item: Cursed_Dagger, Amount: 1, Price: [66000, 77500] }
       - { Item: Wizardry_Hat, Amount: 1, Price: [2645000, 3105000] }
       - { Item: Pocket_Watch_, Amount: 1, Price: [4906500, 5760000] }
-      - { Item: Book_Of_Billows_, Amount: 1, Price: [28500, 34000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -2441,6 +2458,7 @@ Body:
     Pool:
       - { Item: Stiletto_, Amount: 1, Price: [16000, 18500] }
       - { Item: Ancient_Dagger, Amount: 1, Price: [8443000, 9911500] }
+      - { Item: Scalpel, Amount: 1, Price: [149000, 175000] }
       - { Item: Moonlight_Sword, Amount: 1, Price: [9013000, 10580500] }
       - { Item: Gladius_, Amount: 1, Price: [237000, 278500] }
       - { Item: Grimtooth_, Amount: 1, Price: [2629000, 3086000] }
@@ -2465,10 +2483,9 @@ Body:
       - { Item: Asura_, Amount: 1, Price: [2450, 2900] }
       - { Item: Dagger_, Amount: 1, Price: [22500, 26500] }
       - { Item: Dagger_Of_Hunter, Amount: 1, Price: [6087500, 7146500] }
+      - { Item: Ginnungagap, Amount: 1, Price: [1840000, 2160000] }
       - { Item: Cursed_Dagger, Amount: 1, Price: [66000, 77500] }
       - { Item: Hakujin, Amount: 1, Price: [52500, 62000] }
-      - { Item: Cutter_, Amount: 1, Price: [1000, 1200] }
-      - { Item: Cinquedea_, Amount: 1, Price: [54000, 63500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -2523,8 +2540,8 @@ Body:
       - { Item: Gaia_Sword, Amount: 1, Price: [6965500, 8177000] }
       - { Item: Scimiter, Amount: 1, Price: [14000, 16500] }
       - { Item: Jewel_Sword, Amount: 1, Price: [536000, 629000] }
+      - { Item: N_Falchion, Amount: 1, Price: [8050, 9450] }
       - { Item: Flamberge_, Amount: 1, Price: [49500, 58000] }
-      - { Item: Blade, Amount: 1, Price: [2400, 2800] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -2723,14 +2740,18 @@ Body:
       - { Item: Nemesis, Amount: 1, Price: [582500, 683500] }
       - { Item: Golden_Mace, Amount: 1, Price: [1380000, 1620000] }
       - { Item: Mace_, Amount: 1, Price: [1300, 1550] }
+      - { Item: Erde, Amount: 1, Price: [10514000, 12342500] }
       - { Item: Red_Ether_Bag, Amount: 1, Price: [77000, 90500] }
       - { Item: Sword_Mace, Amount: 1, Price: [41000, 48500] }
+      - { Item: Red_Square_Bag, Amount: 1, Price: [1167500, 1370500] }
       - { Item: Club, Amount: 1, Price: [91, 125] }
       - { Item: Veteran_Hammer, Amount: 1, Price: [8250, 9700] }
+      - { Item: Robot's_Arm, Amount: 1, Price: [24500, 29000] }
       - { Item: Grand_Cross, Amount: 1, Price: [7236000, 8494500] }
       - { Item: Spike, Amount: 1, Price: [2453000, 2880000] }
       - { Item: Morning_Star_, Amount: 1, Price: [33500, 39500] }
       - { Item: Sword_Mace_, Amount: 1, Price: [41000, 48500] }
+      - { Item: Cat_Club, Amount: 1, Price: [8280000, 9720000] }
       - { Item: Quadrille, Amount: 1, Price: [7399000, 8686000] }
       - { Item: Spanner, Amount: 1, Price: [5184500, 6086500] }
       - { Item: Pilebuncker, Amount: 1, Price: [8250, 9700] }
@@ -2743,9 +2764,6 @@ Body:
       - { Item: Club_, Amount: 1, Price: [91, 125] }
       - { Item: Smasher, Amount: 1, Price: [7450, 8700] }
       - { Item: Chain_, Amount: 1, Price: [19000, 22000] }
-      - { Item: Mace, Amount: 1, Price: [1300, 1550] }
-      - { Item: Stunner_, Amount: 1, Price: [49500, 58000] }
-      - { Item: Chain, Amount: 1, Price: [19000, 22000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3291,17 +3309,21 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Nab_Cloth, Amount: 1, Price: [4600000, 5400000] }
       - { Item: Chain_Mail_, Amount: 1, Price: [53500, 63000] }
       - { Item: Silk_Robe_, Amount: 1, Price: [6600, 7750] }
       - { Item: Meteo_Plate_Armor, Amount: 1, Price: [1631000, 1915000] }
       - { Item: Armor_Of_Naga, Amount: 1, Price: [1687500, 1981000] }
       - { Item: Ebone_Armor, Amount: 1, Price: [33000, 38500] }
+      - { Item: Bone_Plate, Amount: 1, Price: [504500, 592500] }
       - { Item: Sprint_Mail, Amount: 1, Price: [1224000, 1437000] }
+      - { Item: Puente_Robe, Amount: 1, Price: [9900, 11500] }
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
       - { Item: Flame_Sprits_Armor, Amount: 1, Price: [112500, 132000] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
       - { Item: Goibne's_Armor, Amount: 1, Price: [283500, 333000] }
       - { Item: Dragon_Vest, Amount: 1, Price: [4816000, 5653500] }
+      - { Item: Claire_Suits, Amount: 1, Price: [309500, 363000] }
       - { Item: Flame_Sprits_Armor_, Amount: 1, Price: [112500, 132000] }
       - { Item: Thief_Clothes_, Amount: 1, Price: [61000, 71500] }
       - { Item: Tights_, Amount: 1, Price: [58500, 69000] }
@@ -3310,17 +3332,13 @@ Body:
       - { Item: Wooden_Mail_, Amount: 1, Price: [11500, 13500] }
       - { Item: Divine_Cloth, Amount: 1, Price: [215000, 252500] }
       - { Item: Padded_Armor_, Amount: 1, Price: [39500, 46500] }
+      - { Item: Engraved_Armor, Amount: 1, Price: [82500, 97000] }
       - { Item: Leather_Jacket_, Amount: 1, Price: [150, 205] }
       - { Item: Sniping_Suit, Amount: 1, Price: [2508500, 2945000] }
       - { Item: Formal_Suit, Amount: 1, Price: [1285500, 1509000] }
       - { Item: Adventurere's_Suit_, Amount: 1, Price: [765, 1000] }
       - { Item: Coat_, Amount: 1, Price: [18000, 21000] }
       - { Item: Mage_Coat, Amount: 1, Price: [1042500, 1223500] }
-      - { Item: Angel's_Protection, Amount: 1, Price: [8250, 9700] }
-      - { Item: Improved_Tights, Amount: 1, Price: [4171000, 4896500] }
-      - { Item: Ninja_Suit, Amount: 1, Price: [267500, 314000] }
-      - { Item: Life_Link, Amount: 1, Price: [4680000, 5494000] }
-      - { Item: Wedding_Dress, Amount: 1, Price: [35500, 41500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3349,6 +3367,7 @@ Body:
     Pool:
       - { Item: Clip, Amount: 1, Price: [24500, 29000] }
       - { Item: Cat_Hand_Glove, Amount: 1, Price: [752500, 883500] }
+      - { Item: Nab_Cloth, Amount: 1, Price: [4600000, 5400000] }
       - { Item: Stone_Buckler, Amount: 1, Price: [24500, 29000] }
       - { Item: Round_Buckler, Amount: 1, Price: [269000, 316000] }
       - { Item: Chain_Mail_, Amount: 1, Price: [53500, 63000] }
@@ -3362,8 +3381,10 @@ Body:
       - { Item: Ebone_Armor, Amount: 1, Price: [33000, 38500] }
       - { Item: Bison_Horn, Amount: 1, Price: [2201500, 2584500] }
       - { Item: Celestial_Robe, Amount: 1, Price: [385500, 452500] }
+      - { Item: Bone_Plate, Amount: 1, Price: [504500, 592500] }
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
       - { Item: Sprint_Mail, Amount: 1, Price: [1224000, 1437000] }
+      - { Item: Puente_Robe, Amount: 1, Price: [9900, 11500] }
       - { Item: Rotha_Shield, Amount: 1, Price: [633500, 744000] }
       - { Item: Biretta_, Amount: 1, Price: [7450, 8700] }
       - { Item: Bradium_Shield, Amount: 1, Price: [1516500, 1780500] }
@@ -3374,9 +3395,6 @@ Body:
       - { Item: Angel's_Safeguard, Amount: 1, Price: [8250, 9700] }
       - { Item: Flame_Manteau, Amount: 1, Price: [608500, 714500] }
       - { Item: Bible_Of_Promise2, Amount: 1, Price: [46000, 54000] }
-      - { Item: Buckler_, Amount: 1, Price: [131000, 154000] }
-      - { Item: Dragon_Vest, Amount: 1, Price: [4816000, 5653500] }
-      - { Item: Tidal_Shoes, Amount: 1, Price: [111500, 131000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3404,36 +3422,36 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Banana_Bomb, Amount: 100, Price: [85, 115] }
       - { Item: Stun_Arrow, Amount: 300, Price: [17, 24] }
-      - { Item: Crystal_Arrow, Amount: 50, Price: [34, 48] }
-      - { Item: Fire_Arrow, Amount: 300, Price: [170, 230] }
-      - { Item: Incisive_Arrow, Amount: 100, Price: [41, 57] }
-      - { Item: Freezing_Arrow, Amount: 300, Price: [190, 260] }
-      - { Item: Stone_Arrow, Amount: 200, Price: [27, 37] }
-      - { Item: Arrow_Of_Elf, Amount: 100, Price: [5, 7] }
-      - { Item: Silence_Arrow, Amount: 300, Price: [285, 390] }
-      - { Item: Arrow_Of_Wind, Amount: 300, Price: [25, 35] }
-      - { Item: Curse_Arrow, Amount: 50, Price: [33, 45] }
-      - { Item: Hunting_Arrow, Amount: 200, Price: [5, 7] }
-      - { Item: Sleep_Arrow, Amount: 100, Price: [515, 695] }
-      - { Item: Arrow, Amount: 30, Price: [11000, 13000] }
+      - { Item: Kunai_Of_Black_Soil, Amount: 300, Price: [405, 550] }
+      - { Item: Kunai_Of_Icicle, Amount: 50, Price: [405, 550] }
+      - { Item: Kunai_Of_Furious_Wind, Amount: 200, Price: [425, 575] }
+      - { Item: Crystal_Arrow, Amount: 100, Price: [34, 48] }
+      - { Item: Fire_Arrow, Amount: 150, Price: [170, 230] }
+      - { Item: Incisive_Arrow, Amount: 50, Price: [41, 57] }
+      - { Item: Freezing_Arrow, Amount: 100, Price: [190, 260] }
+      - { Item: Stone_Arrow, Amount: 300, Price: [27, 37] }
+      - { Item: Kunai_Of_Fierce_Flame, Amount: 200, Price: [420, 570] }
+      - { Item: Arrow_Of_Elf, Amount: 300, Price: [5, 7] }
+      - { Item: Silence_Arrow, Amount: 100, Price: [285, 390] }
+      - { Item: Arrow_Of_Wind, Amount: 200, Price: [25, 35] }
+      - { Item: Kunai_Of_Deadly_Poison, Amount: 50, Price: [415, 565] }
+      - { Item: Curse_Arrow, Amount: 200, Price: [33, 45] }
+      - { Item: Hunting_Arrow, Amount: 150, Price: [5, 7] }
+      - { Item: Sleep_Arrow, Amount: 300, Price: [515, 695] }
+      - { Item: Arrow, Amount: 50, Price: [11000, 13000] }
       - { Item: Flash_Arrow, Amount: 50, Price: [365, 495] }
-      - { Item: Silver_Arrow, Amount: 100, Price: [6, 10] }
+      - { Item: Silver_Arrow, Amount: 150, Price: [6, 10] }
       - { Item: Steel_Arrow, Amount: 300, Price: [28, 40] }
       - { Item: Rusty_Arrow, Amount: 200, Price: [22, 32] }
-      - { Item: Iron_Arrow, Amount: 300, Price: [9, 13] }
-      - { Item: Immatrial_Arrow, Amount: 100, Price: [770, 1000] }
-      - { Item: Oridecon_Arrow, Amount: 200, Price: [145, 195] }
-      - { Item: Arrow_Of_Shadow, Amount: 50, Price: [155, 215] }
-      - { Item: Poison_Arrow, Amount: 200, Price: [55, 75] }
-      - { Item: Shuriken, Amount: 150, Price: [18, 26] }
-      - { Item: Holy_Arrow, Amount: 50, Price: [4600, 5400] }
-      - { Item: Venom_Knife, Amount: 50, Price: [175, 235] }
-      - { Item: Siege_Arrow_A, Amount: 150, Price: [85, 115] }
-      - { Item: Siege_Arrow_S, Amount: 300, Price: [8, 12] }
-      - { Item: Arrow_Of_Counter_Evil, Amount: 200, Price: [34, 47] }
-      - { Item: Bullet, Amount: 150, Price: [1, 2] }
-      - { Item: Silver_Bullet, Amount: 50, Price: [12, 18] }
+      - { Item: Iron_Arrow, Amount: 150, Price: [9, 13] }
+      - { Item: Immatrial_Arrow, Amount: 50, Price: [770, 1000] }
+      - { Item: Oridecon_Arrow, Amount: 100, Price: [145, 195] }
+      - { Item: Arrow_Of_Shadow, Amount: 100, Price: [155, 215] }
+      - { Item: Iron_Cannon_Ball, Amount: 150, Price: [68, 93] }
+      - { Item: Poison_Arrow, Amount: 300, Price: [55, 75] }
+      - { Item: Bullet, Amount: 100, Price: [5, 7] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3460,7 +3478,16 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Recall_MaleGM, Amount: 150, Price: [1, 2] }
+      - { Item: Recall_FemaleGM, Amount: 200, Price: [1, 2] }
       - { Item: Worn_Out_Scroll, Amount: 20, Price: [12000, 14500] }
+      - { Item: Scaraba_Scroll, Amount: 150, Price: [17, 24] }
+      - { Item: Gemi_Diadem_Scroll, Amount: 50, Price: [17, 24] }
+      - { Item: Bapho_Jr_Scroll, Amount: 200, Price: [17, 24] }
+      - { Item: Bundle_Of_Magic_Scroll, Amount: 10, Price: [32000, 37500] }
+      - { Item: ValkyrieB_Scroll, Amount: 150, Price: [8, 12] }
+      - { Item: ValkyrieA_Scroll, Amount: 300, Price: [8, 12] }
+      - { Item: Capri_Scroll, Amount: 200, Price: [17, 24] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3487,14 +3514,15 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Darkgreen_Dyestuffs, Amount: 1, Price: [215000, 252500] }
-      - { Item: Violet_Dyestuffs, Amount: 5, Price: [174000, 204500] }
-      - { Item: Cobaltblue_Dyestuffs, Amount: 10, Price: [165500, 194000] }
-      - { Item: Orange_Dyestuffs, Amount: 3, Price: [147000, 172500] }
-      - { Item: Black_Dyestuffs, Amount: 2, Price: [637500, 748500] }
-      - { Item: Lemon_Dyestuffs, Amount: 5, Price: [155000, 182000] }
+      - { Item: Darkgreen_Dyestuffs, Amount: 3, Price: [215000, 252500] }
+      - { Item: Violet_Dyestuffs, Amount: 3, Price: [174000, 204500] }
+      - { Item: Cobaltblue_Dyestuffs, Amount: 3, Price: [165500, 194000] }
+      - { Item: Orange_Dyestuffs, Amount: 10, Price: [147000, 172500] }
+      - { Item: Black_Dyestuffs, Amount: 1, Price: [637500, 748500] }
+      - { Item: Lemon_Dyestuffs, Amount: 3, Price: [155000, 182000] }
       - { Item: Scarlet_Dyestuffs, Amount: 3, Price: [161000, 189000] }
-      - { Item: White_Dyestuffs, Amount: 2, Price: [459500, 539500] }
+      - { Item: White_Dyestuffs, Amount: 1, Price: [459500, 539500] }
+      - { Item: Mysterious_Dyestuff, Amount: 100, Price: [1, 2] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3522,35 +3550,35 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Elunium, Amount: 3, Price: [242000, 284000] }
-      - { Item: Oridecon_Stone, Amount: 50, Price: [465, 630] }
-      - { Item: Emperium, Amount: 200, Price: [1, 3] }
-      - { Item: Beef_Head_Meat, Amount: 300, Price: [85, 115] }
+      - { Item: Coagulated_Spell, Amount: 100, Price: [17, 24] }
+      - { Item: Anger_Seagod, Amount: 150, Price: [17, 24] }
+      - { Item: Oridecon_Stone, Amount: 150, Price: [465, 630] }
+      - { Item: Emperium, Amount: 300, Price: [1, 3] }
+      - { Item: Temporal_Crystal, Amount: 300, Price: [17, 24] }
+      - { Item: Beef_Head_Meat, Amount: 150, Price: [85, 115] }
       - { Item: Darkgreen_Dyestuffs, Amount: 2, Price: [215000, 252500] }
-      - { Item: Gold, Amount: 3, Price: [642000, 753500] }
-      - { Item: Goast_Chill, Amount: 50, Price: [1450, 1700] }
-      - { Item: Illusion_Flower, Amount: 20, Price: [920, 1050] }
+      - { Item: F_Clothing_Dye_Coupon, Amount: 150, Price: [1, 2] }
+      - { Item: Gold, Amount: 2, Price: [642000, 753500] }
+      - { Item: Savage_Meat, Amount: 50, Price: [85, 115] }
+      - { Item: Germination_Breed, Amount: 150, Price: [8, 12] }
+      - { Item: Goast_Chill, Amount: 20, Price: [1450, 1700] }
+      - { Item: Illusion_Flower, Amount: 50, Price: [920, 1050] }
       - { Item: Treasure_Box, Amount: 1, Price: [596000, 700000] }
       - { Item: Violet_Dyestuffs, Amount: 10, Price: [174000, 204500] }
-      - { Item: Ice_Crystal, Amount: 50, Price: [85, 115] }
+      - { Item: Ice_Crystal, Amount: 300, Price: [85, 115] }
       - { Item: Cobaltblue_Dyestuffs, Amount: 3, Price: [165500, 194000] }
-      - { Item: Orange_Dyestuffs, Amount: 3, Price: [147000, 172500] }
+      - { Item: Orange_Dyestuffs, Amount: 5, Price: [147000, 172500] }
       - { Item: Black_Dyestuffs, Amount: 1, Price: [637500, 748500] }
-      - { Item: Valhalla_Flower, Amount: 1, Price: [37311500, 43801000] }
-      - { Item: Will_Of_Warrior, Amount: 20, Price: [920, 1050] }
-      - { Item: Mixture, Amount: 5, Price: [135000, 158500] }
-      - { Item: Lemon_Dyestuffs, Amount: 5, Price: [155000, 182000] }
-      - { Item: Counteragent, Amount: 10, Price: [180500, 212000] }
-      - { Item: Scarlet_Dyestuffs, Amount: 10, Price: [161000, 189000] }
-      - { Item: White_Dyestuffs, Amount: 2, Price: [459500, 539500] }
-      - { Item: Baphomet_Doll, Amount: 2, Price: [1390000, 1632000] }
-      - { Item: Blood_Thirst, Amount: 30, Price: [1100, 1250] }
-      - { Item: Voucher_Of_Orcish_Hero, Amount: 2, Price: [388000, 455500] }
-      - { Item: Tiger_Footskin, Amount: 10, Price: [1350, 1600] }
-      - { Item: Hammer_Of_Blacksmith, Amount: 150, Price: [1, 3] }
-      - { Item: Emperium_Anvil, Amount: 1, Price: [6110000, 7173000] }
-      - { Item: Ment, Amount: 300, Price: [425, 575] }
-      - { Item: Blade_Lost_In_Darkness, Amount: 3, Price: [913000, 1072000] }
-      - { Item: Poison_Herb_Makulata, Amount: 200, Price: [1, 2] }
+      - { Item: Valhalla_Flower, Amount: 2, Price: [37311500, 43801000] }
+      - { Item: Will_Of_Warrior, Amount: 10, Price: [920, 1050] }
+      - { Item: Slot_Coupon, Amount: 200, Price: [17, 24] }
+      - { Item: Mixture, Amount: 3, Price: [135000, 158500] }
+      - { Item: Lemon_Dyestuffs, Amount: 3, Price: [155000, 182000] }
+      - { Item: Counteragent, Amount: 5, Price: [180500, 212000] }
+      - { Item: Scarlet_Dyestuffs, Amount: 3, Price: [161000, 189000] }
+      - { Item: White_Dyestuffs, Amount: 3, Price: [459500, 539500] }
+      - { Item: Baphomet_Doll, Amount: 3, Price: [1390000, 1632000] }
+      - { Item: Bloody_Coin, Amount: 200, Price: [8, 12] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3579,66 +3607,66 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Red_Jewel, Amount: 3, Price: [44500, 52500] }
-      - { Item: Sticky_Poison, Amount: 300, Price: [325, 440] }
-      - { Item: Horseshoe, Amount: 10, Price: [1350, 1600] }
-      - { Item: Blossom_Of_Maneater, Amount: 30, Price: [2100, 2500] }
-      - { Item: Mementos, Amount: 3, Price: [32000, 38000] }
-      - { Item: Fox_Tail, Amount: 50, Price: [2850, 3350] }
-      - { Item: Smoke_Powder, Amount: 10, Price: [1350, 1600] }
-      - { Item: Spore_Doll, Amount: 5, Price: [72500, 85500] }
-      - { Item: Flame_Heart, Amount: 20, Price: [15500, 18500] }
-      - { Item: Coconut_Fruit, Amount: 20, Price: [2150, 2500] }
-      - { Item: Rent_Spell_Book, Amount: 30, Price: [7350, 8600] }
-      - { Item: Stone_Heart, Amount: 50, Price: [105, 140] }
-      - { Item: Manacles, Amount: 50, Price: [3750, 4400] }
-      - { Item: Alchol, Amount: 3, Price: [35000, 41000] }
-      - { Item: Cursed_Seal, Amount: 20, Price: [1200, 1400] }
-      - { Item: Zargon, Amount: 300, Price: [220, 300] }
-      - { Item: Izidor, Amount: 10, Price: [17500, 21000] }
-      - { Item: Armlet_Of_Prisoner, Amount: 30, Price: [6450, 7600] }
-      - { Item: Oridecon_Stone, Amount: 150, Price: [465, 630] }
-      - { Item: Transparent_Plate04, Amount: 5, Price: [23000, 27000] }
-      - { Item: Wheel, Amount: 10, Price: [1500, 1800] }
-      - { Item: Feather_Of_Birds, Amount: 50, Price: [920, 1050] }
-      - { Item: Nail_Of_Mole, Amount: 30, Price: [925, 1050] }
-      - { Item: Worn_Out_Page, Amount: 10, Price: [1100, 1300] }
-      - { Item: Carnium, Amount: 3, Price: [18000, 21500] }
-      - { Item: Iron_Ore, Amount: 30, Price: [1650, 1950] }
-      - { Item: Screw, Amount: 10, Price: [6250, 7300] }
-      - { Item: Ice_Fragment, Amount: 300, Price: [85, 115] }
-      - { Item: Cookbook08, Amount: 10, Price: [920, 1050] }
-      - { Item: Starsand_Of_Witch, Amount: 10, Price: [2550, 3000] }
-      - { Item: Empty_Potion, Amount: 50, Price: [9300, 10500] }
-      - { Item: Penetration, Amount: 10, Price: [4600, 5400] }
-      - { Item: Elder_Pixie's_Beard, Amount: 10, Price: [5150, 6050] }
-      - { Item: Booby_Trap, Amount: 100, Price: [55, 75] }
-      - { Item: Old_Steel_Plate, Amount: 20, Price: [6900, 8100] }
-      - { Item: White_Platter, Amount: 50, Price: [9500, 11000] }
-      - { Item: Tree_Of_Archer_3, Amount: 20, Price: [9200, 10500] }
-      - { Item: Orcish_Voucher, Amount: 50, Price: [340, 465] }
-      - { Item: Single_Cell, Amount: 200, Price: [380, 515] }
-      - { Item: Poison_Herb_Seratum, Amount: 100, Price: [1, 2] }
-      - { Item: Sparkling_Dust, Amount: 20, Price: [995, 1150] }
-      - { Item: Yellow_Gemstone, Amount: 20, Price: [2050, 2450] }
-      - { Item: Chinese_Ink, Amount: 50, Price: [795, 1050] }
-      - { Item: Steel, Amount: 50, Price: [5650, 6650] }
-      - { Item: Flower, Amount: 200, Price: [1, 2] }
-      - { Item: Alice's_Apron, Amount: 30, Price: [2500, 2950] }
-      - { Item: Piece_Of_Crest3, Amount: 30, Price: [5300, 6250] }
-      - { Item: Legend_Of_Kafra01, Amount: 50, Price: [12000, 14000] }
+      - { Item: Foolishness_Of_Blind, Amount: 3, Price: [34500, 40500] }
+      - { Item: Live_Coal, Amount: 20, Price: [3900, 4600] }
+      - { Item: Withered_Flower, Amount: 10, Price: [10000, 12000] }
+      - { Item: Shoulder_Protection, Amount: 150, Price: [490, 665] }
       - { Item: Pointed_Scale, Amount: 150, Price: [425, 575] }
-      - { Item: Beef_Head_Meat, Amount: 50, Price: [85, 115] }
-      - { Item: Lip_Of_Ancient_Fish, Amount: 20, Price: [1600, 1900] }
-      - { Item: Scarlet_Dyestuffs, Amount: 10, Price: [161000, 189000] }
-      - { Item: Piece_Of_Crest4, Amount: 30, Price: [6600, 7750] }
-      - { Item: Crystal_Mirror, Amount: 10, Price: [9200, 10500] }
-      - { Item: Earthworm_Peeling, Amount: 50, Price: [170, 230] }
-      - { Item: Ice_Piece, Amount: 10, Price: [1050, 1250] }
-      - { Item: Flesh_Of_Clam, Amount: 30, Price: [17500, 20500] }
-      - { Item: Poison_Spore, Amount: 30, Price: [4100, 4850] }
-      - { Item: Gold, Amount: 2, Price: [642000, 753500] }
-      - { Item: Elunium, Amount: 2, Price: [242000, 284000] }
+      - { Item: Skin_Of_Hraesvelg, Amount: 150, Price: [1, 2] }
+      - { Item: Jellopy, Amount: 300, Price: [395, 535] }
+      - { Item: Flame_Heart, Amount: 10, Price: [15500, 18500] }
+      - { Item: Limpid_Celestial_Robe, Amount: 50, Price: [1100, 1250] }
+      - { Item: Log, Amount: 30, Price: [1050, 1250] }
+      - { Item: Old_Magic_Circle, Amount: 3, Price: [81000, 95500] }
+      - { Item: Angel_Magic_Power, Amount: 10, Price: [9200, 10500] }
+      - { Item: Red_Socks_With_Holes, Amount: 150, Price: [85, 115] }
+      - { Item: Peco_Wing_Feather, Amount: 10, Price: [6000, 7050] }
+      - { Item: White_Powder, Amount: 300, Price: [510, 690] }
+      - { Item: Spirit_Of_Munin, Amount: 50, Price: [1, 2] }
+      - { Item: Poison_Herb_Scopolia, Amount: 10, Price: [3650, 4300] }
+      - { Item: Dragon's_Skin, Amount: 200, Price: [630, 860] }
+      - { Item: Cobold_Hair, Amount: 50, Price: [560, 760] }
+      - { Item: Short_Daenggie, Amount: 10, Price: [3000, 3500] }
+      - { Item: Dragon_Fang, Amount: 20, Price: [1650, 1950] }
+      - { Item: Worn_Out_Prison_Uniform, Amount: 20, Price: [4500, 5300] }
+      - { Item: Hard_Skin, Amount: 300, Price: [750, 1000] }
+      - { Item: Garlet, Amount: 50, Price: [1300, 1500] }
+      - { Item: Meat_Dumpling_Doll, Amount: 100, Price: [425, 575] }
+      - { Item: Tooth_Of_Jitterbug, Amount: 50, Price: [8, 12] }
+      - { Item: Mystery_Piece, Amount: 50, Price: [1400, 1650] }
+      - { Item: Copper_Coin_, Amount: 20, Price: [16000, 19000] }
+      - { Item: Ment, Amount: 100, Price: [425, 575] }
+      - { Item: Skyblue_Jewel, Amount: 3, Price: [29000, 34000] }
+      - { Item: Tooth_Of_, Amount: 10, Price: [1150, 1350] }
+      - { Item: Piece_Of_Crest3, Amount: 50, Price: [5300, 6250] }
+      - { Item: Voucher_Of_Orcish_Hero, Amount: 2, Price: [388000, 455500] }
+      - { Item: Yoyo_Tail, Amount: 300, Price: [360, 490] }
+      - { Item: Grasshopper's_Leg, Amount: 150, Price: [380, 515] }
+      - { Item: Round_Feather, Amount: 30, Price: [9200, 10500] }
+      - { Item: Andvari_Ring, Amount: 200, Price: [1, 2] }
+      - { Item: Pumpkin_Bucket, Amount: 30, Price: [5300, 6250] }
+      - { Item: Ice_Crystal, Amount: 50, Price: [85, 115] }
+      - { Item: Small_Bradium, Amount: 3, Price: [44000, 52000] }
+      - { Item: Red_Gemstone, Amount: 30, Price: [1600, 1850] }
+      - { Item: Elegant_Flower, Amount: 50, Price: [255, 345] }
+      - { Item: Hammer_Of_Blacksmith, Amount: 50, Price: [1, 3] }
+      - { Item: String, Amount: 50, Price: [1, 2] }
+      - { Item: Red_Scarf, Amount: 30, Price: [1800, 2150] }
+      - { Item: Gaoat's_Skin, Amount: 300, Price: [440, 595] }
+      - { Item: Snowball, Amount: 150, Price: [1, 2] }
+      - { Item: Treasure_Box, Amount: 2, Price: [596000, 700000] }
+      - { Item: Armlet_Of_Prisoner, Amount: 50, Price: [6450, 7600] }
+      - { Item: Smooth_Paper, Amount: 150, Price: [595, 805] }
+      - { Item: Bradium, Amount: 50, Price: [16500, 19500] }
+      - { Item: Horrendous_Mouth, Amount: 10, Price: [4900, 5800] }
+      - { Item: Conch, Amount: 50, Price: [690, 935] }
+      - { Item: Hazy_Starlight, Amount: 150, Price: [1, 2] }
+      - { Item: Dragon_Train, Amount: 300, Price: [795, 1050] }
+      - { Item: Twinhorn_Helm, Amount: 5, Price: [46000, 54000] }
+      - { Item: Claw_Of_Desert_Wolf, Amount: 10, Price: [980, 1150] }
+      - { Item: Dawn_Essence, Amount: 150, Price: [1, 2] }
+      - { Item: Short_Leg, Amount: 20, Price: [1800, 2150] }
+      - { Item: Rib_Of_Jormungand, Amount: 300, Price: [1, 2] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3667,66 +3695,66 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Wind_Arrow_Container, Amount: 30, Price: [12500, 15000] }
-      - { Item: Anodyne, Amount: 50, Price: [9150, 10500] }
-      - { Item: Prawn, Amount: 10, Price: [920, 1050] }
-      - { Item: Orange, Amount: 10, Price: [1000, 1150] }
-      - { Item: Panacea, Amount: 30, Price: [9700, 11000] }
-      - { Item: Rice_Ball, Amount: 50, Price: [1800, 2150] }
-      - { Item: Bitter_Herb, Amount: 10, Price: [15000, 17500] }
-      - { Item: Gift_Box_1, Amount: 5, Price: [81000, 95000] }
-      - { Item: Pet_Incubator, Amount: 20, Price: [4600, 5400] }
-      - { Item: Fire_Scroll_2_5, Amount: 50, Price: [2000, 2350] }
-      - { Item: Candy, Amount: 30, Price: [1400, 1650] }
-      - { Item: Runstone_Mystic, Amount: 30, Price: [9200, 10500] }
-      - { Item: Ghost_Scroll_1_5, Amount: 20, Price: [1100, 1250] }
-      - { Item: White_Slim_Potion, Amount: 20, Price: [6950, 8200] }
-      - { Item: Rice_Cake, Amount: 150, Price: [735, 995] }
-      - { Item: Fish_Slice, Amount: 20, Price: [1650, 1950] }
-      - { Item: Singing_Flower, Amount: 100, Price: [255, 345] }
-      - { Item: Grape, Amount: 30, Price: [2850, 3350] }
-      - { Item: Fire_Scroll_1_3, Amount: 50, Price: [765, 1000] }
-      - { Item: Red_Slim_Potion, Amount: 30, Price: [1800, 2100] }
-      - { Item: Seed_Of_Yggdrasil, Amount: 3, Price: [107000, 126000] }
-      - { Item: HandMade_Chocolate_, Amount: 50, Price: [2300, 2700] }
-      - { Item: Elemental_Water, Amount: 10, Price: [8700, 10000] }
-      - { Item: Fire_Scroll_1_5, Amount: 30, Price: [1800, 2150] }
-      - { Item: Gold_Pill, Amount: 1, Price: [1231000, 1445500] }
-      - { Item: Speed_Up_Potion, Amount: 5, Price: [33500, 39500] }
-      - { Item: Armlet_Of_Obedience, Amount: 5, Price: [69000, 81000] }
-      - { Item: Grape_Juice, Amount: 10, Price: [4300, 5050] }
-      - { Item: Elemental_Earth, Amount: 30, Price: [8500, 9950] }
-      - { Item: Holy_Scroll_1_5, Amount: 20, Price: [1100, 1300] }
-      - { Item: Chocolate_Drink, Amount: 30, Price: [3200, 3750] }
-      - { Item: Water_Of_Darkness, Amount: 30, Price: [1800, 2100] }
-      - { Item: Contracts_In_Shadow, Amount: 100, Price: [85, 115] }
-      - { Item: Green_Herb, Amount: 30, Price: [11500, 13500] }
-      - { Item: Blue_Potion, Amount: 10, Price: [4600, 5400] }
+      - { Item: Milk, Amount: 300, Price: [21, 29] }
+      - { Item: Speed_Up_Potion, Amount: 10, Price: [33500, 39500] }
+      - { Item: Mora_Mandarin, Amount: 5, Price: [46000, 54000] }
+      - { Item: Sphere_Case_Wind, Amount: 150, Price: [1, 3] }
+      - { Item: Candy_Striper, Amount: 150, Price: [430, 585] }
+      - { Item: Mojji, Amount: 20, Price: [9200, 10500] }
+      - { Item: Tantanmen, Amount: 300, Price: [17, 24] }
+      - { Item: Vending_Search_Scroll, Amount: 20, Price: [9200, 10500] }
+      - { Item: Imperial_Cooking_Kits, Amount: 2, Price: [1153000, 1354000] }
+      - { Item: Wug_Blood_Cocktail, Amount: 100, Price: [1, 2] }
+      - { Item: Old_Violet_Box, Amount: 1, Price: [394000, 462500] }
+      - { Item: Prohibition_Red_Candle, Amount: 2, Price: [6358500, 7464000] }
+      - { Item: Petti_Tail_Noodle, Amount: 50, Price: [1, 2] }
+      - { Item: Strawberry, Amount: 30, Price: [10500, 12500] }
+      - { Item: Mushroom, Amount: 50, Price: [675, 915] }
+      - { Item: Cookies_Bat, Amount: 200, Price: [1, 2] }
+      - { Item: Splendid_Box, Amount: 50, Price: [17, 24] }
+      - { Item: Mysterious_Seed, Amount: 10, Price: [46000, 54000] }
+      - { Item: Berserk_Potion, Amount: 30, Price: [2600, 3050] }
+      - { Item: Anodyne, Amount: 20, Price: [9150, 10500] }
+      - { Item: Very_Red_Juice, Amount: 200, Price: [17, 24] }
+      - { Item: Cute_Strawberry_Choco, Amount: 30, Price: [7350, 8600] }
+      - { Item: Shadow_Arrow_Container, Amount: 3, Price: [18000, 21500] }
+      - { Item: Luk_Dish05, Amount: 5, Price: [58500, 69000] }
+      - { Item: Iron_Bug, Amount: 100, Price: [8, 12] }
+      - { Item: Fools_Day_Box, Amount: 5, Price: [21000, 25000] }
+      - { Item: Slow_Down_Potion, Amount: 30, Price: [13500, 16000] }
+      - { Item: HandMade_Chocolate_, Amount: 20, Price: [2300, 2700] }
+      - { Item: Sway_Apron, Amount: 2, Price: [822500, 965500] }
+      - { Item: Box_Of_Storm, Amount: 10, Price: [9000, 10500] }
+      - { Item: Random_Quiver, Amount: 10, Price: [73500, 86000] }
+      - { Item: Red_Slim_Potion, Amount: 10, Price: [1800, 2100] }
+      - { Item: Deadly_Noxious_Herb, Amount: 3, Price: [20500, 24000] }
+      - { Item: Yummy_Cookie_Egg, Amount: 100, Price: [1, 2] }
+      - { Item: Gloomy_Box, Amount: 3, Price: [67500, 79000] }
+      - { Item: Int_Dish10, Amount: 3, Price: [133000, 156000] }
+      - { Item: Candy, Amount: 50, Price: [1400, 1650] }
+      - { Item: Wing_Of_Fly, Amount: 50, Price: [105, 145] }
+      - { Item: Baked_Yam, Amount: 150, Price: [17, 24] }
+      - { Item: RepairC, Amount: 10, Price: [1250, 1450] }
+      - { Item: SP_Increase_PotionM, Amount: 10, Price: [31000, 36500] }
+      - { Item: High_BluePotion, Amount: 10, Price: [6400, 7550] }
+      - { Item: Rainbow_Carrot, Amount: 10, Price: [2300, 2700] }
+      - { Item: Poison_Fever, Amount: 10, Price: [37500, 44000] }
+      - { Item: Tiny_Waterbottle, Amount: 10, Price: [18000, 21000] }
+      - { Item: Agi_Dish07, Amount: 5, Price: [18000, 21500] }
+      - { Item: Popped_Rice, Amount: 30, Price: [4800, 5650] }
+      - { Item: Solo_Gift_Basket, Amount: 2, Price: [184000, 216000] }
+      - { Item: Box_Of_Sunlight, Amount: 50, Price: [920, 1050] }
+      - { Item: Magic_Eyes_Box, Amount: 100, Price: [17, 24] }
+      - { Item: Dgrade_Pocket, Amount: 50, Price: [17, 24] }
+      - { Item: Poison_Bottle, Amount: 10, Price: [68000, 80000] }
+      - { Item: Sesame_Pastry, Amount: 5, Price: [31000, 36500] }
       - { Item: Bullet_Case_Fleeze, Amount: 10, Price: [5500, 6450] }
-      - { Item: Bread, Amount: 100, Price: [250, 340] }
-      - { Item: Wind_Scroll_1_3, Amount: 20, Price: [1100, 1300] }
-      - { Item: Branch_Of_Dead_Tree, Amount: 50, Price: [42, 58] }
-      - { Item: Fruit_Of_Mastela, Amount: 1, Price: [562500, 660500] }
-      - { Item: Hash_Rice_Cake, Amount: 200, Price: [8, 12] }
-      - { Item: Pizza, Amount: 50, Price: [85, 115] }
-      - { Item: Pumpkin, Amount: 150, Price: [8, 12] }
-      - { Item: Piece_Of_Cake, Amount: 10, Price: [5000, 5850] }
-      - { Item: Book_Of_Devil, Amount: 10, Price: [83500, 98000] }
-      - { Item: White_Chocolate, Amount: 10, Price: [3950, 4650] }
-      - { Item: Leaflet_Of_Hinal, Amount: 10, Price: [1450, 1700] }
-      - { Item: Amulet, Amount: 10, Price: [8800, 10000] }
-      - { Item: Lusty_Iron, Amount: 5, Price: [42500, 50000] }
-      - { Item: Prickly_Fruit_, Amount: 30, Price: [4900, 5750] }
-      - { Item: Red_Potion, Amount: 200, Price: [38, 52] }
-      - { Item: Well_Baked_Cookie, Amount: 50, Price: [8700, 10000] }
-      - { Item: Leaflet_Of_Aloe, Amount: 100, Price: [845, 1100] }
-      - { Item: Red_Herb, Amount: 50, Price: [180, 240] }
-      - { Item: Wing_Of_Fly, Amount: 300, Price: [105, 145] }
-      - { Item: Elemental_Fire, Amount: 30, Price: [9050, 10500] }
-      - { Item: Fire_Arrow_Container, Amount: 10, Price: [14000, 16500] }
-      - { Item: Prohibition_Red_Candle, Amount: 3, Price: [6358500, 7464000] }
-      - { Item: Honey_Pancake, Amount: 20, Price: [9200, 10500] }
-      - { Item: Cold_Scroll_1_5, Amount: 20, Price: [2600, 3050] }
+      - { Item: Agi_Dish02, Amount: 20, Price: [5650, 6650] }
+      - { Item: Well_Dried_Bone, Amount: 1, Price: [849000, 997000] }
+      - { Item: Vit_Dish01, Amount: 20, Price: [17000, 20000] }
+      - { Item: Wh_Deviruchi_Cap_Box, Amount: 100, Price: [17, 24] }
+      - { Item: Enrich_White_PotionZ, Amount: 150, Price: [8, 12] }
+      - { Item: White_Chocolate, Amount: 30, Price: [3950, 4650] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3755,66 +3783,66 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Sweet_Gents, Amount: 1, Price: [12000, 14500] }
-      - { Item: Harp, Amount: 1, Price: [51000, 60000] }
-      - { Item: Oriental_Lute, Amount: 1, Price: [108500, 127000] }
-      - { Item: Composite_Bow, Amount: 1, Price: [2050, 2400] }
-      - { Item: Angel's_Warmth, Amount: 1, Price: [114000, 133500] }
-      - { Item: Wedding_Dress, Amount: 1, Price: [35500, 41500] }
-      - { Item: Spiritual_Ring, Amount: 1, Price: [398500, 468000] }
-      - { Item: Survival_Rod_, Amount: 1, Price: [70000, 82500] }
-      - { Item: Star_Dust, Amount: 1, Price: [55000, 64500] }
-      - { Item: Ruber, Amount: 1, Price: [549000, 644500] }
-      - { Item: Inverse_Scale, Amount: 1, Price: [395500, 464500] }
-      - { Item: Thief_Clothes, Amount: 1, Price: [61000, 71500] }
-      - { Item: CrossBow_, Amount: 1, Price: [14000, 16500] }
-      - { Item: Weihna, Amount: 1, Price: [1678000, 1969500] }
-      - { Item: Bladed_Whip, Amount: 1, Price: [180500, 212000] }
-      - { Item: Burning_Bow, Amount: 1, Price: [834000, 979500] }
-      - { Item: Battle_Hook, Amount: 1, Price: [135500, 159000] }
-      - { Item: Guitar_, Amount: 1, Price: [38500, 45500] }
-      - { Item: Guitar_Of_Vast_Land, Amount: 1, Price: [167000, 196000] }
-      - { Item: Glaive, Amount: 1, Price: [16500, 19000] }
-      - { Item: Saint_Robe_, Amount: 1, Price: [44500, 52000] }
-      - { Item: Guh_Moon_Goh_, Amount: 1, Price: [411500, 483000] }
-      - { Item: The_Cyclone_, Amount: 1, Price: [14000, 17000] }
-      - { Item: Long_Barrel, Amount: 1, Price: [33000, 38500] }
-      - { Item: Unholy_Touch, Amount: 1, Price: [131500, 154500] }
-      - { Item: Skul_Ring, Amount: 1, Price: [8250, 9700] }
-      - { Item: Eye_Bandage, Amount: 1, Price: [765, 1000] }
+      - { Item: Guitar_Of_Blue_Solo, Amount: 1, Price: [15500, 18500] }
+      - { Item: Siver_Guard, Amount: 1, Price: [10000, 12000] }
+      - { Item: Chain, Amount: 1, Price: [19000, 22000] }
+      - { Item: Javelin_, Amount: 1, Price: [110, 155] }
+      - { Item: Cotton_Shirt, Amount: 1, Price: [3050, 3600] }
+      - { Item: Sandals_, Amount: 1, Price: [305, 410] }
+      - { Item: Harp_Of_Nepenthes, Amount: 1, Price: [506000, 594000] }
+      - { Item: Finger_, Amount: 1, Price: [48000, 56000] }
+      - { Item: Assassin_Mask_, Amount: 1, Price: [721000, 846500] }
+      - { Item: Bone_Helm, Amount: 1, Price: [339500, 399000] }
+      - { Item: Magni_Cap, Amount: 1, Price: [69000, 81000] }
+      - { Item: Golden_Gear, Amount: 1, Price: [1790000, 2101500] }
+      - { Item: Pirate's_Pride, Amount: 1, Price: [276000, 324000] }
+      - { Item: Circlet_, Amount: 1, Price: [6200, 7250] }
+      - { Item: Party_Hat, Amount: 1, Price: [323500, 380000] }
+      - { Item: Morpheus's_Shawl, Amount: 1, Price: [24500, 29000] }
+      - { Item: Ring_Pommel_Saber, Amount: 1, Price: [19500, 23000] }
+      - { Item: Special_Ninja_Suit, Amount: 1, Price: [8250, 9700] }
+      - { Item: Galapago_Cap, Amount: 1, Price: [910500, 1069000] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
+      - { Item: Violin_, Amount: 1, Price: [3300, 3850] }
+      - { Item: Tooth_Blade, Amount: 1, Price: [158500, 186000] }
+      - { Item: Mr_Smile, Amount: 1, Price: [1100, 1250] }
+      - { Item: Flower_Hairband, Amount: 1, Price: [643000, 754500] }
+      - { Item: Gemmed_Crown, Amount: 1, Price: [890000, 1045000] }
+      - { Item: Girl's_Diary, Amount: 1, Price: [1200, 1450] }
+      - { Item: Guh_Moon_Goh_, Amount: 1, Price: [411500, 483000] }
+      - { Item: Ninja_Suit, Amount: 1, Price: [267500, 314000] }
+      - { Item: Novice_Breast, Amount: 1, Price: [73500, 86500] }
+      - { Item: Shadow_Walk, Amount: 1, Price: [171500, 201500] }
+      - { Item: Antler, Amount: 1, Price: [147000, 172500] }
+      - { Item: Jump_Rope, Amount: 1, Price: [261000, 306500] }
+      - { Item: Book_Of_Mother_Earth, Amount: 1, Price: [120500, 141500] }
+      - { Item: Mandolin, Amount: 1, Price: [14500, 17000] }
+      - { Item: Buster, Amount: 1, Price: [28000, 33000] }
+      - { Item: Armor_Of_Naga, Amount: 1, Price: [1687500, 1981000] }
+      - { Item: Baby_Pacifier, Amount: 1, Price: [134000, 157500] }
+      - { Item: Cutter__, Amount: 1, Price: [4850, 5700] }
       - { Item: Goblini_Mask, Amount: 1, Price: [61000, 72000] }
-      - { Item: Book_Of_Gust_Of_Wind_, Amount: 1, Price: [28500, 34000] }
-      - { Item: Cold_Heart, Amount: 1, Price: [1323000, 1553000] }
-      - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
-      - { Item: Brooch, Amount: 1, Price: [284000, 333500] }
-      - { Item: Helm_, Amount: 1, Price: [36000, 42500] }
-      - { Item: Cap_, Amount: 1, Price: [57500, 67500] }
-      - { Item: Western_Grace, Amount: 1, Price: [12000, 14500] }
-      - { Item: Buster_, Amount: 1, Price: [28000, 33000] }
-      - { Item: Pair_Of_Red_Ribbon, Amount: 1, Price: [828000, 972000] }
       - { Item: Ring_Pommel_Saber_, Amount: 1, Price: [335500, 394000] }
-      - { Item: Sandals, Amount: 1, Price: [305, 410] }
-      - { Item: Battle_Axe, Amount: 1, Price: [4450, 5200] }
-      - { Item: Tail_, Amount: 1, Price: [92000, 108000] }
-      - { Item: Harp_, Amount: 1, Price: [62000, 72500] }
-      - { Item: Coward_, Amount: 1, Price: [32500, 38000] }
-      - { Item: Morrigane's_Pendant, Amount: 1, Price: [24500, 29000] }
-      - { Item: Kakkung, Amount: 1, Price: [34500, 40500] }
-      - { Item: Ahlspiess, Amount: 1, Price: [736000, 864000] }
-      - { Item: Kiss_Of_Angel, Amount: 1, Price: [8250, 9700] }
-      - { Item: Asura_, Amount: 1, Price: [2450, 2900] }
-      - { Item: Fancy_Flower, Amount: 1, Price: [6800, 7950] }
-      - { Item: Padded_Armor_, Amount: 1, Price: [39500, 46500] }
-      - { Item: Luna_Bow, Amount: 1, Price: [825500, 969500] }
-      - { Item: Curved_Sword, Amount: 1, Price: [556000, 653000] }
-      - { Item: Battle_Fork, Amount: 1, Price: [235500, 276500] }
-      - { Item: Hora_, Amount: 1, Price: [26000, 31000] }
+      - { Item: Berserk_Guitar, Amount: 1, Price: [51500, 60000] }
+      - { Item: Khukri, Amount: 1, Price: [226500, 265500] }
+      - { Item: Novice_Armlet, Amount: 1, Price: [305, 410] }
+      - { Item: Puente_Robe, Amount: 1, Price: [9900, 11500] }
       - { Item: Hero_Trade_Mail, Amount: 1, Price: [460000, 540000] }
-      - { Item: Guitar_Of_Gentle_Breeze, Amount: 1, Price: [460000, 540000] }
-      - { Item: Dirk, Amount: 1, Price: [7000, 8250] }
-      - { Item: Mandolin_, Amount: 1, Price: [14500, 17000] }
-      - { Item: Dagger, Amount: 1, Price: [11500, 13500] }
+      - { Item: Bloody_Eater, Amount: 1, Price: [1246000, 1462500] }
+      - { Item: Earth_Bow, Amount: 1, Price: [905500, 1063000] }
+      - { Item: Bandana, Amount: 1, Price: [305, 410] }
+      - { Item: Biretta_, Amount: 1, Price: [7450, 8700] }
+      - { Item: Chrystal_Pumps, Amount: 1, Price: [469000, 550500] }
+      - { Item: Fillet, Amount: 1, Price: [380, 515] }
+      - { Item: Long_Mace, Amount: 1, Price: [1483000, 1740500] }
+      - { Item: Silver_Robe, Amount: 1, Price: [5750, 6800] }
+      - { Item: Ribbon_Yellow, Amount: 1, Price: [610, 825] }
+      - { Item: Unholy_Touch, Amount: 1, Price: [131500, 154500] }
+      - { Item: Burning_Bow, Amount: 1, Price: [834000, 979500] }
+      - { Item: Accelerator, Amount: 1, Price: [82500, 97000] }
+      - { Item: Blade_, Amount: 1, Price: [2400, 2800] }
+      - { Item: Ahlspiess, Amount: 1, Price: [736000, 864000] }
+      - { Item: Violin, Amount: 1, Price: [3300, 3850] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3844,66 +3872,66 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Tooth_Of_, Amount: 20, Price: [1150, 1350] }
-      - { Item: Spectacles, Amount: 100, Price: [56, 76] }
-      - { Item: Base_Guitar, Amount: 1, Price: [2300, 2700] }
-      - { Item: Grit, Amount: 30, Price: [1150, 1350] }
-      - { Item: Rotten_Meat, Amount: 150, Price: [750, 1000] }
-      - { Item: Vroken_Sword, Amount: 10, Price: [2200, 2550] }
-      - { Item: Bread, Amount: 300, Price: [250, 340] }
-      - { Item: Mud_Lump, Amount: 300, Price: [810, 1100] }
-      - { Item: Blossom_Of_Maneater, Amount: 30, Price: [2100, 2500] }
-      - { Item: Scropion's_Nipper, Amount: 100, Price: [300, 405] }
-      - { Item: Clam_Shell, Amount: 100, Price: [425, 575] }
-      - { Item: Claw_Of_Wolves, Amount: 100, Price: [255, 345] }
-      - { Item: Petite_DiablOfs_Wing, Amount: 10, Price: [1100, 1250] }
-      - { Item: Tendon, Amount: 30, Price: [3050, 3600] }
-      - { Item: Hunting_Arrow, Amount: 300, Price: [5, 7] }
-      - { Item: Short_Daenggie, Amount: 20, Price: [3000, 3500] }
-      - { Item: Fire_Scroll_2_5, Amount: 20, Price: [2000, 2350] }
-      - { Item: Chocolate_Drink, Amount: 30, Price: [3200, 3750] }
-      - { Item: Reptile_Tongue, Amount: 50, Price: [3050, 3600] }
-      - { Item: Leaf_Of_Yggdrasil, Amount: 20, Price: [5500, 6450] }
-      - { Item: Lantern, Amount: 50, Price: [795, 1050] }
-      - { Item: Ice_Piece, Amount: 20, Price: [1050, 1250] }
-      - { Item: Portable_Furnace, Amount: 30, Price: [4600, 5400] }
-      - { Item: Poison_Toad's_Skin, Amount: 10, Price: [4400, 5150] }
-      - { Item: Awakening_Potion, Amount: 50, Price: [1150, 1350] }
-      - { Item: Holy_Scroll_1_5, Amount: 50, Price: [1100, 1300] }
-      - { Item: Hot_Hair, Amount: 300, Price: [675, 915] }
-      - { Item: Yoyo_Tail, Amount: 150, Price: [360, 490] }
-      - { Item: Starsand_Of_Witch, Amount: 50, Price: [2550, 3000] }
-      - { Item: Conch, Amount: 300, Price: [690, 935] }
+      - { Item: Sticky_Mucus, Amount: 50, Price: [585, 795] }
+      - { Item: Silver_Bullet_, Amount: 300, Price: [4, 6] }
+      - { Item: Poison_Herb_Rantana, Amount: 30, Price: [4150, 4850] }
+      - { Item: Dried_Sand, Amount: 20, Price: [950, 1100] }
+      - { Item: HandMade_Chocolate, Amount: 20, Price: [3250, 3850] }
+      - { Item: Cold_Scroll_2_5, Amount: 20, Price: [4450, 5200] }
       - { Item: N_Rod, Amount: 1, Price: [480, 650] }
-      - { Item: Rice_Ball, Amount: 50, Price: [1800, 2150] }
-      - { Item: Bee_Sting, Amount: 10, Price: [955, 1100] }
-      - { Item: Worn_Out_Page, Amount: 50, Price: [1100, 1300] }
-      - { Item: Fire_Arrow, Amount: 150, Price: [170, 230] }
-      - { Item: Honey, Amount: 20, Price: [2850, 3350] }
-      - { Item: Piece_Of_Egg_Shell, Amount: 30, Price: [1350, 1600] }
-      - { Item: Scales_Shell, Amount: 50, Price: [1750, 2050] }
-      - { Item: Flash_Arrow, Amount: 50, Price: [365, 495] }
-      - { Item: Wing_Of_Fly, Amount: 200, Price: [105, 145] }
-      - { Item: Sticky_Poison, Amount: 300, Price: [325, 440] }
-      - { Item: Orcish_Voucher, Amount: 50, Price: [340, 465] }
-      - { Item: Dragonball_Yellow, Amount: 10, Price: [3750, 4400] }
-      - { Item: Adventurere's_Suit_, Amount: 1, Price: [765, 1000] }
-      - { Item: Mushroom_Spore, Amount: 150, Price: [145, 200] }
-      - { Item: Grape, Amount: 20, Price: [2850, 3350] }
-      - { Item: Scell, Amount: 300, Price: [395, 535] }
-      - { Item: Orcish_Cuspid, Amount: 100, Price: [270, 370] }
-      - { Item: Moth_Dust, Amount: 20, Price: [1000, 1150] }
-      - { Item: Candy_Striper, Amount: 150, Price: [430, 585] }
-      - { Item: Poring_Doll, Amount: 30, Price: [4600, 5400] }
-      - { Item: Lemon, Amount: 50, Price: [1050, 1250] }
+      - { Item: Hot_Sauce, Amount: 10, Price: [920, 1050] }
+      - { Item: Colorful_Shell, Amount: 150, Price: [810, 1050] }
       - { Item: Pet_Food, Amount: 300, Price: [680, 920] }
-      - { Item: Mushroom, Amount: 200, Price: [675, 915] }
-      - { Item: Black_Powder, Amount: 20, Price: [1400, 1600] }
-      - { Item: Cold_Magma, Amount: 10, Price: [1000, 1200] }
-      - { Item: Nose_Ring, Amount: 100, Price: [555, 750] }
-      - { Item: Garlet, Amount: 50, Price: [1300, 1500] }
-      - { Item: Wing_Of_Butterfly, Amount: 50, Price: [425, 575] }
-      - { Item: Candy, Amount: 20, Price: [1400, 1650] }
+      - { Item: Will_Of_Darkness, Amount: 20, Price: [980, 1150] }
+      - { Item: Plant_Neutrient, Amount: 100, Price: [17, 24] }
+      - { Item: Charm_Earth, Amount: 150, Price: [85, 115] }
+      - { Item: Grape, Amount: 50, Price: [2850, 3350] }
+      - { Item: Icefall_Dress, Amount: 1, Price: [4600, 5400] }
+      - { Item: Awakening_Potion, Amount: 20, Price: [1150, 1350] }
+      - { Item: Feather, Amount: 50, Price: [425, 575] }
+      - { Item: Pumpkin_Pie, Amount: 20, Price: [2600, 3050] }
+      - { Item: Scale_Of_Snakes, Amount: 150, Price: [105, 140] }
+      - { Item: Carrot, Amount: 50, Price: [17, 25] }
+      - { Item: Shooting_Mine, Amount: 200, Price: [25, 35] }
+      - { Item: Shadow_Orb, Amount: 200, Price: [305, 415] }
+      - { Item: Porcupine_Spike, Amount: 300, Price: [400, 545] }
+      - { Item: Immortal_Heart, Amount: 30, Price: [2150, 2500] }
+      - { Item: Red_Spice, Amount: 300, Price: [635, 860] }
+      - { Item: Freezing_Bullet, Amount: 200, Price: [4, 6] }
+      - { Item: Dullahan's_Helm, Amount: 50, Price: [1300, 1550] }
+      - { Item: Ogre_Tooth, Amount: 10, Price: [4100, 4850] }
+      - { Item: Yellow_Powder, Amount: 50, Price: [1450, 1700] }
+      - { Item: Scroll, Amount: 30, Price: [2700, 3200] }
+      - { Item: Tiger_Skin_Panties, Amount: 20, Price: [920, 1050] }
+      - { Item: Fluff, Amount: 150, Price: [725, 980] }
+      - { Item: Explosive_Powder, Amount: 50, Price: [3650, 4300] }
+      - { Item: Burning_Heart, Amount: 50, Price: [660, 900] }
+      - { Item: Poison_Herb_Scopolia, Amount: 50, Price: [3650, 4300] }
+      - { Item: Penetration, Amount: 10, Price: [4600, 5400] }
+      - { Item: Candy_Striper, Amount: 50, Price: [430, 585] }
+      - { Item: Festival_Mask, Amount: 150, Price: [805, 1050] }
+      - { Item: Morning_Dew, Amount: 300, Price: [17, 24] }
+      - { Item: Horn_Of_Hilsrion, Amount: 20, Price: [1000, 1150] }
+      - { Item: Vit_Dish02, Amount: 20, Price: [2000, 2400] }
+      - { Item: Silver_Bullet, Amount: 100, Price: [10, 14] }
+      - { Item: Gambler_Seal, Amount: 1, Price: [1, 2] }
+      - { Item: Flare_Sphere_, Amount: 150, Price: [845, 1100] }
+      - { Item: Lucky_Candy_Cane, Amount: 150, Price: [360, 490] }
+      - { Item: Nail_Of_Mole, Amount: 50, Price: [925, 1050] }
+      - { Item: Log, Amount: 50, Price: [1050, 1250] }
+      - { Item: Dragon_Train, Amount: 100, Price: [795, 1050] }
+      - { Item: Tear_Gas, Amount: 10, Price: [2750, 3200] }
+      - { Item: Rice_Ball, Amount: 20, Price: [1800, 2150] }
+      - { Item: Spool, Amount: 50, Price: [2300, 2700] }
+      - { Item: Wind_Scroll_1_3, Amount: 10, Price: [1100, 1300] }
+      - { Item: Tendon, Amount: 20, Price: [3050, 3600] }
+      - { Item: Ice_Piece, Amount: 30, Price: [1050, 1250] }
+      - { Item: Dark_Cannon_Ball, Amount: 300, Price: [130, 175] }
+      - { Item: Holy_Water, Amount: 50, Price: [2900, 3450] }
+      - { Item: Raccoon_Leaf, Amount: 100, Price: [305, 415] }
+      - { Item: White_Mask, Amount: 20, Price: [2900, 3400] }
+      - { Item: Arrow_Container, Amount: 30, Price: [1150, 1350] }
+      - { Item: Charm_Ice, Amount: 200, Price: [42, 58] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -3932,66 +3960,66 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Wild_Boar's_Mane, Amount: 300, Price: [380, 520] }
-      - { Item: Mantle_, Amount: 1, Price: [8250, 9700] }
-      - { Item: Lava_Golem_Card, Amount: 1, Price: [371500, 436000] }
-      - { Item: Broken_Shell, Amount: 30, Price: [3600, 4200] }
-      - { Item: Red_Wizardry_Hat, Amount: 1, Price: [9200000, 10800000] }
-      - { Item: Lesser_Elemental_Ring, Amount: 1, Price: [1455500, 1709000] }
-      - { Item: Goibne's_Armor, Amount: 1, Price: [283500, 333000] }
-      - { Item: Hammer, Amount: 1, Price: [12500, 15000] }
-      - { Item: Fish_Tail, Amount: 50, Price: [3450, 4100] }
-      - { Item: Star_Dust_Blade, Amount: 1, Price: [18000, 21500] }
-      - { Item: Rotha_Shield, Amount: 1, Price: [633500, 744000] }
-      - { Item: Removal_Card, Amount: 1, Price: [2300000, 2700000] }
-      - { Item: Gajomart_Card, Amount: 1, Price: [709500, 833000] }
-      - { Item: Head_Of_Medusa, Amount: 10, Price: [46000, 54000] }
-      - { Item: Ninja_Suit_, Amount: 1, Price: [8799500, 10330000] }
-      - { Item: Salvage_Cape, Amount: 1, Price: [46000, 54000] }
-      - { Item: Broken_Armor_Piece, Amount: 20, Price: [1600, 1900] }
-      - { Item: Tooth_Of_Bat, Amount: 100, Price: [715, 970] }
-      - { Item: Reins, Amount: 30, Price: [8000, 9400] }
-      - { Item: Petite_DiablOfs_Horn, Amount: 50, Price: [1100, 1250] }
-      - { Item: Rosebine, Amount: 1, Price: [920000, 1080000] }
-      - { Item: Stop_Post, Amount: 1, Price: [412000, 483500] }
-      - { Item: Carrot, Amount: 200, Price: [17, 25] }
-      - { Item: Danggie, Amount: 20, Price: [6300, 7400] }
-      - { Item: Rat_Tail, Amount: 200, Price: [230, 310] }
-      - { Item: Flamberge, Amount: 1, Price: [49500, 58000] }
-      - { Item: Rent_Spell_Book, Amount: 30, Price: [7350, 8600] }
-      - { Item: Wootan_Fighter_Card, Amount: 1, Price: [9200, 10500] }
-      - { Item: Spectral_Spear, Amount: 1, Price: [1577000, 1851500] }
-      - { Item: Desert_Wolf_Babe_Card, Amount: 1, Price: [289000, 339000] }
-      - { Item: Green_Herb, Amount: 30, Price: [11500, 13500] }
-      - { Item: Miyabi_Ningyo_Card, Amount: 1, Price: [920000, 1080000] }
-      - { Item: Grasshopper_Doll, Amount: 10, Price: [42000, 49000] }
-      - { Item: Hinalle, Amount: 20, Price: [5250, 6200] }
-      - { Item: Oriental_Lute, Amount: 1, Price: [108500, 127000] }
-      - { Item: Archer_Skeleton_Card, Amount: 1, Price: [3769500, 4425500] }
-      - { Item: Brood_Axe, Amount: 1, Price: [3318000, 3895000] }
-      - { Item: Snake_Card, Amount: 1, Price: [67500, 79500] }
-      - { Item: Tiger_Footskin, Amount: 10, Price: [1350, 1600] }
-      - { Item: Morning_Star_, Amount: 1, Price: [33500, 39500] }
-      - { Item: Pecopeco_Card, Amount: 1, Price: [7131500, 8372000] }
-      - { Item: Improved_Kiss_Of_Angel, Amount: 1, Price: [8250, 9700] }
-      - { Item: Blue_Potion, Amount: 10, Price: [4600, 5400] }
-      - { Item: Garlet, Amount: 30, Price: [1300, 1500] }
-      - { Item: Barrier_Builder, Amount: 1, Price: [124000, 145500] }
-      - { Item: Mantle, Amount: 1, Price: [8250, 9700] }
-      - { Item: Moustache_Of_Mole, Amount: 100, Price: [635, 860] }
-      - { Item: Increase_Soil_Card, Amount: 1, Price: [44500, 52500] }
-      - { Item: Lute, Amount: 1, Price: [20000, 23500] }
-      - { Item: Cornus_Card, Amount: 1, Price: [1393000, 1635000] }
-      - { Item: Hunter_Bow_, Amount: 1, Price: [52500, 62000] }
-      - { Item: Claw_, Amount: 1, Price: [55000, 65000] }
-      - { Item: Iron_Hammer, Amount: 20, Price: [4600, 5400] }
-      - { Item: Super_Novice_Hat, Amount: 1, Price: [7000, 8250] }
-      - { Item: Coronet, Amount: 1, Price: [422000, 495500] }
-      - { Item: Sasquatch_Card, Amount: 1, Price: [2242500, 2632500] }
-      - { Item: Coward, Amount: 1, Price: [43000, 50500] }
-      - { Item: C_Tower_Manager_Card, Amount: 1, Price: [1754000, 2059000] }
-      - { Item: Obsidian_Card, Amount: 1, Price: [1308500, 1536000] }
-      - { Item: Carrot_Juice, Amount: 30, Price: [2350, 2750] }
+      - { Item: C_Protect_Of_Crown, Amount: 1, Price: [6900000, 8100000] }
+      - { Item: Santa_Bag, Amount: 10, Price: [27500, 32500] }
+      - { Item: Red_Slim_Potion, Amount: 50, Price: [1800, 2100] }
+      - { Item: Minor_Brisket, Amount: 100, Price: [1, 2] }
+      - { Item: Ginnungagap, Amount: 1, Price: [1840000, 2160000] }
+      - { Item: Critical_Ring, Amount: 1, Price: [62000, 72500] }
+      - { Item: Glaive_, Amount: 1, Price: [17000, 20000] }
+      - { Item: Southern_Cross_R, Amount: 1, Price: [2318000, 2721500] }
+      - { Item: Armaia_Card, Amount: 1, Price: [1495000, 1755000] }
+      - { Item: Yummy_Cookie_Egg, Amount: 200, Price: [1, 2] }
+      - { Item: Chinese_Ink, Amount: 150, Price: [795, 1050] }
+      - { Item: Cross_Band, Amount: 1, Price: [8479500, 9954500] }
+      - { Item: Helm, Amount: 1, Price: [36000, 42500] }
+      - { Item: White_Slim_Potion, Amount: 30, Price: [6950, 8200] }
+      - { Item: Tooth_Of_Jitterbug, Amount: 100, Price: [8, 12] }
+      - { Item: Normal_Potion_Book, Amount: 3, Price: [61500, 72000] }
+      - { Item: Galapago_Card, Amount: 1, Price: [919500, 1079500] }
+      - { Item: Mystery_Wheel, Amount: 50, Price: [1, 2] }
+      - { Item: Plaster, Amount: 1, Price: [451000, 529500] }
+      - { Item: Bitter_Herb, Amount: 30, Price: [15000, 17500] }
+      - { Item: Harpy_Card, Amount: 1, Price: [368000, 432500] }
+      - { Item: Worm_Tail_Card, Amount: 1, Price: [351000, 412000] }
+      - { Item: Solid_Shell, Amount: 100, Price: [415, 565] }
+      - { Item: Blade_, Amount: 1, Price: [2400, 2800] }
+      - { Item: Anubis_Card, Amount: 1, Price: [1610000, 1890000] }
+      - { Item: Withered_Flower, Amount: 20, Price: [10000, 12000] }
+      - { Item: Dex_Dish03, Amount: 30, Price: [13500, 16000] }
+      - { Item: Sunflower, Amount: 1, Price: [315000, 369500] }
+      - { Item: Binoculars, Amount: 1, Price: [504000, 591500] }
+      - { Item: Baby_Leopard_Card, Amount: 1, Price: [1840000, 2160000] }
+      - { Item: Vagabond_Wolf_Card, Amount: 1, Price: [2600500, 3053000] }
+      - { Item: Small_Bradium, Amount: 5, Price: [44000, 52000] }
+      - { Item: Staff_Of_Bordeaux, Amount: 1, Price: [1395500, 1638500] }
+      - { Item: Claw_Of_Garm, Amount: 1, Price: [599000, 703500] }
+      - { Item: Piano_Keyboard, Amount: 150, Price: [1, 2] }
+      - { Item: Nab_Shoes, Amount: 1, Price: [9200000, 10800000] }
+      - { Item: Zipper_Bear_Card, Amount: 1, Price: [3490000, 4097000] }
+      - { Item: Shiny_Wing_Gown, Amount: 300, Price: [17, 24] }
+      - { Item: Mandolin_, Amount: 1, Price: [14500, 17000] }
+      - { Item: Phlogopite, Amount: 30, Price: [7850, 9200] }
+      - { Item: Knife_, Amount: 1, Price: [920, 1050] }
+      - { Item: Guarana_Candy, Amount: 20, Price: [9100, 10500] }
+      - { Item: Tendon, Amount: 50, Price: [3050, 3600] }
+      - { Item: Golden_Gear, Amount: 1, Price: [1790000, 2101500] }
+      - { Item: Stem_Worm_Card, Amount: 1, Price: [92000, 108000] }
+      - { Item: Holy_Guard, Amount: 1, Price: [70000, 82500] }
+      - { Item: Mummy_Card, Amount: 1, Price: [165000, 193500] }
+      - { Item: F_Hibiscus, Amount: 1, Price: [4600000, 5400000] }
+      - { Item: Flexible_String, Amount: 10, Price: [7000, 8250] }
+      - { Item: Icicle_Fist, Amount: 1, Price: [156000, 183500] }
+      - { Item: Tha_Despero_Card, Amount: 1, Price: [4600000, 5400000] }
+      - { Item: Nail_Of_Orc, Amount: 50, Price: [405, 550] }
+      - { Item: F_Pecopeco_Hairband, Amount: 1, Price: [10120000, 11880000] }
+      - { Item: Oridecon, Amount: 10, Price: [56000, 66000] }
+      - { Item: Magical_Lithography, Amount: 300, Price: [17, 24] }
+      - { Item: Dullahan's_Helm, Amount: 50, Price: [1300, 1550] }
+      - { Item: Beret, Amount: 1, Price: [136000, 159500] }
+      - { Item: Lever_Action_Rifle, Amount: 1, Price: [157500, 185000] }
+      - { Item: Morpheus's_Hood, Amount: 1, Price: [24500, 29000] }
+      - { Item: Leopard_Skin, Amount: 100, Price: [425, 575] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4019,14 +4047,14 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Poison_Spore, Amount: 30, Price: [4100, 4850] }
+      - { Item: Poison_Spore, Amount: 20, Price: [4100, 4850] }
       - { Item: Pike_, Amount: 1, Price: [2850, 3350] }
       - { Item: Sticky_Webfoot, Amount: 30, Price: [5950, 7000] }
-      - { Item: Illusion_Flower, Amount: 30, Price: [920, 1050] }
+      - { Item: Illusion_Flower, Amount: 50, Price: [920, 1050] }
       - { Item: Four_Leaf_Clover, Amount: 3, Price: [50000, 58500] }
-      - { Item: Green_Lace, Amount: 50, Price: [6450, 7550] }
-      - { Item: Posionous_Canine, Amount: 10, Price: [1800, 2150] }
-      - { Item: Mushroom_Spore, Amount: 50, Price: [145, 200] }
+      - { Item: Green_Lace, Amount: 10, Price: [6450, 7550] }
+      - { Item: Posionous_Canine, Amount: 50, Price: [1800, 2150] }
+      - { Item: Mushroom_Spore, Amount: 200, Price: [145, 200] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
       - { Item: Angel's_Arrival, Amount: 1, Price: [8250, 9700] }
       - { Item: Javelin_, Amount: 1, Price: [110, 155] }
@@ -4036,19 +4064,19 @@ Body:
       - { Item: Green_Feeler, Amount: 1, Price: [143000, 168000] }
       - { Item: Spear_, Amount: 1, Price: [1400, 1650] }
       - { Item: Adventurere's_Suit_, Amount: 1, Price: [765, 1000] }
-      - { Item: Singing_Plant, Amount: 300, Price: [845, 1100] }
-      - { Item: Unripe_Apple, Amount: 10, Price: [76500, 90000] }
+      - { Item: Singing_Plant, Amount: 150, Price: [845, 1100] }
+      - { Item: Unripe_Apple, Amount: 5, Price: [76500, 90000] }
+      - { Item: Arrow_Container, Amount: 20, Price: [1150, 1350] }
       - { Item: Pierrot_Nose, Amount: 1, Price: [33000, 39000] }
-      - { Item: Bitter_Herb, Amount: 50, Price: [15000, 17500] }
-      - { Item: Spore_Doll, Amount: 3, Price: [72500, 85500] }
+      - { Item: Bitter_Herb, Amount: 10, Price: [15000, 17500] }
+      - { Item: Spore_Doll, Amount: 10, Price: [72500, 85500] }
       - { Item: Hat, Amount: 1, Price: [765, 1000] }
-      - { Item: Resin, Amount: 100, Price: [715, 970] }
+      - { Item: Resin, Amount: 50, Price: [715, 970] }
       - { Item: Rainbow_Carrot, Amount: 30, Price: [2300, 2700] }
       - { Item: Rod_, Amount: 1, Price: [4650, 5500] }
-      - { Item: Lusty_Iron, Amount: 5, Price: [42500, 50000] }
+      - { Item: Lusty_Iron, Amount: 10, Price: [42500, 50000] }
       - { Item: Club, Amount: 1, Price: [91, 125] }
-      - { Item: Bee_Sting, Amount: 20, Price: [955, 1100] }
-      - { Item: Asura_, Amount: 1, Price: [2450, 2900] }
+      - { Item: Bee_Sting, Amount: 10, Price: [955, 1100] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4077,35 +4105,35 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Silk_Robe_, Amount: 1, Price: [6600, 7750] }
-      - { Item: Poison_Spore, Amount: 10, Price: [4100, 4850] }
+      - { Item: Poison_Spore, Amount: 30, Price: [4100, 4850] }
       - { Item: Pike_, Amount: 1, Price: [2850, 3350] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
-      - { Item: Sticky_Webfoot, Amount: 50, Price: [5950, 7000] }
+      - { Item: Sticky_Webfoot, Amount: 10, Price: [5950, 7000] }
       - { Item: Fancy_Flower, Amount: 1, Price: [6800, 7950] }
       - { Item: Poo_Poo_Hat, Amount: 1, Price: [38000, 44500] }
-      - { Item: Mushroom_Spore, Amount: 200, Price: [145, 200] }
+      - { Item: Mushroom_Spore, Amount: 100, Price: [145, 200] }
       - { Item: Cat_Hairband, Amount: 1, Price: [598000, 702000] }
       - { Item: Guisarme_, Amount: 1, Price: [5950, 7000] }
       - { Item: Ribbon_, Amount: 1, Price: [610, 825] }
       - { Item: Mace_, Amount: 1, Price: [1300, 1550] }
       - { Item: Leather_Jacket_, Amount: 1, Price: [150, 205] }
       - { Item: Spear_, Amount: 1, Price: [1400, 1650] }
-      - { Item: Bear's_Foot, Amount: 150, Price: [235, 320] }
+      - { Item: Bear's_Foot, Amount: 300, Price: [235, 320] }
       - { Item: Goggle_, Amount: 1, Price: [82500, 96500] }
       - { Item: Coat_, Amount: 1, Price: [18000, 21000] }
-      - { Item: Well_Baked_Cookie, Amount: 50, Price: [8700, 10000] }
+      - { Item: Well_Baked_Cookie, Amount: 10, Price: [8700, 10000] }
       - { Item: Poring_Hat, Amount: 1, Price: [761000, 893000] }
-      - { Item: Resin, Amount: 300, Price: [715, 970] }
+      - { Item: Resin, Amount: 200, Price: [715, 970] }
       - { Item: Cactus_Needle, Amount: 100, Price: [580, 785] }
       - { Item: Glaive_, Amount: 1, Price: [17000, 20000] }
-      - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
-      - { Item: Powder_Of_Butterfly, Amount: 50, Price: [340, 460] }
-      - { Item: Piece_Of_Cake, Amount: 10, Price: [5000, 5850] }
+      - { Item: Red_Jewel, Amount: 5, Price: [44500, 52500] }
+      - { Item: Powder_Of_Butterfly, Amount: 200, Price: [340, 460] }
+      - { Item: Piece_Of_Cake, Amount: 50, Price: [5000, 5850] }
       - { Item: Wand, Amount: 1, Price: [2050, 2400] }
-      - { Item: Insect_Feeler, Amount: 150, Price: [170, 235] }
+      - { Item: Safety_Helmet, Amount: 1, Price: [92000, 108000] }
+      - { Item: Insect_Feeler, Amount: 100, Price: [170, 235] }
       - { Item: Dagger_, Amount: 1, Price: [22500, 26500] }
-      - { Item: Dew_Laden_Moss, Amount: 10, Price: [21000, 25000] }
-      - { Item: Guisarme, Amount: 1, Price: [10500, 12500] }
+      - { Item: Dew_Laden_Moss, Amount: 5, Price: [21000, 25000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4133,36 +4161,36 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Blossom_Of_Maneater, Amount: 10, Price: [2100, 2500] }
+      - { Item: Blossom_Of_Maneater, Amount: 50, Price: [2100, 2500] }
       - { Item: Round_Buckler, Amount: 1, Price: [269000, 316000] }
       - { Item: Elven_Ears, Amount: 1, Price: [7162500, 8408000] }
+      - { Item: Angry_Mouth, Amount: 1, Price: [60500, 71000] }
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
-      - { Item: Beef_Head_Meat, Amount: 150, Price: [85, 115] }
+      - { Item: Puente_Robe, Amount: 1, Price: [9900, 11500] }
+      - { Item: Beef_Head_Meat, Amount: 100, Price: [85, 115] }
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
-      - { Item: Immortal_Heart, Amount: 10, Price: [2150, 2500] }
+      - { Item: Immortal_Heart, Amount: 50, Price: [2150, 2500] }
       - { Item: Ragamuffin_Cape, Amount: 1, Price: [46000, 54000] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
       - { Item: Sunflower, Amount: 1, Price: [315000, 369500] }
-      - { Item: Orcish_Voucher, Amount: 100, Price: [340, 465] }
+      - { Item: Pacifier, Amount: 20, Price: [8350, 9800] }
+      - { Item: Orcish_Voucher, Amount: 50, Price: [340, 465] }
+      - { Item: Savage_Meat, Amount: 200, Price: [85, 115] }
       - { Item: Buckler_, Amount: 1, Price: [131000, 154000] }
-      - { Item: Fire_Arrow_Container, Amount: 10, Price: [14000, 16500] }
+      - { Item: Fire_Arrow_Container, Amount: 50, Price: [14000, 16500] }
       - { Item: Glove, Amount: 1, Price: [24500, 29000] }
-      - { Item: Amulet, Amount: 50, Price: [8800, 10000] }
-      - { Item: Danggie, Amount: 20, Price: [6300, 7400] }
+      - { Item: Amulet, Amount: 10, Price: [8800, 10000] }
+      - { Item: Danggie, Amount: 30, Price: [6300, 7400] }
       - { Item: Wedding_Veil, Amount: 1, Price: [19000, 22000] }
-      - { Item: Leaflet_Of_Hinal, Amount: 50, Price: [1450, 1700] }
+      - { Item: Leaflet_Of_Hinal, Amount: 30, Price: [1450, 1700] }
       - { Item: Viking_Helm, Amount: 1, Price: [53000, 62000] }
-      - { Item: Short_Daenggie, Amount: 50, Price: [3000, 3500] }
+      - { Item: Short_Daenggie, Amount: 20, Price: [3000, 3500] }
       - { Item: Banana_Juice, Amount: 50, Price: [1950, 2300] }
       - { Item: Orcish_Axe, Amount: 1, Price: [31500, 37000] }
-      - { Item: Inspector_Certificate, Amount: 20, Price: [2600, 3050] }
+      - { Item: Inspector_Certificate, Amount: 10, Price: [2600, 3050] }
       - { Item: Guisarme_, Amount: 1, Price: [5950, 7000] }
-      - { Item: Heart_Of_Mermaid, Amount: 150, Price: [825, 1100] }
+      - { Item: Heart_Of_Mermaid, Amount: 100, Price: [825, 1100] }
       - { Item: Battle_Axe_, Amount: 1, Price: [4450, 5200] }
-      - { Item: Buster_, Amount: 1, Price: [28000, 33000] }
-      - { Item: Girl's_Diary, Amount: 1, Price: [1200, 1450] }
-      - { Item: Siver_Guard, Amount: 1, Price: [10000, 12000] }
-      - { Item: Singing_Flower, Amount: 200, Price: [255, 345] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4190,12 +4218,14 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Blossom_Of_Maneater, Amount: 20, Price: [2100, 2500] }
+      - { Item: Blossom_Of_Maneater, Amount: 50, Price: [2100, 2500] }
       - { Item: Undershirt, Amount: 1, Price: [70000, 82500] }
       - { Item: Round_Buckler, Amount: 1, Price: [269000, 316000] }
       - { Item: Stiletto_, Amount: 1, Price: [16000, 18500] }
+      - { Item: Puente_Robe, Amount: 1, Price: [9900, 11500] }
       - { Item: Rosary, Amount: 1, Price: [12000, 14500] }
       - { Item: Cuffs, Amount: 1, Price: [78000, 92000] }
+      - { Item: Scalpel, Amount: 1, Price: [149000, 175000] }
       - { Item: Bone_Wand, Amount: 1, Price: [127000, 149500] }
       - { Item: Inverse_Scale, Amount: 1, Price: [395500, 464500] }
       - { Item: Biretta_, Amount: 1, Price: [7450, 8700] }
@@ -4205,21 +4235,19 @@ Body:
       - { Item: Sunflower, Amount: 1, Price: [315000, 369500] }
       - { Item: Infiltrator, Amount: 1, Price: [47000, 55000] }
       - { Item: Fancy_Flower, Amount: 1, Price: [6800, 7950] }
-      - { Item: Long_Hair, Amount: 50, Price: [2000, 2350] }
-      - { Item: Steel_Arrow_Container, Amount: 100, Price: [1, 3] }
-      - { Item: Illusion_Flower, Amount: 10, Price: [920, 1050] }
-      - { Item: Fire_Arrow_Container, Amount: 50, Price: [14000, 16500] }
+      - { Item: Long_Hair, Amount: 10, Price: [2000, 2350] }
+      - { Item: Steel_Arrow_Container, Amount: 50, Price: [1, 3] }
+      - { Item: Illusion_Flower, Amount: 20, Price: [920, 1050] }
+      - { Item: Fire_Arrow_Container, Amount: 30, Price: [14000, 16500] }
       - { Item: Hypnotist's_Staff_, Amount: 1, Price: [78000, 91500] }
       - { Item: Wedding_Veil, Amount: 1, Price: [19000, 22000] }
-      - { Item: Posionous_Canine, Amount: 50, Price: [1800, 2150] }
+      - { Item: Posionous_Canine, Amount: 20, Price: [1800, 2150] }
       - { Item: Thief_Clothes_, Amount: 1, Price: [61000, 71500] }
-      - { Item: Wind_Arrow_Container, Amount: 10, Price: [12500, 15000] }
+      - { Item: Wind_Arrow_Container, Amount: 20, Price: [12500, 15000] }
       - { Item: Leaflet_Of_Hinal, Amount: 30, Price: [1450, 1700] }
-      - { Item: Stone_Arrow_Container, Amount: 30, Price: [16000, 19000] }
+      - { Item: Stone_Arrow_Container, Amount: 20, Price: [16000, 19000] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
       - { Item: Tights_, Amount: 1, Price: [58500, 69000] }
-      - { Item: Inspector_Certificate, Amount: 20, Price: [2600, 3050] }
-      - { Item: Heart_Of_Mermaid, Amount: 200, Price: [825, 1100] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4248,35 +4276,35 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Clip, Amount: 1, Price: [24500, 29000] }
-      - { Item: Blossom_Of_Maneater, Amount: 10, Price: [2100, 2500] }
+      - { Item: Blossom_Of_Maneater, Amount: 20, Price: [2100, 2500] }
       - { Item: Electric_Fist, Amount: 1, Price: [76000, 89000] }
       - { Item: Shinobi's_Sash, Amount: 1, Price: [37500, 44000] }
+      - { Item: Angry_Mouth, Amount: 1, Price: [60500, 71000] }
       - { Item: Rosary, Amount: 1, Price: [12000, 14500] }
       - { Item: Cuffs, Amount: 1, Price: [78000, 92000] }
       - { Item: Book_Of_The_Apocalypse, Amount: 1, Price: [61000, 72000] }
-      - { Item: Ice_Fragment, Amount: 100, Price: [85, 115] }
+      - { Item: Ice_Fragment, Amount: 150, Price: [85, 115] }
       - { Item: Bible, Amount: 1, Price: [49500, 58000] }
-      - { Item: Mandragora_Flowerpot, Amount: 50, Price: [7200, 8450] }
+      - { Item: Mandragora_Flowerpot, Amount: 30, Price: [7200, 8450] }
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
       - { Item: Unholy_Touch, Amount: 1, Price: [131500, 154500] }
+      - { Item: Petti_Tail, Amount: 30, Price: [5750, 6750] }
+      - { Item: Pacifier, Amount: 50, Price: [8350, 9800] }
       - { Item: Infiltrator, Amount: 1, Price: [47000, 55000] }
-      - { Item: Orcish_Voucher, Amount: 300, Price: [340, 465] }
-      - { Item: Sticky_Webfoot, Amount: 10, Price: [5950, 7000] }
-      - { Item: Golden_Hair, Amount: 10, Price: [14000, 16500] }
+      - { Item: Orcish_Voucher, Amount: 100, Price: [340, 465] }
+      - { Item: Sticky_Webfoot, Amount: 30, Price: [5950, 7000] }
+      - { Item: Golden_Hair, Amount: 50, Price: [14000, 16500] }
       - { Item: Fancy_Flower, Amount: 1, Price: [6800, 7950] }
       - { Item: Cursed_Lucky_Brooch, Amount: 1, Price: [678000, 796000] }
-      - { Item: Illusion_Flower, Amount: 20, Price: [920, 1050] }
+      - { Item: Illusion_Flower, Amount: 50, Price: [920, 1050] }
       - { Item: Iron_Cane, Amount: 1, Price: [117000, 137500] }
-      - { Item: Fire_Arrow_Container, Amount: 30, Price: [14000, 16500] }
+      - { Item: Fire_Arrow_Container, Amount: 10, Price: [14000, 16500] }
       - { Item: Four_Leaf_Clover, Amount: 3, Price: [50000, 58500] }
-      - { Item: Amulet, Amount: 20, Price: [8800, 10000] }
+      - { Item: Marionette_Doll, Amount: 1, Price: [1283500, 1507000] }
+      - { Item: Amulet, Amount: 50, Price: [8800, 10000] }
       - { Item: Gold_Ring, Amount: 1, Price: [24000, 28000] }
       - { Item: Cakram, Amount: 1, Price: [2070000, 2430000] }
-      - { Item: Hypnotist's_Staff_, Amount: 1, Price: [78000, 91500] }
-      - { Item: Huuma_Calm_Mind, Amount: 1, Price: [4142000, 4862500] }
-      - { Item: Glossy_Hair, Amount: 30, Price: [4700, 5500] }
-      - { Item: Thief_Clothes_, Amount: 1, Price: [61000, 71500] }
-      - { Item: Leaflet_Of_Hinal, Amount: 20, Price: [1450, 1700] }
+      - { Item: Claire_Suits, Amount: 1, Price: [309500, 363000] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4310,30 +4338,30 @@ Body:
       - { Item: Morrigane's_Belt, Amount: 1, Price: [24500, 29000] }
       - { Item: Ice_Fragment, Amount: 150, Price: [85, 115] }
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
-      - { Item: Ice_Crystal, Amount: 150, Price: [85, 115] }
+      - { Item: Ice_Crystal, Amount: 50, Price: [85, 115] }
       - { Item: Tidal_Shoes, Amount: 1, Price: [111500, 131000] }
-      - { Item: Mushroom_Spore, Amount: 300, Price: [145, 200] }
+      - { Item: Crystal_Arrow_Container, Amount: 3, Price: [18000, 21500] }
+      - { Item: Mushroom_Spore, Amount: 50, Price: [145, 200] }
       - { Item: Electric_Eel, Amount: 1, Price: [104000, 122000] }
-      - { Item: Heart_Of_Mermaid, Amount: 150, Price: [825, 1100] }
+      - { Item: Heart_Of_Mermaid, Amount: 300, Price: [825, 1100] }
       - { Item: Padded_Armor_, Amount: 1, Price: [39500, 46500] }
       - { Item: Snowy_Horn, Amount: 1, Price: [20500, 24500] }
       - { Item: Witherless_Rose, Amount: 10, Price: [37000, 43500] }
-      - { Item: Grit, Amount: 50, Price: [1150, 1350] }
-      - { Item: Chinese_Ink, Amount: 100, Price: [795, 1050] }
+      - { Item: Grit, Amount: 10, Price: [1150, 1350] }
+      - { Item: Chinese_Ink, Amount: 300, Price: [795, 1050] }
       - { Item: Fin_Helm, Amount: 1, Price: [276000, 324000] }
       - { Item: Electric_Wire, Amount: 1, Price: [47000, 55000] }
       - { Item: Detonator, Amount: 30, Price: [1350, 1600] }
-      - { Item: Insect_Feeler, Amount: 200, Price: [170, 235] }
-      - { Item: Dew_Laden_Moss, Amount: 5, Price: [21000, 25000] }
+      - { Item: Insect_Feeler, Amount: 100, Price: [170, 235] }
+      - { Item: Dew_Laden_Moss, Amount: 3, Price: [21000, 25000] }
       - { Item: Zephyrus, Amount: 1, Price: [4600000, 5400000] }
-      - { Item: Sharp_Scale, Amount: 10, Price: [920, 1050] }
-      - { Item: Penetration, Amount: 20, Price: [4600, 5400] }
+      - { Item: Sharp_Scale, Amount: 30, Price: [920, 1050] }
+      - { Item: Penetration, Amount: 30, Price: [4600, 5400] }
       - { Item: Coral_Reef, Amount: 50, Price: [2500, 2950] }
-      - { Item: Earthworm_The_Dude, Amount: 20, Price: [14000, 16500] }
-      - { Item: Deadly_Noxious_Herb, Amount: 5, Price: [20500, 24000] }
+      - { Item: Transparent_Headgear, Amount: 300, Price: [17, 24] }
+      - { Item: Earthworm_The_Dude, Amount: 30, Price: [14000, 16500] }
+      - { Item: Deadly_Noxious_Herb, Amount: 10, Price: [20500, 24000] }
       - { Item: Spike, Amount: 1, Price: [2453000, 2880000] }
-      - { Item: Fish_Tail, Amount: 10, Price: [3450, 4100] }
-      - { Item: Tendon, Amount: 10, Price: [3050, 3600] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4365,31 +4393,31 @@ Body:
       - { Item: Light_Of_Cure, Amount: 1, Price: [6682000, 7844000] }
       - { Item: Ebone_Armor, Amount: 1, Price: [33000, 38500] }
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
-      - { Item: Golden_Hair, Amount: 10, Price: [14000, 16500] }
+      - { Item: Golden_Hair, Amount: 30, Price: [14000, 16500] }
       - { Item: Gold_Ring, Amount: 1, Price: [24000, 28000] }
-      - { Item: Boy's_Naivety, Amount: 300, Price: [17, 24] }
+      - { Item: Boy's_Naivety, Amount: 50, Price: [17, 24] }
       - { Item: Water_Of_Darkness, Amount: 10, Price: [1800, 2100] }
       - { Item: Satanic_Chain, Amount: 1, Price: [5690000, 6679500] }
       - { Item: Helm_, Amount: 1, Price: [36000, 42500] }
       - { Item: Diamond_Ring, Amount: 1, Price: [37000, 43500] }
       - { Item: Chrystal_Pumps, Amount: 1, Price: [469000, 550500] }
-      - { Item: Sacred_Marks, Amount: 300, Price: [1, 3] }
+      - { Item: Sacred_Marks, Amount: 200, Price: [1, 3] }
       - { Item: Ahlspiess, Amount: 1, Price: [736000, 864000] }
       - { Item: Base_Guitar, Amount: 1, Price: [2300, 2700] }
       - { Item: Katzbalger, Amount: 1, Price: [667000, 783500] }
       - { Item: Staff_Of_Soul, Amount: 1, Price: [4597000, 5396500] }
-      - { Item: Runstone_Mystic, Amount: 30, Price: [9200, 10500] }
-      - { Item: Silver_Knife_Of_Chaste, Amount: 3, Price: [345000, 405000] }
-      - { Item: Biotite, Amount: 10, Price: [45500, 53500] }
-      - { Item: Petite_DiablOfs_Horn, Amount: 20, Price: [1100, 1250] }
-      - { Item: Blade_Lost_In_Darkness, Amount: 1, Price: [913000, 1072000] }
+      - { Item: Runstone_Mystic, Amount: 50, Price: [9200, 10500] }
+      - { Item: Silver_Knife_Of_Chaste, Amount: 2, Price: [345000, 405000] }
+      - { Item: Biotite, Amount: 5, Price: [45500, 53500] }
+      - { Item: Petite_DiablOfs_Horn, Amount: 50, Price: [1100, 1250] }
+      - { Item: Blade_Lost_In_Darkness, Amount: 2, Price: [913000, 1072000] }
       - { Item: Muscovite, Amount: 10, Price: [134500, 157500] }
       - { Item: Carrot_Whip, Amount: 1, Price: [494000, 579500] }
-      - { Item: Phlogopite, Amount: 30, Price: [7850, 9200] }
-      - { Item: Stuffed_Doll, Amount: 30, Price: [5100, 6000] }
-      - { Item: Bloody_Edge, Amount: 2, Price: [582500, 684000] }
+      - { Item: Phlogopite, Amount: 50, Price: [7850, 9200] }
+      - { Item: Stuffed_Doll, Amount: 10, Price: [5100, 6000] }
+      - { Item: Bloody_Edge, Amount: 3, Price: [582500, 684000] }
       - { Item: Lapier_, Amount: 1, Price: [46000, 54000] }
-      - { Item: Loki's_Whispers, Amount: 300, Price: [17, 24] }
+      - { Item: Loki's_Whispers, Amount: 200, Price: [17, 24] }
       - { Item: Scimiter_, Amount: 1, Price: [14000, 16500] }
     Spawns:
       - Map: prontera
@@ -4426,12 +4454,12 @@ Body:
       - { Item: Falcon_Robe, Amount: 1, Price: [24500, 29000] }
       - { Item: Orleans_Server, Amount: 1, Price: [3147000, 3694500] }
       - { Item: Chrystal_Pumps, Amount: 1, Price: [469000, 550500] }
-      - { Item: Old_Broom, Amount: 30, Price: [13500, 16000] }
+      - { Item: Old_Broom, Amount: 50, Price: [13500, 16000] }
       - { Item: Pair_Of_Red_Ribbon, Amount: 1, Price: [828000, 972000] }
-      - { Item: Sway_Apron, Amount: 3, Price: [822500, 965500] }
-      - { Item: Alice's_Apron, Amount: 30, Price: [2500, 2950] }
-      - { Item: Imperial_Cooking_Kits, Amount: 1, Price: [1153000, 1354000] }
-      - { Item: Holy_Scroll_1_5, Amount: 10, Price: [1100, 1300] }
+      - { Item: Sway_Apron, Amount: 1, Price: [822500, 965500] }
+      - { Item: Alice's_Apron, Amount: 10, Price: [2500, 2950] }
+      - { Item: Imperial_Cooking_Kits, Amount: 2, Price: [1153000, 1354000] }
+      - { Item: Holy_Scroll_1_5, Amount: 20, Price: [1100, 1300] }
       - { Item: Tube, Amount: 200, Price: [425, 580] }
       - { Item: Smoke_Powder, Amount: 50, Price: [1350, 1600] }
     Spawns:
@@ -4463,17 +4491,18 @@ Body:
     Pool:
       - { Item: Poison_Spore, Amount: 30, Price: [4100, 4850] }
       - { Item: Stiletto_, Amount: 1, Price: [16000, 18500] }
+      - { Item: Puente_Robe, Amount: 1, Price: [9900, 11500] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
-      - { Item: Long_Hair, Amount: 30, Price: [2000, 2350] }
+      - { Item: Long_Hair, Amount: 20, Price: [2000, 2350] }
       - { Item: Illusion_Flower, Amount: 50, Price: [920, 1050] }
-      - { Item: Fire_Arrow_Container, Amount: 30, Price: [14000, 16500] }
-      - { Item: Four_Leaf_Clover, Amount: 10, Price: [50000, 58500] }
-      - { Item: Amulet, Amount: 50, Price: [8800, 10000] }
-      - { Item: Danggie, Amount: 10, Price: [6300, 7400] }
-      - { Item: Mushroom_Spore, Amount: 200, Price: [145, 200] }
+      - { Item: Fire_Arrow_Container, Amount: 20, Price: [14000, 16500] }
+      - { Item: Four_Leaf_Clover, Amount: 5, Price: [50000, 58500] }
+      - { Item: Amulet, Amount: 10, Price: [8800, 10000] }
+      - { Item: Danggie, Amount: 50, Price: [6300, 7400] }
+      - { Item: Mushroom_Spore, Amount: 300, Price: [145, 200] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
       - { Item: Short_Daenggie, Amount: 50, Price: [3000, 3500] }
-      - { Item: Inspector_Certificate, Amount: 20, Price: [2600, 3050] }
+      - { Item: Inspector_Certificate, Amount: 50, Price: [2600, 3050] }
       - { Item: Girl's_Diary, Amount: 1, Price: [1200, 1450] }
       - { Item: Great_Bow_, Amount: 1, Price: [8250, 9700] }
       - { Item: Ribbon_, Amount: 1, Price: [610, 825] }
@@ -4482,15 +4511,14 @@ Body:
       - { Item: Whip_Of_Earth, Amount: 1, Price: [47000, 55500] }
       - { Item: Bomb_Wick, Amount: 1, Price: [9200, 10500] }
       - { Item: Spear_, Amount: 1, Price: [1400, 1650] }
-      - { Item: Singing_Plant, Amount: 300, Price: [845, 1100] }
+      - { Item: Singing_Plant, Amount: 150, Price: [845, 1100] }
+      - { Item: Punisher, Amount: 10, Price: [46000, 54000] }
       - { Item: Nurse_Cap, Amount: 1, Price: [159000, 187000] }
       - { Item: Bitter_Herb, Amount: 10, Price: [15000, 17500] }
       - { Item: Munak_Turban, Amount: 1, Price: [300500, 353000] }
-      - { Item: Hammer_Of_Blacksmith, Amount: 150, Price: [1, 3] }
+      - { Item: Hammer_Of_Blacksmith, Amount: 200, Price: [1, 3] }
       - { Item: Ninja_Suit, Amount: 1, Price: [267500, 314000] }
       - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
-      - { Item: Club, Amount: 1, Price: [91, 125] }
-      - { Item: Shoot, Amount: 300, Price: [590, 800] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4519,27 +4547,27 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Poison_Spore, Amount: 20, Price: [4100, 4850] }
-      - { Item: Steel_Arrow_Container, Amount: 200, Price: [1, 3] }
-      - { Item: Mushroom_Spore, Amount: 300, Price: [145, 200] }
+      - { Item: Steel_Arrow_Container, Amount: 150, Price: [1, 3] }
+      - { Item: Mushroom_Spore, Amount: 50, Price: [145, 200] }
       - { Item: Wind_Arrow_Container, Amount: 50, Price: [12500, 15000] }
       - { Item: Viking_Helm, Amount: 1, Price: [53000, 62000] }
-      - { Item: Stone_Arrow_Container, Amount: 30, Price: [16000, 19000] }
+      - { Item: Stone_Arrow_Container, Amount: 20, Price: [16000, 19000] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
       - { Item: Buster_, Amount: 1, Price: [28000, 33000] }
       - { Item: Ribbon_, Amount: 1, Price: [610, 825] }
-      - { Item: Old_Magic_Book, Amount: 100, Price: [1, 3] }
-      - { Item: Tooth_Of_, Amount: 50, Price: [1150, 1350] }
+      - { Item: Old_Magic_Book, Amount: 200, Price: [1, 3] }
+      - { Item: Tooth_Of_, Amount: 30, Price: [1150, 1350] }
       - { Item: Shining_Stone, Amount: 20, Price: [16000, 19000] }
-      - { Item: Red_Jewel, Amount: 5, Price: [44500, 52500] }
+      - { Item: Red_Jewel, Amount: 3, Price: [44500, 52500] }
       - { Item: Dew_Laden_Moss, Amount: 10, Price: [21000, 25000] }
       - { Item: Poison_Herb_Seratum, Amount: 50, Price: [1, 2] }
-      - { Item: Orcish_Cuspid, Amount: 200, Price: [270, 370] }
-      - { Item: Deadly_Noxious_Herb, Amount: 10, Price: [20500, 24000] }
+      - { Item: Orcish_Cuspid, Amount: 150, Price: [270, 370] }
+      - { Item: Deadly_Noxious_Herb, Amount: 5, Price: [20500, 24000] }
       - { Item: Nail_Of_Orc, Amount: 200, Price: [405, 550] }
-      - { Item: Wing_Of_Red_Bat, Amount: 200, Price: [775, 1050] }
+      - { Item: Wing_Of_Red_Bat, Amount: 300, Price: [775, 1050] }
       - { Item: Hinalle, Amount: 30, Price: [5250, 6200] }
-      - { Item: Flower, Amount: 300, Price: [1, 2] }
-      - { Item: Sharpened_Cuspid, Amount: 300, Price: [750, 1000] }
+      - { Item: Flower, Amount: 100, Price: [1, 2] }
+      - { Item: Sharpened_Cuspid, Amount: 200, Price: [750, 1000] }
       - { Item: Falchion_, Amount: 1, Price: [1200, 1450] }
     Spawns:
       - Map: prontera
@@ -4578,7 +4606,7 @@ Body:
       - { Item: Cap_, Amount: 1, Price: [57500, 67500] }
       - { Item: Gelerdria, Amount: 1, Price: [1435000, 1684500] }
       - { Item: Guard, Amount: 1, Price: [380, 515] }
-      - { Item: Elder_Pixie's_Beard, Amount: 10, Price: [5150, 6050] }
+      - { Item: Elder_Pixie's_Beard, Amount: 30, Price: [5150, 6050] }
       - { Item: Falchion_, Amount: 1, Price: [1200, 1450] }
     Spawns:
       - Map: prontera
@@ -4613,26 +4641,26 @@ Body:
       - { Item: Beef_Head_Meat, Amount: 200, Price: [85, 115] }
       - { Item: Posionous_Canine, Amount: 20, Price: [1800, 2150] }
       - { Item: Blessed_Wand, Amount: 1, Price: [62000, 73000] }
-      - { Item: Book_Of_Devil, Amount: 10, Price: [83500, 98000] }
+      - { Item: Book_Of_Devil, Amount: 5, Price: [83500, 98000] }
       - { Item: Matyr's_Flea_Guard, Amount: 1, Price: [93500, 109500] }
-      - { Item: Hammer_Of_Blacksmith, Amount: 150, Price: [1, 3] }
+      - { Item: Hammer_Of_Blacksmith, Amount: 300, Price: [1, 3] }
       - { Item: Ganster_Mask, Amount: 1, Price: [419000, 492000] }
       - { Item: Tsurugi_, Amount: 1, Price: [42000, 49500] }
-      - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
+      - { Item: Red_Jewel, Amount: 3, Price: [44500, 52500] }
       - { Item: Two_Handed_Axe_, Amount: 1, Price: [651000, 764000] }
       - { Item: Staff_, Amount: 1, Price: [7850, 9200] }
       - { Item: Mitten_Of_Presbyter, Amount: 1, Price: [171000, 201000] }
-      - { Item: Scale_Of_Snakes, Amount: 50, Price: [105, 140] }
-      - { Item: Cookbook06, Amount: 5, Price: [55000, 64500] }
-      - { Item: Wing_Of_Red_Bat, Amount: 100, Price: [775, 1050] }
+      - { Item: Scale_Of_Snakes, Amount: 150, Price: [105, 140] }
+      - { Item: Cookbook06, Amount: 10, Price: [55000, 64500] }
+      - { Item: Wing_Of_Red_Bat, Amount: 50, Price: [775, 1050] }
       - { Item: Shining_Scales, Amount: 50, Price: [920, 1050] }
-      - { Item: Honey_Jar, Amount: 30, Price: [1450, 1700] }
-      - { Item: Fire_Scroll_1_5, Amount: 20, Price: [1800, 2150] }
+      - { Item: Honey_Jar, Amount: 10, Price: [1450, 1700] }
+      - { Item: Fire_Scroll_1_5, Amount: 30, Price: [1800, 2150] }
       - { Item: Nose_Ring, Amount: 50, Price: [555, 750] }
-      - { Item: Booby_Trap, Amount: 300, Price: [55, 75] }
+      - { Item: Booby_Trap, Amount: 200, Price: [55, 75] }
       - { Item: Mantle_, Amount: 1, Price: [8250, 9700] }
       - { Item: Vroken_Sword, Amount: 10, Price: [2200, 2550] }
-      - { Item: Sacred_Masque, Amount: 150, Price: [755, 1000] }
+      - { Item: Sacred_Masque, Amount: 100, Price: [755, 1000] }
       - { Item: G_Strings, Amount: 1, Price: [765, 1000] }
       - { Item: Axe, Amount: 1, Price: [380, 515] }
     Spawns:
@@ -4663,31 +4691,31 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
-      - { Item: Beef_Head_Meat, Amount: 150, Price: [85, 115] }
-      - { Item: Immortal_Heart, Amount: 50, Price: [2150, 2500] }
-      - { Item: Fire_Arrow_Container, Amount: 30, Price: [14000, 16500] }
+      - { Item: Beef_Head_Meat, Amount: 300, Price: [85, 115] }
+      - { Item: Immortal_Heart, Amount: 20, Price: [2150, 2500] }
+      - { Item: Fire_Arrow_Container, Amount: 10, Price: [14000, 16500] }
       - { Item: Glove, Amount: 1, Price: [24500, 29000] }
       - { Item: Great_Bow_, Amount: 1, Price: [8250, 9700] }
       - { Item: Ribbon_, Amount: 1, Price: [610, 825] }
-      - { Item: Armlet_Of_Obedience, Amount: 3, Price: [69000, 81000] }
+      - { Item: Armlet_Of_Obedience, Amount: 5, Price: [69000, 81000] }
       - { Item: Circlet_, Amount: 1, Price: [6200, 7250] }
       - { Item: Matyr's_Flea_Guard, Amount: 1, Price: [93500, 109500] }
-      - { Item: Hammer_Of_Blacksmith, Amount: 200, Price: [1, 3] }
+      - { Item: Hammer_Of_Blacksmith, Amount: 150, Price: [1, 3] }
       - { Item: Glove_, Amount: 1, Price: [24500, 29000] }
       - { Item: Silver_Ring, Amount: 1, Price: [16500, 19000] }
-      - { Item: Red_Jewel, Amount: 5, Price: [44500, 52500] }
+      - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
       - { Item: Flower_Ring, Amount: 1, Price: [1200, 1450] }
-      - { Item: Round_Shell, Amount: 50, Price: [4750, 5600] }
+      - { Item: Round_Shell, Amount: 30, Price: [4750, 5600] }
       - { Item: Two_Handed_Axe_, Amount: 1, Price: [651000, 764000] }
       - { Item: Dagger_, Amount: 1, Price: [22500, 26500] }
       - { Item: Crystal_Jewel___, Amount: 20, Price: [4600, 5400] }
-      - { Item: Scales_Shell, Amount: 50, Price: [1750, 2050] }
+      - { Item: Scales_Shell, Amount: 20, Price: [1750, 2050] }
       - { Item: Necklace, Amount: 1, Price: [297000, 349000] }
-      - { Item: Wing_Of_Red_Bat, Amount: 300, Price: [775, 1050] }
+      - { Item: Wing_Of_Red_Bat, Amount: 100, Price: [775, 1050] }
       - { Item: Apple_Of_Archer, Amount: 1, Price: [460000, 540000] }
-      - { Item: Shining_Scales, Amount: 10, Price: [920, 1050] }
+      - { Item: Shining_Scales, Amount: 30, Price: [920, 1050] }
       - { Item: Nose_Ring, Amount: 150, Price: [555, 750] }
-      - { Item: Booby_Trap, Amount: 300, Price: [55, 75] }
+      - { Item: Booby_Trap, Amount: 50, Price: [55, 75] }
       - { Item: Main_Gauche, Amount: 1, Price: [1950, 2300] }
       - { Item: Falchion_, Amount: 1, Price: [1200, 1450] }
       - { Item: Axe, Amount: 1, Price: [380, 515] }
@@ -4722,33 +4750,33 @@ Body:
       - { Item: Poison_Spore, Amount: 10, Price: [4100, 4850] }
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
-      - { Item: Sticky_Webfoot, Amount: 50, Price: [5950, 7000] }
-      - { Item: Golden_Hair, Amount: 10, Price: [14000, 16500] }
-      - { Item: Mushroom_Spore, Amount: 150, Price: [145, 200] }
+      - { Item: Sticky_Webfoot, Amount: 30, Price: [5950, 7000] }
+      - { Item: Golden_Hair, Amount: 50, Price: [14000, 16500] }
+      - { Item: Marionette_Doll, Amount: 1, Price: [1283500, 1507000] }
+      - { Item: Mushroom_Spore, Amount: 300, Price: [145, 200] }
       - { Item: Thief_Clothes_, Amount: 1, Price: [61000, 71500] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
       - { Item: Spirit_Chain, Amount: 1, Price: [11000, 12500] }
       - { Item: Chrystal_Pumps, Amount: 1, Price: [469000, 550500] }
       - { Item: Mace_, Amount: 1, Price: [1300, 1550] }
-      - { Item: Singing_Plant, Amount: 50, Price: [845, 1100] }
+      - { Item: Singing_Plant, Amount: 300, Price: [845, 1100] }
       - { Item: Star_Dust, Amount: 1, Price: [55000, 64500] }
-      - { Item: Bitter_Herb, Amount: 50, Price: [15000, 17500] }
+      - { Item: Bitter_Herb, Amount: 10, Price: [15000, 17500] }
       - { Item: Spore_Doll, Amount: 3, Price: [72500, 85500] }
       - { Item: Hat, Amount: 1, Price: [765, 1000] }
-      - { Item: Insect_Feeler, Amount: 100, Price: [170, 235] }
+      - { Item: Insect_Feeler, Amount: 150, Price: [170, 235] }
       - { Item: Shoot, Amount: 300, Price: [590, 800] }
       - { Item: Pirate_Bandana, Amount: 1, Price: [55000, 64500] }
-      - { Item: Pointed_Scale, Amount: 100, Price: [425, 575] }
-      - { Item: Ment, Amount: 50, Price: [425, 575] }
+      - { Item: Pointed_Scale, Amount: 150, Price: [425, 575] }
+      - { Item: Ment, Amount: 150, Price: [425, 575] }
       - { Item: Dagger_, Amount: 1, Price: [22500, 26500] }
-      - { Item: Dew_Laden_Moss, Amount: 5, Price: [21000, 25000] }
+      - { Item: Dew_Laden_Moss, Amount: 10, Price: [21000, 25000] }
       - { Item: Brooch, Amount: 1, Price: [284000, 333500] }
-      - { Item: Decayed_Nail, Amount: 150, Price: [180, 245] }
+      - { Item: Decayed_Nail, Amount: 100, Price: [180, 245] }
+      - { Item: Poison_Herb_Rantana, Amount: 50, Price: [4150, 4850] }
       - { Item: Ghost_Bandana, Amount: 1, Price: [460000, 540000] }
       - { Item: Poison_Herb_Makulata, Amount: 300, Price: [1, 2] }
-      - { Item: Poison_Herb_Seratum, Amount: 150, Price: [1, 2] }
-      - { Item: Spawn, Amount: 100, Price: [170, 230] }
-      - { Item: Falchion, Amount: 1, Price: [1200, 1450] }
+      - { Item: Poison_Herb_Seratum, Amount: 200, Price: [1, 2] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4779,10 +4807,11 @@ Body:
       - { Item: Clip, Amount: 1, Price: [24500, 29000] }
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
-      - { Item: Orcish_Voucher, Amount: 300, Price: [340, 465] }
-      - { Item: Steel_Arrow_Container, Amount: 100, Price: [1, 3] }
-      - { Item: Wind_Arrow_Container, Amount: 20, Price: [12500, 15000] }
-      - { Item: Leaflet_Of_Hinal, Amount: 30, Price: [1450, 1700] }
+      - { Item: Pacifier, Amount: 20, Price: [8350, 9800] }
+      - { Item: Orcish_Voucher, Amount: 200, Price: [340, 465] }
+      - { Item: Steel_Arrow_Container, Amount: 150, Price: [1, 3] }
+      - { Item: Wind_Arrow_Container, Amount: 30, Price: [12500, 15000] }
+      - { Item: Leaflet_Of_Hinal, Amount: 20, Price: [1450, 1700] }
       - { Item: Stone_Arrow_Container, Amount: 30, Price: [16000, 19000] }
       - { Item: Katar_Of_Raging_Blaze, Amount: 1, Price: [37000, 43500] }
       - { Item: Orcish_Axe, Amount: 1, Price: [31500, 37000] }
@@ -4790,22 +4819,21 @@ Body:
       - { Item: Book_Of_Mother_Earth, Amount: 1, Price: [120500, 141500] }
       - { Item: Spirit_Chain, Amount: 1, Price: [11000, 12500] }
       - { Item: Star_Sparkling, Amount: 1, Price: [664000, 779500] }
-      - { Item: Underground_Key, Amount: 3, Price: [34000, 40000] }
-      - { Item: Needle_Of_Alarm, Amount: 50, Price: [800, 1050] }
+      - { Item: Underground_Key, Amount: 10, Price: [34000, 40000] }
+      - { Item: Needle_Of_Alarm, Amount: 100, Price: [800, 1050] }
       - { Item: Kakkung_, Amount: 1, Price: [34500, 40500] }
-      - { Item: Old_Magic_Book, Amount: 300, Price: [1, 3] }
+      - { Item: Old_Magic_Book, Amount: 50, Price: [1, 3] }
       - { Item: Old_Magic_Circle, Amount: 10, Price: [81000, 95500] }
       - { Item: Magician_Hat, Amount: 1, Price: [427000, 501000] }
       - { Item: Book_Of_Gust_Of_Wind, Amount: 1, Price: [137500, 161500] }
-      - { Item: Old_Broom, Amount: 30, Price: [13500, 16000] }
+      - { Item: Old_Broom, Amount: 50, Price: [13500, 16000] }
       - { Item: Book_Of_Blazing_Sun, Amount: 1, Price: [383500, 450000] }
       - { Item: Wizardy_Staff, Amount: 1, Price: [7437500, 8731000] }
       - { Item: Katar_Of_Piercing_Wind, Amount: 1, Price: [37000, 43500] }
       - { Item: Memorize_Book, Amount: 1, Price: [448500, 526500] }
+      - { Item: Key_Of_Clock_Tower, Amount: 30, Price: [6450, 7550] }
       - { Item: Contracts_In_Shadow, Amount: 200, Price: [85, 115] }
-      - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
-      - { Item: Violet_Jewel, Amount: 10, Price: [84500, 99000] }
-      - { Item: Round_Shell, Amount: 10, Price: [4750, 5600] }
+      - { Item: Red_Jewel, Amount: 3, Price: [44500, 52500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4835,7 +4863,7 @@ Body:
     Pool:
       - { Item: Elven_Bow, Amount: 1, Price: [13181000, 15473500] }
       - { Item: Battle_Hook, Amount: 1, Price: [135500, 159000] }
-      - { Item: Poison_Spore, Amount: 20, Price: [4100, 4850] }
+      - { Item: Poison_Spore, Amount: 30, Price: [4100, 4850] }
       - { Item: Ebone_Armor, Amount: 1, Price: [33000, 38500] }
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
       - { Item: Rosary, Amount: 1, Price: [12000, 14500] }
@@ -4843,26 +4871,26 @@ Body:
       - { Item: Book_Of_The_Apocalypse, Amount: 1, Price: [61000, 72000] }
       - { Item: Bone_Wand, Amount: 1, Price: [127000, 149500] }
       - { Item: Rotha_Shield, Amount: 1, Price: [633500, 744000] }
-      - { Item: Beef_Head_Meat, Amount: 150, Price: [85, 115] }
+      - { Item: Beef_Head_Meat, Amount: 100, Price: [85, 115] }
       - { Item: Biretta_, Amount: 1, Price: [7450, 8700] }
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
       - { Item: Ragamuffin_Cape, Amount: 1, Price: [46000, 54000] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
-      - { Item: Golden_Hair, Amount: 30, Price: [14000, 16500] }
+      - { Item: Golden_Hair, Amount: 10, Price: [14000, 16500] }
       - { Item: Bone_Helm, Amount: 1, Price: [339500, 399000] }
-      - { Item: Illusion_Flower, Amount: 30, Price: [920, 1050] }
+      - { Item: Illusion_Flower, Amount: 20, Price: [920, 1050] }
       - { Item: Iron_Cane, Amount: 1, Price: [117000, 137500] }
+      - { Item: Marionette_Doll, Amount: 1, Price: [1283500, 1507000] }
+      - { Item: Claire_Suits, Amount: 1, Price: [309500, 363000] }
+      - { Item: Crystal_Arrow_Container, Amount: 10, Price: [18000, 21500] }
       - { Item: Wedding_Veil, Amount: 1, Price: [19000, 22000] }
       - { Item: Thimble_Of_Archer, Amount: 1, Price: [8250, 9700] }
-      - { Item: Mushroom_Spore, Amount: 300, Price: [145, 200] }
+      - { Item: Mushroom_Spore, Amount: 200, Price: [145, 200] }
       - { Item: Brooch_, Amount: 1, Price: [24500, 29000] }
-      - { Item: Patriotism_Marks, Amount: 100, Price: [1, 3] }
+      - { Item: Patriotism_Marks, Amount: 300, Price: [1, 3] }
       - { Item: Tights_, Amount: 1, Price: [58500, 69000] }
       - { Item: Mirror_Shield_, Amount: 1, Price: [49500, 58000] }
       - { Item: Helm_, Amount: 1, Price: [36000, 42500] }
-      - { Item: Book_Of_Billows, Amount: 1, Price: [28500, 34000] }
-      - { Item: Book_Of_Mother_Earth, Amount: 1, Price: [120500, 141500] }
-      - { Item: Padded_Armor_, Amount: 1, Price: [39500, 46500] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4890,33 +4918,33 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Ice_Fragment, Amount: 200, Price: [85, 115] }
-      - { Item: Sticky_Webfoot, Amount: 50, Price: [5950, 7000] }
-      - { Item: Cold_Ice, Amount: 3, Price: [36500, 43000] }
+      - { Item: Ice_Fragment, Amount: 100, Price: [85, 115] }
+      - { Item: Sticky_Webfoot, Amount: 30, Price: [5950, 7000] }
+      - { Item: Cold_Ice, Amount: 5, Price: [36500, 43000] }
       - { Item: Fancy_Flower, Amount: 1, Price: [6800, 7950] }
-      - { Item: Prickly_Fruit, Amount: 5, Price: [50000, 59000] }
-      - { Item: Gun_Powder, Amount: 30, Price: [1200, 1400] }
-      - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
-      - { Item: Round_Shell, Amount: 30, Price: [4750, 5600] }
-      - { Item: Runstone_Mystic, Amount: 20, Price: [9200, 10500] }
+      - { Item: Prickly_Fruit, Amount: 10, Price: [50000, 59000] }
+      - { Item: Gun_Powder, Amount: 20, Price: [1200, 1400] }
+      - { Item: Red_Jewel, Amount: 3, Price: [44500, 52500] }
+      - { Item: Round_Shell, Amount: 20, Price: [4750, 5600] }
+      - { Item: Runstone_Mystic, Amount: 50, Price: [9200, 10500] }
       - { Item: Burn_Tree, Amount: 30, Price: [6150, 7250] }
-      - { Item: Spawn, Amount: 300, Price: [170, 230] }
-      - { Item: Broken_Armor_Piece, Amount: 20, Price: [1600, 1900] }
-      - { Item: Animal_Blood, Amount: 10, Price: [32500, 38000] }
+      - { Item: Spawn, Amount: 150, Price: [170, 230] }
+      - { Item: Broken_Armor_Piece, Amount: 50, Price: [1600, 1900] }
+      - { Item: Animal_Blood, Amount: 3, Price: [32500, 38000] }
       - { Item: Earthworm_Peeling, Amount: 50, Price: [170, 230] }
       - { Item: Huuma_Bird_Wing, Amount: 1, Price: [141000, 165500] }
-      - { Item: Turtle_Shell, Amount: 300, Price: [580, 785] }
-      - { Item: Smoke_Powder, Amount: 50, Price: [1350, 1600] }
-      - { Item: Coconut_Fruit, Amount: 30, Price: [2150, 2500] }
-      - { Item: Cold_Scroll_1_5, Amount: 50, Price: [2600, 3050] }
+      - { Item: Turtle_Shell, Amount: 100, Price: [580, 785] }
+      - { Item: Smoke_Powder, Amount: 30, Price: [1350, 1600] }
+      - { Item: Coconut_Fruit, Amount: 10, Price: [2150, 2500] }
+      - { Item: Cold_Scroll_1_5, Amount: 10, Price: [2600, 3050] }
       - { Item: Rotten_Meat, Amount: 100, Price: [750, 1000] }
-      - { Item: Stone_Piece, Amount: 30, Price: [4500, 5300] }
-      - { Item: Broken_Shell, Amount: 20, Price: [3600, 4200] }
+      - { Item: Stone_Piece, Amount: 50, Price: [4500, 5300] }
+      - { Item: Broken_Shell, Amount: 30, Price: [3600, 4200] }
       - { Item: Cap, Amount: 1, Price: [9900, 11500] }
-      - { Item: Fire_Scroll_2_5, Amount: 10, Price: [2000, 2350] }
-      - { Item: IllusoryStone, Amount: 100, Price: [500, 675] }
-      - { Item: Rust_Suriken, Amount: 3, Price: [298500, 350500] }
-      - { Item: Dragon_Fly_Wing, Amount: 50, Price: [920, 1050] }
+      - { Item: Fire_Scroll_2_5, Amount: 50, Price: [2000, 2350] }
+      - { Item: IllusoryStone, Amount: 50, Price: [500, 675] }
+      - { Item: Rust_Suriken, Amount: 1, Price: [298500, 350500] }
+      - { Item: Dragon_Fly_Wing, Amount: 10, Price: [920, 1050] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -4949,23 +4977,23 @@ Body:
       - { Item: Snowy_Horn, Amount: 1, Price: [20500, 24500] }
       - { Item: Spirit_Chain, Amount: 1, Price: [11000, 12500] }
       - { Item: Angelic_Chain, Amount: 1, Price: [6388000, 7499000] }
-      - { Item: Apple_Juice, Amount: 20, Price: [5350, 6300] }
+      - { Item: Apple_Juice, Amount: 10, Price: [5350, 6300] }
       - { Item: Red_Muffler, Amount: 10, Price: [19500, 23000] }
-      - { Item: Unripe_Apple, Amount: 5, Price: [76500, 90000] }
-      - { Item: Well_Baked_Cookie, Amount: 50, Price: [8700, 10000] }
+      - { Item: Unripe_Apple, Amount: 3, Price: [76500, 90000] }
+      - { Item: Well_Baked_Cookie, Amount: 20, Price: [8700, 10000] }
       - { Item: Poring_Hat, Amount: 1, Price: [761000, 893000] }
       - { Item: Rod_, Amount: 1, Price: [4650, 5500] }
-      - { Item: Piece_Of_Cake, Amount: 20, Price: [5000, 5850] }
-      - { Item: Manacles, Amount: 20, Price: [3750, 4400] }
+      - { Item: Piece_Of_Cake, Amount: 10, Price: [5000, 5850] }
+      - { Item: Manacles, Amount: 50, Price: [3750, 4400] }
       - { Item: Scapulare_, Amount: 1, Price: [5350, 6300] }
-      - { Item: Great_Chef_Orleans01, Amount: 20, Price: [10000, 11500] }
-      - { Item: Orange_Juice, Amount: 50, Price: [9200, 10500] }
+      - { Item: Great_Chef_Orleans01, Amount: 50, Price: [10000, 11500] }
+      - { Item: Orange_Juice, Amount: 30, Price: [9200, 10500] }
       - { Item: Matchstick, Amount: 150, Price: [85, 115] }
       - { Item: Holy_Bonnet, Amount: 1, Price: [241000, 282500] }
       - { Item: Knife_, Amount: 1, Price: [920, 1050] }
-      - { Item: Cold_Scroll_1_3, Amount: 30, Price: [1850, 2200] }
-      - { Item: Holy_Scroll_1_3, Amount: 50, Price: [3100, 3650] }
-      - { Item: Cold_Scroll_2_1, Amount: 20, Price: [920, 1050] }
+      - { Item: Cold_Scroll_1_3, Amount: 10, Price: [1850, 2200] }
+      - { Item: Holy_Scroll_1_3, Amount: 20, Price: [3100, 3650] }
+      - { Item: Cold_Scroll_2_1, Amount: 10, Price: [920, 1050] }
       - { Item: Hood_, Amount: 1, Price: [765, 1000] }
       - { Item: Main_Gauche, Amount: 1, Price: [1950, 2300] }
       - { Item: Sandals_, Amount: 1, Price: [305, 410] }
@@ -4997,23 +5025,36 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Leaf_Of_Yggdrasil, Amount: 10, Price: [5500, 6450] }
+      - { Item: Nab_Cloth, Amount: 1, Price: [4600000, 5400000] }
+      - { Item: Angry_Mouth, Amount: 1, Price: [60500, 71000] }
+      - { Item: Leaf_Of_Yggdrasil, Amount: 20, Price: [5500, 6450] }
       - { Item: Ragamuffin_Cape, Amount: 1, Price: [46000, 54000] }
       - { Item: Mr_Scream, Amount: 1, Price: [17000, 20000] }
       - { Item: Spirit_Chain, Amount: 1, Price: [11000, 12500] }
       - { Item: Rider_Insignia, Amount: 1, Price: [971000, 1140000] }
       - { Item: Manteau, Amount: 1, Price: [26000, 31000] }
+      - { Item: Dullahan_Armor, Amount: 50, Price: [2500, 2950] }
       - { Item: An_Eye_Of_Dullahan, Amount: 1, Price: [724500, 850500] }
-      - { Item: Broken_Armor_Piece, Amount: 20, Price: [1600, 1900] }
-      - { Item: Stuffed_Doll, Amount: 30, Price: [5100, 6000] }
-      - { Item: Loki's_Whispers, Amount: 50, Price: [17, 24] }
-      - { Item: Black_Powder, Amount: 10, Price: [1400, 1600] }
-      - { Item: Ectoplasm, Amount: 20, Price: [920, 1050] }
-      - { Item: Holy_Scroll_1_3, Amount: 50, Price: [3100, 3650] }
-      - { Item: Poison_Powder, Amount: 30, Price: [1300, 1550] }
+      - { Item: Black_Kitty_Doll, Amount: 3, Price: [23000, 27000] }
+      - { Item: Ginnungagap, Amount: 1, Price: [1840000, 2160000] }
+      - { Item: Broken_Armor_Piece, Amount: 50, Price: [1600, 1900] }
+      - { Item: Dullahan's_Helm, Amount: 50, Price: [1300, 1550] }
+      - { Item: Tangled_Chain, Amount: 50, Price: [3600, 4200] }
+      - { Item: Stuffed_Doll, Amount: 20, Price: [5100, 6000] }
+      - { Item: Needle_Pouch, Amount: 20, Price: [8900, 10000] }
+      - { Item: Loki's_Whispers, Amount: 100, Price: [17, 24] }
+      - { Item: Spool, Amount: 30, Price: [2300, 2700] }
+      - { Item: Black_Powder, Amount: 50, Price: [1400, 1600] }
+      - { Item: Hanging_Doll, Amount: 50, Price: [1800, 2150] }
+      - { Item: White_Powder, Amount: 100, Price: [510, 690] }
+      - { Item: Ectoplasm, Amount: 50, Price: [920, 1050] }
+      - { Item: Red_Scarf, Amount: 30, Price: [1800, 2150] }
+      - { Item: Broken_Needle, Amount: 30, Price: [1050, 1250] }
+      - { Item: Yellow_Powder, Amount: 50, Price: [1450, 1700] }
+      - { Item: Holy_Scroll_1_3, Amount: 10, Price: [3100, 3650] }
+      - { Item: Distorted_Portrait, Amount: 20, Price: [5500, 6450] }
+      - { Item: Poison_Powder, Amount: 10, Price: [1300, 1550] }
       - { Item: Mama's_Knife, Amount: 1, Price: [2898000, 3402000] }
-      - { Item: Lunatic_Brooch, Amount: 1, Price: [2113000, 2480500] }
-      - { Item: Muffler_, Amount: 1, Price: [4100, 4850] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -5047,20 +5088,20 @@ Body:
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
       - { Item: Unholy_Touch, Amount: 1, Price: [131500, 154500] }
       - { Item: Infiltrator, Amount: 1, Price: [47000, 55000] }
-      - { Item: Bear's_Foot, Amount: 200, Price: [235, 320] }
+      - { Item: Bear's_Foot, Amount: 50, Price: [235, 320] }
       - { Item: Burning_Horse_Shoe, Amount: 50, Price: [765, 1000] }
-      - { Item: Scorpion's_Tail, Amount: 100, Price: [450, 615] }
-      - { Item: Petite_DiablOfs_Horn, Amount: 10, Price: [1100, 1250] }
+      - { Item: Scorpion's_Tail, Amount: 50, Price: [450, 615] }
+      - { Item: Petite_DiablOfs_Horn, Amount: 50, Price: [1100, 1250] }
       - { Item: Brooch, Amount: 1, Price: [284000, 333500] }
-      - { Item: Fire_Scroll_1_3, Amount: 50, Price: [765, 1000] }
-      - { Item: Hot_Hair, Amount: 300, Price: [675, 915] }
-      - { Item: Wing_Of_Red_Bat, Amount: 50, Price: [775, 1050] }
-      - { Item: Black_Powder, Amount: 20, Price: [1400, 1600] }
-      - { Item: Ghost_Scroll_1_5, Amount: 10, Price: [1100, 1250] }
+      - { Item: Fire_Scroll_1_3, Amount: 150, Price: [765, 1000] }
+      - { Item: Hot_Hair, Amount: 200, Price: [675, 915] }
+      - { Item: Wing_Of_Red_Bat, Amount: 300, Price: [775, 1050] }
+      - { Item: Black_Powder, Amount: 30, Price: [1400, 1600] }
+      - { Item: Ghost_Scroll_1_5, Amount: 20, Price: [1100, 1250] }
       - { Item: Nice_Sweet_Potato, Amount: 50, Price: [7850, 9250] }
-      - { Item: Cold_Magma, Amount: 50, Price: [1000, 1200] }
+      - { Item: Cold_Magma, Amount: 20, Price: [1000, 1200] }
       - { Item: Odin's_Blessing, Amount: 1, Price: [24500, 29000] }
-      - { Item: Scropion's_Nipper, Amount: 150, Price: [300, 405] }
+      - { Item: Scropion's_Nipper, Amount: 100, Price: [300, 405] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -5088,24 +5129,24 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Blossom_Of_Maneater, Amount: 30, Price: [2100, 2500] }
+      - { Item: Blossom_Of_Maneater, Amount: 10, Price: [2100, 2500] }
       - { Item: Ice_Fragment, Amount: 50, Price: [85, 115] }
-      - { Item: Mandragora_Flowerpot, Amount: 20, Price: [7200, 8450] }
+      - { Item: Mandragora_Flowerpot, Amount: 50, Price: [7200, 8450] }
       - { Item: Cold_Ice, Amount: 3, Price: [36500, 43000] }
-      - { Item: Ice_Crystal, Amount: 100, Price: [85, 115] }
+      - { Item: Ice_Crystal, Amount: 300, Price: [85, 115] }
       - { Item: Combo_Battle_Glove, Amount: 1, Price: [261000, 306000] }
-      - { Item: Root_Of_Maneater, Amount: 200, Price: [820, 1100] }
-      - { Item: Singing_Flower, Amount: 100, Price: [255, 345] }
+      - { Item: Root_Of_Maneater, Amount: 50, Price: [820, 1100] }
+      - { Item: Singing_Flower, Amount: 300, Price: [255, 345] }
       - { Item: Frozen_Rose, Amount: 5, Price: [28500, 33500] }
       - { Item: Cap_, Amount: 1, Price: [57500, 67500] }
       - { Item: Icicle_Fist, Amount: 1, Price: [156000, 183500] }
       - { Item: Deadly_Noxious_Herb, Amount: 5, Price: [20500, 24000] }
       - { Item: Frozen_Bow, Amount: 1, Price: [1089000, 1278500] }
-      - { Item: Rotten_Meat, Amount: 200, Price: [750, 1000] }
-      - { Item: SpritJewel, Amount: 100, Price: [1, 2] }
-      - { Item: Snowball, Amount: 100, Price: [1, 2] }
-      - { Item: Bullet_Case_Fleeze, Amount: 20, Price: [5500, 6450] }
-      - { Item: Frozen_PieceOfRock, Amount: 150, Price: [1, 2] }
+      - { Item: Rotten_Meat, Amount: 100, Price: [750, 1000] }
+      - { Item: SpritJewel, Amount: 50, Price: [1, 2] }
+      - { Item: Snowball, Amount: 200, Price: [1, 2] }
+      - { Item: Bullet_Case_Fleeze, Amount: 30, Price: [5500, 6450] }
+      - { Item: Frozen_PieceOfRock, Amount: 50, Price: [1, 2] }
       - { Item: Huuma_Fluttering_Snow, Amount: 1, Price: [82500, 97000] }
     Spawns:
       - Map: prontera
@@ -5140,23 +5181,23 @@ Body:
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
       - { Item: Inverse_Scale, Amount: 1, Price: [395500, 464500] }
       - { Item: Gold_Ring, Amount: 1, Price: [24000, 28000] }
-      - { Item: Posionous_Canine, Amount: 50, Price: [1800, 2150] }
+      - { Item: Posionous_Canine, Amount: 10, Price: [1800, 2150] }
       - { Item: Katar_Of_Raging_Blaze, Amount: 1, Price: [37000, 43500] }
       - { Item: Fricco_Shoes, Amount: 1, Price: [24500, 29000] }
       - { Item: Violet_Jewel, Amount: 10, Price: [84500, 99000] }
-      - { Item: Delicious_Fish, Amount: 300, Price: [790, 1050] }
-      - { Item: Coral_Reef, Amount: 50, Price: [2500, 2950] }
+      - { Item: Delicious_Fish, Amount: 50, Price: [790, 1050] }
+      - { Item: Coral_Reef, Amount: 20, Price: [2500, 2950] }
       - { Item: Shoes_, Amount: 1, Price: [2850, 3400] }
-      - { Item: Tri_Headed_Dragon_Head, Amount: 20, Price: [9150, 10500] }
-      - { Item: Dragonball_Yellow, Amount: 50, Price: [3750, 4400] }
-      - { Item: Dark_Red_Jewel, Amount: 30, Price: [2750, 3200] }
-      - { Item: Dragonball_Blue, Amount: 30, Price: [1400, 1650] }
-      - { Item: Dragonball_Red, Amount: 50, Price: [1150, 1350] }
-      - { Item: Vit_Dish10, Amount: 3, Price: [185500, 218000] }
+      - { Item: Tri_Headed_Dragon_Head, Amount: 10, Price: [9150, 10500] }
+      - { Item: Dragonball_Yellow, Amount: 30, Price: [3750, 4400] }
+      - { Item: Dark_Red_Jewel, Amount: 10, Price: [2750, 3200] }
+      - { Item: Dragonball_Blue, Amount: 50, Price: [1400, 1650] }
+      - { Item: Dragonball_Red, Amount: 10, Price: [1150, 1350] }
+      - { Item: Vit_Dish10, Amount: 1, Price: [185500, 218000] }
       - { Item: Dragonball_Green, Amount: 10, Price: [6250, 7350] }
       - { Item: Magni_Cap, Amount: 1, Price: [69000, 81000] }
       - { Item: Morpheus's_Hood, Amount: 1, Price: [24500, 29000] }
-      - { Item: Booby_Trap, Amount: 100, Price: [55, 75] }
+      - { Item: Booby_Trap, Amount: 200, Price: [55, 75] }
     Spawns:
       - Map: prontera
         Count: 1
@@ -5186,7 +5227,7 @@ Body:
     Pool:
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
       - { Item: Rotha_Shield, Amount: 1, Price: [633500, 744000] }
-      - { Item: Stone_Of_Intelligence_, Amount: 1, Price: [485500, 570500] }
+      - { Item: Stone_Of_Intelligence_, Amount: 3, Price: [485500, 570500] }
       - { Item: Goibne's_Helmet, Amount: 1, Price: [505500, 593500] }
       - { Item: Goibne's_Combat_Boots, Amount: 1, Price: [506500, 595000] }
       - { Item: Goibne's_Armor, Amount: 1, Price: [283500, 333000] }
@@ -5197,22 +5238,22 @@ Body:
       - { Item: Fricco_Shoes, Amount: 1, Price: [24500, 29000] }
       - { Item: Chrystal_Pumps, Amount: 1, Price: [469000, 550500] }
       - { Item: Underground_Key, Amount: 3, Price: [34000, 40000] }
-      - { Item: Old_Magic_Book, Amount: 50, Price: [1, 3] }
-      - { Item: Old_Magic_Circle, Amount: 3, Price: [81000, 95500] }
+      - { Item: Old_Magic_Book, Amount: 150, Price: [1, 3] }
+      - { Item: Old_Magic_Circle, Amount: 10, Price: [81000, 95500] }
       - { Item: Magician_Hat, Amount: 1, Price: [427000, 501000] }
       - { Item: Book_Of_Gust_Of_Wind, Amount: 1, Price: [137500, 161500] }
-      - { Item: Old_Broom, Amount: 50, Price: [13500, 16000] }
+      - { Item: Old_Broom, Amount: 20, Price: [13500, 16000] }
       - { Item: Book_Of_Blazing_Sun, Amount: 1, Price: [383500, 450000] }
       - { Item: Wizardy_Staff, Amount: 1, Price: [7437500, 8731000] }
       - { Item: Pair_Of_Red_Ribbon, Amount: 1, Price: [828000, 972000] }
-      - { Item: Alice's_Apron, Amount: 30, Price: [2500, 2950] }
+      - { Item: Alice's_Apron, Amount: 50, Price: [2500, 2950] }
       - { Item: Staff_Of_Soul, Amount: 1, Price: [4597000, 5396500] }
       - { Item: Bookclip_In_Memory, Amount: 50, Price: [6400, 7550] }
       - { Item: Rent_Spell_Book, Amount: 30, Price: [7350, 8600] }
-      - { Item: Cookbook09, Amount: 20, Price: [920, 1050] }
-      - { Item: Crystal_Mirror, Amount: 50, Price: [9200, 10500] }
+      - { Item: Cookbook09, Amount: 30, Price: [920, 1050] }
+      - { Item: Crystal_Mirror, Amount: 30, Price: [9200, 10500] }
       - { Item: Harp_, Amount: 1, Price: [62000, 72500] }
-      - { Item: Imperial_Cooking_Kits, Amount: 1, Price: [1153000, 1354000] }
+      - { Item: Imperial_Cooking_Kits, Amount: 3, Price: [1153000, 1354000] }
       - { Item: Legend_Of_Kafra01, Amount: 20, Price: [12000, 14000] }
     Spawns:
       - Map: prontera
@@ -5242,25 +5283,25 @@ Body:
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
       - { Item: Silk_Robe_, Amount: 1, Price: [6600, 7750] }
-      - { Item: Illusion_Flower, Amount: 10, Price: [920, 1050] }
+      - { Item: Illusion_Flower, Amount: 20, Price: [920, 1050] }
       - { Item: Four_Leaf_Clover, Amount: 3, Price: [50000, 58500] }
-      - { Item: Valhalla_Flower, Amount: 2, Price: [37311500, 43801000] }
+      - { Item: Valhalla_Flower, Amount: 3, Price: [37311500, 43801000] }
       - { Item: Divine_Cross, Amount: 1, Price: [11960000, 14040000] }
       - { Item: Centimental_Flower, Amount: 1, Price: [1690500, 1984500] }
       - { Item: Gust_Bow, Amount: 1, Price: [920000, 1080000] }
       - { Item: Angelic_Chain, Amount: 1, Price: [6388000, 7499000] }
       - { Item: Blood_Tears, Amount: 1, Price: [441500, 518000] }
-      - { Item: Singing_Plant, Amount: 100, Price: [845, 1100] }
-      - { Item: Bitter_Herb, Amount: 10, Price: [15000, 17500] }
-      - { Item: Shoot, Amount: 300, Price: [590, 800] }
+      - { Item: Singing_Plant, Amount: 300, Price: [845, 1100] }
+      - { Item: Bitter_Herb, Amount: 20, Price: [15000, 17500] }
+      - { Item: Shoot, Amount: 150, Price: [590, 800] }
       - { Item: Earring_, Amount: 1, Price: [24500, 29000] }
       - { Item: Pointed_Scale, Amount: 200, Price: [425, 575] }
-      - { Item: Poison_Herb_Makulata, Amount: 150, Price: [1, 2] }
-      - { Item: Poison_Herb_Seratum, Amount: 100, Price: [1, 2] }
+      - { Item: Poison_Herb_Makulata, Amount: 300, Price: [1, 2] }
+      - { Item: Poison_Herb_Seratum, Amount: 300, Price: [1, 2] }
       - { Item: Aloe, Amount: 10, Price: [2300, 2700] }
-      - { Item: Poison_Herb_Nerium, Amount: 200, Price: [1, 2] }
-      - { Item: Flower, Amount: 150, Price: [1, 2] }
-      - { Item: Rouge, Amount: 10, Price: [15500, 18500] }
+      - { Item: Poison_Herb_Nerium, Amount: 150, Price: [1, 2] }
+      - { Item: Flower, Amount: 300, Price: [1, 2] }
+      - { Item: Rouge, Amount: 50, Price: [15500, 18500] }
       - { Item: Valkyrja's_Shield, Amount: 1, Price: [24500, 29000] }
       - { Item: Odin's_Blessing, Amount: 1, Price: [24500, 29000] }
       - { Item: Mantle_, Amount: 1, Price: [8250, 9700] }
@@ -5296,20 +5337,20 @@ Body:
       - { Item: Drifter, Amount: 1, Price: [66000, 77500] }
       - { Item: Gate_KeeperDD, Amount: 1, Price: [301000, 353500] }
       - { Item: Gate_Keeper, Amount: 1, Price: [46000, 54000] }
-      - { Item: Imperial_Cooking_Kits, Amount: 1, Price: [1153000, 1354000] }
+      - { Item: Imperial_Cooking_Kits, Amount: 3, Price: [1153000, 1354000] }
       - { Item: Destroyer_, Amount: 1, Price: [91000, 106500] }
       - { Item: Thunder_P_, Amount: 1, Price: [29000, 34500] }
-      - { Item: Oil_Bottle, Amount: 10, Price: [1250, 1500] }
+      - { Item: Oil_Bottle, Amount: 20, Price: [1250, 1500] }
       - { Item: Dusk, Amount: 1, Price: [19000, 22500] }
-      - { Item: Wheel, Amount: 20, Price: [1500, 1800] }
+      - { Item: Wheel, Amount: 50, Price: [1500, 1800] }
       - { Item: Broken_Steel_Piece, Amount: 10, Price: [13000, 15500] }
-      - { Item: Transparent_Plate01, Amount: 5, Price: [23000, 27000] }
-      - { Item: Piece_Of_Crest2, Amount: 10, Price: [7200, 8450] }
-      - { Item: Piece_Of_Crest1, Amount: 5, Price: [19500, 22500] }
-      - { Item: Transparent_Plate02, Amount: 3, Price: [23000, 27000] }
-      - { Item: Transparent_Plate03, Amount: 3, Price: [23000, 27000] }
+      - { Item: Transparent_Plate01, Amount: 10, Price: [23000, 27000] }
+      - { Item: Piece_Of_Crest2, Amount: 30, Price: [7200, 8450] }
+      - { Item: Piece_Of_Crest1, Amount: 10, Price: [19500, 22500] }
+      - { Item: Transparent_Plate02, Amount: 10, Price: [23000, 27000] }
+      - { Item: Transparent_Plate03, Amount: 10, Price: [23000, 27000] }
       - { Item: Transparent_Plate04, Amount: 3, Price: [23000, 27000] }
-      - { Item: Piece_Of_Crest3, Amount: 50, Price: [5300, 6250] }
+      - { Item: Piece_Of_Crest3, Amount: 30, Price: [5300, 6250] }
       - { Item: Piece_Of_Crest4, Amount: 20, Price: [6600, 7750] }
     Spawns:
       - Map: prontera
@@ -5340,17 +5381,17 @@ Body:
     Pool:
       - { Item: Clip, Amount: 1, Price: [24500, 29000] }
       - { Item: Big_CrossBow, Amount: 1, Price: [46000, 54000] }
-      - { Item: Stone_Of_Intelligence_, Amount: 3, Price: [485500, 570500] }
+      - { Item: Stone_Of_Intelligence_, Amount: 1, Price: [485500, 570500] }
       - { Item: Biretta_, Amount: 1, Price: [7450, 8700] }
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
       - { Item: Krishna, Amount: 1, Price: [8924000, 10476000] }
       - { Item: Bible_Of_Promise2, Amount: 1, Price: [46000, 54000] }
-      - { Item: Steel_Arrow_Container, Amount: 150, Price: [1, 3] }
+      - { Item: Steel_Arrow_Container, Amount: 100, Price: [1, 3] }
       - { Item: La'cryma_Stick, Amount: 1, Price: [1692500, 1986500] }
       - { Item: Croce_Staff, Amount: 1, Price: [819000, 961500] }
       - { Item: Ring_Of_Rogue, Amount: 1, Price: [8250, 9700] }
-      - { Item: Will_Of_Warrior, Amount: 20, Price: [920, 1050] }
+      - { Item: Will_Of_Warrior, Amount: 10, Price: [920, 1050] }
       - { Item: Assassin_Handcuffs, Amount: 1, Price: [46000, 54000] }
       - { Item: Ruber, Amount: 1, Price: [549000, 644500] }
       - { Item: Falken_Blitz, Amount: 1, Price: [662500, 777500] }
@@ -5359,7 +5400,7 @@ Body:
       - { Item: Creeper_Bow, Amount: 1, Price: [46000, 54000] }
       - { Item: Saber_, Amount: 1, Price: [349000, 410000] }
       - { Item: Green_Whistle, Amount: 1, Price: [875000, 1027500] }
-      - { Item: Imma_Arrow_Container, Amount: 200, Price: [1, 3] }
+      - { Item: Imma_Arrow_Container, Amount: 100, Price: [1, 3] }
       - { Item: Gas_Mask, Amount: 1, Price: [183000, 215000] }
       - { Item: Red_Ether_Bag, Amount: 1, Price: [77000, 90500] }
       - { Item: Vecer_Axe, Amount: 1, Price: [1042500, 1224000] }
@@ -5400,18 +5441,18 @@ Body:
       - { Item: Plate_Armor_, Amount: 1, Price: [66000, 77500] }
       - { Item: Rafini_Staff, Amount: 1, Price: [431500, 507000] }
       - { Item: Sea_Witch_Foot, Amount: 1, Price: [23500, 28000] }
-      - { Item: Sticky_Webfoot, Amount: 30, Price: [5950, 7000] }
+      - { Item: Sticky_Webfoot, Amount: 10, Price: [5950, 7000] }
       - { Item: Whip_Of_Ice_Piece, Amount: 1, Price: [251000, 295000] }
-      - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
-      - { Item: Slender_Snake, Amount: 150, Price: [615, 830] }
-      - { Item: Violet_Jewel, Amount: 5, Price: [84500, 99000] }
-      - { Item: Rotten_Fish, Amount: 10, Price: [31000, 36000] }
-      - { Item: Penetration, Amount: 20, Price: [4600, 5400] }
-      - { Item: Spawn, Amount: 100, Price: [170, 230] }
-      - { Item: Animal_Blood, Amount: 3, Price: [32500, 38000] }
-      - { Item: Earthworm_Peeling, Amount: 300, Price: [170, 230] }
+      - { Item: Red_Jewel, Amount: 3, Price: [44500, 52500] }
+      - { Item: Slender_Snake, Amount: 50, Price: [615, 830] }
+      - { Item: Violet_Jewel, Amount: 10, Price: [84500, 99000] }
+      - { Item: Rotten_Fish, Amount: 5, Price: [31000, 36000] }
+      - { Item: Penetration, Amount: 30, Price: [4600, 5400] }
+      - { Item: Spawn, Amount: 50, Price: [170, 230] }
+      - { Item: Animal_Blood, Amount: 5, Price: [32500, 38000] }
+      - { Item: Earthworm_Peeling, Amount: 50, Price: [170, 230] }
       - { Item: Lip_Of_Ancient_Fish, Amount: 20, Price: [1600, 1900] }
-      - { Item: Rotten_Scale, Amount: 150, Price: [425, 575] }
+      - { Item: Rotten_Scale, Amount: 300, Price: [425, 575] }
       - { Item: Trident, Amount: 1, Price: [42000, 49500] }
     Spawns:
       - Map: prontera
@@ -5442,9 +5483,9 @@ Body:
     Pool:
       - { Item: Shinobi's_Sash, Amount: 1, Price: [37500, 44000] }
       - { Item: Rosary_, Amount: 1, Price: [12000, 14500] }
-      - { Item: Fire_Arrow_Container, Amount: 50, Price: [14000, 16500] }
+      - { Item: Fire_Arrow_Container, Amount: 10, Price: [14000, 16500] }
       - { Item: Gold_Ring, Amount: 1, Price: [24000, 28000] }
-      - { Item: Glossy_Hair, Amount: 10, Price: [4700, 5500] }
+      - { Item: Glossy_Hair, Amount: 50, Price: [4700, 5500] }
       - { Item: Thief_Clothes_, Amount: 1, Price: [61000, 71500] }
       - { Item: Bomb_Wick, Amount: 1, Price: [9200, 10500] }
       - { Item: Murasame_, Amount: 1, Price: [190500, 224000] }
@@ -5453,22 +5494,22 @@ Body:
       - { Item: Ninja_Suit, Amount: 1, Price: [267500, 314000] }
       - { Item: Hakujin, Amount: 1, Price: [52500, 62000] }
       - { Item: Cinquedea_, Amount: 1, Price: [54000, 63500] }
-      - { Item: Imperial_Cooking_Kits, Amount: 2, Price: [1153000, 1354000] }
+      - { Item: Imperial_Cooking_Kits, Amount: 3, Price: [1153000, 1354000] }
       - { Item: Apple_Of_Archer, Amount: 1, Price: [460000, 540000] }
-      - { Item: Baked_Yam, Amount: 300, Price: [17, 24] }
+      - { Item: Baked_Yam, Amount: 100, Price: [17, 24] }
       - { Item: Smoke_Powder, Amount: 50, Price: [1350, 1600] }
-      - { Item: Nice_Sweet_Potato, Amount: 20, Price: [7850, 9250] }
-      - { Item: Smooth_Paper, Amount: 300, Price: [595, 805] }
-      - { Item: Old_Japaness_Clothes, Amount: 50, Price: [5500, 6450] }
+      - { Item: Nice_Sweet_Potato, Amount: 50, Price: [7850, 9250] }
+      - { Item: Smooth_Paper, Amount: 50, Price: [595, 805] }
+      - { Item: Old_Japaness_Clothes, Amount: 30, Price: [5500, 6450] }
       - { Item: Earth_Scroll_1_5, Amount: 10, Price: [4400, 5200] }
       - { Item: Poison_Powder, Amount: 30, Price: [1300, 1550] }
-      - { Item: Broken_Shuriken, Amount: 10, Price: [7200, 8450] }
-      - { Item: Booby_Trap, Amount: 150, Price: [55, 75] }
-      - { Item: Poison_Toad's_Skin, Amount: 20, Price: [4400, 5150] }
+      - { Item: Broken_Shuriken, Amount: 30, Price: [7200, 8450] }
+      - { Item: Booby_Trap, Amount: 50, Price: [55, 75] }
+      - { Item: Poison_Toad's_Skin, Amount: 30, Price: [4400, 5150] }
       - { Item: Tengu's_Nose, Amount: 10, Price: [6250, 7350] }
-      - { Item: Black_Mask, Amount: 3, Price: [49000, 57500] }
+      - { Item: Black_Mask, Amount: 5, Price: [49000, 57500] }
       - { Item: Fright_Paper_Blade, Amount: 10, Price: [1350, 1550] }
-      - { Item: Broken_Wine_Vessel, Amount: 20, Price: [3950, 4650] }
+      - { Item: Broken_Wine_Vessel, Amount: 30, Price: [3950, 4650] }
       - { Item: Scarlet_Viollin, Amount: 1, Price: [2760000, 3240000] }
     Spawns:
       - Map: prontera
@@ -5497,26 +5538,26 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Poison_Spore, Amount: 50, Price: [4100, 4850] }
-      - { Item: Mushroom_Spore, Amount: 50, Price: [145, 200] }
+      - { Item: Poison_Spore, Amount: 30, Price: [4100, 4850] }
+      - { Item: Mushroom_Spore, Amount: 100, Price: [145, 200] }
       - { Item: Ribbon_, Amount: 1, Price: [610, 825] }
       - { Item: Leather_Jacket_, Amount: 1, Price: [150, 205] }
-      - { Item: Spore_Doll, Amount: 3, Price: [72500, 85500] }
+      - { Item: Spore_Doll, Amount: 5, Price: [72500, 85500] }
       - { Item: Hat, Amount: 1, Price: [765, 1000] }
-      - { Item: Red_Jewel, Amount: 10, Price: [44500, 52500] }
+      - { Item: Red_Jewel, Amount: 5, Price: [44500, 52500] }
       - { Item: Insect_Feeler, Amount: 50, Price: [170, 235] }
       - { Item: Dew_Laden_Moss, Amount: 10, Price: [21000, 25000] }
       - { Item: Leather_Jacket, Amount: 1, Price: [150, 205] }
       - { Item: Blue_Jewel, Amount: 5, Price: [36000, 42500] }
-      - { Item: Wing_Of_Red_Bat, Amount: 300, Price: [775, 1050] }
-      - { Item: Glass_Bead, Amount: 30, Price: [1000, 1150] }
+      - { Item: Wing_Of_Red_Bat, Amount: 50, Price: [775, 1050] }
+      - { Item: Glass_Bead, Amount: 50, Price: [1000, 1150] }
       - { Item: Ora_Ora, Amount: 3, Price: [80000, 93500] }
-      - { Item: Single_Cell, Amount: 150, Price: [380, 515] }
-      - { Item: Bluish_Green_Jewel, Amount: 10, Price: [15500, 18000] }
-      - { Item: Chrysalis, Amount: 100, Price: [67, 91] }
+      - { Item: Single_Cell, Amount: 300, Price: [380, 515] }
+      - { Item: Bluish_Green_Jewel, Amount: 20, Price: [15500, 18000] }
+      - { Item: Chrysalis, Amount: 150, Price: [67, 91] }
       - { Item: Blade_, Amount: 1, Price: [2400, 2800] }
-      - { Item: Black_Ladle, Amount: 10, Price: [78000, 91500] }
-      - { Item: Rat_Tail, Amount: 50, Price: [230, 310] }
+      - { Item: Black_Ladle, Amount: 5, Price: [78000, 91500] }
+      - { Item: Rat_Tail, Amount: 300, Price: [230, 310] }
       - { Item: Guard_, Amount: 1, Price: [380, 515] }
       - { Item: Falchion_, Amount: 1, Price: [1200, 1450] }
       - { Item: Hat_, Amount: 1, Price: [765, 1000] }
@@ -5555,9 +5596,12 @@ Body:
       - { Item: Ragamuffin_Cape, Amount: 1, Price: [46000, 54000] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
       - { Item: Bone_Helm, Amount: 1, Price: [339500, 399000] }
-      - { Item: Fire_Arrow_Container, Amount: 20, Price: [14000, 16500] }
+      - { Item: Fire_Arrow_Container, Amount: 50, Price: [14000, 16500] }
       - { Item: Poo_Poo_Hat, Amount: 1, Price: [38000, 44500] }
-      - { Item: Amulet, Amount: 50, Price: [8800, 10000] }
+      - { Item: Woe_White_Potion, Amount: 10, Price: [5500, 6450] }
+      - { Item: Amulet, Amount: 20, Price: [8800, 10000] }
+      - { Item: Woe_Blue_Potion, Amount: 50, Price: [6400, 7550] }
+      - { Item: Ear_Of_Puppy, Amount: 1, Price: [176000, 206500] }
       - { Item: Wedding_Veil, Amount: 1, Price: [19000, 22000] }
       - { Item: Thief_Clothes_, Amount: 1, Price: [61000, 71500] }
       - { Item: Magic_Study_Vol1, Amount: 1, Price: [1113000, 1307000] }
@@ -5567,19 +5611,16 @@ Body:
       - { Item: Spirit_Chain, Amount: 1, Price: [11000, 12500] }
       - { Item: High_Fashion_Sandals, Amount: 1, Price: [87500, 102500] }
       - { Item: Icarus_Wing, Amount: 1, Price: [1657500, 1946000] }
-      - { Item: Short_Leg, Amount: 50, Price: [1800, 2150] }
+      - { Item: Short_Leg, Amount: 10, Price: [1800, 2150] }
       - { Item: Cardo, Amount: 1, Price: [2518000, 2955500] }
-      - { Item: Sacred_Marks, Amount: 50, Price: [1, 3] }
-      - { Item: Spiderweb, Amount: 30, Price: [3200, 3750] }
-      - { Item: Bear's_Foot, Amount: 50, Price: [235, 320] }
+      - { Item: Sacred_Marks, Amount: 150, Price: [1, 3] }
+      - { Item: Spiderweb, Amount: 20, Price: [3200, 3750] }
+      - { Item: Bear's_Foot, Amount: 100, Price: [235, 320] }
       - { Item: Ahlspiess, Amount: 1, Price: [736000, 864000] }
       - { Item: Mithril_Magic_Cape, Amount: 1, Price: [269500, 316500] }
+      - { Item: Punisher, Amount: 5, Price: [46000, 54000] }
       - { Item: Manteau, Amount: 1, Price: [26000, 31000] }
       - { Item: Memorize_Book, Amount: 1, Price: [448500, 526500] }
-      - { Item: Improved_Tights, Amount: 1, Price: [4171000, 4896500] }
-      - { Item: Gate_KeeperDD, Amount: 1, Price: [301000, 353500] }
-      - { Item: Eagle_Eyes, Amount: 1, Price: [184000, 216000] }
-      - { Item: Life_Link, Amount: 1, Price: [4680000, 5494000] }
     Spawns:
       - Map: prontera
         Count: 1

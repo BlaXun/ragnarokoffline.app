@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build prontera-vendors' two YAML files from rAthena's own data.
 
-    python3 mods/prontera-vendors/tools/build_vendors.py [--refresh-prices | --all-prices]
+    python3 mods/prontera-vendors/tools/build_vendors.py [--refresh-prices | --all-prices] [--reprice]
 
 Each theme below says *what* a stall sells: a hand list, a rule over the item
 database, or "whatever the monsters of these dungeons drop". The script
@@ -15,7 +15,12 @@ Prices come from tools/prices.json, a cache of iRO player-market averages
 (ragnastats.com, roughly 2013-2020 data). --refresh-prices fetches any item
 the cache lacks; --all-prices fetches every tradeable item (about an hour),
 so rule themes rank by what players really traded. Delete an entry to fetch
-it again. Those averages include
+it again.
+
+Prices also go to db/population_vendor_prices/prontera-vendors.csv
+(Id,Name,Min,Max), which the server reads and which wins over the YAML. A
+re-run keeps every row already there, so hand edits survive; --reprice
+rebuilds it from market data instead. Those averages include
 refined and carded copies, so for equipment an NPC also sells, the NPC price
 wins, and averages that are wildly out of line with an item's NPC value are
 treated as trolling and ignored.
@@ -38,6 +43,9 @@ MOD = os.path.dirname(HERE)
 REPO = os.path.dirname(os.path.dirname(MOD))
 RA = os.path.join(REPO, "vendor", "rathena")
 PRICES = os.path.join(HERE, "prices.json")
+# The price table the server reads (Id,Name,Min,Max). Rows already in it are
+# kept as they are, so hand edits survive a re-run; new items are appended.
+TABLE_CSV = os.path.join(MOD, "db", "population_vendor_prices", "prontera-vendors.csv")
 PREFIX = "prontera-vendors/"
 CANDIDATE_CAP = 80
 
@@ -793,7 +801,51 @@ def q(s):
     return '"' + s.replace('\\', '\\\\').replace('"', '\\"') + '"'
 
 
+def read_table():
+    import csv
+    out = {}
+    if not os.path.exists(TABLE_CSV):
+        return out
+    # Excel may save it in the local code page; only Id and the numbers matter.
+    with open(TABLE_CSV, encoding="utf-8", errors="replace", newline="") as f:
+        sample = f.read(4096)
+        f.seek(0)
+        rows = csv.reader((l for l in f if not l.lstrip().startswith("#")),
+                          delimiter=";" if sample.count(";") > sample.count(",") else ",")
+        for row in rows:
+            if not row or row[0].strip().lower() == "id" or len(row) < 3:
+                continue
+            try:
+                iid = int(row[0]) if row[0].strip() else item(row[1].strip())["Id"]
+                lo = int(row[2])
+                hi = int(row[3]) if len(row) > 3 and row[3].strip() else lo
+            except (ValueError, TypeError):
+                continue
+            out[iid] = (lo, max(lo, hi))
+    return out
+
+
+def write_table():
+    import csv
+    os.makedirs(os.path.dirname(TABLE_CSV), exist_ok=True)
+    with open(TABLE_CSV, "w", encoding="utf-8", newline="") as f:
+        f.write("# prontera-vendors price table: what each item sells for, as a range each\n"
+                "# stall rolls inside. Edit freely; the server reads it at startup, and\n"
+                "# tools/build_vendors.py keeps existing rows. Id decides, Name is for you.\n"
+                "# Refined, forged and carded lines are priced in population_vendors.yml.\n")
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(["Id", "Name", "Min", "Max"])
+        for iid, (lo, hi) in sorted(TABLE.items(), key=lambda kv: (ITEMS_BY_ID[kv[0]]["Name"].lower(), kv[0])):
+            w.writerow([iid, ITEMS_BY_ID[iid]["Name"], lo, hi])
+
+
+TABLE = {}
+
+
 def main():
+    # --reprice starts the table over from market data (hand edits are lost).
+    if "--reprice" not in sys.argv:
+        TABLE.update(read_table())
     if "--all-prices" in sys.argv:
         prefetch(THEMES, everything=True)
     elif "--refresh-prices" in sys.argv:
@@ -820,8 +872,14 @@ def main():
                 "    Pool:"]
         for e, spec, p in lines:
             d = {"Item": e["AegisName"], "Amount": amount_for(e, p, rng)}
-            band = 0.08 if p >= 1000 else 0.15
-            d["Price"] = [tidy(max(1, int(p * (1 - band)))), tidy(int(p * (1 + band)) + 1)]
+            plain = not (spec.get("refine") or spec.get("element") or spec.get("stars"))
+            if plain and e["Id"] in TABLE:
+                d["Price"] = list(TABLE[e["Id"]])
+            else:
+                band = 0.08 if p >= 1000 else 0.15
+                d["Price"] = [tidy(max(1, int(p * (1 - band)))), tidy(int(p * (1 + band)) + 1)]
+                if plain:
+                    TABLE[e["Id"]] = tuple(d["Price"])
             if spec.get("refine"):
                 d["Refine"] = spec["refine"]
             if spec.get("element"):
@@ -849,7 +907,7 @@ def main():
             "      setcart;",
         ]))
         print(f"  {t['key']}: {len(lines)} items", file=sys.stderr)
-    json.dump(CACHE, open(PRICES, "w"), indent=0, sort_keys=True)
+    write_table()
 
     head = (
         "###########################################################################\n"

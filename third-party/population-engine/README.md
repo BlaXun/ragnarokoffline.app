@@ -241,6 +241,10 @@ engine's vendors spawn exactly as upstream's do.
   some items just under the cheapest rival shell stall on the map, and no
   price goes below the NPC sell value except a fat-finger.
 - A mod vendor stall that sells out packs up, and its spot refills.
+- A mod's price table, `db/population_vendor_prices/<prefix>.csv` with rows
+  `Id,Name,Min,Max`, prices the plain stock lines of the vendors whose key
+  starts with `<prefix>/`, over their YAML Price. Hand-editable in a
+  spreadsheet.
 - `Callouts: { EverySeconds: [min, max], MapGapSeconds }` paces a mod vendor's
   callouts and keeps stalls on one map from talking over one another.
 - Script commands (patch 0017) let a mod's settings reach its vendors at
