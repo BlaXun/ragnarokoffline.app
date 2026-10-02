@@ -1,0 +1,8 @@
+{
+  "name": "blaze-shield-skip-prevent",
+  "version": "1.0.0",
+  "author": "BlaXun",
+  "description": "Prevents mobs from skipping blaze shield panels if those were in their natural walking path regardless of walkspeed. Each pillar hits on entry and holds the mob until it burns out. Endure skips the pin. Off until you turn it on.",
+  "default": "off",
+  "requires": { "app": ">=1.4.2", "era": "any" }
+}
