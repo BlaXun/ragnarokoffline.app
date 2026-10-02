@@ -22,6 +22,7 @@ mod crashes;
 mod database;
 mod host;
 mod config;
+mod control_panel;
 mod cp949;
 mod docker;
 mod groups;
@@ -51,6 +52,7 @@ const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-ch
                      \x20      backup [--full] <file>|restore [--full] <file>\n\
                      \x20      sql [--write] [--file <path>] [<statement>]\n\
                      \x20      accounts (private JSON request on stdin)\n\
+                     \x20      cp (JSON request on stdin: characters|character|reset-position|delete-character)\n\
                      \x20      link-assets <data.grf> [rdata.grf] [official_data.grf] [bgm-dir]";
 
 /// The runtime tree, which is the directory containing bin/ and scripts/.
@@ -171,6 +173,15 @@ fn main() {
             }
             Ok(())
         },
+        // Settings -> Tools -> Control panel (#230). Its writes take the
+        // operation lock themselves, once the request says it is one: the
+        // action is on stdin, not in argv.
+        "cp" => {
+            if let Err(error) = control_panel::run(&cfg, &dk) {
+                fail(verb, &error);
+            }
+            Ok(())
+        },
         "secure-services" => cmds::secure_services(&cfg, &dk, lan, ram_mib),
         "up" => cmds::up(&cfg, &dk, lan, ram_mib),
         "down" => cmds::down(&cfg, &dk),
@@ -268,7 +279,7 @@ fn main() {
 }
 
 fn fail(verb: &str, error: &str) -> ! {
-    if verb == "accounts" {
+    if verb == "accounts" || verb == "cp" {
         println!("{{\"error\":{}}}", json::quote(error));
     } else {
         eprintln!("{error}");
