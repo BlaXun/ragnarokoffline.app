@@ -223,6 +223,14 @@ struct PopulationModSpawn {
 	std::string spawn_id;                             ///< "<VendorKey>#<map>#<index>", stamped on each shell.
 };
 
+/// RAGNAROKMAC: one theme a market may roll for a spot.
+struct PopulationMarketTheme {
+	std::string key;   ///< VendorKey of the theme (an entry without Spawns).
+	int weight = 1;    ///< Relative chance when a spot rolls.
+	int min = 0;       ///< Spots kept on this theme before any other is rolled.
+	int max = 0;       ///< Most spots on this theme at once; 0 = no limit.
+};
+
 /// A named vendor configuration entry from db/population_vendors.yml.
 struct PopulationVendorEntry {
 	std::string key;
@@ -290,6 +298,15 @@ struct PopulationVendorEntry {
 	/// profile whose VendorKey equals this entry's key, and never use
 	/// VendorPlacement. Base entries leave this empty and behave as upstream.
 	std::vector<PopulationModSpawn> spawns;
+
+	/// RAGNAROKMAC: a market (`Market:` instead of `VendorKey:`) sells nothing
+	/// itself: each of its Spawns' spots rolls one of these themes whenever a
+	/// stall is put there, so the stalls change as they rotate.
+	bool is_market = false;
+	/// RAGNAROKMAC: a buying store (`Buying: true`): its Pool says what it wants
+	/// to buy, how many, and what it pays. Up to MAX_BUYINGSTORE_SLOTS (5) items.
+	bool buying = false;
+	std::vector<PopulationMarketTheme> themes;
 };
 
 /// Per-map vendor placement constraint (from db/population_engine.yml VendorPlacement: block).

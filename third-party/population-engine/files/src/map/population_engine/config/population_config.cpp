@@ -448,11 +448,38 @@ const std::string PopulationVendorDatabase::getDefaultLocation()
 uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 {
 	std::string key;
-	if (!this->asString(node, "VendorKey", key) || key.empty())
+	// RAGNAROKMAC: a Market entry: spots plus a weighted list of themes.
+	const bool is_market = this->nodeExists(node, "Market");
+	if (is_market) {
+		if (!this->asString(node, "Market", key) || key.empty())
+			return 0;
+	} else if (!this->asString(node, "VendorKey", key) || key.empty()) {
 		return 0;
+	}
 
 	PopulationVendorEntry entry;
 	entry.key = key;
+	entry.is_market = is_market;
+	if (is_market) {
+		if (this->nodeExists(node, "Themes") && node[c4::to_csubstr("Themes")].is_seq()) {
+			for (const ryml::NodeRef& tn : node[c4::to_csubstr("Themes")].children()) {
+				PopulationMarketTheme t;
+				if (!this->asString(tn, "Theme", t.key) || t.key.empty()) {
+					this->invalidWarning(tn, "Market '%s': a Themes entry needs Theme; skipped.\n", key.c_str());
+					continue;
+				}
+				int32_t v = 0;
+				if (this->nodeExists(tn, "Weight") && this->asInt32(tn, "Weight", v)) t.weight = std::max(0, v);
+				if (this->nodeExists(tn, "Min") && this->asInt32(tn, "Min", v)) t.min = std::max(0, v);
+				if (this->nodeExists(tn, "Max") && this->asInt32(tn, "Max", v)) t.max = std::max(0, v);
+				entry.themes.push_back(std::move(t));
+			}
+		}
+		if (entry.themes.empty())
+			this->invalidWarning(node, "Market '%s' has no Themes; it will stay empty.\n", key.c_str());
+		if (!this->nodeExists(node, "Spawns"))
+			this->invalidWarning(node, "Market '%s' has no Spawns; it will stay empty.\n", key.c_str());
+	}
 
 	if (this->nodeExists(node, "Title")) {
 		std::string title;
@@ -811,6 +838,13 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 			entry.rotation_sec = h * 3600;
 		}
 	}
+	// RAGNAROKMAC: Buying: true -- a buying store instead of a vending stall.
+	if (this->nodeExists(node, "Buying")) {
+		bool b = false;
+		if (this->asBool(node, "Buying", b))
+			entry.buying = b;
+	}
+
 	// RAGNAROKMAC: Undercut: { Chance: pct, StepPct: [min, max] }.
 	if (this->nodeExists(node, "Undercut")) {
 		const ryml::NodeRef& un = node[c4::to_csubstr("Undercut")];

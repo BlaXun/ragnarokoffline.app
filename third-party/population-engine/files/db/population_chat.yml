@@ -439,6 +439,20 @@ Body:
           - "WTS> {item}"
           - "WTS> {item} - {price}"
           - "WTS {item} {price} pm me"
+        # RAGNAROKMAC: buying stores (mod buyers only; {item}/{price} are what
+        # the store buys and what it pays).
+        buyer_call:
+          - "B> {item} {price}"
+          - "B> {item} @ {price}"
+          - "B>{item} {price} ea"
+          - "Buying {item}, {price} each!"
+          - "Buying {item} - {price}!"
+          - "WTB {item} {price}"
+          - "WTB> {item}, paying {price}"
+          - "Need {item}! Paying {price}."
+          - "buying {item} pm me"
+          - "Got {item}? I pay {price}."
+          - "Selling loot? I buy {item}."
 
   - ChatProfile: default
     Categories:

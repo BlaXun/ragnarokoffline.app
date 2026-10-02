@@ -2204,14 +2204,19 @@ fn vendor_entries(text: &str) -> Vec<VendorEntry> {
     chunks
         .iter()
         .filter_map(|chunk| {
-            let at = chunk.find("VendorKey:")?;
-            let value = chunk[at + "VendorKey:".len()..].trim_start();
+            // A vendor (`VendorKey:`) or a market (`Market:`, which is always a
+            // mod's own: it exists only to spawn).
+            let (at, label) = match chunk.find("VendorKey:") {
+                Some(at) => (at, "VendorKey:"),
+                None => (chunk.find("Market:")?, "Market:"),
+            };
+            let value = chunk[at + label.len()..].trim_start();
             let stop = value.find(|c: char| c == ',' || c == '}' || c == '#' || c.is_whitespace()).unwrap_or(value.len());
             let key = value[..stop].trim_matches(|c| c == '"' || c == '\'').to_string();
             if key.is_empty() {
                 return None;
             }
-            let mod_owned = chunk.contains("Spawns:") || chunk.lines().any(|l| {
+            let mod_owned = label == "Market:" || chunk.contains("Spawns:") || chunk.lines().any(|l| {
                 let l = l.trim_start().trim_start_matches("- ").trim_start_matches('{').trim();
                 l.starts_with("PlacementBound:") && l["PlacementBound:".len()..].trim().starts_with("true")
             }) || chunk.contains("PlacementBound: true");
@@ -3270,6 +3275,18 @@ mod tests {
             ]
         );
         assert!(vendor_ownership(&[("shop-a", a.as_path())]).len() == 1, "alone, only its own unprefixed key");
+
+        // A market is a mod's own too, and needs the prefix.
+        let c = root.join("shop-c");
+        fs::create_dir_all(c.join("db")).unwrap();
+        fs::write(
+            c.join("db/population_vendors.yml"),
+            "Header:\n  Type: POPULATION_VENDORS_DB\n  Version: 1\n\nBody:\n  - Market: street\n    Themes:\n      - { Theme: shop-c/a }\n  - Market: shop-c/street\n",
+        )
+        .unwrap();
+        let found = vendor_ownership(&[("shop-c", c.as_path())]);
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].1.contains("'street' should start with 'shop-c/'"), "{found:?}");
     }
 
     fn setting(key: &str, value: SettingValue, min: f64, max: f64) -> Setting {

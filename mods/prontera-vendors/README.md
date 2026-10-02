@@ -13,16 +13,19 @@ do, and each new one draws a fresh mix from its theme.
 - **The population engine switched on**: Settings → Population → Fake
   players, with the engine's vending economy on (`population_engine_vending_enable`,
   the default).
-- An app build whose engine has mod vendors (`Spawns:`, Pool vendors, and the
-  `population_vendor_*` script commands). On an older build the server log
-  names the unknown keys or the unknown script command.
+- An app build whose engine has mod vendors with markets (`Market:`), Pool
+  vendors, the `population_vendor_*` script commands and `@vendorinfo`. On an
+  older build no stall appears, and the server log names what it doesn't
+  know.
 
 ## Settings (Settings → Mods)
 
 | Setting | Default | What it does |
 |---|---|---|
 | Sell shops | on | Off removes every sell stall. |
-| Sell stalls | 20 | How many. With fewer stalls than themes, a different set of themes shows up each server start. |
+| Sell stalls | 20 | How many spots the market fills. |
+| Buy shops | on | Off removes every buying store. |
+| Buy stalls | 20 | How many buying stores the buy market fills. |
 | Minutes before a stall changes | 240 | How long a vendor stays before another takes the spot (± up to half, checked once a minute, so short values run long). 0 keeps them until restart. |
 | Price level (%) | 100 | Every price × this / 100. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count in it). |
@@ -32,16 +35,36 @@ do, and each new one draws a fresh mix from its theme.
 Settings take effect when the server starts. They reach the engine through
 `npc/prontera-vendors.txt` and `npc/prontera-vendors-newer.txt` (the second
 holds the settings that need a newer app build, so an older one only loses
-those). Buy shops will get their own on/off and count under
-`prontera-vendors/buy/`.
+those). 
 
 ## What's for sale
 
-113 themes, all on both sidewalks (x=147, y=136–170 and x=164, y=135–173).
-Six staples are at every server start: general goods, potions, forge
-supplies, healing items, common cards and rare cards (they weigh three times
-as much in the Sell stalls split). The rest of the stalls are drawn from the
-other themes, a different set each start.
+113 themes, sold through one market: the spots on both sidewalks (x=147,
+y=136–170 and x=164, y=135–173). Every time a spot gets a stall, at server
+start or when the one before it packs up, it rolls a theme, so the street
+changes while you play. Six staples are always there (general goods,
+potions, forge supplies, healing items, common and rare cards: at least one
+each, at most two); card themes are twice as likely as the rest, and every
+other theme stands at most once at a time.
+
+### Buy shops
+
+A second market, `prontera-vendors/buy/sidewalks`, on the outer sidewalks
+(x=140 and x=171, y=136–172): players' buying stores that buy from you. 15
+themes: refine materials, common and rare cards, OCA/MCA/OBB/OPB and
+branches, Ygg items, potions and herbs, other consumables, gemstones,
+elemental stones and converters, alchemy materials, popular quest materials,
+loot by monster level (three bands), and a random buyer. A store wants 2–5
+kinds of item (rAthena's limit), pays 60–85 % of the low end of the item's
+sell range (never less than an NPC pays), wants lots of cheap loot and a few
+of anything dear, and packs up when it has bought everything or spent its
+zeny. rAthena only lets a buying store take items flagged for it, so
+equipment is never bought. Anyone can open a buying store, so buyers wear
+any job's sprite.
+
+GMs can look behind the scenes with `@vendorinfo` (every mod stall on the
+map, with its theme and time to rotation) and `@vendorinfo <theme>` (its
+stock and price ranges, e.g. `@vendorinfo byalan` or `@vendorinfo sidewalks`).
 
 - **Goods:** general gear, forge supplies, potions, slim potions, healing
   items, gemstones, Ygg/Ori/Elu, skill supplies, ammo, magic scrolls, dyes,
@@ -137,11 +160,18 @@ spawn databases and the price caches `tools/prices_kro.json` (RagMAYA) and
 
 ```
 python3 mods/prontera-vendors/tools/build_vendors.py                   # rebuild from the cache
+python3 mods/prontera-vendors/tools/build_vendors.py --era pre-re      # the pre-renewal variant (pre-re/db/)
 python3 mods/prontera-vendors/tools/build_vendors.py --refresh-prices  # fetch prices the cache lacks
 python3 mods/prontera-vendors/tools/build_vendors.py --all-prices      # fetch every tradeable item (~1-2 h)
 python3 mods/prontera-vendors/tools/build_vendors.py --reprice         # rebuild the CSV from market data
 python3 mods/prontera-vendors/tools/scrape_ragmaya.py --workers 12     # refresh kRO prices (resumable, ~1-2 h)
 ```
+
+Pre-renewal servers get their own set, built the same way from rAthena's
+pre-renewal tables into `pre-re/db/` (`"prerenewalFolder": "pre-re"` in
+mod.json lays it over `db/`): the same themes where the items exist, without
+the renewal-only ones (costumes, shadow gear, Doram), with a price list of
+its own.
 
 Themes are defined at the top of the script: a hand list, a rule over the
 item database, or "what these dungeons' monsters drop". The YAML can be
@@ -155,9 +185,6 @@ where; its `Count` is the theme's share of the Vendors setting.
 
 ## Known gaps
 
-- Pre-renewal: the pools are built from renewal data. Items a pre-renewal
-  server lacks are skipped with a warning at startup, so stalls there are
-  thinner.
 - Names: vendors use the engine's generated names, not a list of
   player-style handles.
 - Restocking in place (the same vendor with new stock) isn't done; a new
@@ -172,8 +199,9 @@ mods/prontera-vendors/
 ├── npc/
 │   ├── prontera-vendors.txt         hands the settings to the engine
 │   └── prontera-vendors-newer.txt   the ones needing a newer app build
+├── pre-re/db/                   the pre-renewal set (same layout as db/)
 ├── db/
-│   ├── population_vendors.yml       themes: pools, spawns (generated)
+│   ├── population_vendors.yml       market + themes (generated)
 │   ├── population_vendor_prices/
 │   │   └── prontera-vendors.csv     the price list (Id,Name,Min,Max); edit freely
 │   └── population_vendor_pop.yml    one shell profile per theme (generated)
