@@ -4029,22 +4029,24 @@ TIMER_FUNC(population_engine_vendor_rotation_timer)
 	// so collect pointers up front and release outside the walk.
 	std::vector<map_session_data*> due;
 	due.reserve(g_population_engine_pcs.size());
+	// RAGNAROKMAC: a mod vendor that has sold everything packs up, as a player
+	// would; the mod pass puts a fresh stall in its place. rAthena only closes
+	// an empty stall for autotraders, so it would otherwise sit there empty.
+	// Checked first and outside the per-tick cap, so a busy rotation can't keep
+	// an empty stall standing. Base vendors keep upstream's behaviour.
+	for (map_session_data *sd : g_population_engine_pcs)
+		if (sd && !sd->pop.vendor_spawn_id.empty() && sd->state.vending && sd->vend_num <= 0)
+			due.push_back(sd);
+	const size_t cap = due.size() + POP_VENDOR_ROTATION_MAX_PER_TICK;
 	for (map_session_data *sd : g_population_engine_pcs) {
 		if (!sd) continue;
-		// RAGNAROKMAC: a mod vendor that has sold everything packs up, as a
-		// player would; the mod pass puts a fresh stall in its place. rAthena
-		// only closes an empty stall for autotraders, so it would otherwise sit
-		// there empty. Base vendors keep upstream's behaviour.
-		if (!sd->pop.vendor_spawn_id.empty() && sd->state.vending && sd->vend_num <= 0) {
-			due.push_back(sd);
-			if (due.size() >= POP_VENDOR_ROTATION_MAX_PER_TICK) break;
-			continue;
-		}
+		if (!sd->pop.vendor_spawn_id.empty() && sd->state.vending && sd->vend_num <= 0)
+			continue; // already taken above
 		if (sd->pop.vendor_rotation_at == 0) continue; // not a rotating vendor
 		if (now < sd->pop.vendor_rotation_at) continue;
 		if (!sd->state.vending) continue; // already stopped vending (edge case: player interactions)
 		due.push_back(sd);
-		if (due.size() >= POP_VENDOR_ROTATION_MAX_PER_TICK) break;
+		if (due.size() >= cap) break;
 	}
 	for (map_session_data *sd : due) {
 		population_engine_shell_release(sd);
