@@ -79,7 +79,7 @@ Agreed scope that is **not** in this MVP yet:
 mods/prontera-vendors/
 ├── mod.json
 ├── README.md
-└── db/import/
+└── db/
     ├── population_vendors.yml       Pool definition + placement
     └── population_vendor_pop.yml    Shell profile referencing the pool
 ```
