@@ -277,16 +277,25 @@
       "name": "standart-npc",
       "version": "",
       "author": "MondoTruth and the Ragnarok Offline community",
-      "description": "Warper, Buffer, Job Master, Kafra, Refiner, Bounty Hunter and a town's worth of other custom NPCs in one mod. Every NPC can be switched off on its own from the mod's Settings\u2026 window. Some NPCs need the Cash Shop for full functionality.",
+      "description": "Warper, Buffer with 1st\u20134th class buffs, Job Master, Kafra, Refiners, Bounty Hunter, an MVP dungeon, training dummies and a town's worth of other custom NPCs in one mod, for both eras. Switch any NPC off and pick the Buffer's buffs in the mod's Settings\u2026 window. Some NPCs need the Cash Shop for full functionality.",
       "homepage": "https://github.com/MondoTruth/standart-npc",
       "tags": [
+        "4th-class",
+        "bounty",
         "buffer",
+        "mvp",
         "npc",
         "quality-of-life",
+        "refine",
         "warper"
       ],
-      "icon": "",
-      "screenshots": [],
+      "icon": "images/icon.png",
+      "screenshots": [
+        "images/prontera-fountain.png",
+        "images/prontera-square.png",
+        "images/settings.png",
+        "images/settings-buffer.png"
+      ],
       "requires": {
         "mods": [],
         "era": "",
@@ -296,7 +305,28 @@
         "github": "MondoTruth/standart-npc",
         "asset": "standart-npc-*.zip"
       },
-      "files": []
+      "files": [
+        {
+          "path": "images/icon.png",
+          "sha256": "c3989debb761bf0b0acfc98b3601c846206d8fda6128bd8fa20a1556ca2b125b"
+        },
+        {
+          "path": "images/prontera-fountain.png",
+          "sha256": "e0509df7b1d561ddb0e946989c57f1feb38d1fb3488ec8715b0c5d0e033fcb01"
+        },
+        {
+          "path": "images/prontera-square.png",
+          "sha256": "d3a160118c5e958d700bfa3bbaf2bb9575b6e19f428603973012ad25a679cb59"
+        },
+        {
+          "path": "images/settings-buffer.png",
+          "sha256": "7bcff49b297eb808acd9595a9d03da92bc7583f9f9c2d6ba58d929623a794952"
+        },
+        {
+          "path": "images/settings.png",
+          "sha256": "3c406adc5cf60d554d2b5e3d3a0e3815002bbc2144c718e9d84cb4b52eb0051a"
+        }
+      ]
     },
     {
       "name": "steal-cards",
