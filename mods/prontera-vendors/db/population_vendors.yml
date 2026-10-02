@@ -48,10 +48,10 @@ Body:
       - "{name}'s Shop"
     MaxSlots: 10
     PickCount: [6, 10]
-    # TESTING: 5 min ± 1. Back to RotationHours: 4 / RotationJitterMinutes: 30
-    # before release.
-    RotationMinutes: 5
-    RotationJitterMinutes: 1
+    # The mod's settings override these (Settings -> Mods).
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     # Each shell rolls each price ±12% and, 1-in-5000 per item, drops a digit
     # (a "fat-finger" deal). See the header note on prices.
     PriceJitterPct: 12
@@ -103,10 +103,10 @@ Body:
       - "{name}'s Forge Goods"
     MaxSlots: 8
     PickCount: [5, 8]
-    # TESTING: 5 min ± 1. Back to RotationHours: 4 / RotationJitterMinutes: 30
-    # before release.
-    RotationMinutes: 5
-    RotationJitterMinutes: 1
+    # The mod's settings override these (Settings -> Mods).
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     PriceJitterPct: 12
     PriceMistakeOneIn: 5000
     # Prices tuned to iRO Valkyrie player-market data (ragnastats.com); these

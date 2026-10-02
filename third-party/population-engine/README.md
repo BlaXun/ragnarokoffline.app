@@ -235,6 +235,18 @@ engine's vendors spawn exactly as upstream's do.
 - `PlacementBound: true` on a profile in `population_vendor_pop.yml` keys the
   profile by its `VendorKey` instead of its job, so the job is only the sprite.
   A mod vendor's look comes from the profile with its key.
+- Pool stock lines can say what a player's cart really holds: `Refine: 7` (or
+  `[min, max]`), a forged `Element: Fire` with `Stars: 0-3`, or `Cards: [...]`.
+  `Price: [min, max]` rolls in a range, `Undercut: { Chance, StepPct }` lists
+  some items just under the cheapest rival shell stall on the map, and no
+  price goes below the NPC sell value except a fat-finger.
+- A mod vendor stall that sells out packs up, and its spot refills.
+- `Callouts: { EverySeconds: [min, max], MapGapSeconds }` paces a mod vendor's
+  callouts and keeps stalls on one map from talking over one another.
+- Script commands (patch 0017) let a mod's settings reach its vendors at
+  startup, per VendorKey prefix: `population_vendor_count` (a total split
+  across the mod's Spawns by their Counts), `population_vendor_rotation`
+  (minutes) and `population_vendor_callouts` (on/off and pace).
 - `{item}` and `{price}` in a chat line name a real item from the speaking
   shell's own stall. The shipped `vendor_call` lines use them.
 - Both vendor databases import `db/import/`, with empty stubs in

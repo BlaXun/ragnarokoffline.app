@@ -207,6 +207,9 @@ struct s_population {
 	// match), and a fixed-seat block also records which seat the shell holds.
 	std::string vendor_spawn_id;
 	int16_t     vendor_seat = -1;
+	// RAGNAROKMAC: items this stall lists by "fat-finger" mistake; undercutting
+	// ignores them, so one typo does not drag the whole street's prices down.
+	std::vector<t_itemid> vendor_mistakes;
 
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.

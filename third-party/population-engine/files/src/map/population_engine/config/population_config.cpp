@@ -675,9 +675,93 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 				vs.amount = std::max(static_cast<int16_t>(1), amount);
 		}
 		if (this->nodeExists(sn, "Price")) {
-			uint32_t price = 0;
-			if (this->asUInt32(sn, "Price", price))
-				vs.price = price;
+			const ryml::NodeRef& pn = sn[c4::to_csubstr("Price")];
+			if (pn.is_seq()) {
+				// RAGNAROKMAC: Price: [min, max], rolled per shell.
+				int64_t lo = 0, hi = 0;
+				if (pn.num_children() == 2 && ryml::read(pn[0], &lo) && ryml::read(pn[1], &hi) && lo >= 1 && hi >= 1) {
+					if (hi < lo) std::swap(lo, hi);
+					vs.price = static_cast<uint32_t>(std::min<int64_t>(lo, MAX_ZENY));
+					vs.price_max = static_cast<uint32_t>(std::min<int64_t>(hi, MAX_ZENY));
+				} else {
+					this->invalidWarning(pn, "VendorKey '%s': Price range must be [min, max], both 1 or more.\n", key.c_str());
+				}
+			} else {
+				uint32_t price = 0;
+				if (this->asUInt32(sn, "Price", price))
+					vs.price = price;
+			}
+		}
+
+		// RAGNAROKMAC: refine, forged element and cards, so a stall can sell what a
+		// player's cart really holds (+7 Stiletto, Fire Stiletto, a carded Guard).
+		std::shared_ptr<item_data> sid = item_db.find(vs.nameid);
+		const bool is_gear = sid && (sid->type == IT_WEAPON || sid->type == IT_ARMOR);
+		if (this->nodeExists(sn, "Refine")) {
+			const ryml::NodeRef& rn = sn[c4::to_csubstr("Refine")];
+			int32_t lo = 0, hi = 0;
+			if (rn.is_seq() && rn.num_children() == 2) {
+				ryml::read(rn[0], &lo);
+				ryml::read(rn[1], &hi);
+			} else if (this->asInt32(sn, "Refine", lo)) {
+				hi = lo;
+			}
+			if (!is_gear || sid->flag.no_refine) {
+				this->invalidWarning(rn, "VendorKey '%s': %s cannot be refined; Refine ignored.\n",
+					key.c_str(), sid ? sid->name.c_str() : "item");
+			} else {
+				lo = std::max(0, std::min(MAX_REFINE, lo));
+				hi = std::max(0, std::min(MAX_REFINE, hi));
+				if (hi < lo) std::swap(lo, hi);
+				vs.refine_min = static_cast<uint8_t>(lo);
+				vs.refine_max = static_cast<uint8_t>(hi);
+			}
+		}
+		if (this->nodeExists(sn, "Element")) {
+			std::string ele;
+			this->asString(sn, "Element", ele);
+			std::transform(ele.begin(), ele.end(), ele.begin(), [](unsigned char c) { return static_cast<char>(::tolower(c)); });
+			uint8_t e = 0;
+			if (ele == "water" || ele == "ice") e = ELE_WATER;
+			else if (ele == "earth") e = ELE_EARTH;
+			else if (ele == "fire") e = ELE_FIRE;
+			else if (ele == "wind") e = ELE_WIND;
+			if (e == 0 || !sid || sid->type != IT_WEAPON) {
+				this->invalidWarning(sn[c4::to_csubstr("Element")],
+					"VendorKey '%s': Element must be Water, Earth, Fire or Wind on a weapon; ignored.\n", key.c_str());
+			} else {
+				vs.element = e;
+			}
+		}
+		if (this->nodeExists(sn, "Stars")) {
+			int32_t st = 0;
+			if (this->asInt32(sn, "Stars", st))
+				vs.stars = static_cast<uint8_t>(std::max(0, std::min(3, st)));
+			if (vs.stars > 0 && (!sid || sid->type != IT_WEAPON))
+				vs.stars = 0;
+		}
+		if (this->nodeExists(sn, "Cards")) {
+			const ryml::NodeRef& cn = sn[c4::to_csubstr("Cards")];
+			if (vs.element != 0 || vs.stars != 0) {
+				this->invalidWarning(cn, "VendorKey '%s': a forged weapon has no card slots; Cards ignored.\n", key.c_str());
+			} else if (cn.is_seq()) {
+				for (const ryml::NodeRef& c : cn.children()) {
+					std::string cname;
+					c4::csubstr v = c.val();
+					cname.assign(v.str, v.len);
+					auto cdata = item_db.searchname(cname.c_str());
+					if (!cdata || cdata->type != IT_CARD) {
+						this->invalidWarning(c, "VendorKey '%s': '%s' is not a card; skipped.\n", key.c_str(), cname.c_str());
+						continue;
+					}
+					if (sid && vs.cards.size() >= sid->slots) {
+						this->invalidWarning(c, "VendorKey '%s': %s has only %u slot(s); extra card skipped.\n",
+							key.c_str(), sid->name.c_str(), static_cast<unsigned>(sid->slots));
+						continue;
+					}
+					vs.cards.push_back(static_cast<t_itemid>(cdata->nameid));
+				}
+			}
 		}
 		return true;
 	};
@@ -726,6 +810,50 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 			entry.rotation_sec = h * 3600;
 		}
 	}
+	// RAGNAROKMAC: Undercut: { Chance: pct, StepPct: [min, max] }.
+	if (this->nodeExists(node, "Undercut")) {
+		const ryml::NodeRef& un = node[c4::to_csubstr("Undercut")];
+		int32_t chance = 0;
+		if (this->nodeExists(un, "Chance") && this->asInt32(un, "Chance", chance))
+			entry.undercut_chance = std::max(0, std::min(100, chance));
+		int32_t lo = 1, hi = 5;
+		if (this->nodeExists(un, "StepPct")) {
+			const ryml::NodeRef& sn2 = un[c4::to_csubstr("StepPct")];
+			if (sn2.is_seq() && sn2.num_children() == 2) {
+				ryml::read(sn2[0], &lo);
+				ryml::read(sn2[1], &hi);
+			} else if (this->asInt32(un, "StepPct", lo)) {
+				hi = lo;
+			}
+		}
+		if (hi < lo) std::swap(lo, hi);
+		entry.undercut_step_min = std::max(0, std::min(90, lo));
+		entry.undercut_step_max = std::max(0, std::min(90, hi));
+	}
+
+	// RAGNAROKMAC: Callouts: { EverySeconds: [min, max], MapGapSeconds: n }.
+	if (this->nodeExists(node, "Callouts")) {
+		const ryml::NodeRef& cn = node[c4::to_csubstr("Callouts")];
+		if (this->nodeExists(cn, "EverySeconds")) {
+			const ryml::NodeRef& en = cn[c4::to_csubstr("EverySeconds")];
+			int32_t lo = 0, hi = 0;
+			if (en.is_seq() && en.num_children() == 2) {
+				ryml::read(en[0], &lo);
+				ryml::read(en[1], &hi);
+			} else if (this->asInt32(cn, "EverySeconds", lo)) {
+				hi = lo;
+			}
+			if (hi < lo) std::swap(lo, hi);
+			entry.callout_min_sec = std::max(0, lo);
+			entry.callout_max_sec = std::max(0, hi);
+		}
+		if (this->nodeExists(cn, "MapGapSeconds")) {
+			int32_t g = 0;
+			if (this->asInt32(cn, "MapGapSeconds", g))
+				entry.callout_map_gap_sec = std::max(0, g);
+		}
+	}
+
 	// RotationMinutes: the same in minutes, for short cycles (testing, busy
 	// markets). Wins over RotationHours when both are given.
 	if (this->nodeExists(node, "RotationMinutes")) {
