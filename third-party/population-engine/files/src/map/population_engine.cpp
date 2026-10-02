@@ -468,6 +468,12 @@ static bool population_engine_deliver_chat_reply_locked(map_session_data* bot_sd
 
 static PopulationEngineConfig g_current_config;
 static int32 g_autosummon_timer = INVALID_TIMER;
+// RAGNAROKMAC: Pool-vendor rotation. Fires every POP_VENDOR_ROTATION_TICK_MS and
+// releases vendor shells whose per-shell vendor_rotation_at has passed; the
+// autosummon pass refills with a fresh pool pick + title. See the Pool branch in
+// population_engine_spawn_shell.
+static int32 g_vendor_rotation_timer = INVALID_TIMER;
+static constexpr int32 POP_VENDOR_ROTATION_TICK_MS = 60000; // 60s is plenty for an hours-scale rotation.
 /// 5M-slot ID pool; index in [1, POPULATION_ENGINE_INDEX_MAX) keeps account_id below POPULATION_ENGINE_ACCOUNT_ID_END.
 static constexpr uint32_t POPULATION_ENGINE_INDEX_MAX = POPULATION_ENGINE_ACCOUNT_ID_END - POPULATION_ENGINE_ACCOUNT_ID_BASE;
 static std::atomic<uint32_t> g_next_population_engine_index(1);
@@ -3558,12 +3564,47 @@ void population_engine_on_shell_kills_player(map_session_data *killer_sd, map_se
 	g_pop_chat_next_tick[killer_sd->id] = now + static_cast<t_tick>(cd > 0 ? cd : 5000);
 }
 
+// RAGNAROKMAC: Walk every live vendor shell and release those whose per-shell
+// vendor_rotation_at tick has passed. The autosummon timer then refills the
+// map on its next pass with new picks from the pool. We release at most
+// POP_VENDOR_ROTATION_MAX_PER_TICK per tick so a storm of simultaneous
+// expiries (e.g. right after a server restart that bulk-spawned a hundred
+// vendors) staggers naturally across minutes rather than crashing one tick
+// through a hundred teardowns.
+static constexpr size_t POP_VENDOR_ROTATION_MAX_PER_TICK = 8;
+
+TIMER_FUNC(population_engine_vendor_rotation_timer)
+{
+	const t_tick now = gettick();
+	size_t released = 0;
+	// g_population_engine_pcs mutates during release (shell removes itself),
+	// so collect pointers up front and release outside the walk.
+	std::vector<map_session_data*> due;
+	due.reserve(g_population_engine_pcs.size());
+	for (map_session_data *sd : g_population_engine_pcs) {
+		if (!sd) continue;
+		if (sd->pop.vendor_rotation_at == 0) continue; // not a rotating vendor
+		if (now < sd->pop.vendor_rotation_at) continue;
+		if (!sd->state.vending) continue; // already stopped vending (edge case: player interactions)
+		due.push_back(sd);
+		if (due.size() >= POP_VENDOR_ROTATION_MAX_PER_TICK) break;
+	}
+	for (map_session_data *sd : due) {
+		population_engine_shell_release(sd);
+		++released;
+	}
+	if (released > 0)
+		ShowInfo("Population engine: rotated %zu vendor shell(s).\n", released);
+	return 0;
+}
+
 void do_init_population_engine() {
 	// Single-threaded engine: bot pathing uses unit_walktoxy / unit_walktobl.
 	add_timer_func_list(population_engine_autosummon_timer, "population_engine_autosummon_timer");
 	add_timer_func_list(population_engine_chat_timer, "population_engine_chat_timer");
 	add_timer_func_list(population_engine_global_combat_timer, "population_engine_global_combat_timer");
 	add_timer_func_list(population_engine_respawn_shell_timer, "population_engine_respawn_shell_timer");
+	add_timer_func_list(population_engine_vendor_rotation_timer, "population_engine_vendor_rotation_timer");
 	population_engine_path_register_timer_funcs();
 }
 
@@ -3639,6 +3680,20 @@ void do_init_population_engine_load_databases() {
 	}
 
 	population_engine_path_restart_wander_timer();
+
+	// RAGNAROKMAC: vendor rotation sweeper. One-minute cadence; sweeps live
+	// vendor shells against their per-shell vendor_rotation_at tick.
+	if (g_vendor_rotation_timer != INVALID_TIMER) {
+		const TimerData* td = get_timer(g_vendor_rotation_timer);
+		if (td && td->func == population_engine_vendor_rotation_timer)
+			delete_timer(g_vendor_rotation_timer, population_engine_vendor_rotation_timer);
+		g_vendor_rotation_timer = INVALID_TIMER;
+	}
+	g_vendor_rotation_timer = add_timer_interval(
+		gettick() + POP_VENDOR_ROTATION_TICK_MS,
+		population_engine_vendor_rotation_timer, 0, 0, POP_VENDOR_ROTATION_TICK_MS);
+	if (g_vendor_rotation_timer == INVALID_TIMER)
+		ShowError("Population engine: failed to register vendor rotation timer; Pool vendors will not rotate.\n");
 
 	if (g_population_combat_global_timer != INVALID_TIMER) {
 		const TimerData *td = get_timer(g_population_combat_global_timer);
@@ -4628,13 +4683,17 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			if (pop_cfg && !pop_cfg->vendor_key.empty())
 				vendor_cfg = population_vendor_db().find(pop_cfg->vendor_key);
 
-			// Determine vend title (vendor_cfg title > VendorMessage > a random
-			// one of ours). RAGNAROKMAC: the fallback was the literal "Shop",
-			// which is what most stalls end up showing, because most jobs have
-			// no vendor entry naming a title.
+			// Determine vend title (TitleFromPool > vendor_cfg title > VendorMessage
+			// > a random one of ours). RAGNAROKMAC: the stock fallback was the
+			// literal "Shop", which is what most stalls end up showing because
+			// most jobs have no vendor entry naming a title. TitleFromPool was
+			// added so a single VendorKey can read as many different "players"
+			// each with their own shop sign.
 			const char *vend_title =
 				POP_SHOP_TITLES[rnd() % ARRAYLENGTH(POP_SHOP_TITLES)];
-			if (vendor_cfg && !vendor_cfg->title.empty())
+			if (vendor_cfg && !vendor_cfg->title_pool.empty())
+				vend_title = vendor_cfg->title_pool[rnd() % vendor_cfg->title_pool.size()].c_str();
+			else if (vendor_cfg && !vendor_cfg->title.empty())
 				vend_title = vendor_cfg->title.c_str();
 			else if (pop_cfg && !pop_cfg->vendor_message.empty())
 				vend_title = pop_cfg->vendor_message.c_str();
@@ -4645,12 +4704,43 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			std::vector<TmpStock> stock;
 			const int max_slots = vendor_cfg ? vendor_cfg->max_slots : 12;
 
-			if (vendor_cfg && !vendor_cfg->dynamic && !vendor_cfg->stock.empty()) {
+			if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Static && !vendor_cfg->stock.empty()) {
 				// Static vending: use exactly the YAML-defined stock.
 				for (const auto &vs : vendor_cfg->stock)
 					stock.push_back({ vs.nameid, vs.amount, vs.price });
 
-			} else if (vendor_cfg && vendor_cfg->dynamic) {
+			} else if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Pool && !vendor_cfg->pool.empty()) {
+				// RAGNAROKMAC: Pool vending. Pick pick_count distinct items from
+				// the pool at random. Overfeed by 2x so pc_cart_additem rejections
+				// (NoTrade / weight / equipment-slot conflicts) don't leave the
+				// vend below pick_count — same approach the dynamic branch uses.
+				const int pool_n = static_cast<int>(vendor_cfg->pool.size());
+				int lo = vendor_cfg->pick_count_min > 0 ? vendor_cfg->pick_count_min : max_slots;
+				int hi = vendor_cfg->pick_count_max > 0 ? vendor_cfg->pick_count_max : lo;
+				if (hi < lo) hi = lo;
+				int pick = hi > lo ? static_cast<int>(lo + (rnd() % (hi - lo + 1))) : lo;
+				if (pick < 1) pick = 1;
+				if (pick > max_slots) pick = max_slots;
+				const int want = std::min(pool_n, pick * 2);
+
+				// Fisher-Yates on an index vector; take the first `want` indices.
+				std::vector<int> idx(pool_n);
+				for (int i = 0; i < pool_n; ++i) idx[i] = i;
+				for (int i = pool_n - 1; i > 0; --i) {
+					const int j = static_cast<int>(rnd()) % (i + 1);
+					if (j != i) std::swap(idx[i], idx[j]);
+				}
+				for (int i = 0; i < want; ++i) {
+					const auto &vs = vendor_cfg->pool[idx[i]];
+					stock.push_back({ vs.nameid, vs.amount, vs.price });
+				}
+
+				// Fallthrough to built-in defaults is undesirable for Pool: an
+				// empty pool is a config error, not a reason to serve potions.
+				if (stock.empty())
+					vendor_cfg = nullptr;
+
+			} else if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Dynamic) {
 				// Dynamic vending: derive saleable items from mob drop tables across one or
 				// more *source* maps (NOT the spawn map — towns have empty moblist[]).
 				// Map selection priority:
@@ -4890,6 +4980,22 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			if (vend_count > 0) {
 				sd->state.prevend = 1;
 				vending_openvending(*sd, vend_title, vend_data, vend_count, nullptr);
+
+				// RAGNAROKMAC: Pool vendors with RotationHours > 0 get a per-shell
+				// expiry. The vendor rotation timer walks shells periodically and
+				// releases those whose tick has passed; the autosummon pass then
+				// re-fills with a fresh pool pick + title + name. Jitter spreads
+				// the respawns in time so a Prontera full of ten vendors doesn't
+				// vanish and reappear in lockstep.
+				if (vendor_cfg && vendor_cfg->rotation_sec > 0) {
+					const int jitter = vendor_cfg->rotation_jitter_sec;
+					int offset = 0;
+					if (jitter > 0)
+						offset = static_cast<int>(rnd() % (jitter * 2 + 1)) - jitter;
+					int lifetime = vendor_cfg->rotation_sec + offset;
+					if (lifetime < 60) lifetime = 60; // one-minute floor; a negative jitter must not kill newborn shells
+					sd->pop.vendor_rotation_at = gettick() + static_cast<t_tick>(lifetime) * 1000;
+				}
 			}
 		}
 	}
@@ -7175,6 +7281,13 @@ void population_engine_stop() {
         if (tdc && tdc->func == population_engine_global_combat_timer)
             delete_timer(g_population_combat_global_timer, population_engine_global_combat_timer);
         g_population_combat_global_timer = INVALID_TIMER;
+    }
+    // RAGNAROKMAC: Pool-vendor rotation timer.
+    if (g_vendor_rotation_timer != INVALID_TIMER) {
+        const TimerData* tdv = get_timer(g_vendor_rotation_timer);
+        if (tdv && tdv->func == population_engine_vendor_rotation_timer)
+            delete_timer(g_vendor_rotation_timer, population_engine_vendor_rotation_timer);
+        g_vendor_rotation_timer = INVALID_TIMER;
     }
     population_engine_path_stop_wander_timer();
 

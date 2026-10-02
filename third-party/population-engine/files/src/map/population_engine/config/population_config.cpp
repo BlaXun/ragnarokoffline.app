@@ -464,7 +464,16 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 		if (this->asString(node, "Type", type_str)) {
 			std::transform(type_str.begin(), type_str.end(), type_str.begin(),
 				[](unsigned char c) { return static_cast<char>(::tolower(c)); });
-			entry.dynamic = (type_str == "dynamic");
+			if (type_str == "dynamic")
+				entry.type = PopulationVendorType::Dynamic;
+			else if (type_str == "pool") // RAGNAROKMAC
+				entry.type = PopulationVendorType::Pool;
+			else if (type_str == "static" || type_str.empty())
+				entry.type = PopulationVendorType::Static;
+			else
+				this->invalidWarning(node[c4::to_csubstr("Type")],
+					"VendorKey '%s': Type must be 'static', 'dynamic', or 'pool' (got '%s'); defaulting to static.\n",
+					key.c_str(), type_str.c_str());
 		}
 	}
 
@@ -555,7 +564,7 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 	}
 
 	// Parse Stock: sequence (used by static vendors).
-	if (!entry.dynamic && this->nodeExists(node, "Stock")) {
+	if (entry.type == PopulationVendorType::Static && this->nodeExists(node, "Stock")) {
 		const ryml::NodeRef& stock_node = node[c4::to_csubstr("Stock")];
 		if (stock_node.is_seq()) {
 			for (const ryml::NodeRef& sn : stock_node.children()) {
@@ -618,6 +627,123 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 				}
 
 				entry.stock.push_back(vs);
+			}
+		}
+	}
+
+	// RAGNAROKMAC: Pool-type parsing. A Pool vendor carries a themed superset
+	// in Pool: (same shape as Stock:), picks PickCount items per shell, and
+	// optionally rotates every RotationHours (±RotationJitterMinutes).
+	// TitleFromPool: lets each shell pick a shop title from a list so the
+	// market reads like a dozen different players rather than one.
+	auto parse_vendor_stock_item = [&](const ryml::NodeRef& sn, PopulationVendorStock& vs) -> bool {
+		std::string item_str;
+		if (this->asString(sn, "Item", item_str) && !item_str.empty()) {
+			bool all_digits = true;
+			for (char c : item_str)
+				if (!std::isdigit(static_cast<unsigned char>(c))) { all_digits = false; break; }
+			if (all_digits) {
+				try {
+					const unsigned long v = std::stoul(item_str);
+					if (v == 0 || v > 65535UL) return false;
+					vs.nameid = static_cast<t_itemid>(v);
+				} catch (...) { return false; }
+			} else {
+				auto idata = item_db.searchname(item_str.c_str());
+				if (!idata) {
+					this->invalidWarning(sn[c4::to_csubstr("Item")],
+						"Unknown item AegisName '%s' in VendorKey '%s' Pool.\n",
+						item_str.c_str(), key.c_str());
+					return false;
+				}
+				vs.nameid = static_cast<t_itemid>(idata->nameid);
+			}
+		} else {
+			uint16_t item_id = 0;
+			if (!this->asUInt16(sn, "Item", item_id) || item_id == 0) return false;
+			vs.nameid = static_cast<t_itemid>(item_id);
+		}
+		if (!item_db.find(vs.nameid)) {
+			this->invalidWarning(sn[c4::to_csubstr("Item")],
+				"Item id %u not found in item_db (VendorKey '%s' Pool).\n",
+				static_cast<unsigned>(vs.nameid), key.c_str());
+			return false;
+		}
+		if (this->nodeExists(sn, "Amount")) {
+			int16_t amount = 1;
+			if (this->asInt16(sn, "Amount", amount))
+				vs.amount = std::max(static_cast<int16_t>(1), amount);
+		}
+		if (this->nodeExists(sn, "Price")) {
+			uint32_t price = 0;
+			if (this->asUInt32(sn, "Price", price))
+				vs.price = price;
+		}
+		return true;
+	};
+
+	if (entry.type == PopulationVendorType::Pool && this->nodeExists(node, "Pool")) {
+		const ryml::NodeRef& pool_node = node[c4::to_csubstr("Pool")];
+		if (pool_node.is_seq()) {
+			for (const ryml::NodeRef& sn : pool_node.children()) {
+				PopulationVendorStock vs;
+				if (parse_vendor_stock_item(sn, vs))
+					entry.pool.push_back(vs);
+			}
+		}
+	}
+
+	// PickCount: [min, max] or a single scalar (treated as [n, n]).
+	if (this->nodeExists(node, "PickCount")) {
+		const ryml::NodeRef& pc_node = node[c4::to_csubstr("PickCount")];
+		int32_t lo = 0, hi = 0;
+		if (pc_node.is_seq()) {
+			int idx = 0;
+			for (const ryml::NodeRef& mn : pc_node.children()) {
+				int32_t v = 0;
+				if (!ryml::read(mn, &v)) continue;
+				if (idx == 0) lo = v;
+				else if (idx == 1) hi = v;
+				++idx;
+			}
+		} else {
+			int32_t v = 0;
+			if (this->asInt32(node, "PickCount", v)) { lo = v; hi = v; }
+		}
+		if (lo < 1) lo = 1;
+		if (hi < lo) hi = lo;
+		if (hi > 12) hi = 12; // MC_VENDING lv10 cap
+		if (lo > 12) lo = 12;
+		entry.pick_count_min = lo;
+		entry.pick_count_max = hi;
+	}
+
+	// RotationHours: 0 = never rotate. Internally stored as seconds.
+	if (this->nodeExists(node, "RotationHours")) {
+		int32_t h = 0;
+		if (this->asInt32(node, "RotationHours", h) && h > 0) {
+			if (h > 168) h = 168; // one week ceiling to keep t_tick arithmetic sane
+			entry.rotation_sec = h * 3600;
+		}
+	}
+
+	// RotationJitterMinutes: per-shell ± offset so vendors don't rotate in lockstep.
+	if (this->nodeExists(node, "RotationJitterMinutes")) {
+		int32_t m = 0;
+		if (this->asInt32(node, "RotationJitterMinutes", m) && m > 0) {
+			if (m > 180) m = 180; // cap at 3 hours of jitter
+			entry.rotation_jitter_sec = m * 60;
+		}
+	}
+
+	// TitleFromPool: sequence of shop-title strings; shell picks one at spawn.
+	if (this->nodeExists(node, "TitleFromPool")) {
+		const ryml::NodeRef& tp_node = node[c4::to_csubstr("TitleFromPool")];
+		if (tp_node.is_seq()) {
+			for (const ryml::NodeRef& tn : tp_node.children()) {
+				std::string t;
+				if (ryml::read(tn, &t) && !t.empty())
+					entry.title_pool.push_back(t);
 			}
 		}
 	}
