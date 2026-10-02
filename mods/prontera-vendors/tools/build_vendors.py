@@ -46,7 +46,9 @@ PRICES = os.path.join(HERE, "prices.json")
 # The price table the server reads (Id,Name,Min,Max). Rows already in it are
 # kept as they are, so hand edits survive a re-run; new items are appended.
 TABLE_CSV = os.path.join(MOD, "db", "population_vendor_prices", "prontera-vendors.csv")
-PREFIX = "prontera-vendors/"
+# Sell stalls; buy shops will live under prontera-vendors/buy/, so each
+# group can be counted and switched on its own.
+PREFIX = "prontera-vendors/sell/"
 CANDIDATE_CAP = 80
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
@@ -184,41 +186,171 @@ def market(iid, refresh):
     return CACHE.get(k, [None, 0])
 
 
-def price(e, refresh):
-    """A believable player price, or None to leave the item out."""
-    # A price in the table (filled in by hand, or kept from an earlier run)
-    # comes first.
-    if TABLE.get(e["Id"], (0, 0))[0] > 0:
-        lo, hi = TABLE[e["Id"]]
-        return (lo + hi) // 2
+def price(e, refresh=False):
+    """The price a stall asks, on the chosen scale, or None to leave it out."""
+    p, _ = priced(e, refresh)
+    return p
+
+
+def priced(e, refresh=False):
+    """(price, source) on the chosen SCALE, or (None, None).
+
+    A row edited by hand in the price table wins. Then the main source's market
+    price, then the other source's converted with the per-category factor, then
+    the NPC-based floor."""
+    row = TABLE.get(e["Id"])
+    if row and row[2] == "manual" and row[0] > 0:
+        return (row[0] + row[1]) // 2, "manual"
+    iro, iro_origin = iro_price(e, refresh)
+    kro = kro_price(e)
+    f = FACTOR.get(category(e), FACTOR.get("*", 1.0))
+    if SCALE == "kro":
+        if kro is not None:
+            return kro, "kro"
+        if iro is not None:
+            return (iro, "npc") if iro_origin == "npc" else (max(1, int(iro * f)), "ragnastats")
+    else:
+        if iro is not None:
+            return iro, ("npc" if iro_origin == "npc" else "ragnastats")
+        if kro is not None:
+            return max(1, int(kro / f)), "kro"
+    # No market price: a same-named item's (Knife -> Knife [3]), then the
+    # estimate model's. Both only once train_fallbacks() has run.
+    sib = SIBLING.get(base_name(e["Name"]))
+    if sib:
+        return sib, "sibling"
+    if ESTIMATOR is not None:
+        q = ESTIMATOR.predict(e)
+        if q:
+            return max(q, (e.get("Sell") or 0) + 1), "estimate"
+    return None, None
+
+
+SIBLING = {}
+ESTIMATOR = None
+
+
+def base_name(name):
+    return re.sub(r"\s*\[\d\]$", "", name).strip().lower()
+
+
+def train_fallbacks():
+    """Learn the fallbacks from the items that have a market price."""
+    global ESTIMATOR
+    import statistics
+    import estimate
+    known, by_name = [], {}
+    for e in ITEMS_BY_ID.values():
+        if not tradeable(e):
+            continue
+        p, src = priced(e)
+        if p and src in ("kro", "ragnastats"):
+            known.append((e, p))
+            by_name.setdefault(base_name(e["Name"]), []).append(p)
+    SIBLING.update({k: int(statistics.median(v)) for k, v in by_name.items()})
+    model = estimate.Model(category, NPC_SOLD, estimate.drop_stats(MOBS, item, MVP_IDS))
+    err = model.evaluate(known)
+    print(f"  estimate model: {err['all'][0]} known items, typical error x{err['all'][1]:.2f}", file=sys.stderr)
+    ESTIMATOR = model.fit(known)
+
+
+KRO_PATH = os.path.join(HERE, "prices_kro.json")
+try:
+    KRO = json.load(open(KRO_PATH))
+except FileNotFoundError:
+    KRO = {}
+# Which economy the stalls follow. "kro": RagMAYA's kRO medians, the cheaper
+# and steadier scale, with ragnastats' iRO averages converted into it where
+# kRO has nothing; "iro": the other way round.
+SCALE = "kro"
+KRO_MIN_SAMPLES = 3
+
+
+def popularity(e):
+    """How much an item is traded: iRO sightings plus kRO listings (weighted
+    to a similar scale), for ranking a rule theme's candidates."""
+    v = KRO.get(str(e["Id"])) or [None, 0, None]
+    return market(e["Id"], False)[1] + 20 * (v[1] or 0)
+
+
+def kro_price(e):
+    v = KRO.get(str(e["Id"]))
+    if not v or not v[0] or v[1] < KRO_MIN_SAMPLES:
+        return None
+    if is_equip(e) and v[0] < 50:
+        return None
+    return max(v[0], (e.get("Sell") or (e.get("Buy") or 0) // 2) + 1)
+
+
+def category(e):
+    t = e.get("Type")
+    if t == "Armor":
+        l = locs(e)
+        if l & {"Head_Top", "Head_Mid", "Head_Low"}:
+            return "headgear"
+        if l & {"Right_Accessory", "Left_Accessory", "Both_Accessory"}:
+            return "accessory"
+        return "armor"
+    return t or "*"
+
+
+FACTOR = {}
+
+
+def calibrate():
+    """kRO / iRO per category, from items both sources price well."""
+    import statistics
+    ratios = {}
+    for e in ITEMS_BY_ID.values():
+        iro, origin = iro_price(e, False)
+        kro = kro_price(e)
+        if iro and kro and origin == "market":
+            ratios.setdefault(category(e), []).append(kro / iro)
+    every = [r for rs in ratios.values() for r in rs]
+    FACTOR["*"] = statistics.median(every) if every else 1.0
+    for c, rs in ratios.items():
+        if len(rs) >= 10:
+            FACTOR[c] = statistics.median(rs)
+    print("  kRO/iRO per category: " + ", ".join(f"{c} {FACTOR[c]:.2f}" for c in sorted(FACTOR)) , file=sys.stderr)
+
+
+def iro_price(e, refresh):
+    """(price, "market" | "npc") on iRO's scale from ragnastats, or (None, None)."""
+    r = _iro_price(e, refresh)
+    if r is None:
+        return None, None
+    return r
+
+
+def _iro_price(e, refresh):
     buy = e.get("Buy") or 0
     sell = e.get("Sell") or buy // 2
     avg, seen = market(e["Id"], refresh)
     # Some items carry a placeholder NPC price of 20z; only a real one counts.
     if is_equip(e) and e["Id"] in NPC_SOLD and buy >= 100:
         # Players undercut the NPC a little rather than match it.
-        return max(int(buy * 0.9), sell + 1)
+        return max(int(buy * 0.9), sell + 1), "npc"
     if avg is None or seen < 20:
         if e["Id"] in NPC_SOLD and (buy >= 100 or not is_equip(e)):
-            return max(buy, sell + 1)
+            return max(buy, sell + 1), "npc"
         return None
     if e.get("Type") == "Card":
-        return avg if avg <= 30_000_000 else None
+        return (avg, "market") if avg <= 30_000_000 else None
     if is_equip(e):
         # An average far above an item's NPC value is carded and refined
         # copies talking; a plain one sells near the NPC price.
         if buy >= 100 and avg > buy * 20:
-            return max(int(buy * 0.9), sell + 1)
+            return max(int(buy * 0.9), sell + 1), "npc"
         if 40 <= buy < 100 and avg > buy * 500:
-            return max(buy * 20, 1000)
+            return max(buy * 20, 1000), "npc"
         # Equipment "worth" a few zeny is a junk listing, not a price.
-        return avg if 50 <= avg <= 15_000_000 else None
+        return (avg, "market") if 50 <= avg <= 15_000_000 else None
     # Consumables and loot: an average hundreds of times the NPC value is a
     # troll listing (Green Potion "99,990,000z") pulling the mean.
     ref = max(buy, sell * 2, 1)
     if avg > ref * 400 and avg > 50_000:
-        return max(ref, sell + 1)
-    return max(avg, sell + 1)
+        return max(ref, sell + 1), "npc"
+    return max(avg, sell + 1), "market"
 
 
 def tidy(p):
@@ -775,21 +907,21 @@ def resolve(theme, refresh, rng):
             lines.append((e, spec, p))
     candidates = theme_candidates(theme)
     if candidates:
-        priced = []
+        ranked = []
         for e in candidates:
             if not tradeable(e):
                 continue
             p = price(e, refresh)
             if p is None:
                 continue
-            priced.append((market(e["Id"], False)[1], e, p))
+            ranked.append((popularity(e), e, p))
         limit = theme.get("limit", 30)
         if theme.get("sample") == "random":
-            random.Random(theme["key"]).shuffle(priced)
+            random.Random(theme["key"]).shuffle(ranked)
         else:
             # The ones players actually trade most, so a stall reads familiar.
-            priced.sort(key=lambda t: -t[0])
-        for _, e, p in priced[:limit]:
+            ranked.sort(key=lambda t: -t[0])
+        for _, e, p in ranked[:limit]:
             lines.append((e, dict(item=e["AegisName"]), p))
     return lines
 
@@ -827,39 +959,66 @@ def read_table():
                 hi = int(row[3]) if len(row) > 3 and row[3].strip() else lo
             except (ValueError, TypeError):
                 continue
-            out[iid] = (lo, max(lo, hi)) if lo > 0 else (0, 0)
+            src = row[4].strip() if len(row) > 4 else ""
+            lo, hi = (lo, max(lo, hi)) if lo > 0 else (0, 0)
+            # A row that differs from what the generator last wrote was changed
+            # by hand: it is kept, and says so.
+            gen = GENERATED.get(str(iid))
+            if src != "manual" and gen is not None and [lo, hi] != gen:
+                src = "manual"
+            out[iid] = (lo, hi, src)
     return out
+
+
+def band(p):
+    b = 0.08 if p >= 1000 else 0.15
+    return tidy(max(1, int(p * (1 - b)))), tidy(int(p * (1 + b)) + 1)
+
+
+def fill_table():
+    """Every tradeable item gets a row: its range and where the price came
+    from, or 0,0 ("not priced yet") so it is there to fill in. Rows changed
+    by hand are kept; every other row follows the data."""
+    for e in ITEMS_BY_ID.values():
+        if not tradeable(e) or not e.get("Name"):
+            continue
+        row = TABLE.get(e["Id"])
+        if row and row[2] == "manual":
+            continue
+        p, src = priced(e)
+        TABLE[e["Id"]] = (*band(p), src) if p is not None else (0, 0, "")
 
 
 def write_table():
     import csv
     os.makedirs(os.path.dirname(TABLE_CSV), exist_ok=True)
-    # Every tradeable item gets a row: a price if the market had one, else 0,0
-    # ("not priced yet") so it is there to fill in.
-    for e in ITEMS_BY_ID.values():
-        # Priced rows are kept as they are; 0,0 rows are tried again.
-        if TABLE.get(e["Id"], (0, 0))[0] > 0 or not tradeable(e) or not e.get("Name"):
-            continue
-        p = price(e, False)
-        if p is None:
-            TABLE[e["Id"]] = (0, 0)
-        else:
-            band = 0.08 if p >= 1000 else 0.15
-            TABLE[e["Id"]] = (tidy(max(1, int(p * (1 - band)))), tidy(int(p * (1 + band)) + 1))
     with open(TABLE_CSV, "w", encoding="utf-8", newline="") as f:
         f.write("# prontera-vendors price table: what each item sells for, as a range each\n"
                 "# stall rolls inside. Edit freely; the server reads it at startup, and\n"
                 "# tools/build_vendors.py keeps existing rows. Id decides, Name is for you.\n"
                 "# 0,0 = no price yet: fill one in and re-run the generator, and the item\n"
                 "# can then show up in the themes it fits.\n"
+                "# Source: kro (RagMAYA, kRO vending), ragnastats (iRO, converted),\n"
+                "# npc (from the NPC price), sibling (a same-named item's price),\n"
+                "# estimate (a model's guess from drops, levels and stats: a ballpark,\n"
+                "# worth checking), manual (changed by hand; kept on re-runs).\n"
                 "# Refined, forged and carded lines are priced in population_vendors.yml.\n")
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["Id", "Name", "Min", "Max"])
-        for iid, (lo, hi) in sorted(TABLE.items(), key=lambda kv: (ITEMS_BY_ID[kv[0]]["Name"].lower(), kv[0])):
-            w.writerow([iid, ITEMS_BY_ID[iid]["Name"], lo, hi])
+        w.writerow(["Id", "Name", "Min", "Max", "Source"])
+        gen = {}
+        for iid, (lo, hi, src) in sorted(TABLE.items(), key=lambda kv: (ITEMS_BY_ID[kv[0]]["Name"].lower(), kv[0])):
+            w.writerow([iid, ITEMS_BY_ID[iid]["Name"], lo, hi, src])
+            gen[str(iid)] = [lo, hi]
+    json.dump(gen, open(GENERATED_PATH, "w"), separators=(",", ":"), sort_keys=True)
 
 
 TABLE = {}
+# What the generator wrote last time, to tell hand edits from data changes.
+GENERATED_PATH = os.path.join(HERE, "table_generated.json")
+try:
+    GENERATED = json.load(open(GENERATED_PATH))
+except FileNotFoundError:
+    GENERATED = {}
 
 
 def main():
@@ -871,6 +1030,9 @@ def main():
     elif "--refresh-prices" in sys.argv:
         prefetch(THEMES)
     refresh = False
+    calibrate()
+    train_fallbacks()
+    fill_table()
     rng = random.Random(1)
     vendors, profiles = [], []
     for t in THEMES:
@@ -893,13 +1055,10 @@ def main():
         for e, spec, p in lines:
             d = {"Item": e["AegisName"], "Amount": amount_for(e, p, rng)}
             plain = not (spec.get("refine") or spec.get("element") or spec.get("stars"))
-            if plain and TABLE.get(e["Id"], (0, 0))[0] > 0:
-                d["Price"] = list(TABLE[e["Id"]])
+            if plain and TABLE.get(e["Id"], (0, 0, ""))[0] > 0:
+                d["Price"] = list(TABLE[e["Id"]][:2])
             else:
-                band = 0.08 if p >= 1000 else 0.15
-                d["Price"] = [tidy(max(1, int(p * (1 - band)))), tidy(int(p * (1 + band)) + 1)]
-                if plain:
-                    TABLE[e["Id"]] = tuple(d["Price"])
+                d["Price"] = list(band(p))
             if spec.get("refine"):
                 d["Refine"] = spec["refine"]
             if spec.get("element"):

@@ -21,13 +21,19 @@ do, and each new one draws a fresh mix from its theme.
 
 | Setting | Default | What it does |
 |---|---|---|
-| Vendors | 20 | Stalls on the sidewalks. With fewer stalls than themes, a different set of themes shows up each server start. 0 removes them. |
-| Minutes before a stall changes | 240 | How long a vendor stays before another takes the spot, ± a little so they don't all change at once. 0 keeps them until restart. |
-| Vendors shout their wares | on | Stalls call out a real item and price now and then ("S> Elunium 250K"). |
-| Seconds between a stall's shouts | 180 | Average per stall (each waits ½× to 1½×). Stalls also never shout within 6 s of one another. |
+| Sell shops | on | Off removes every sell stall. |
+| Sell stalls | 20 | How many. With fewer stalls than themes, a different set of themes shows up each server start. |
+| Minutes before a stall changes | 240 | How long a vendor stays before another takes the spot (± up to half, checked once a minute, so short values run long). 0 keeps them until restart. |
+| Price level (%) | 100 | Every price × this / 100. Nothing goes below what an NPC pays. |
+| Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count in it). |
+| Vendors shout their wares | on | Stalls call out a real item and price now and then. |
+| Seconds between a stall's shouts | 180 | Average per stall; stalls never shout within 6 s of one another. |
 
 Settings take effect when the server starts. They reach the engine through
-`npc/prontera-vendors.txt`.
+`npc/prontera-vendors.txt` and `npc/prontera-vendors-newer.txt` (the second
+holds the settings that need a newer app build, so an older one only loses
+those). Buy shops will get their own on/off and count under
+`prontera-vendors/buy/`.
 
 ## What's for sale
 
@@ -72,10 +78,22 @@ shops.
 
 ## Prices
 
-From iRO's player market (ragnastats.com averages). Those averages include
-refined and carded copies, so equipment an NPC also sells is priced just
-under the NPC instead, and averages that are absurd next to an item's NPC
-value (troll listings) are ignored.
+Prices follow kRO's player market, which is cheaper and steadier than old
+iRO's (Elunium ~13k rather than ~263k), and suits a solo world better:
+
+- **kro:** the 90-day median asking price on kRO's official servers, from
+  RagMAYA (ragmaya.kr), where at least 3 listings back it.
+- **ragnastats:** iRO's average from ragnastats.com, converted to kRO's scale
+  with a factor per kind of item (cards, weapons, loot...), learned from the
+  items both sources price.
+- **npc:** from the NPC price, for gear an NPC sells and items no market has.
+- **sibling:** a same-named item's price (Knife -> Knife [3]).
+- **estimate:** a model's ballpark from what the item is, which monsters drop
+  it, how rarely, and its level and stats. Typically within ×2.7 either way;
+  worth checking.
+
+Items none of these can price stay at 0,0 in the price list and are left out
+of the stalls until someone fills them in.
 
 Each item has a `[min, max]` range, and each stall rolls inside it. Half the
 time an item is listed 1–5 % under the cheapest rival stall on the map that
@@ -83,16 +101,14 @@ sells it, but never below its range. No price goes below the NPC sell value,
 so nothing can be flipped to an NPC for profit, except a "fat-finger": 1 in
 5000 per item, a price with a digit missing.
 
-iRO is a high-zeny economy, so some prices are steep for a solo world
-(Elunium ~263k).
-
 ### Changing prices
 
 `db/population_vendor_prices/prontera-vendors.csv` is the price list: one row
-per item, `Id,Name,Min,Max`, and every stall that sells the item rolls inside
+per tradeable item, `Id,Name,Min,Max,Source`, and every stall that sells the item rolls inside
 that range. Open it in Excel or any editor, change what you like, and restart
 the server; it wins over the prices in the YAML. The Id decides; the Name is
-there to find things. `;` as the separator is fine too (what Excel writes in
+there to find things. A row you change is kept by the generator and marked
+`manual`; the rest follow the data on each run. `;` as the separator is fine too (what Excel writes in
 some locales). Refined, forged and carded lines keep the price in
 `population_vendors.yml`, since a +9 isn't priced like a plain one.
 
@@ -112,13 +128,15 @@ YAML prices.
 
 `db/population_vendors.yml` and `db/population_vendor_pop.yml` are
 **generated** by `tools/build_vendors.py` from rAthena's item, monster and
-spawn databases and the price cache `tools/prices.json`:
+spawn databases and the price caches `tools/prices_kro.json` (RagMAYA) and
+`tools/prices.json` (ragnastats):
 
 ```
 python3 mods/prontera-vendors/tools/build_vendors.py                   # rebuild from the cache
 python3 mods/prontera-vendors/tools/build_vendors.py --refresh-prices  # fetch prices the cache lacks
 python3 mods/prontera-vendors/tools/build_vendors.py --all-prices      # fetch every tradeable item (~1-2 h)
 python3 mods/prontera-vendors/tools/build_vendors.py --reprice         # rebuild the CSV from market data
+python3 mods/prontera-vendors/tools/scrape_ragmaya.py --workers 12     # refresh kRO prices (resumable, ~1-2 h)
 ```
 
 Themes are defined at the top of the script: a hand list, a rule over the
@@ -147,7 +165,9 @@ where; its `Count` is the theme's share of the Vendors setting.
 mods/prontera-vendors/
 ├── mod.json                     settings
 ├── README.md
-├── npc/prontera-vendors.txt     hands the settings to the engine
+├── npc/
+│   ├── prontera-vendors.txt         hands the settings to the engine
+│   └── prontera-vendors-newer.txt   the ones needing a newer app build
 ├── db/
 │   ├── population_vendors.yml       themes: pools, spawns (generated)
 │   ├── population_vendor_prices/
@@ -155,5 +175,9 @@ mods/prontera-vendors/
 │   └── population_vendor_pop.yml    one shell profile per theme (generated)
 └── tools/
     ├── build_vendors.py         the generator
-    └── prices.json              market price cache
+    ├── estimate.py              the estimate model it uses
+    ├── scrape_ragmaya.py        kRO price fetcher
+    ├── prices_kro.json          kRO price cache (RagMAYA)
+    ├── prices.json              iRO price cache (ragnastats)
+    └── table_generated.json     what the generator last wrote (to spot hand edits)
 ```
