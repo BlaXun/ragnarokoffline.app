@@ -2289,6 +2289,7 @@ struct PopModVendorSettings {
 	int callout_min_sec = -1;
 	int callout_max_sec = -1;
 	int respect_limit = -1;    ///< population_vendor_limit: 0 = spawn even when the population is full
+	int price_pct = -1;        ///< population_vendor_price: every listed price × this / 100
 };
 static std::vector<PopModVendorSettings> g_pop_mod_vendor_settings;
 /// Breaks ties when a total is smaller than the number of blocks, so which
@@ -2343,6 +2344,20 @@ void population_engine_set_mod_vendor_limit(const char* prefix, int respect) {
 	e.respect_limit = respect ? 1 : 0;
 	ShowInfo("Population engine: mod vendors '%s*': %s the population limit.\n",
 		e.prefix.c_str(), respect ? "respect" : "ignore");
+}
+
+void population_engine_set_mod_vendor_price(const char* prefix, int pct) {
+	PopModVendorSettings& e = pop_mod_vendor_settings_for_prefix(prefix);
+	e.price_pct = pct > 0 ? std::min(pct, 100000) : -1;
+	ShowInfo("Population engine: mod vendors '%s*': prices at %d%%.\n", e.prefix.c_str(), pct > 0 ? e.price_pct : 100);
+}
+
+/// The price level a mod vendor's mod set, in percent (100 = as listed).
+static int pop_mod_vendor_price_pct(const PopulationVendorEntry* mod_entry) {
+	if (mod_entry == nullptr)
+		return 100;
+	const PopModVendorSettings* st = pop_mod_vendor_settings_for_key(mod_entry->key);
+	return st && st->price_pct > 0 ? st->price_pct : 100;
 }
 
 /// A mod vendor shell's callout pace: its settings, else its entry, else 0
@@ -5250,7 +5265,8 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Static && !vendor_cfg->stock.empty()) {
 				// Static vending: use exactly the YAML-defined stock.
 				for (const auto &vs : vendor_cfg->stock)
-					stock.push_back({ vs.nameid, vs.amount, vs.price, &vs });
+					stock.push_back({ vs.nameid, vs.amount,
+						static_cast<uint32_t>(std::min<int64_t>(static_cast<int64_t>(vs.price) * pop_mod_vendor_price_pct(mod_entry) / 100, MAX_ZENY)), &vs });
 
 			} else if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Pool && !vendor_cfg->pool.empty()) {
 				// RAGNAROKMAC: Pool vending. Pick pick_count distinct items from
@@ -5302,6 +5318,8 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					}
 				}
 
+				// RAGNAROKMAC: the mod's price level (population_vendor_price).
+				const int price_pct = pop_mod_vendor_price_pct(mod_entry);
 				auto roll_price = [&](const PopulationVendorStock& vs) -> uint32_t {
 					if (vs.price == 0) return 0;
 					int64_t p, band_lo;
@@ -5316,6 +5334,10 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 							const int factor = (100 - jitter) + static_cast<int>(rnd() % (2 * jitter + 1));
 							p = p * factor / 100;
 						}
+					}
+					if (price_pct != 100) {
+						p = p * price_pct / 100;
+						band_lo = band_lo * price_pct / 100;
 					}
 					const bool plain = vs.refine_max == 0 && vs.element == 0 && vs.stars == 0 && vs.cards.empty();
 					if (plain && vendor_cfg->undercut_chance > 0 &&

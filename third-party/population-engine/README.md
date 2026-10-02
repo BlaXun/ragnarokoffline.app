@@ -250,7 +250,9 @@ engine's vendors spawn exactly as upstream's do.
 - Script commands (patch 0017) let a mod's settings reach its vendors at
   startup, per VendorKey prefix: `population_vendor_count` (a total split
   across the mod's Spawns by their Counts), `population_vendor_rotation`
-  (minutes) and `population_vendor_callouts` (on/off and pace).
+  (minutes), `population_vendor_callouts` (on/off and pace),
+  `population_vendor_limit` (whether they wait for room under the population
+  limit) and `population_vendor_price` (price level in percent).
 - `{item}` and `{price}` in a chat line name a real item from the speaking
   shell's own stall. The shipped `vendor_call` lines use them.
 - Both vendor databases import `db/import/`, with empty stubs in
