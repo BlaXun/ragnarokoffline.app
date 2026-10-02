@@ -39,7 +39,7 @@ those).
 
 ## What's for sale
 
-113 themes, sold through one market: the spots on both sidewalks (x=147,
+115 themes, sold through one market: the spots on both sidewalks (x=147,
 y=136–170 and x=164, y=135–173). Every time a spot gets a stall, at server
 start or when the one before it packs up, it rolls a theme, so the street
 changes while you play. Six staples are always there (general goods,
@@ -81,6 +81,9 @@ stock and price ranges, e.g. `@vendorinfo byalan` or `@vendorinfo sidewalks`).
   staves, bows, books, knuckles, instruments and whips, guns, huuma.
 - **By armor slot:** garments, footgear, shields, body armor, slotted gear,
   headgear, accessories, costumes.
+- **Pets:** pet eggs with incubators and pet food (an egg bought from a
+  stall arrives as a real, hatchable egg: the server creates it for you at
+  the moment you buy it), and pet equipment.
 - **Specials:** starter gear, low- and mid-level weapons, katars, elemental
   daggers (forged Fire/Water/Earth/Wind, some "Very Strong"), crimson
   weapons, shadow gear, a stall selling nothing but an Ice Pick, rare etc.

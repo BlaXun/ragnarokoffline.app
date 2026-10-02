@@ -260,6 +260,8 @@ def priced(e, refresh=False):
     # prices above it are listings that never sell, and they drag a median up
     # (kRO's Phracon "sells" for 10k beside a 200z NPC).
     npc = NPC_PRICE.get(e["Id"], 0)
+    if e.get("Type") in PET_EGG_TYPES + PET_GEAR_TYPES:
+        npc = 0  # only event shops hand these out, at placeholder prices
     if p is not None and src != "npc" and npc > 0 and p > npc:
         p = npc
     return p, src
@@ -396,11 +398,19 @@ def _iro_price(e, refresh):
         # Players undercut the NPC a little rather than match it.
         return max(int(buy * 0.9), sell + 1), "npc"
     if avg is None or seen < 20:
+        # Eggs and pet gear only ever come from a market price: the NPCs that
+        # hand them out are event shops with placeholder prices.
+        if e.get("Type") in PET_EGG_TYPES + PET_GEAR_TYPES:
+            return None
         if e["Id"] in NPC_SOLD and (buy >= 100 or not is_equip(e)):
             return max(buy, sell + 1), "npc"
         return None
     if e.get("Type") == "Card":
         return (avg, "market") if avg <= 30_000_000 else None
+    if e.get("Type") in PET_EGG_TYPES + PET_GEAR_TYPES:
+        # Their NPC price is a 20z placeholder, so the troll check below would
+        # throw away every real price.
+        return (avg, "market") if 50 <= avg <= 50_000_000 else None
     if is_equip(e):
         # An average far above an item's NPC value is carded and refined
         # copies talking; a plain one sells near the NPC price.
@@ -459,8 +469,23 @@ def refined_price(e, base, r, refresh):
     return int(cost * 1.15)
 
 
+PET_EGG_TYPES = ("PetEgg", "Petegg")
+
+
+def load_pet_eggs():
+    """Eggs that are real pets (rAthena's pet_db), the only ones that hatch."""
+    path = os.path.join(RA, "db", ERA, "pet_db.yml")
+    body = yaml.load(open(path, encoding="utf-8"), Loader=Loader).get("Body") or []
+    return {str(p.get("EggItem", "")).lower() for p in body}
+
+
+PET_EGGS = load_pet_eggs()
+PET_GEAR_TYPES = ("PetArmor", "Petarmor")
+
+
 def amount_for(e, p, rng):
-    if is_equip(e) or e.get("Type") == "Card":
+    # Equipment, cards, eggs and pet gear don't stack: one per stall line.
+    if is_equip(e) or e.get("Type") in ("Card",) + PET_EGG_TYPES + PET_GEAR_TYPES:
         return 1
     if p < 1_000:
         return rng.choice([50, 100, 150, 200, 300])
@@ -876,6 +901,19 @@ def buy_amount(p, rng):
         return rng.choice([5, 10, 20])
     return rng.choice([1, 2, 3])
 
+
+# Pets: eggs (bought from a stall, the server creates a real, hatchable egg
+# for the buyer; engine patch 0020) with incubators and food, and the
+# accessories pets wear.
+THEMES += [
+    dict(key="pet_eggs", job="Merchant", pick=[4, 8], weight=1,
+         titles=["pet eggs", "S> eggs + incubator", "pets for sale", "adopt a pet", "{name}'s Pet Shop"],
+         rule=lambda e: e.get("Type") in PET_EGG_TYPES and e["AegisName"].lower() in PET_EGGS,
+         extra=["Pet_Incubator", "Pet_Food"]),
+    dict(key="pet_gear", job="Alchemist", pick=[3, 6], weight=1,
+         titles=["pet equipment", "S> pet accessories", "pet gear", "dress up your pet", "{name}'s Pet Boutique"],
+         rule=lambda e: e.get("Type") in PET_GEAR_TYPES),
+]
 
 # Staples: a real market always has these. In the market each has Min 1 (a
 # spot always holds one), weight 3 and Max 2; card themes weigh 2; the rest 1
