@@ -115,6 +115,9 @@
      refusal was indistinguishable from progress text and read as "nothing
      happened". Errors get their own colour and weight. */
   .note.bad, .bad { color: #ff8080; font-weight: 600; }
+  /* A failure can carry what the database said, over several lines, and a
+     backup's full path: keep the lines, and let a path wrap. */
+  .note.bad { white-space: pre-wrap; overflow-wrap: anywhere; }
   /* Actions that take something away from people who already have it. */
   button.danger { background: transparent; color: #ff8080; border: 1px solid #ff808066; }
   button.danger:hover:not(:disabled) { background: #ff80801a; border-color: #ff8080; }

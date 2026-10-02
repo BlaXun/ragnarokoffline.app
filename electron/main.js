@@ -2442,6 +2442,14 @@ const handlers = {
 				add(`nebula/${file}`, tail(p2, want));
 			}
 		}
+		// The last database restore, step by step, with what the database said
+		// if it refused the file. Restore used to report only "Restore failed",
+		// and a player could not tell us any more than that.
+		try {
+			const logs = path.join(stateDir(), 'logs');
+			const last = fs.readdirSync(logs).filter(f => /^restore-\d+\.log$/.test(f)).sort().pop();
+			if (last) add(`logs/${last}`, tail(path.join(logs, last), 80));
+		} catch { /* no restore has run */ }
 		// Guest image sizes against what the shipped archives say they should
 		// be. The report that led to this check could not distinguish a
 		// hypervisor problem from a rootfs that antivirus had truncated.

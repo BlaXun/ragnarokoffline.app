@@ -410,6 +410,16 @@ rostack restore ~/Desktop/ragnarok.sql
 first. Both stop the game; `backup` starts it again afterwards and `restore`
 leaves it stopped, so restart the server yourself once a restore is done.
 
+Before stopping anything, `restore` checks that the file is a dump of a game
+database (it has `char` and `login` tables), and refuses a "Back up
+everything" archive, a zip or a rar with what to use instead. It prints each
+step as it goes, and keeps them in `state/logs/restore-<time>.log`. If the
+database refuses the dump, the error it gave (with the statement and line) is
+in the message, together with the pre-restore backup to restore to undo it.
+A dump from before 1.4 has no sign-in tables, so the ones already there are
+cleared rather than left pointing at the previous world's accounts. Startup
+makes them again, empty, and players sign in afresh.
+
 That `.sql` is the database of the era that is running, and nothing else. To
 keep or move a whole world, back up everything.
 

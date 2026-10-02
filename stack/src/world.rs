@@ -681,7 +681,7 @@ pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
     for (db_era, path) in &manifest.databases {
         crate::cmds::with_era_database(cfg, dk, db_era, || {
             crate::cmds::load_dump(cfg, dk, &staged.join(path))
-                .map_err(|_| "the database did not accept the dump".to_string())?;
+                .map_err(|e| format!("the database did not accept the dump: {e}"))?;
             crate::cmds::adopt_loaded_dump(cfg, dk, db_era)
         })
         .map_err(|e| failed(format!("Restoring the {} database failed: {e}.", era_name(db_era))))?;

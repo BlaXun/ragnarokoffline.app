@@ -19,6 +19,10 @@ Replaces the current database with a backup file, and **keeps the game stopped
 until you restart it**. A backup of the database it replaced is kept, so a
 restore is itself undoable.
 
+If a restore fails, the message says what the database objected to, and every
+step is kept in `state/logs/restore-<time>.log` in the app's data folder.
+Settings → **Report a problem** includes it.
+
 An untested backup is not a backup. Restoring one into a throwaway install once
 is worth the five minutes.
 
