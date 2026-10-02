@@ -381,6 +381,14 @@ export function init() {
         replaceScreen: Pregame.replace,
         createStage: Pregame.createStage,
         screenImage: Pregame.image,
+        // api.players.gmLook: which parts of the GM look an admin gets. Absent
+        // on a client without the fork's Session.AdminLook.
+        gmLook: Session.AdminLook ? (parts = {}) => {
+            for (const key of ['sprite', 'name', 'chat']) {
+                if (typeof parts[key] === 'boolean') Session.AdminLook[key] = parts[key];
+            }
+            return { ...Session.AdminLook };
+        } : undefined,
         // api.account (RememberLogin.mjs). The proof of login goes to the app
         // or the gateway, never to a plugin.
         account: createAccount({
