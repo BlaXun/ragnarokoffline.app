@@ -373,31 +373,35 @@ fn overlay_mods(
     // The player's answers to whatever each mod declared in its mod.json.
     let saved = crate::mods::read_settings(&cfg.state)?;
     for m in crate::mods::enabled(cfg) {
-        // Served ahead of the GRFs: sprites, .act/.spr, map geometry, Lua.
-        // Aliased, so a mod can be written in ASCII rather than in CP949 bytes.
-        copy_data_aliased(&m.dir.join("data"), &server_root.join("data"))?;
-        // Music. The client asks for `BGM/<file>`, a root outside data/, so
-        // this is its own layer rather than part of the one above.
-        copy_over(&m.dir.join("BGM"), &server_root.join("BGM"))?;
-        // Client tables. itemInfo is merged rather than replaced; see
-        // copy_system_layer.
-        let (items, quests, views) = copy_system_layer(&m.dir.join("System"), merged, &m.name)?;
-        item_tables.extend(items);
-        quest_tables.extend(quests);
-        view_tables.extend(views);
-        for misplaced in item_tables_under(&m.dir.join("data"), "data") {
-            eprintln!(
-                "mods: {} has {misplaced}, but the client reads item tables only from System/ -- \
-                 move it to System/",
-                m.name
-            );
+        // The mod's own folder, then the running era's folder over it.
+        for root in &m.roots {
+            // Served ahead of the GRFs: sprites, .act/.spr, map geometry, Lua.
+            // Aliased, so a mod can be written in ASCII rather than in CP949 bytes.
+            copy_data_aliased(&root.join("data"), &server_root.join("data"))?;
+            // Music. The client asks for `BGM/<file>`, a root outside data/, so
+            // this is its own layer rather than part of the one above.
+            copy_over(&root.join("BGM"), &server_root.join("BGM"))?;
+            // Client tables. itemInfo is merged rather than replaced; see
+            // copy_system_layer.
+            let (items, quests, views) = copy_system_layer(&root.join("System"), merged, &m.name)?;
+            item_tables.extend(items);
+            quest_tables.extend(quests);
+            view_tables.extend(views);
+            for misplaced in item_tables_under(&root.join("data"), "data") {
+                eprintln!(
+                    "mods: {} has {misplaced}, but the client reads item tables only from System/ -- \
+                     move it to System/",
+                    m.name
+                );
+            }
         }
         // A roBrowser plugin: styling, UI, anything the client can be told to
         // load. Served from the root, so the path in the config is
         // server-relative -- which is the one thing that will confuse people.
-        let client = m.dir.join("client");
-        if client.join("index.js").is_file() {
-            copy_over(&client, &server_root.join("plugins").join(&m.name))?;
+        if m.roots.iter().any(|r| r.join("client").join("index.js").is_file()) {
+            for root in &m.roots {
+                copy_over(&root.join("client"), &server_root.join("plugins").join(&m.name))?;
+            }
             // Declared defaults with the player's answers over them. The loader
             // hands this to the mod's init(parameters, api), so a mod can stay
             // enabled and still be told to hide part of itself.
@@ -476,19 +480,28 @@ fn overlay_fingerprint(cfg: &Config) -> String {
     let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
     fnv(&mut hash, era_tag(cfg).as_bytes());
     for m in crate::mods::enabled(cfg) {
-        let roots = client_roots(&m.dir);
+        // Each root's layers, named relative to the mod folder, so a mod with
+        // no era folder hashes exactly as it did before there were any.
+        let layers: Vec<(PathBuf, PathBuf)> = m
+            .roots
+            .iter()
+            .flat_map(|root| {
+                let rel = root.strip_prefix(&m.dir).unwrap_or(Path::new("")).to_path_buf();
+                client_roots(root).into_iter().map(move |sub| (root.join(sub), rel.join(sub)))
+            })
+            .collect();
         // A mod that reaches only the server has nothing the client could be
         // holding a stale copy of. Skipping its name as well as its files is
         // the difference between toggling a drop-rate mod and re-downloading
         // the client's whole working set to find nothing had changed.
-        if roots.is_empty() {
+        if layers.is_empty() {
             continue;
         }
         // The name, and in order: two mods overlaying the same path resolve by
         // load order, so the same set in a different order is a different tree.
         fnv(&mut hash, m.name.as_bytes());
-        for sub in roots {
-            hash_tree(&mut hash, &m.dir.join(sub), Path::new(sub));
+        for (dir, rel) in layers {
+            hash_tree(&mut hash, &dir, &rel);
         }
     }
     format!("{hash:016x}")
@@ -1878,6 +1891,27 @@ mod tests {
 
         crate::mods::set_enabled(&cfg.state, "skin-blue", false).unwrap();
         assert_ne!(overlay_fingerprint(&cfg), blue, "switching the skin off must clear it too");
+
+        let _ = fs::remove_dir_all(cfg.state.parent().unwrap());
+    }
+
+    /// A mod's era folder reaches the client too, and only for its own era:
+    /// an edit there must clear the cache, and an edit in the other era's
+    /// folder, which the client never sees, must not.
+    #[test]
+    fn the_running_eras_client_files_count_and_the_other_eras_do_not() {
+        let cfg = fixture_config("era-fingerprint");
+        let dir = cfg.state.join("mods").join("era-art");
+        write(&dir.join("mod.json"), r#"{"renewalFolder": "re", "prerenewalFolder": "pre-re"}"#);
+        write(&dir.join("data/texture/shared.bmp"), "shared");
+        write(&dir.join("re/data/texture/login.bmp"), "renewal");
+        write(&dir.join("pre-re/data/texture/login.bmp"), "classic");
+
+        let renewal = overlay_fingerprint(&cfg);
+        write(&dir.join("pre-re/data/texture/login.bmp"), "classic, redrawn");
+        assert_eq!(overlay_fingerprint(&cfg), renewal, "the other era's folder is not served");
+        write(&dir.join("re/data/texture/login.bmp"), "renewal, redrawn");
+        assert_ne!(overlay_fingerprint(&cfg), renewal, "an edit in the era folder went unnoticed");
 
         let _ = fs::remove_dir_all(cfg.state.parent().unwrap());
     }
