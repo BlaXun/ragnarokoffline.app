@@ -68,6 +68,28 @@
     return out;
   }
 
+  /**
+   * How many installed mods have an update waiting, for the red number on the
+   * Mods tab and its two sub-tabs. `updates` is check_mod_updates' answer by
+   * name; a lookup that failed, or a mod no longer in the registry, is not an
+   * update. `installed` is the names in the last mod listing, or null when
+   * there has been none yet: a mod removed since the lookup no longer counts.
+   */
+  function updateCount(updates, installed) {
+    let n = 0;
+    for (const [name, u] of Object.entries(updates || {})) {
+      if (!u || !u.update || u.error || u.listed === false) continue;
+      if (installed && !installed.includes(name)) continue;
+      n++;
+    }
+    return n;
+  }
+
+  /** What a screen reader hears for that number, or '' for none. */
+  function updateCountLabel(n) {
+    return n > 0 ? `${n} mod update${n === 1 ? '' : 's'} available` : '';
+  }
+
   /** The header's warning for a list from pending(), or '' for none. */
   function pendingText(changes) {
     if (!changes.length) return '';
@@ -88,5 +110,5 @@
       : { text: 'Mods applied. They load the next time you open the game.', button: 'Open game' };
   }
 
-  return { adopt, applied, pending, pendingText, appliedNotice };
+  return { adopt, applied, pending, pendingText, appliedNotice, updateCount, updateCountLabel };
 });
