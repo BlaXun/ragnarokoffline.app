@@ -2422,6 +2422,145 @@ static std::unordered_map<std::string, size_t> pop_mod_vendor_overrides() {
 	return out;
 }
 
+/// RAGNAROKMAC: the theme a market spot gets. Themes below their Min come
+/// first; otherwise a weighted pick, each theme's weight divided by (1 + the
+/// stalls of it already in this block) so the street stays varied, skipping
+/// themes at their Max. nullptr if no theme can be used.
+static const PopulationVendorEntry* pop_market_pick(const PopulationVendorEntry& market, int16 m,
+	const PopulationModSpawn& sp, std::unordered_set<std::string>& warned)
+{
+	std::unordered_map<std::string, int> have;
+	for (map_session_data* psd : g_population_engine_pcs)
+		if (psd && psd->m == m && psd->pop.vendor_spawn_id == sp.spawn_id)
+			++have[psd->pop.vendor_key];
+
+	struct Cand { const PopulationMarketTheme* t; const PopulationVendorEntry* e; };
+	std::vector<Cand> usable;
+	for (const PopulationMarketTheme& t : market.themes) {
+		const PopulationVendorEntry* e = population_vendor_db().find(t.key);
+		if (e == nullptr || e->is_market || population_vendor_pop_db().find_by_vendor_key(t.key) == nullptr) {
+			if (warned.insert(market.key + ">" + t.key).second)
+				ShowWarning("Population engine: market '%s' names theme '%s', which has no vendor entry "
+				            "or no PlacementBound profile; skipped.\n", market.key.c_str(), t.key.c_str());
+			continue;
+		}
+		if (t.max > 0 && have[t.key] >= t.max)
+			continue;
+		usable.push_back({ &t, e });
+	}
+	std::vector<Cand> need;
+	for (const Cand& c : usable)
+		if (have[c.t->key] < c.t->min)
+			need.push_back(c);
+	const std::vector<Cand>& from = need.empty() ? usable : need;
+	auto weight = [&](const Cand& c) {
+		return static_cast<double>(std::max(c.t->weight, need.empty() ? 0 : 1)) / (1 + have[c.t->key]);
+	};
+	double total = 0;
+	for (const Cand& c : from)
+		total += weight(c);
+	if (total <= 0)
+		return nullptr;
+	double r = (static_cast<double>(rnd() % 1000000) / 1000000.0) * total;
+	for (const Cand& c : from) {
+		r -= weight(c);
+		if (r <= 0)
+			return c.e;
+	}
+	return from.back().e;
+}
+
+/// RAGNAROKMAC: @vendorinfo. No argument: every mod stall on the GM's map.
+/// With one: a vendor theme's settings and stock, or a market's themes.
+/// A key may be given whole or by its last part ("byalan").
+void population_engine_vendorinfo(map_session_data* sd, const char* arg) {
+	if (sd == nullptr)
+		return;
+	const int fd = sd->fd;
+	char buf[CHAT_SIZE_MAX];
+	std::string q = arg ? arg : "";
+	while (!q.empty() && std::isspace(static_cast<unsigned char>(q.back()))) q.pop_back();
+	while (!q.empty() && std::isspace(static_cast<unsigned char>(q.front()))) q.erase(q.begin());
+
+	if (q.empty()) {
+		size_t n = 0;
+		const t_tick now = gettick();
+		for (map_session_data* psd : g_population_engine_pcs) {
+			if (!psd || psd->m != sd->m || psd->pop.vendor_spawn_id.empty())
+				continue;
+			char rot[48] = "";
+			if (psd->pop.vendor_rotation_at != 0)
+				safesnprintf(rot, sizeof(rot), ", rotates in %lldm",
+					static_cast<long long>(std::max<t_tick>(0, DIFF_TICK(psd->pop.vendor_rotation_at, now)) / 60000));
+			safesnprintf(buf, sizeof(buf), "%s (%d,%d) %s: \"%s\", %d item(s)%s", psd->status.name, psd->x, psd->y,
+				psd->pop.vendor_key.c_str(), psd->state.vending ? psd->message : "(closed)", psd->vend_num, rot);
+			clif_displaymessage(fd, buf);
+			++n;
+		}
+		safesnprintf(buf, sizeof(buf), "%zu mod vendor stall(s) on this map. @vendorinfo <theme or market> for details.", n);
+		clif_displaymessage(fd, buf);
+		return;
+	}
+
+	const PopulationVendorEntry* e = population_vendor_db().find(q);
+	if (e == nullptr) {
+		const std::string tail = "/" + q;
+		for (const auto& kv : population_vendor_db().vendor_entries())
+			if (kv.first.size() >= tail.size() && kv.first.compare(kv.first.size() - tail.size(), tail.size(), tail) == 0) {
+				e = &kv.second;
+				break;
+			}
+	}
+	if (e == nullptr) {
+		safesnprintf(buf, sizeof(buf), "No vendor theme or market called '%s'.", q.c_str());
+		clif_displaymessage(fd, buf);
+		return;
+	}
+
+	if (e->is_market) {
+		safesnprintf(buf, sizeof(buf), "Market %s: %zu spawn block(s), %zu theme(s).", e->key.c_str(), e->spawns.size(), e->themes.size());
+		clif_displaymessage(fd, buf);
+		std::unordered_map<std::string, int> live;
+		for (map_session_data* psd : g_population_engine_pcs)
+			for (const PopulationModSpawn& sp : e->spawns)
+				if (psd && psd->pop.vendor_spawn_id == sp.spawn_id)
+					++live[psd->pop.vendor_key];
+		for (const PopulationMarketTheme& t : e->themes) {
+			safesnprintf(buf, sizeof(buf), "  %s: weight %d, min %d, max %d, %d up now", t.key.c_str(), t.weight, t.min, t.max, live[t.key]);
+			clif_displaymessage(fd, buf);
+		}
+		return;
+	}
+
+	const PopModVendorSettings* st = pop_mod_vendor_settings_for_key(e->key);
+	const int rotation_min = st && st->rotation_min >= 0 ? st->rotation_min : e->rotation_sec / 60;
+	safesnprintf(buf, sizeof(buf), "%s: %zu pool item(s), %d-%d per stall, rotates every %d min, prices at %d%%%s.",
+		e->key.c_str(), e->pool.size(), e->pick_count_min, e->pick_count_max, rotation_min,
+		st && st->price_pct > 0 ? st->price_pct : 100, e->undercut_chance > 0 ? ", undercuts" : "");
+	clif_displaymessage(fd, buf);
+	size_t shown = 0;
+	for (const PopulationVendorStock& vs : e->pool.empty() ? e->stock : e->pool) {
+		if (++shown > 60) {
+			clif_displaymessage(fd, "  ... (first 60 shown)");
+			break;
+		}
+		std::shared_ptr<item_data> id = item_db.find(vs.nameid);
+		std::string extra;
+		if (vs.refine_max > 0)
+			extra += vs.refine_max > vs.refine_min ? " +" + std::to_string(vs.refine_min) + "-" + std::to_string(vs.refine_max)
+			                                        : " +" + std::to_string(vs.refine_max);
+		if (vs.element != 0)
+			extra += std::string(" (element ") + std::to_string(vs.element) + (vs.stars ? ", " + std::to_string(vs.stars) + " star(s))" : ")");
+		if (!vs.cards.empty())
+			extra += " (" + std::to_string(vs.cards.size()) + " card(s))";
+		if (vs.price_max > 0)
+			safesnprintf(buf, sizeof(buf), "  %s%s x%d: %u-%uz", id ? id->ename.c_str() : "?", extra.c_str(), vs.amount, vs.price, vs.price_max);
+		else
+			safesnprintf(buf, sizeof(buf), "  %s%s x%d: %uz", id ? id->ename.c_str() : "?", extra.c_str(), vs.amount, vs.price);
+		clif_displaymessage(fd, buf);
+	}
+}
+
 /// Keep every mod vendor block on a live map at its count. Exact counts unless
 /// the block opts into the density slider; respects the global Limit and the
 /// per-tick budget like every other spawn.
@@ -2452,7 +2591,7 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 			respect = !(st && st->respect_limit == 0);
 		}
 		const PopulationEngine* prof = population_vendor_pop_db().find_by_vendor_key(entry.key);
-		if (prof == nullptr) {
+		if (prof == nullptr && !entry.is_market) {
 			if (warned_no_profile.insert(entry.key).second)
 				ShowWarning("Population engine: mod vendor '%s' has Spawns but no PlacementBound profile "
 				            "with that VendorKey in population_vendor_pop.yml; not spawned.\n", entry.key.c_str());
@@ -2462,6 +2601,17 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 			const int16 m = map_mapname2mapid(sp.map.c_str());
 			if (m < 0)
 				continue;
+			// A vendor spawns as itself; a market spot rolls a theme and spawns
+			// as that, still counted as one of the market's spots.
+			auto spawn_here = [&](int16_t x, int16_t y, int16_t seat) -> bool {
+				if (!entry.is_market)
+					return pop_mod_vendor_spawn_one(m, entry, sp, *prof, x, y, seat);
+				const PopulationVendorEntry* theme = pop_market_pick(entry, m, sp, warned_no_profile);
+				if (theme == nullptr)
+					return false;
+				const PopulationEngine* tp = population_vendor_pop_db().find_by_vendor_key(theme->key);
+				return tp != nullptr && pop_mod_vendor_spawn_one(m, *theme, sp, *tp, x, y, seat);
+			};
 			auto ov = overrides.find(sp.spawn_id);
 			const size_t base = ov != overrides.end() ? ov->second
 				: (sp.positions.empty() ? static_cast<size_t>(sp.count) : sp.positions.size());
@@ -2501,7 +2651,7 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 					const auto& pos = sp.positions[i];
 					if (!pop_mod_vendor_cell_free(m, pos.first, pos.second))
 						continue; // taken: leave empty until it is free
-					if (pop_mod_vendor_spawn_one(m, entry, sp, *prof, pos.first, pos.second, seat))
+					if (spawn_here(pos.first, pos.second, seat))
 						spent();
 				}
 				continue;
@@ -2546,7 +2696,7 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 						if (std::abs(p.first - x) <= sp.min_spacing && std::abs(p.second - y) <= sp.min_spacing) { too_close = true; break; }
 					if (too_close)
 						continue;
-					if (pop_mod_vendor_spawn_one(m, entry, sp, *prof, x, y, -1)) {
+					if (spawn_here(x, y, -1)) {
 						spent();
 						mine.emplace_back(x, y);
 						placed = true;

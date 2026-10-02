@@ -241,6 +241,14 @@ engine's vendors spawn exactly as upstream's do.
   some items just under the cheapest rival shell stall on the map, and no
   price goes below the NPC sell value except a fat-finger.
 - A mod vendor stall that sells out packs up, and its spot refills.
+- A `Market:` entry holds spots (`Spawns:`) and a weighted list of themes
+  (`Themes: [{ Theme, Weight, Min, Max }]`, each theme an ordinary vendor
+  entry without Spawns). Every time a spot gets a stall it rolls a theme:
+  first any below its Min, then by weight, each theme's weight divided by
+  one plus the stalls of it already standing, skipping any at its Max. So
+  the stalls change as they rotate rather than only on a restart.
+- `@vendorinfo` (patch 0018) lists the mod stalls on the GM's map, or shows a
+  theme's stock and prices or a market's themes.
 - A mod's price table, `db/population_vendor_prices/<prefix>.csv` with rows
   `Id,Name,Min,Max`, prices the plain stock lines of the vendors whose key
   starts with `<prefix>/`, over their YAML Price. Hand-editable in a

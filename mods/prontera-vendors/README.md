@@ -13,16 +13,17 @@ do, and each new one draws a fresh mix from its theme.
 - **The population engine switched on**: Settings → Population → Fake
   players, with the engine's vending economy on (`population_engine_vending_enable`,
   the default).
-- An app build whose engine has mod vendors (`Spawns:`, Pool vendors, and the
-  `population_vendor_*` script commands). On an older build the server log
-  names the unknown keys or the unknown script command.
+- An app build whose engine has mod vendors with markets (`Market:`), Pool
+  vendors, the `population_vendor_*` script commands and `@vendorinfo`. On an
+  older build no stall appears, and the server log names what it doesn't
+  know.
 
 ## Settings (Settings → Mods)
 
 | Setting | Default | What it does |
 |---|---|---|
 | Sell shops | on | Off removes every sell stall. |
-| Sell stalls | 20 | How many. With fewer stalls than themes, a different set of themes shows up each server start. |
+| Sell stalls | 20 | How many spots the market fills. |
 | Minutes before a stall changes | 240 | How long a vendor stays before another takes the spot (± up to half, checked once a minute, so short values run long). 0 keeps them until restart. |
 | Price level (%) | 100 | Every price × this / 100. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count in it). |
@@ -37,11 +38,17 @@ those). Buy shops will get their own on/off and count under
 
 ## What's for sale
 
-113 themes, all on both sidewalks (x=147, y=136–170 and x=164, y=135–173).
-Six staples are at every server start: general goods, potions, forge
-supplies, healing items, common cards and rare cards (they weigh three times
-as much in the Sell stalls split). The rest of the stalls are drawn from the
-other themes, a different set each start.
+113 themes, sold through one market: the spots on both sidewalks (x=147,
+y=136–170 and x=164, y=135–173). Every time a spot gets a stall, at server
+start or when the one before it packs up, it rolls a theme, so the street
+changes while you play. Six staples are always there (general goods,
+potions, forge supplies, healing items, common and rare cards: at least one
+each, at most two); card themes are twice as likely as the rest, and every
+other theme stands at most once at a time.
+
+GMs can look behind the scenes with `@vendorinfo` (every mod stall on the
+map, with its theme and time to rotation) and `@vendorinfo <theme>` (its
+stock and price ranges, e.g. `@vendorinfo byalan` or `@vendorinfo sidewalks`).
 
 - **Goods:** general gear, forge supplies, potions, slim potions, healing
   items, gemstones, Ygg/Ori/Elu, skill supplies, ammo, magic scrolls, dyes,

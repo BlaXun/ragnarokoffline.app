@@ -198,6 +198,8 @@ void population_engine_set_mod_vendor_limit(const char* prefix, int respect);
 /// RAGNAROKMAC: those vendors' price level in percent (100 = as listed);
 /// script: population_vendor_price.
 void population_engine_set_mod_vendor_price(const char* prefix, int pct);
+/// RAGNAROKMAC: @vendorinfo [theme|market] -- inspect mod vendor stalls in game.
+void population_engine_vendorinfo(map_session_data* sd, const char* arg);
 
 struct block_list;
 /// Arena PvP: classify the relation between two block_list entities so that

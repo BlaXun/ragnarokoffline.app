@@ -49,6 +49,7 @@ TABLE_CSV = os.path.join(MOD, "db", "population_vendor_prices", "prontera-vendor
 # Sell stalls; buy shops will live under prontera-vendors/buy/, so each
 # group can be counted and switched on its own.
 PREFIX = "prontera-vendors/sell/"
+MARKET = PREFIX + "sidewalks"
 CANDIDATE_CAP = 80
 # Rule-built themes leave out anything dearer than this: kRO's endgame gear and
 # costumes list for hundreds of millions, which no solo player can reach and
@@ -774,10 +775,9 @@ for _key, _titles, _rule in [
     THEMES.append(dict(key=_key, job=random.Random(_key).choice(["Merchant", "HighMerchant", "Blacksmith", "Alchemist"]),
                        pick=[4, 8], weight=1, rule=_rule, titles=_titles + [f"{{name}}'s {_titles[0].capitalize()}"]))
 
-# Staples: a real market always has these, so they weigh three times as much.
-# The Sell stalls total is split by weight with largest remainders first, so
-# at the default 20 each staple gets a stall every server start and the rest
-# are drawn from the other themes.
+# Staples: a real market always has these. In the market each has Min 1 (a
+# spot always holds one), weight 3 and Max 2; card themes weigh 2; the rest 1
+# with Max 1, so the street keeps a mix.
 STAPLES = {"general_gear", "potions", "forge_supplies", "healing", "common_cards", "rare_cards"}
 
 # Dungeon loot stalls: what the monsters of a place drop (no cards; those
@@ -1116,7 +1116,7 @@ def main():
     train_fallbacks()
     fill_table()
     rng = random.Random(1)
-    vendors, profiles = [], []
+    vendors, profiles, market = [], [], []
     for t in THEMES:
         lines = resolve(t, refresh, rng)
         if not lines:
@@ -1148,10 +1148,8 @@ def main():
             if spec.get("stars"):
                 d["Stars"] = spec["stars"]
             out.append(f"      - {flow(d)}")
-        weight = 3 if t["key"] in STAPLES else t["weight"]
-        out += ["    Spawns:", "      - Map: prontera", f"        Count: {weight}", "        Areas:"]
-        out += [f"          - {flow(a)}" for a in AREAS]
         vendors.append("\n".join(out))
+        market.append(key)
         profiles.append("\n".join([
             f"  - Profile: {key}_vendor",
             "    PlacementBound: true",
@@ -1171,6 +1169,23 @@ def main():
         print(f"  {t['key']}: {len(lines)} items", file=sys.stderr)
     write_table()
 
+    # The market: every sidewalk spot rolls one of the themes whenever a stall
+    # is put there, so the street changes as stalls rotate. Its Count is what
+    # the "Sell stalls" setting replaces.
+    m = [f"  - Market: {MARKET}", "    Spawns:", "      - Map: prontera", "        Count: 20", "        Areas:"]
+    m += [f"          - {flow(a)}" for a in AREAS]
+    m.append("    Themes:")
+    for key in market:
+        short = key[len(PREFIX):]
+        if short in STAPLES:
+            w = {"Theme": key, "Weight": 3, "Min": 1, "Max": 2}
+        elif short.startswith("cards_"):
+            w = {"Theme": key, "Weight": 2, "Max": 1}
+        else:
+            w = {"Theme": key, "Weight": 1, "Max": 1}
+        m.append(f"      - {flow(w)}")
+    vendors.insert(0, "\n".join(m))
+
     head = (
         "###########################################################################\n"
         "# prontera-vendors — {what}\n"
@@ -1186,10 +1201,11 @@ def main():
         "# cheapest rival stall, never below the NPC sell price), and on a rare\n"
         "# 1-in-5000 per item lists one with a digit missing.\n"
         "#\n"
-        "# Every theme spawns on both Prontera sidewalks. Count is the theme's share\n"
-        "# of the mod's \"Vendors\" setting, which the mod's script hands to the\n"
-        "# engine; rotation and callouts come from the settings too, and the values\n"
-        "# here are what applies without them.\n"
+        "# The first entry is the market: its spots on both Prontera sidewalks, and\n"
+        "# the themes a spot may roll (Weight, Min, Max) each time a stall is put\n"
+        "# there. Its Count is replaced by the mod's \"Sell stalls\" setting; rotation\n"
+        "# and callouts come from the settings too, and the values here are what\n"
+        "# applies without them. The themes after it sell; they have no Spawns.\n"
         "###########################################################################\n\n"
         "Header:\n  Type: POPULATION_VENDORS_DB\n  Version: 1\n\nBody:\n"
     )
