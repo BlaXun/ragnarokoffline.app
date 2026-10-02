@@ -17,6 +17,13 @@
 //                                            asset server (so it is same-origin)
 //   ro-tool://db-browser/api/<call>          the database browser's bridge,
 //                                            see db-bridge.js
+//   ro-tool://control-panel/api/<call>       the control panel's, see
+//                                            cp-bridge.js
+//   ro-tool://control-panel/look-tables.json job, hair, headgear and garment
+//                                            sprite names, from the client
+//   ro-tool://control-panel/item-names.json?ids=..  names and icons of items
+//   ro-tool://control-panel/asset/data/sprite/...   a player sprite or
+//                                            palette, from the asset server
 //
 // The tables come with the mods' db/import laid over them, so a mod's
 // monsters and items show up too. Each window has its own session and no
@@ -25,6 +32,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFile } = require('node:child_process');
+const vm = require('node:vm');
 
 // A client table, as text: the translation's are UTF-8, older ones and many
 // a mod's are CP949 (EUC-KR). Decoded one file at a time, since the item
@@ -59,26 +67,106 @@ function clientItemInfo(web) {
 }
 
 /**
- * Mods' monster sprite tables (customLuaTables.monster: an npcidentity-style
- * id file and a jobname-style name file each), as id -> sprite name, later
- * mods over earlier ones as the client merges them.
+ * Mods' sprite tables (customLuaTables in the generated config: an id file and
+ * a name file each, in the official format), as id -> sprite name, later mods
+ * over earlier ones as the client merges them. `kind` is monster
+ * (npcidentity / jobname), accessory (accessoryid / accname: headgear) or
+ * robe (spriterobeid / spriterobename: garments).
  */
-function clientMonsterSprites(web) {
+const VIEW_ID_PREFIX = { monster: 'JT_', accessory: 'ACCESSORY_', robe: 'ROBE_' };
+function clientViewTable(web, kind) {
 	const tables = /customLuaTables:\s*\{([^\n]*)\}/.exec(clientConfig(web));
-	const listed = tables && /monster:\s*\[((?:\s*\[[^\]]*\]\s*,?)*)\]/.exec(tables[1]);
+	const listed = tables && new RegExp(`${kind}:\\s*\\[((?:\\s*\\[[^\\]]*\\]\\s*,?)*)\\]`).exec(tables[1]);
 	const out = {};
 	if (!listed) return out;
 	const read = f => { try { return decode(fs.readFileSync(f)); } catch { return ''; } };
+	const idPattern = new RegExp(`\\b(${VIEW_ID_PREFIX[kind]}[A-Za-z0-9_]+)\\s*=\\s*(\\d+)`, 'g');
 	for (const pair of listed[1].matchAll(/\[([^\]]*)\]/g)) {
 		const [idFile, nameFile] = quoted(pair[1]).map(rel => path.join(web, rel));
 		const ids = {};
-		for (const m of read(idFile).matchAll(/\b(JT_[A-Za-z0-9_]+)\s*=\s*(\d+)/g)) ids[m[1]] = m[2];
-		for (const m of read(nameFile).matchAll(/\[\s*(?:jobtbl\.)?([A-Za-z0-9_]+)\s*\]\s*=\s*"([^"]+)"/g)) {
+		for (const m of read(idFile).matchAll(idPattern)) ids[m[1]] = m[2];
+		for (const m of read(nameFile).matchAll(/\[\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)?([A-Za-z0-9_]+)\s*\]\s*=\s*"([^"]+)"/g)) {
 			const id = /^\d+$/.test(m[1]) ? m[1] : ids[m[1]];
 			if (id) out[id] = m[2];
 		}
 	}
 	return out;
+}
+
+function clientMonsterSprites(web) {
+	return clientViewTable(web, 'monster');
+}
+
+/**
+ * Item names and icons from the client's item tables (clientItemInfo), as
+ * id -> { name, resource, slots }. The last definition of an id wins, as the
+ * joined tables are ordered for.
+ */
+function clientItemNames(web) {
+	const raw = clientItemInfo(web).toString('utf8');
+	const starts = [...raw.matchAll(/\[\s*(\d+)\s*\]\s*=\s*\{/g)];
+	const out = {};
+	starts.forEach((m, i) => {
+		const chunk = raw.slice(m.index, i + 1 < starts.length ? starts[i + 1].index : raw.length);
+		const name = /\bidentifiedDisplayName\s*=\s*"([^"]*)"/.exec(chunk);
+		if (!name) return;
+		const res = /\bidentifiedResourceName\s*=\s*"([^"]*)"/.exec(chunk);
+		const slots = /\bslotCount\s*=\s*(\d+)/.exec(chunk);
+		out[m[1]] = { name: name[1], resource: res ? res[1] : '', slots: slots ? Number(slots[1]) : 0 };
+	});
+	return out;
+}
+
+/**
+ * roBrowser's own sprite-name tables (src/DB), which it bundles rather than
+ * serving: job -> body sprite and palette names, hair style order, headgear
+ * and garment view ids -> sprite names. package.sh copies them beside the
+ * client as client-tables/, the way it copies MonsterTable.js.
+ *
+ * They are ES modules that build their tables in code (JobNameTable copies
+ * entries between jobs), so they are run, in a context of their own, rather
+ * than read with a pattern. Their strings are CP949 bytes written as \x
+ * escapes; they come out here as the Korean they spell, which is how the
+ * asset server is asked for files.
+ */
+const CLIENT_TABLES = {
+	jobs: 'Jobs/JobConst.js', classes: 'Jobs/JobNameTable.js', palettes: 'Jobs/PalNameTable.js',
+	hair: 'Jobs/HairIndexTable.js', hats: 'Items/HatTable.js', robes: 'Items/RobeTable.js',
+};
+function clientTableModule(runtimeDir, rel, scope) {
+	const candidates = [
+		path.join(runtimeDir, 'client-tables', path.basename(rel)),
+		// Running from source before package.sh has been run.
+		path.join(__dirname, '..', 'vendor', 'roBrowserLegacy', 'src', 'DB', rel),
+	];
+	const file = candidates.find(f => fs.existsSync(f));
+	if (!file) throw new Error(`The client's ${path.basename(rel)} is missing from this build.`);
+	const source = fs.readFileSync(file, 'utf8')
+		.replace(/^\s*import\s+\w+\s+from\s+['"][^'"]+['"];?[ \t\r]*$/gm, '')
+		.replace(/\bexport\s+default\s+/, '__module.result = ');
+	const context = { __module: {}, ...scope };
+	vm.runInNewContext(source, context, { filename: file, timeout: 2000 });
+	return context.__module.result;
+}
+
+function clientLookTables(runtimeDir, web) {
+	const load = (key, scope) => clientTableModule(runtimeDir, CLIENT_TABLES[key], scope);
+	const korean = text => (typeof text === 'string' ? decode(Buffer.from(text, 'latin1')) : text);
+	const names = table => Object.fromEntries(Object.entries(table).map(([id, name]) => [id, korean(name)]));
+	const JobId = load('jobs', {});
+	const JobNameTable = load('classes', { JobId });
+	const jobs = {};
+	for (const [key, id] of Object.entries(JobId)) if (!(id in jobs)) jobs[id] = key;
+	return {
+		jobs,
+		classes: names(JobNameTable),
+		palettes: names(load('palettes', { JobId, JobNameTable })),
+		hair: load('hair', {}),
+		// Mods' headgear and garments over the client's, as the game merges them.
+		hats: { ...names(load('hats', {})), ...clientViewTable(web, 'accessory') },
+		robes: { ...names(load('robes', {})), ...clientViewTable(web, 'robe') },
+		costume: [JobId.COSTUME_SECOND_JOB_START, JobId.COSTUME_SECOND_JOB_END],
+	};
 }
 
 const SCHEME = 'ro-tool';
@@ -115,6 +203,13 @@ const TOOLS = [
 		page: 'db-browser.html',
 		needsServer: true,
 	},
+	{
+		id: 'control-panel',
+		name: 'Control panel',
+		description: 'Every account and character on your server: how they look, their level, zeny, equipment and where they are. Move a stuck character to its save point, delete a character the way the game does, or make an account.',
+		page: 'control-panel.html',
+		needsServer: true,
+	},
 ];
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.yml': 'text/yaml; charset=utf-8', '.lua': 'application/octet-stream', '.png': 'image/png', '.json': 'application/json' };
@@ -142,6 +237,9 @@ function createTools(deps) {
 	const pngCache = new Map();
 	let handlersReady = false;
 	const dbBridge = require('./db-bridge').createDbBridge(deps);
+	const cpBridge = require('./cp-bridge').createCpBridge(deps);
+	// Parsed once per window: the item tables are megabytes.
+	let itemNames = null;
 
 	function exportTable(name) {
 		const { cwd, env } = deps.stackEnv();
@@ -231,6 +329,29 @@ function createTools(deps) {
 		return null;
 	}
 
+	// The control panel (#230): its bridge, the client tables it draws a
+	// character with, and the sprite files themselves.
+	async function controlPanelRoute(name, url, request) {
+		if (name.startsWith('api/')) return cpBridge(request, name.slice(4));
+		if (name === 'look-tables.json') return respond(JSON.stringify(clientLookTables(deps.runtimeDir(), path.join(deps.stateDir(), 'assets'))), TYPES['.json']);
+		if (name === 'item-names.json') {
+			if (!itemNames) itemNames = clientItemNames(path.join(deps.stateDir(), 'assets'));
+			const ids = (url.searchParams.get('ids') || '').split(',').filter(id => /^\d{1,10}$/.test(id)).slice(0, 500);
+			return respond(JSON.stringify(Object.fromEntries(ids.filter(id => itemNames[id]).map(id => [id, itemNames[id]]))), TYPES['.json']);
+		}
+		// A player's sprite or palette, by the path the game asks for: only
+		// sprites and palettes, nothing above data/.
+		const asset = /^asset\/(data\/(?:sprite|palette)\/.+\.(?:spr|act|pal))$/i.exec(name);
+		if (asset) {
+			const parts = asset[1].split('/');
+			if (parts.some(p => !p || p === '.' || p === '..' || p.includes('\\'))) return respond('not found', 'text/plain', 404);
+			const res = await deps.net.fetch(`http://${assetHost()}/${parts.map(encodeURIComponent).join('/')}`, { bypassCustomProtocolHandlers: true });
+			if (!res.ok) return respond(`no ${asset[1]}`, 'text/plain', 404);
+			return respond(Buffer.from(await res.arrayBuffer()), 'application/octet-stream');
+		}
+		return null;
+	}
+
 	function respond(body, type, status = 200) {
 		return new Response(body, { status, headers: { 'content-type': type, 'cache-control': 'no-store' } });
 	}
@@ -249,6 +370,10 @@ function createTools(deps) {
 					if (answer) return answer;
 				}
 				if (tool.id === 'db-browser' && name.startsWith('api/')) return await dbBridge(request, name.slice(4));
+				if (tool.id === 'control-panel') {
+					const answer = await controlPanelRoute(name, url, request);
+					if (answer) return answer;
+				}
 				if (name === 'mob_db.yml' || /^item_db_(equip|etc|usable)\.yml$/.test(name)) {
 					return respond(await exportTable(name.replace(/\.yml$/, '')), TYPES['.yml']);
 				}
@@ -315,6 +440,7 @@ function createTools(deps) {
 		// The pages cache what they parsed and restore it before looking for
 		// anything newer. Start them clean, so a mod added since shows up.
 		await ses.clearStorageData({ storages: ['indexdb'] }).catch(() => {});
+		if (id === 'control-panel') itemNames = null;
 		const win = new deps.BrowserWindow({
 			width: 1280, height: 860,
 			title: `${tool.name} — Ragnarok Offline`,
@@ -345,4 +471,4 @@ function createTools(deps) {
 	};
 }
 
-module.exports = { createTools, schemePrivileges, SCHEME, TOOLS, clientItemInfo, clientMonsterSprites };
+module.exports = { createTools, schemePrivileges, SCHEME, TOOLS, clientItemInfo, clientMonsterSprites, clientViewTable, clientItemNames, clientLookTables };

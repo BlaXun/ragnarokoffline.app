@@ -90,6 +90,50 @@ else. See [UI skins](#ui-skins). (An app from before
 this key ignores it, so a skin still loads there, just without the others
 being switched off.)
 
+### renewalFolder / prerenewalFolder — one mod for both eras
+
+Some files only work in one era. An item script that calls a renewal-only
+command, a monster with renewal-only stats, an NPC that warps to a renewal map:
+in the other era the server refuses the table or the script and says so on
+every start. `requires.era` keeps such a mod out of the other era entirely.
+When most of the mod works in both and only a few files differ, name a folder
+for each era instead:
+
+```json
+{
+  "name": "my-island",
+  "renewalFolder": "renewal",
+  "prerenewalFolder": "pre-renewal"
+}
+```
+
+```
+my-island/
+├── mod.json
+├── db/item_db.yml              both eras, unless the era folder has its own
+├── npc/ferry.txt               both eras
+├── renewal/
+│   ├── db/item_db.yml          renewal only: replaces db/item_db.yml
+│   └── npc/renewal-quest.txt   renewal only: added to npc/
+└── pre-renewal/
+    └── db/item_db.yml          pre-renewal only: replaces db/item_db.yml
+```
+
+An era folder is laid out like the mod itself, with the same `db/`, `npc/`,
+`conf/`, `lua/`, `data/`, `System/`, `BGM/` and `client/` folders, and
+everything in this guide applies inside it. While its era is running it is
+applied **over** the mod's own folders. A file at the same path replaces the
+mod's copy (`renewal/db/item_db.yml` is the item table, not an addition to
+`db/item_db.yml`), and anything else is added. The other era's folder is not
+read at all. You may declare either key or both; with neither, nothing changes.
+Switching era in Settings is enough to switch which copy is in effect.
+
+Each value must be a folder inside the mod, written with forward slashes. It
+cannot be one of the layer folders themselves (`"db"` is refused), and a name
+that is not there is refused with the reason. An app from before 1.4.3 ignores
+both keys and reads only the mod's own folders, so a mod relying on them should
+say `"requires": { "app": ">=1.4.3" }`.
+
 A refused mod is **named in Settings, next to the ones that loaded, with the
 reason**:
 
@@ -190,12 +234,21 @@ the mod is switched off or an older app is running it. A boolean arrives as
 and a string as a string. These are the same checked values the client gets,
 and they change on **Apply**, like everything else about the server.
 
-Only `groups.yml`, `atcommands.yml` and files under `npc/` can be switched this
-way. Put conditional NPC scripts under `npc/when/<setting key>/`; ordinary
-files under `npc/` remain unconditional. A folder named for a setting the mod
-does not declare, or for one that is not a boolean, is ignored and the log says
-so. See
-[`mods/player-commands`](../mods/player-commands).
+The same `when/<setting key>/` folder works in four layers:
+
+| Folder | What it switches |
+|---|---|
+| `conf/when/<key>/` | `groups.yml` and `atcommands.yml` only |
+| `npc/when/<key>/` | scripts, loaded only while the setting is on |
+| `db/when/<key>/` | tables, added to the mod's own copy of the same table (1.4.3) |
+| `lua/when/<key>/` | skill and item hooks, run only while the setting is on (1.4.3) |
+
+Files outside `when/` stay unconditional. A folder named for a setting the mod
+does not declare, or for one that is not a boolean, is ignored, and the log
+says so. See [`mods/player-commands`](../mods/player-commands), and
+[Several hooks in one mod](#several-hooks-in-one-mod-each-with-its-own-checkbox)
+for `lua/` and `db/`. Inside an [era folder](#renewalfolder--prerenewalfolder--one-mod-for-both-eras)
+the same switches work the same way.
 
 ### settingsPage — a settings window of your own
 
@@ -646,6 +699,52 @@ replaces its own previous entry rather than stacking against itself. The
 `priority` key is optional: omit it and the default (5) is used. Priority
 is per call, applying to every hook declared in that call; a mod wanting
 different priorities for two hooks makes two calls.
+
+### Several hooks in one mod, each with its own checkbox
+
+One mod can carry several independent hooks and let the player choose which
+are on. Declare a yes/no setting for each, and put each hook under
+`lua/when/<setting key>/`. Settings → Mods draws the checkboxes, and **Apply**
+loads exactly the ticked ones:
+
+```json
+{
+  "name": "blaze-shield",
+  "requires": { "app": ">=1.4.3" },
+  "settings": [
+    { "key": "drain", "type": "boolean", "default": true,
+      "label": "Drain", "description": "Pillar hits drain HP and SP for the ninja." },
+    { "key": "classchange", "type": "boolean", "default": false,
+      "label": "Class change", "description": "Pillar hits can turn a monster into another." },
+    { "key": "pin", "type": "boolean", "default": false,
+      "label": "Pin on entry", "description": "Monsters cannot walk through the pillars." }
+  ]
+}
+```
+
+```
+blaze-shield/
+├── mod.json
+├── lua/
+│   ├── when/drain/drain.lua               skill("NJ_KAENSIN", { on_hit = ... })
+│   └── when/classchange/classchange.lua   skill("NJ_KAENSIN", { on_hit = ... })
+└── db/
+    └── when/pin/extension_db.yml          Enabled: true for blaze_shield_knockback
+```
+
+Each part is loaded under its own name, `<mod>/<setting key>` (`blaze-shield/drain`
+above). That is the name its errors are logged under, and it is why two parts
+of one mod can hook the same skill: they chain like two mods, in `priority`
+order, instead of the second replacing the first as a second registration
+from the same file would. Files directly in `lua/` are loaded as the mod itself,
+as before, and run before its switched parts. `setting("blaze-shield", "<key>", ...)`
+still reads the mod's settings from any of them.
+
+`db/when/<key>/` works the same way for tables. A switched part's copy of a
+table is **added** to the mod's own copy rather than replacing it, the way two
+mods' copies are combined. That makes it the place for a server extension the
+player should be able to turn on: ship `db/when/<key>/extension_db.yml` with
+just that extension's `Id` and `Enabled: true`.
 
 ### `skill("<AegisName>", { ... })` — the four skill hooks
 

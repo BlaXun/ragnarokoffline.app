@@ -21,6 +21,11 @@ on, and a save works the way `sql --write` does: a backup first, the game
 stopped while the change is written, and everything undone if any part of it
 fails. Underneath it is `ragnarok-stack db`; see [The Database tool](#the-database-tool).
 
+For the things people most often open the database for -- what a character
+looks like and carries, where it is, moving a stuck one, deleting one -- use
+**Settings → Tools → Control panel** instead. Each of its changes is made the
+way the game makes it; see [The Control panel](#the-control-panel).
+
 ## Where the command is
 
 The supervisor binary ships inside the app and is the same one the app itself
@@ -164,8 +169,9 @@ Settings → Tools → Database is a window onto the same `ragnarok` database.
   `mail`, `sc_data`, `bonus_script` and pets, removes its homunculus and
   elemental, and leaves its party, guild and marriage. Deleting the `char` row
   here leaves all of that behind as orphans. Delete a character from the
-  character select screen in the game where you can; the review step says so
-  when a save deletes from `char`.
+  character select screen in the game, or with the
+  [Control panel](#the-control-panel); the review step says so when a save
+  deletes from `char`.
 
 Its answers come back through a file in `backups/` (`db-browser-*.out`,
 removed once read), not through `docker exec`'s output, which docker-slim cut
@@ -189,6 +195,74 @@ Know what a column means before you change it. Editing a table's values does
 not teach rAthena anything new. A variable in `mapreg` whose name has no
 trailing `$` is a number, so the map server reads the text `hello` as 0, and it
 deletes zero-valued variables when it next saves.
+
+## The Control panel
+
+Settings → Tools → Control panel lists every player account and its
+characters, and shows one character the way the game draws it, with its job,
+levels and experience, zeny, stats, guild, party, position, save point and
+equipment. It can do three things, and each is written the way rAthena writes
+it rather than as a row edit:
+
+| Action | What it writes | Does the game stop? |
+|---|---|---|
+| **Move to save point** / **Move to…** | `char.last_map`, `last_x`, `last_y`, and `last_instanceid` = 0: the columns the char server writes for a position (`char_mmo_char_tosql`) | No |
+| **Delete character** | rAthena's `char_delete` statements, in its order: divorce and wedding rings, adoption, pets and pet eggs, homunculus, elemental, mercenary, friends both ways, hotkeys, inventory, cart, memo points, variables, skills, mail, status changes, bonus scripts, quests, achievements, the `charlog` line, then the `char` row | Yes, for a few seconds, after a backup |
+| **Create account** | Exactly what Settings → Accounts → Create writes: it is the same call (`ragnarok-stack accounts`) | Yes, briefly, as there |
+
+**Why a move does not stop the game.** rAthena keeps a copy of a character
+in the char server only while it is in the game. Choosing a character sets
+`online` to 1 *before* loading it, so that tools reading the database know
+the row is no longer the truth ("set char as online prior to loading its data
+so 3rd party applications will realise the sql data is not reliable",
+`chclif_parse_charselect` in `src/char/char_clif.cpp`). Logging out ends
+with the map server's final save, after which `char_set_char_offline`
+(`src/char/char.cpp`) drops the character from the char server's cache and
+only then writes `online` = 0. A row that says `online` = 0 therefore has no
+copy anywhere that could be saved over the change, and the next time the
+character is chosen it is loaded from those columns. The update itself checks
+`online` = 0, for the character and every other character on its account, in
+the same statement, so a player who logs in at that moment keeps the old
+position and the panel says nothing moved. A map the server does not have is
+not an error: rAthena sends the character to a major city instead, and
+coordinates off the map, or 0, 0, become a random spot on it.
+
+**Deleting** refuses, before anything is stopped, a character that is in the
+game (or whose account has another character in it), one in a guild or a
+party -- `char_del_restriction` refuses those by default, and the game's own
+party and guild leave steps need the servers -- one that leads a guild, and
+a name typed that is not exactly the character's. It does not wait for the
+game's deletion timer or ask for the account's birthday: those slow down a
+player at the character select screen, and here the owner confirms by typing
+the name. Then it saves a backup to `backups/before-control-panel-*.sql`,
+stops the game, checks everything again, runs the statements in one script,
+and starts the game. If any statement fails, the backup is loaded back and
+nothing has changed. Tables `char_delete` does not touch, such as
+`mail_attachments` and `storage`, are left as the game leaves them.
+
+What the panel reads goes through the Database tool's read path: one
+read-only transaction, every value hex-encoded, answered through a file in
+`backups/`. It never reads `login.user_pass`. The server's own account and
+the AI agents' accounts are not listed.
+
+The sprite is drawn from the same files the game window asks the asset server
+for, with roBrowser's own sprite-name tables: body, hair and clothes colours,
+headgear and garment, standing and facing south. Weapons, shields, mounts and
+carts are not drawn.
+
+Underneath it is `ragnarok-stack cp`, one JSON request on stdin and one JSON
+answer on stdout, errors included:
+
+```
+echo '{"action":"characters"}' | ragnarok-stack cp
+echo '{"action":"character","char_id":"150000"}' | ragnarok-stack cp
+echo '{"action":"reset-position","char_id":"150000","target":"save"}' | ragnarok-stack cp
+echo '{"action":"reset-position","char_id":"150000","target":{"map":"prontera","x":156,"y":191}}' | ragnarok-stack cp
+echo '{"action":"delete-character","char_id":"150000","name":"Bob"}' | ragnarok-stack cp
+```
+
+The two writes take the same operation lock as `sql --write`, and from the
+app they wait in the same queue as every other server operation.
 
 ## What is in there
 

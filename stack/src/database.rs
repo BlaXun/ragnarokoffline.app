@@ -165,7 +165,7 @@ fn ident(name: &str) -> Result<String, String> {
     Ok(format!("`{name}`"))
 }
 
-fn hex(bytes: &[u8]) -> String {
+pub(crate) fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02X}")).collect()
 }
 
@@ -177,19 +177,19 @@ fn unhex(text: &str) -> Result<Vec<u8>, String> {
 }
 
 /// A `HEX(...)` field of mariadb's batch output: `NULL`, or the value's bytes.
-fn field(text: &str) -> Result<Option<Vec<u8>>, String> {
+pub(crate) fn field(text: &str) -> Result<Option<Vec<u8>>, String> {
     if text == "NULL" {
         return Ok(None);
     }
     unhex(text).map(Some).map_err(|_| "The database answered in a form this tool does not read".to_string())
 }
 
-fn field_text(text: &str) -> Result<Option<String>, String> {
+pub(crate) fn field_text(text: &str) -> Result<Option<String>, String> {
     Ok(field(text)?.map(|b| String::from_utf8_lossy(&b).into_owned()))
 }
 
 /// A cell, as the page gets it: text when it is UTF-8, hex when it is not.
-fn cell_json(value: Option<&[u8]>) -> String {
+pub(crate) fn cell_json(value: Option<&[u8]>) -> String {
     match value {
         None => "null".into(),
         Some(bytes) => match std::str::from_utf8(bytes) {
@@ -200,7 +200,7 @@ fn cell_json(value: Option<&[u8]>) -> String {
 }
 
 /// Rows of mariadb `--batch --skip-column-names` output.
-fn lines(output: &str) -> impl Iterator<Item = Vec<&str>> {
+pub(crate) fn lines(output: &str) -> impl Iterator<Item = Vec<&str>> {
     output.lines().filter(|l| !l.is_empty()).map(|l| l.split('\t').collect())
 }
 
@@ -592,7 +592,7 @@ pub fn parse_rows(table: &Table, output: &str) -> Result<String, String> {
 
 /// The one error for an answer this tool cannot read, saying where and why,
 /// so a report of it can be acted on.
-fn unreadable(line: usize, why: &str) -> String {
+pub(crate) fn unreadable(line: usize, why: &str) -> String {
     format!("The database answered in a form this tool does not read (line {}: {why})", line + 1)
 }
 
