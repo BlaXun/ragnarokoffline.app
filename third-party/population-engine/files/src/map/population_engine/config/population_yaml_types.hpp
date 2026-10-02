@@ -229,6 +229,12 @@ struct PopulationVendorPlacement {
 	int min_spacing = 0;         ///< Minimum cells between two vendor shells (0 = no spacing check).
 	int max_vendors = 0;         ///< Hard cap on simultaneous vendor shells on this map (0 = unlimited).
 	int16_t area_x1 = -1, area_y1 = -1, area_x2 = -1, area_y2 = -1; ///< Optional bounding box (-1 = whole map).
+	/// RAGNAROKMAC: the VendorKey of the entry that declared this placement.
+	/// When non-empty, the autosummon pass spawns ONLY vendor jobs whose Profile
+	/// maps to this key here, instead of any vendor job from the global pool.
+	/// Without it a placement is filled by a random vendor, so a mod could not
+	/// put a specific themed vendor at a specific spot.
+	std::string vendor_key;
 };
 
 #endif // POPULATION_YAML_TYPES_HPP

@@ -114,9 +114,13 @@ void population_engine_vendor_dyn_cache_clear() {
 // Cache of jobs whose effective behavior is Vendor (any category override).
 // Populated lazily by the autosummon timer; cleared on YAML reload.
 static std::vector<uint16_t> g_pop_vendor_job_pool;
+// RAGNAROKMAC: vendor jobs grouped by the VendorKey their Profile points at, so
+// a placement bound to a VendorKey spawns only that vendor (not a random one).
+static std::unordered_map<std::string, std::vector<uint16_t>> g_pop_vendor_jobs_by_key;
 static bool                  g_pop_vendor_job_pool_built = false;
 void population_engine_vendor_job_pool_clear() {
 	g_pop_vendor_job_pool.clear();
+	g_pop_vendor_jobs_by_key.clear();
 	g_pop_vendor_job_pool_built = false;
 }
 static std::unordered_map<int32, t_tick> g_pop_chat_next_tick; ///< Per-shell next chat eligibility tick.
@@ -145,6 +149,56 @@ static void population_engine_chat_replace_all(std::string& s, const char* needl
 	}
 }
 
+/// RAGNAROKMAC: compact zeny for a chat callout - 1500000 -> "1.5M", 12000 -> "12K",
+/// 500 -> "500z". Deliberately approximate (one decimal place); the exact price is in
+/// the vend window. The {price} placeholder in population_chat.yml resolves through here.
+static void population_engine_format_zeny_compact(uint32 z, char* out, size_t out_sz) {
+	if (z >= 1000000) {
+		const uint32 whole = z / 1000000;
+		const uint32 frac = (z % 1000000) / 100000; // first decimal digit
+		if (frac > 0)
+			safesnprintf(out, out_sz, "%u.%uM", whole, frac);
+		else
+			safesnprintf(out, out_sz, "%uM", whole);
+	} else if (z >= 10000) {
+		safesnprintf(out, out_sz, "%uK", z / 1000);
+	} else if (z >= 1000) {
+		const uint32 whole = z / 1000;
+		const uint32 frac = (z % 1000) / 100;
+		if (frac > 0)
+			safesnprintf(out, out_sz, "%u.%uK", whole, frac);
+		else
+			safesnprintf(out, out_sz, "%uK", whole);
+	} else {
+		safesnprintf(out, out_sz, "%uz", z);
+	}
+}
+
+/// RAGNAROKMAC: pick one random live vend slot for a vendor shell so a callout names
+/// something the shell actually sells, at its real price. Reads the standard rAthena
+/// vending data (sd->vending[]/vend_num) populated by vending_openvending() at spawn.
+/// Returns false when the shell is not vending or the slot is unusable, which the
+/// {item}/{price} formatting path treats as "skip this line".
+static bool population_engine_pick_vend_stock(map_session_data* sd, const char** ename_out, uint32* price_out) {
+	if (sd == nullptr || sd->vend_num <= 0)
+		return false;
+	const int pick = static_cast<int>(rnd() % static_cast<uint32>(sd->vend_num));
+	const int16 cart_idx = sd->vending[pick].index;
+	if (cart_idx < 0 || cart_idx >= MAX_CART)
+		return false;
+	const t_itemid nameid = sd->cart.u.items_cart[cart_idx].nameid;
+	if (nameid == 0)
+		return false;
+	std::shared_ptr<item_data> id = item_db.find(nameid);
+	if (!id || id->ename.empty())
+		return false;
+	if (ename_out != nullptr)
+		*ename_out = id->ename.c_str();
+	if (price_out != nullptr)
+		*price_out = sd->vending[pick].value;
+	return true;
+}
+
 static void population_engine_format_chat_line(map_session_data* sd, const char* templ, char* out, size_t out_sz) {
 	if (!out || out_sz == 0)
 		return;
@@ -158,6 +212,21 @@ static void population_engine_format_chat_line(map_session_data* sd, const char*
 		population_engine_chat_replace_all(s, "{map}", std::string(mapn && mapn[0] ? mapn : "?"));
 		const char* jn = job_name(sd->status.class_);
 		population_engine_chat_replace_all(s, "{job}", std::string(jn && jn[0] ? jn : "?"));
+
+		// RAGNAROKMAC: {item}/{price} name a real item from the shell's own vend so a
+		// vendor callout tells the truth ("Poring Card, only 1M!"). Only resolved when
+		// the line asks for it; a non-vendor (or a vendor with no sellable slot) leaves
+		// `out` empty so the caller's blocked-line check skips it this tick.
+		if (s.find("{item}") != std::string::npos || s.find("{price}") != std::string::npos) {
+			const char* ename = nullptr;
+			uint32 price = 0;
+			if (!population_engine_pick_vend_stock(sd, &ename, &price))
+				return; // out already "\0"
+			char pricebuf[32];
+			population_engine_format_zeny_compact(price, pricebuf, sizeof(pricebuf));
+			population_engine_chat_replace_all(s, "{item}", std::string(ename));
+			population_engine_chat_replace_all(s, "{price}", std::string(pricebuf));
+		}
 	}
 	if (s.size() >= out_sz)
 		s.resize(out_sz - 1);
@@ -2264,8 +2333,13 @@ TIMER_FUNC(population_engine_autosummon_timer)
 					pe.town_behavior    == PopulationBehavior::Vendor ||
 					pe.field_behavior   == PopulationBehavior::Vendor ||
 					pe.dungeon_behavior == PopulationBehavior::Vendor;
-				if (is_vendor)
+				if (is_vendor) {
 					g_pop_vendor_job_pool.push_back(it->first);
+					// RAGNAROKMAC: group by the vendor this job's Profile serves, so a
+					// placement bound to a VendorKey can pick only its own jobs.
+					if (!pe.vendor_key.empty())
+						g_pop_vendor_jobs_by_key[pe.vendor_key].push_back(it->first);
+				}
 			}
 			g_pop_vendor_job_pool_built = true;
 		}
@@ -2276,6 +2350,16 @@ TIMER_FUNC(population_engine_autosummon_timer)
 				if (g_population_engine_count.load() >= max_global) break;
 
 				const PopulationVendorPlacement &vp = kv.second;
+				// RAGNAROKMAC: a placement bound to a VendorKey draws only from that
+				// vendor's own jobs, so a mod can pin a specific themed vendor to a
+				// specific spot. Unbound placements (or a key with no vendor job —
+				// a misconfiguration) fall back to the global pool, the old behavior.
+				const std::vector<uint16_t> *job_src = &g_pop_vendor_job_pool;
+				if (!vp.vendor_key.empty()) {
+					auto kit = g_pop_vendor_jobs_by_key.find(vp.vendor_key);
+					if (kit != g_pop_vendor_jobs_by_key.end() && !kit->second.empty())
+						job_src = &kit->second;
+				}
 				int target = vp.max_vendors > 0 ? vp.max_vendors : 12; // sensible default
 				// RAGNAROKMAC: vendors are most of what makes a town feel busy,
 				// so they scale with the density dial like everyone else.
@@ -2296,7 +2380,7 @@ TIMER_FUNC(population_engine_autosummon_timer)
 				for (size_t d = 0; d < deficit; ++d) {
 					if (pbudget != nullptr && *pbudget == 0) break;
 					if (g_population_engine_count.load() >= max_global) break;
-					const uint16_t vjob = g_pop_vendor_job_pool[rnd() % g_pop_vendor_job_pool.size()];
+					const uint16_t vjob = (*job_src)[rnd() % job_src->size()];
 					// map_category=1: selects town_behavior override (Vendor on merchant jobs).
 					// bypass_existing_check=true: placement pass owns the count via
 					// population_engine_count_vendors_on_map above; the per-job gate in
