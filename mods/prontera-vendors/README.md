@@ -4,11 +4,11 @@ Themed player vendors stationed on Prontera's sidewalks, rotating stock every
 few hours so a singleplayer world has somewhere to buy class gear and rare
 items without rolling a new character to farm for them.
 
-MVP ships one Pool-type vendor pulling items from a themed superset. Each
-spawn draws a random subset and picks a shop title, so one vendor reads as a
-cycling market of different "players". The population engine runs the shell
-as a real `BL_PC`, which means the yellow MC_VENDING banner above its head is
-the authentic vending packet — not an NPC lookalike.
+Ships two Pool-type vendors, each pinned to its own spot, pulling items from a
+themed superset. Each spawn draws a random subset and picks a shop title, so a
+vendor reads as a cycling market of different "players". The population engine
+runs the shell as a real `BL_PC`, which means the yellow MC_VENDING banner
+above its head is the authentic vending packet — not an NPC lookalike.
 
 ## What it needs
 
@@ -22,15 +22,22 @@ the authentic vending packet — not an NPC lookalike.
 
 ## What it does today
 
-One VendorKey, `pv_general_gear`:
+Two vendors on the west sidewalk at `x=147`, each pinned to its own spot:
 
-- Pool of ~22 common gear and consumables with hand-tuned prices.
-- Each spawned shell carries 6–10 of them (random pick per shell).
-- Rotation: 4 hours, with ±30 min of jitter so a world with many vendors
-  rotates in succession rather than all at once.
-- Placement: a single-column strip on the west sidewalk at `x=147`,
-  `y=136..170`. One vendor stands here today; with `MinSpacing: 2` and
-  `MaxVendors` raised, ~17 vendors fit along this line.
+- **`pv_general_gear`** (`y=136..152`, Merchant) — ~22 common gear and
+  consumables, 6–10 per shell.
+- **`pv_forge_supplies`** (`y=155..170`, Alchemist) — ores, elemental stones
+  and upgrade materials, 5–8 per shell.
+
+Each vendor:
+
+- Draws a random subset of its Pool per spawn, with hand-tuned prices.
+- Rotates every 4 hours ±30 min of jitter, so vendors turn over in succession
+  rather than all at once.
+- Is bound to its own `VendorPlacement` by VendorKey, so the two never get
+  swapped and each stays at its spot. Add more by appending a VendorKey entry
+  here plus a matching Profile (on a distinct job) in
+  `population_vendor_pop.yml`.
 
 ## Known gaps vs the design
 
@@ -40,14 +47,19 @@ Agreed scope that is **not** in this MVP yet:
    "what a player would charge" direction. The intended source is
    [ragnastats.com](https://ragnastats.com/) (iRO Valkyrie market data). The
    scraper has not been written yet.
+   - Per-shell price jitter is also planned: each vendor should roll its own
+     price around the base (vendors undercutting each other, like a real
+     market) instead of every shell showing the same number. Deferred.
 2. Pre-renewal price list. Right now the Pool mixes items that exist in both
    eras — items missing from an era's `item_db.yml` are warned about and
    zeroed by the engine, so the mod will still load; it will just serve a
    slightly thinner pool in pre-re.
-3. Themed vendors (potions, cards, ninja gear, pistols, armor, headgear).
-   Only one general-goods vendor so far. Each additional theme is another
-   `VendorKey:` block in `population_vendors.yml` plus another `Profile:`
-   block in `population_vendor_pop.yml`.
+3. More themed vendors (cards, ninja gear, pistols, armor, headgear). Two so
+   far (general goods + forge supplies). Each additional theme is another
+   `VendorKey:` block here plus a `Profile:` on a distinct job in
+   `population_vendor_pop.yml`. Multiple placements per map now work, so each
+   can have its own spot. (Distinct jobs matter: the vendor-job → VendorKey map
+   is global and last-wins, so two vendors on the same job collide.)
 4. MVP cards / god items / event-only / non-tradable blocklist. The current
    pool is hand-authored so nothing from those categories is in it, but a
    future dynamic-pool generator will need to apply filters.

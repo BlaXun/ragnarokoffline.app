@@ -828,6 +828,19 @@ static size_t population_engine_count_vendors_on_map(int16_t map_id) {
     return count;
 }
 
+/// RAGNAROKMAC: count vendor shells on a map that serve a specific VendorKey.
+/// A map may host several themed vendors, each its own placement with its own
+/// MaxVendors; counting per map would let one placement starve the others, so
+/// the placement pass counts only the shells that belong to its own vendor.
+static size_t population_engine_count_vendors_on_map_keyed(int16_t map_id, const std::string& vendor_key) {
+    size_t count = 0;
+    for (map_session_data* sd : g_population_engine_pcs) {
+        if (sd && sd->m == map_id && sd->state.vending && sd->pop.vendor_key == vendor_key)
+            ++count;
+    }
+    return count;
+}
+
 
 
 // Forward declaration — defined after population_engine_shell_release.
@@ -1274,7 +1287,8 @@ static uint32_t population_engine_allocate_index()
 /// Returns the number of shells actually spawned.
 static size_t autosummon_fill_map(int16_t map_id, size_t want, uint16_t job_hint = UINT16_MAX,
                                   size_t* tick_budget = nullptr, uint8_t map_category = 0,
-                                  bool bypass_existing_check = false)
+                                  bool bypass_existing_check = false,
+                                  const PopulationVendorPlacement* forced_placement = nullptr)
 {
 	if (want == 0)
 		return 0;
@@ -1302,8 +1316,12 @@ static size_t autosummon_fill_map(int16_t map_id, size_t want, uint16_t job_hint
 
 	// Pre-compute vendor placement and build the vendor position snapshot once for the
 	// entire batch to avoid O(N_slots × N_shells) re-walks of g_population_engine_pcs.
-	const PopulationVendorPlacement *map_vp =
-		population_vendor_db().vendor_placement_for_map(std::string(mapdata->name));
+	// RAGNAROKMAC: the vendor placement pass drives a specific placement (there
+	// may be several per map), so honor the one it passed; otherwise fall back
+	// to the map's first placement for the incidental town/field/dungeon path.
+	const PopulationVendorPlacement *map_vp = forced_placement
+		? forced_placement
+		: population_vendor_db().vendor_placement_for_map(std::string(mapdata->name));
 	std::vector<std::pair<int16, int16>> vendor_positions_here;
 	if (map_vp && (map_vp->min_spacing > 0 || map_vp->max_vendors > 0)) {
 		vendor_positions_here.reserve(g_population_engine_pcs.size());
@@ -1370,11 +1388,18 @@ static size_t autosummon_fill_map(int16_t map_id, size_t want, uint16_t job_hint
 		if (is_vendor_spawn && !vp && population_vendor_db().any_vendor_placements())
 			continue;
 
-		// Enforce MaxVendors cap. vendor_positions_here was built before this loop
-		// and is updated after each successful vendor spawn below.
-		if (vp && vp->max_vendors > 0 &&
-		    static_cast<int>(vendor_positions_here.size()) >= vp->max_vendors)
-			continue; // map full of vendors already
+		// Enforce MaxVendors cap. RAGNAROKMAC: count this placement's own vendors
+		// (by VendorKey) rather than every vendor on the map, so several themed
+		// placements can share a map. vendor_positions_here (built before the
+		// loop, map-wide) is still used for spacing below — vendors stay apart
+		// regardless of which placement they belong to.
+		if (vp && vp->max_vendors > 0) {
+			const size_t placement_cur = vp->vendor_key.empty()
+				? vendor_positions_here.size()
+				: population_engine_count_vendors_on_map_keyed(map_id, vp->vendor_key);
+			if (static_cast<int>(placement_cur) >= vp->max_vendors)
+				continue; // this placement is already full
+		}
 
 		// Find a walkable spawn position.
 		int x = 0, y = 0;
@@ -2345,47 +2370,60 @@ TIMER_FUNC(population_engine_autosummon_timer)
 		}
 
 		if (!g_pop_vendor_job_pool.empty() && population_vendor_db().any_vendor_placements()) {
+			// RAGNAROKMAC: a map may declare several placements, one per themed
+			// vendor at its own spot. Drive each independently.
 			for (const auto &kv : population_vendor_db().vendor_placements()) {
 				if (pbudget != nullptr && *pbudget == 0) break;
 				if (g_population_engine_count.load() >= max_global) break;
-
-				const PopulationVendorPlacement &vp = kv.second;
-				// RAGNAROKMAC: a placement bound to a VendorKey draws only from that
-				// vendor's own jobs, so a mod can pin a specific themed vendor to a
-				// specific spot. Unbound placements (or a key with no vendor job —
-				// a misconfiguration) fall back to the global pool, the old behavior.
-				const std::vector<uint16_t> *job_src = &g_pop_vendor_job_pool;
-				if (!vp.vendor_key.empty()) {
-					auto kit = g_pop_vendor_jobs_by_key.find(vp.vendor_key);
-					if (kit != g_pop_vendor_jobs_by_key.end() && !kit->second.empty())
-						job_src = &kit->second;
-				}
-				int target = vp.max_vendors > 0 ? vp.max_vendors : 12; // sensible default
-				// RAGNAROKMAC: vendors are most of what makes a town feel busy,
-				// so they scale with the density dial like everyone else.
-				if (battle_config.population_engine_density_pct != 100) {
-					const int64_t t = (static_cast<int64_t>(target)
-						* battle_config.population_engine_density_pct) / 100;
-					target = static_cast<int>(t < 1 ? 1 : t);
-				}
-				const int16 mid  = map_mapname2mapid(vp.map.c_str());
+				const int16 mid = map_mapname2mapid(kv.first.c_str());
 				if (mid < 0) continue;
-				// RAGNAROKMAC: vendors follow the same rule as everyone else.
 				if (!pop_map_is_live(mid)) continue;
 
-				const size_t cur = population_engine_count_vendors_on_map(mid);
-				const size_t deficit = static_cast<size_t>(target) > cur ? static_cast<size_t>(target) - cur : 0;
-				if (deficit == 0) continue;
-
-				for (size_t d = 0; d < deficit; ++d) {
+				for (const PopulationVendorPlacement &vp : kv.second) {
 					if (pbudget != nullptr && *pbudget == 0) break;
 					if (g_population_engine_count.load() >= max_global) break;
-					const uint16_t vjob = (*job_src)[rnd() % job_src->size()];
-					// map_category=1: selects town_behavior override (Vendor on merchant jobs).
-					// bypass_existing_check=true: placement pass owns the count via
-					// population_engine_count_vendors_on_map above; the per-job gate in
-					// autosummon_fill_map would otherwise stop at one shell per unique job.
-					autosummon_fill_map(mid, 1, vjob, pbudget, 1, /*bypass_existing_check=*/true);
+
+					// Which jobs may fill this placement. A placement bound to a
+					// VendorKey draws only that vendor's jobs. If the key has no
+					// vendor job — a Static/decorative entry with no shell Profile,
+					// like the shipped potions/ammo_shop — nothing can spawn it, so
+					// skip. A placement with no key at all (not produced by the
+					// parser today) falls back to the global pool, the old behavior.
+					const std::vector<uint16_t> *job_src = &g_pop_vendor_job_pool;
+					if (!vp.vendor_key.empty()) {
+						auto kit = g_pop_vendor_jobs_by_key.find(vp.vendor_key);
+						if (kit == g_pop_vendor_jobs_by_key.end() || kit->second.empty())
+							continue;
+						job_src = &kit->second;
+					}
+
+					int target = vp.max_vendors > 0 ? vp.max_vendors : 12; // sensible default
+					// RAGNAROKMAC: vendors are most of what makes a town feel busy,
+					// so they scale with the density dial like everyone else.
+					if (battle_config.population_engine_density_pct != 100) {
+						const int64_t t = (static_cast<int64_t>(target)
+							* battle_config.population_engine_density_pct) / 100;
+						target = static_cast<int>(t < 1 ? 1 : t);
+					}
+
+					// Count only this placement's own vendors so two placements
+					// sharing a map do not starve each other's MaxVendors budget.
+					const size_t cur = vp.vendor_key.empty()
+						? population_engine_count_vendors_on_map(mid)
+						: population_engine_count_vendors_on_map_keyed(mid, vp.vendor_key);
+					const size_t deficit = static_cast<size_t>(target) > cur ? static_cast<size_t>(target) - cur : 0;
+					if (deficit == 0) continue;
+
+					for (size_t d = 0; d < deficit; ++d) {
+						if (pbudget != nullptr && *pbudget == 0) break;
+						if (g_population_engine_count.load() >= max_global) break;
+						const uint16_t vjob = (*job_src)[rnd() % job_src->size()];
+						// map_category=1: selects town_behavior override (Vendor on merchant jobs).
+						// bypass_existing_check=true: the placement pass owns the count above.
+						// &vp: this exact placement drives the area/spacing and per-key count,
+						// since the map may hold several.
+						autosummon_fill_map(mid, 1, vjob, pbudget, 1, /*bypass_existing_check=*/true, &vp);
+					}
 				}
 			}
 		}
@@ -4766,6 +4804,13 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			const PopulationVendorEntry *vendor_cfg = nullptr;
 			if (pop_cfg && !pop_cfg->vendor_key.empty())
 				vendor_cfg = population_vendor_db().find(pop_cfg->vendor_key);
+
+				// RAGNAROKMAC: remember which vendor this shell serves, before any
+				// fallback below can null vendor_cfg. The autosummon pass counts
+				// vendors per placement by this key, so several themed vendors can
+				// share a map without starving each other's MaxVendors budget.
+				if (pop_cfg && !pop_cfg->vendor_key.empty())
+					sd->pop.vendor_key = pop_cfg->vendor_key;
 
 			// Determine vend title (TitleFromPool > vendor_cfg title > VendorMessage
 			// > a random one of ours). RAGNAROKMAC: the stock fallback was the
