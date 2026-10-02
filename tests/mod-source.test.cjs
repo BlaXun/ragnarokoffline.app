@@ -460,3 +460,21 @@ test('a player-picked zip goes through the same checks', () => {
   fs.writeFileSync(file, makeZip({ 'a.txt': '1', 'b.txt': '2', 'c.txt': '3' }));
   assert.throws(() => modZip.unpack(file, { maxFiles: 2 }), /more than 2 files/);
 });
+
+test('the install confirmation sees code kept in an era folder and in lua/', () => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-contents-'));
+	try {
+		fs.writeFileSync(path.join(dir, 'mod.json'), JSON.stringify({ renewalFolder: 'renewal' }));
+		fs.mkdirSync(path.join(dir, 'renewal', 'npc'), { recursive: true });
+		fs.mkdirSync(path.join(dir, 'renewal', 'conf', 'when', 'go'), { recursive: true });
+		fs.writeFileSync(path.join(dir, 'renewal', 'conf', 'when', 'go', 'groups.yml'), 'Header:\n');
+		assert.deepStrictEqual(source.contents(dir), { serverScripts: true, clientCode: false, commands: true, tables: false });
+
+		const lua = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-contents-lua-'));
+		fs.mkdirSync(path.join(lua, 'lua'));
+		assert.strictEqual(source.contents(lua).serverScripts, true);
+		fs.rmSync(lua, { recursive: true, force: true });
+	} finally {
+		fs.rmSync(dir, { recursive: true, force: true });
+	}
+});

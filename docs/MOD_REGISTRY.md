@@ -214,7 +214,11 @@ from this repository and checks them against the index like any other file, so
 a picture is as reviewed as the entry: `.png`, `.jpg`, `.gif`, `.webp`.
 
 The full `mod.json` reference for the mod itself — settings, `settingsPage`,
-`default`, the folders a mod can ship — is [Making mods](MODDING.md).
+`default`, `renewalFolder`/`prerenewalFolder`, the folders a mod can ship and
+the `when/` folders that put parts of it behind a checkbox — is
+[Making mods](MODDING.md). Prefer one mod with options over several mods that
+differ in one file: Blaze Shield variants belong in one `blaze-shield` mod with
+a checkbox each, not three entries.
 
 ## Opening the pull request
 
