@@ -50,32 +50,32 @@ protection remain separate work for issue #4.
 Accounts and characters live in a MariaDB database inside the microVM, not in a
 file you can copy. Settings has the two buttons that get them in and out:
 
-**Settings → Save data → Back up…** writes a single `.sql` file wherever you
-choose. It is a plain text dump — accounts, characters, inventories, storage,
-guilds — and it is safe to take while you are logged in and playing.
+**Settings → Save data → Back up…** writes one `.tar.gz` wherever you choose:
+the database of *both* eras (accounts, characters, inventories, storage,
+guilds), your settings and your installed mods. Players are disconnected for a
+moment while it is taken. Secrets such as your Cloudflare sharing credentials
+are never in it.
 
-**Settings → Save data → Restore…** reads one back.
+**Settings → Save data → Restore…** opens one and shows what it holds — which
+eras, how many accounts and characters, which mods, which version made it —
+with a checkbox for each part: renewal characters, pre-renewal characters,
+settings and mods. What you leave unticked stays as it is. Everything as it is
+now is saved first. A `.sql` backup from 1.4.3 or before still restores, into
+its own era.
 
 A few things worth knowing:
 
 - **The server has to be running.** Both operations talk to the live database,
   so start the app normally first. Backing up with the server down fails with
   "the database did not produce a dump".
-- **Restoring replaces everything.** The dump recreates the whole `ragnarok`
-  database rather than merging into it, so anything created since that backup is
-  gone. If the restore itself fails, the existing database is left untouched.
-- **A backup is portable.** The file is ordinary SQL, so restoring it on another
-  machine — or after deleting the data folder below — brings your characters
-  with it. This is the supported way to move an install.
+- **Restoring an era replaces it.** Each era's database is recreated rather
+  than merged into, so anything created in that era since the backup is gone.
+- **A backup is portable.** Restoring it on another machine — or after deleting
+  the data folder below — brings your characters, settings and mods with it.
+  This is the supported way to move an install;
+  [docs/DATABASE.md](DATABASE.md#backing-up-everything) has what is in it.
 
 Keep one before you experiment with rates or NPC scripts.
-
-**Settings → Save data → Back up everything…** goes further: one `.tar.gz`
-with the database of *both* eras, your settings and your installed mods, and
-**Restore everything…** puts all of it back — saving everything as it was
-first. Secrets such as your Cloudflare sharing credentials are never in it. It
-is the one to use to move a whole world to another computer;
-[docs/DATABASE.md](DATABASE.md#backing-up-everything) has what is in it.
 
 ---
 

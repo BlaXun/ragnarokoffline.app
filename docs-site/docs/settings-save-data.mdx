@@ -4,8 +4,10 @@ Your characters and accounts, and the folder everything lives in.
 
 ## Back up
 
-Writes the whole database to a file you choose — every account, character,
-item, guild and storage, for the era you are on.
+Writes one file you choose with everything: every account, character, item,
+guild and storage of **both** eras, your settings and your installed mods.
+Sharing and Cloudflare credentials and your game client's files are never in
+it; your accounts' passwords are, so keep it private.
 
 Players are briefly disconnected so their latest state is saved consistently.
 That is a few seconds, not a stop.
@@ -15,9 +17,21 @@ any experiment you would mind losing.
 
 ## Restore
 
-Replaces the current database with a backup file, and **keeps the game stopped
-until you restart it**. A backup of the database it replaced is kept, so a
-restore is itself undoable.
+Opens a backup and shows what it holds — which version made it and when, how
+many accounts and characters each era has, how many mods — with a checkbox for
+each part:
+
+- **Renewal characters & accounts**
+- **Pre-renewal characters & accounts**
+- **Settings & installed mods**
+
+What you leave unticked stays as it is. Everything as it is now is saved first,
+and you are shown where, so a restore is itself undoable. The server restarts
+with the restored world.
+
+A `.sql` backup from 1.4.3 or before still restores: it holds one era's
+characters, which replace that era's, and the game stays stopped until you
+restart it.
 
 If a restore fails, the message says what the database objected to, and every
 step is kept in `state/logs/restore-<time>.log` in the app's data folder.

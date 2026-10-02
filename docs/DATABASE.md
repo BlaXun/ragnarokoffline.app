@@ -399,7 +399,9 @@ rostack sql --write "UPDATE login SET state = 0, unban_time = 0 WHERE userid = '
 inside the state folder and is not cleaned up for you. Delete the ones you do
 not want.
 
-For a backup you keep, use Settings → **Save Data** → Backup, or:
+For a backup you keep, use Settings → **Save Data** → **Back up…**, which saves
+both eras, your settings and your mods ([below](#backing-up-everything)). The
+running era's database alone, as one `.sql`, is:
 
 ```sh
 rostack backup ~/Desktop/ragnarok.sql
@@ -426,7 +428,7 @@ Every backup records what made it, in a comment near the top:
 -- Ragnarok Offline backup: app 1.4.4, era renewal, packetver 20221005, made 2026-10-02T19:46:28Z
 ```
 
-`app` is the version, `era` whose database it is (in "Back up everything",
+`app` is the version, `era` whose database it is (in a full backup,
 each era's dump says its own), `packetver` the client version the server ran,
 and `made` the time in UTC. Restore prints it, and refuses a backup of the
 other era before stopping anything: the tables are the same, so it would load,
@@ -447,12 +449,20 @@ keep or move a whole world, back up everything.
 
 ### Backing up everything
 
-Settings → **Save Data** → **Back up everything…**, or:
+Settings → **Save Data** → **Back up…** (and **Restore…**, which asks which
+parts to put back), or:
 
 ```sh
 rostack backup --full ~/Desktop/my-world.tar.gz
-rostack restore --full ~/Desktop/my-world.tar.gz
+rostack inspect --full ~/Desktop/my-world.tar.gz      # what it holds, as JSON; changes nothing
+rostack restore --full ~/Desktop/my-world.tar.gz      # everything in it
+rostack restore --full ~/Desktop/my-world.tar.gz --eras prerenewal --no-settings
 ```
+
+`--eras` takes `renewal`, `prerenewal`, both separated by a comma, or `none`;
+an era left out keeps its characters. `--no-settings` keeps the current
+settings and mods folder. Asking for an era the backup does not have is
+refused before anything stops.
 
 One `.tar.gz` holds the whole world. Any archiver opens it:
 

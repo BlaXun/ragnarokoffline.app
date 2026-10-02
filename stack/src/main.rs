@@ -260,8 +260,13 @@ fn main() {
             None => Err("folder required".into()),
         },
         "restore" if args.get(1).map(String::as_str) == Some("--full") => match args.get(2) {
-            Some(p) => world::restore(&cfg, &dk, p),
+            Some(p) => world::Choice::parse(&args[3..]).and_then(|choice| world::restore(&cfg, &dk, p, &choice)),
             None => Err("source file required".into()),
+        },
+        // What a whole-world backup holds, for Restore to offer: nothing changes.
+        "inspect" if args.get(1).map(String::as_str) == Some("--full") => match args.get(2) {
+            Some(p) => world::inspect(&cfg, p),
+            None => Err("backup file required".into()),
         },
         "restore" => match args.get(1) {
             Some(p) => cmds::restore(&cfg, &dk, p),

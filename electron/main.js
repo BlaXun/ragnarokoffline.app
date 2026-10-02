@@ -2655,14 +2655,24 @@ const handlers = {
 	// restores, and leaves the game stopped. Starting again is the same work
 	// as Apply: the restored settings.json implies battle_conf, the restored
 	// mods a new overlay, so the server is brought up and the client relinked.
-	db_restore_full: async ({ path: p }) => {
+	// What a whole-world backup holds -- eras with their account and character
+	// counts, settings, mods -- for Restore to offer. Reads only.
+	db_inspect_full: async ({ path: p }) => JSON.parse(await runStack(['inspect', '--full', p])),
+	// `eras` and `settings` choose what is put back; left out, everything is.
+	db_restore_full: async ({ path: p, eras, settings }) => {
 		const client = getClientPaths();
 		if (client.mode === 'join') throw new Error('Restoring belongs to your own server. Switch to hosting your own server first.');
+		const choice = [];
+		if (eras !== undefined) {
+			if (!Array.isArray(eras) || eras.some(e => !['renewal', 'prerenewal'].includes(e))) throw new Error('Unknown era to restore.');
+			choice.push('--eras', eras.length ? [...new Set(eras)].join(',') : 'none');
+		}
+		if (settings === false) choice.push('--no-settings');
 		const cycleAssets = assetServer.running;
 		if (cycleAssets) await assetsStop();
 		let out;
 		try {
-			out = (await runStack(['restore', '--full', p])).trim();
+			out = (await runStack(['restore', '--full', p, ...choice])).trim();
 		} catch (error) {
 			if (cycleAssets) await assetsStart().catch(() => {});
 			throw error;
