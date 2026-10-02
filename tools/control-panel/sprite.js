@@ -251,7 +251,10 @@
 			y0 = Math.min(y0, p.y - h / 2); y1 = Math.max(y1, p.y + h / 2);
 		}
 		const margin = 12;
-		const zoom = Math.max(1, Math.min(3, Math.floor(Math.min((canvas.width - margin) / (x1 - x0), (canvas.height - margin) / (y1 - y0)))));
+		// Half steps rather than whole ones: a sprite a few pixels too tall for
+		// 2x would otherwise drop to 1x and sit small in the middle of the box.
+		const fit = Math.min((canvas.width - margin) / (x1 - x0), (canvas.height - margin) / (y1 - y0));
+		const zoom = Math.max(1, Math.min(3, Math.floor(fit * 2) / 2));
 		const cx = canvas.width / 2 - ((x0 + x1) / 2) * zoom, cy = canvas.height / 2 - ((y0 + y1) / 2) * zoom;
 		ctx.imageSmoothingEnabled = false;
 		for (const p of placed) {
