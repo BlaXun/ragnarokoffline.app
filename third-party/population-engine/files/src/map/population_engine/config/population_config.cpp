@@ -2241,7 +2241,9 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 //     985,Elunium,240000,285000
 //
 // Id decides; Name is for people reading the file, and is looked up (Aegis or
-// display name) only when Id is empty. Max may be left out. Fields may be
+// display name) only when Id is empty. Max may be left out. Min 0 (or empty)
+// means "no price set yet": the row is skipped and the YAML price stands, so
+// a table can list every item and be filled in over time. Fields may be
 // quoted, and ";" works as the separator too (Excel writes it in some
 // locales). Lines starting with # are comments.
 //
@@ -2330,10 +2332,8 @@ void PopulationVendorDatabase::loadingFinished() {
 			}
 			const uint32_t lo = static_cast<uint32_t>(strtoul(col[2].c_str(), nullptr, 10));
 			uint32_t hi = col.size() > 3 && !col[3].empty() ? static_cast<uint32_t>(strtoul(col[3].c_str(), nullptr, 10)) : lo;
-			if (lo == 0) {
-				ShowWarning("Population engine: %s:%d: Min must be 1 or more; skipped.\n", file.c_str(), line);
-				continue;
-			}
+			if (lo == 0)
+				continue; // 0 (or empty) = no price set yet; the YAML price stands
 			if (hi < lo) hi = lo;
 			prices[id] = { std::min<uint32_t>(lo, MAX_ZENY), std::min<uint32_t>(hi, MAX_ZENY) };
 		}
