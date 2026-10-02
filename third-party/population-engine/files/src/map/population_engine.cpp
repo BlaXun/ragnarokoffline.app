@@ -4859,9 +4859,34 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					const int j = static_cast<int>(rnd()) % (i + 1);
 					if (j != i) std::swap(idx[i], idx[j]);
 				}
+				// RAGNAROKMAC: per-shell price variation. Each item's listed price
+				// is rolled independently so two shells of the same vendor undercut
+				// one another like a real market, and a rare "fat-finger" lists one
+				// far too cheap (a dropped digit). A price of 0 means "use the item's
+				// buy price", resolved later in the cart loop, so leave it untouched.
+				const int jitter = vendor_cfg->price_jitter_pct;
+				const int mistake_one_in = vendor_cfg->price_mistake_one_in;
+				auto roll_price = [&](uint32_t base) -> uint32_t {
+					if (base == 0) return 0;
+					int64_t p = base;
+					if (jitter > 0) {
+						const int factor = (100 - jitter) + static_cast<int>(rnd() % (2 * jitter + 1));
+						p = p * factor / 100;
+					}
+					// Round to a tidy figure players would actually type.
+					if (p >= 10000)     p = p / 500 * 500;
+					else if (p >= 1000) p = p / 50 * 50;
+					else if (p >= 100)  p = p / 5 * 5;
+					// Fat-finger: a very rare dropped digit, left un-rounded so it
+					// reads like a genuine mistake rather than a sale price.
+					if (mistake_one_in > 0 && (rnd() % static_cast<uint32_t>(mistake_one_in)) == 0)
+						p /= 10;
+					if (p < 1) p = 1;
+					return static_cast<uint32_t>(p);
+				};
 				for (int i = 0; i < want; ++i) {
 					const auto &vs = vendor_cfg->pool[idx[i]];
-					stock.push_back({ vs.nameid, vs.amount, vs.price });
+					stock.push_back({ vs.nameid, vs.amount, roll_price(vs.price) });
 				}
 
 				// Fallthrough to built-in defaults is undesirable for Pool: an

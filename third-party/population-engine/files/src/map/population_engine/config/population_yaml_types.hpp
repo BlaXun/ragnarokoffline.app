@@ -221,6 +221,15 @@ struct PopulationVendorEntry {
 	int rotation_sec   = 0;                          ///< Shell lifetime before despawn. 0 = never rotate.
 	int rotation_jitter_sec = 0;                     ///< Per-shell random offset: rotation_sec ± rotation_jitter_sec.
 	std::vector<std::string> title_pool;             ///< When non-empty, each shell picks a title from here instead of `title`.
+	/// RAGNAROKMAC: per-item price variation, rolled independently for each item
+	/// of each spawned shell, so vendors undercut/overprice one another like a
+	/// real market instead of all showing identical numbers.
+	int price_jitter_pct = 0;                        ///< Each price rolled in base ± this %. 0 = fixed price.
+	/// RAGNAROKMAC: "fat-finger" mispricing. Humans set prices by hand and rarely
+	/// drop a digit, listing something far too cheap. 1-in-N chance per item of
+	/// dividing its price by 10 — a very low N gives the occasional deal-of-a-
+	/// lifetime find. 0 = never.
+	int price_mistake_one_in = 0;
 };
 
 /// Per-map vendor placement constraint (from db/population_engine.yml VendorPlacement: block).

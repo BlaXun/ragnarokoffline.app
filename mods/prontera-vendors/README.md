@@ -48,18 +48,14 @@ Each vendor:
 
 Agreed scope that is **not** in this MVP yet:
 
-1. Prices from a real market. Values here are rough placeholders in the
-   "what a player would charge" direction. The intended source is
-   [ragnastats.com](https://ragnastats.com/) (iRO Valkyrie market data). The
-   scraper has not been written yet.
-   - Per-shell price jitter is also planned: each vendor should roll its own
-     price around the base (vendors undercutting each other, like a real
-     market) instead of every shell showing the same number. Deferred.
-   - "Fat-finger" mispricing (planned): on real servers humans set prices by
-     hand and occasionally drop a digit, so a rare item is listed far too
-     cheap. A VERY low chance (e.g. well under 1% per item) of an item's price
-     being divided by ~10 would recreate the deal-of-a-lifetime moment and sell
-     the illusion of human vendors. Deferred.
+1. Prices are tuned to iRO Valkyrie player-market data (ragnastats.com),
+   gathered by a one-off manual scrape. **Done:** per-shell price jitter
+   (`PriceJitterPct`, each shell rolls each price ±%) and rare "fat-finger"
+   mispricing (`PriceMistakeOneIn`, a 1-in-N dropped digit for a deal-of-a-
+   lifetime find). **Caveat:** iRO is a high-zeny economy, so some values are
+   steep for a solo world (Elunium ~263k). Scale the `Price` numbers down in
+   the YAML if that's too rich. A scripted re-scrape and a pre-renewal price
+   pass are still future work.
 2. Pre-renewal price list. Right now the Pool mixes items that exist in both
    eras — items missing from an era's `item_db.yml` are warned about and
    zeroed by the engine, so the mod will still load; it will just serve a
