@@ -760,6 +760,7 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 				return;
 			PopulationVendorPlacement p;
 			p.map = map_name;
+			p.vendor_key = key; // RAGNAROKMAC: bind this placement to its declaring VendorKey.
 			if (this->nodeExists(entry_node, "MinSpacing")) {
 				int32_t s = 0;
 				if (this->asInt32(entry_node, "MinSpacing", s)) p.min_spacing = std::max(0, s);
