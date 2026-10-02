@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <common/mmo.hpp> // t_itemid
@@ -108,6 +109,16 @@ struct PopulationEngine {
 	std::string vendor_message;
 	/// Optional key into db/population_vendors.yml (VendorKey:). Empty = built-in default stock.
 	std::string vendor_key;
+	/// RAGNAROKMAC: when true, this vendor Profile is resolved by its VendorKey
+	/// (from the VendorPlacement that names it), NOT registered in the global
+	/// job -> vendor map. So its Jobs: entry is a cosmetic sprite only: several
+	/// vendors — across mods — can use the same sprite without colliding, and it
+	/// never steals a job from the engine's own ambient vendors. A mod's vendors
+	/// stay fully self-contained. Set via `PlacementBound: true`.
+	bool placement_bound = false;
+	/// RAGNAROKMAC: the job id this (synthetic, per-job) entry was built for —
+	/// used as the shell's sprite when the entry is resolved by VendorKey.
+	uint16_t sprite_job = 0;
 
 	/// Phase 2 identity: -1 / unset = use engine defaults (random or job rule).
 	int16_t str_min = -1, str_max = -1;
@@ -182,6 +193,26 @@ enum class PopulationVendorType : uint8_t {
 	Pool    = 2, ///< Pick a random subset of `Pool:` entries per shell; optional rotation.
 };
 
+/// RAGNAROKMAC: one rectangle a mod vendor may stand in (inclusive corners).
+struct PopulationModSpawnArea {
+	int16_t x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+};
+
+/// RAGNAROKMAC: one `Spawns:` block of a mod vendor entry. Mod vendors are
+/// spawned by their own pass and never touch the base VendorPlacement path, so
+/// a mod can place vendors without changing the engine's own vendors or
+/// another mod's. Exactly one of `positions` (fixed seats, one shell each) or
+/// `count` + `areas` (that many shells anywhere in the areas) is set.
+struct PopulationModSpawn {
+	std::string map;
+	std::vector<std::pair<int16_t, int16_t>> positions; ///< Fixed seats; count = seat count.
+	int count = 0;                                    ///< Shells to keep up (areas mode).
+	std::vector<PopulationModSpawnArea> areas;        ///< Where those shells may stand.
+	int min_spacing = 0;                              ///< Cells between shells of THIS block only.
+	bool scale_with_density = false;                  ///< Opt in to the "How busy" slider.
+	std::string spawn_id;                             ///< "<VendorKey>#<map>#<index>", stamped on each shell.
+};
+
 /// A named vendor configuration entry from db/population_vendors.yml.
 struct PopulationVendorEntry {
 	std::string key;
@@ -230,6 +261,12 @@ struct PopulationVendorEntry {
 	/// dividing its price by 10 — a very low N gives the occasional deal-of-a-
 	/// lifetime find. 0 = never.
 	int price_mistake_one_in = 0;
+
+	/// RAGNAROKMAC: non-empty only for a mod vendor (an entry with `Spawns:`).
+	/// Its shells come from the mod vendor pass, look like the PlacementBound
+	/// profile whose VendorKey equals this entry's key, and never use
+	/// VendorPlacement. Base entries leave this empty and behave as upstream.
+	std::vector<PopulationModSpawn> spawns;
 };
 
 /// Per-map vendor placement constraint (from db/population_engine.yml VendorPlacement: block).
@@ -238,12 +275,6 @@ struct PopulationVendorPlacement {
 	int min_spacing = 0;         ///< Minimum cells between two vendor shells (0 = no spacing check).
 	int max_vendors = 0;         ///< Hard cap on simultaneous vendor shells on this map (0 = unlimited).
 	int16_t area_x1 = -1, area_y1 = -1, area_x2 = -1, area_y2 = -1; ///< Optional bounding box (-1 = whole map).
-	/// RAGNAROKMAC: the VendorKey of the entry that declared this placement.
-	/// When non-empty, the autosummon pass spawns ONLY vendor jobs whose Profile
-	/// maps to this key here, instead of any vendor job from the global pool.
-	/// Without it a placement is filled by a random vendor, so a mod could not
-	/// put a specific themed vendor at a specific spot.
-	std::string vendor_key;
 };
 
 #endif // POPULATION_YAML_TYPES_HPP

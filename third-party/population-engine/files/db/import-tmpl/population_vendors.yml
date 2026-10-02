@@ -6,20 +6,34 @@
 # every start, which is what this empty stub prevents when no mod ships vendors.
 #
 # A mod's db/population_vendors.yml replaces this file. Its VendorKey entries are
-# added to the shipped table; a repeat of the same VendorKey overrides it. Each
-# entry may carry a VendorPlacement, and several vendors can share a map (each at
-# its own spot). See the shipped db/population_vendors.yml for the full schema.
+# added to the shipped table. Prefix keys with the mod's name ("my-mod/potions")
+# so they cannot collide with another mod's or the engine's own.
+#
+# A mod vendor says where it stands with Spawns:, not VendorPlacement. Spawns are
+# the mod's own: they never count against the engine's MaxVendors for that map,
+# and the engine's vendors keep spawning exactly as they would without the mod.
+# Each block is either fixed seats (one shell per position; an occupied seat
+# stays empty until it is free) or Count shells anywhere in Areas. Counts are
+# exact unless ScaleWithDensity: true. The shells' look comes from a
+# PlacementBound profile in population_vendor_pop.yml with the same VendorKey.
+# See the shipped db/population_vendors.yml for the stock fields.
 
 Header:
   Type: POPULATION_VENDORS_DB
   Version: 1
 
 #Body:
-#  - VendorKey: my_vendor
+#  - VendorKey: my-mod/potions
 #    Type: Pool
 #    Pool:
 #      - { Item: Red_Potion, Amount: 100, Price: 50 }
-#    VendorPlacement:
-#      Map: prontera
-#      MaxVendors: 1
-#      Area: { X1: 147, Y1: 136, X2: 147, Y2: 152 }
+#    Spawns:
+#      - Map: prontera
+#        Positions:
+#          - [147, 140]
+#          - [147, 150]
+#      - Map: geffen
+#        Count: 2
+#        Areas:
+#          - { X1: 110, Y1: 60, X2: 130, Y2: 70 }
+#        MinSpacing: 3

@@ -766,11 +766,105 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 		}
 	}
 
+	// RAGNAROKMAC: Spawns: makes this a *mod vendor*. Its shells come from the mod
+	// vendor pass, never from VendorPlacement, so a mod cannot change where or how
+	// many of the engine's own vendors (or another mod's) appear. Each block is
+	// either fixed seats (Positions) or Count + Areas.
+	const bool has_spawns = this->nodeExists(node, "Spawns");
+	if (has_spawns) {
+		const ryml::NodeRef& sp_node = node[c4::to_csubstr("Spawns")];
+		if (!sp_node.is_seq()) {
+			this->invalidWarning(sp_node, "VendorKey '%s': Spawns must be a list.\n", key.c_str());
+		} else {
+			auto read_area = [&](const ryml::NodeRef& an, PopulationModSpawnArea& out) -> bool {
+				int16_t x1 = -1, y1 = -1, x2 = -1, y2 = -1;
+				if (!this->nodeExists(an, "X1") || !this->asInt16(an, "X1", x1)) return false;
+				if (!this->nodeExists(an, "Y1") || !this->asInt16(an, "Y1", y1)) return false;
+				if (!this->nodeExists(an, "X2") || !this->asInt16(an, "X2", x2)) return false;
+				if (!this->nodeExists(an, "Y2") || !this->asInt16(an, "Y2", y2)) return false;
+				if (x1 < 0 || y1 < 0 || x2 < 0 || y2 < 0) return false;
+				if (x1 > x2) std::swap(x1, x2);
+				if (y1 > y2) std::swap(y1, y2);
+				out.x1 = x1; out.y1 = y1; out.x2 = x2; out.y2 = y2;
+				return true;
+			};
+			int idx = 0;
+			for (const ryml::NodeRef& sn : sp_node.children()) {
+				PopulationModSpawn sp;
+				if (!this->asString(sn, "Map", sp.map) || sp.map.empty()) {
+					this->invalidWarning(sn, "VendorKey '%s': a Spawns entry needs Map; skipped.\n", key.c_str());
+					continue;
+				}
+				const bool has_pos = this->nodeExists(sn, "Positions");
+				const bool has_cnt = this->nodeExists(sn, "Count") || this->nodeExists(sn, "Areas") || this->nodeExists(sn, "Area");
+				if (has_pos == has_cnt) {
+					this->invalidWarning(sn, "VendorKey '%s': a Spawns entry needs either Positions, or Count with Areas — not both, not neither; skipped.\n", key.c_str());
+					continue;
+				}
+				if (has_pos) {
+					const ryml::NodeRef& pn = sn[c4::to_csubstr("Positions")];
+					if (pn.is_seq()) {
+						for (const ryml::NodeRef& cell : pn.children()) {
+							int32_t x = -1, y = -1;
+							if (!cell.is_seq() || cell.num_children() != 2 ||
+							    !ryml::read(cell[0], &x) || !ryml::read(cell[1], &y) || x < 0 || y < 0) {
+								this->invalidWarning(cell, "VendorKey '%s': a Position must be [x, y]; skipped.\n", key.c_str());
+								continue;
+							}
+							sp.positions.emplace_back(static_cast<int16_t>(x), static_cast<int16_t>(y));
+						}
+					}
+					if (sp.positions.empty()) {
+						this->invalidWarning(sn, "VendorKey '%s': Spawns entry on %s has no valid Positions; skipped.\n", key.c_str(), sp.map.c_str());
+						continue;
+					}
+				} else {
+					int32_t c = 0;
+					if (!this->nodeExists(sn, "Count") || !this->asInt32(sn, "Count", c) || c < 1) {
+						this->invalidWarning(sn, "VendorKey '%s': Spawns entry on %s needs Count >= 1; skipped.\n", key.c_str(), sp.map.c_str());
+						continue;
+					}
+					sp.count = c;
+					if (this->nodeExists(sn, "Areas")) {
+						const ryml::NodeRef& an = sn[c4::to_csubstr("Areas")];
+						if (an.is_seq()) {
+							for (const ryml::NodeRef& a : an.children()) {
+								PopulationModSpawnArea ar;
+								if (read_area(a, ar)) sp.areas.push_back(ar);
+								else this->invalidWarning(a, "VendorKey '%s': an Area needs X1, Y1, X2, Y2 >= 0; skipped.\n", key.c_str());
+							}
+						}
+					} else {
+						PopulationModSpawnArea ar;
+						if (read_area(sn[c4::to_csubstr("Area")], ar)) sp.areas.push_back(ar);
+					}
+					if (sp.areas.empty()) {
+						this->invalidWarning(sn, "VendorKey '%s': Spawns entry on %s has no valid Areas; skipped.\n", key.c_str(), sp.map.c_str());
+						continue;
+					}
+				}
+				if (this->nodeExists(sn, "MinSpacing")) {
+					int32_t s = 0;
+					if (this->asInt32(sn, "MinSpacing", s)) sp.min_spacing = std::max(0, s);
+				}
+				if (this->nodeExists(sn, "ScaleWithDensity")) {
+					bool b = false;
+					if (this->asBool(sn, "ScaleWithDensity", b)) sp.scale_with_density = b;
+				}
+				sp.spawn_id = key + "#" + sp.map + "#" + std::to_string(idx++);
+				entry.spawns.push_back(std::move(sp));
+			}
+		}
+		if (this->nodeExists(node, "VendorPlacement"))
+			this->invalidWarning(node[c4::to_csubstr("VendorPlacement")],
+				"VendorKey '%s': has Spawns, so its VendorPlacement is ignored (mod vendors place themselves).\n", key.c_str());
+	}
+
 	// VendorPlacement: optional per-vendor placement constraint (Map / MinSpacing /
 	// MaxVendors / Area). Populates the derived placements_by_map_ index used by
 	// the autosummon pass and the cell picker. If multiple vendor entries name the
 	// same Map, the last one parsed wins (a warning is emitted).
-	if (this->nodeExists(node, "VendorPlacement")) {
+	if (!has_spawns && this->nodeExists(node, "VendorPlacement")) {
 		const ryml::NodeRef& vp_node = node[c4::to_csubstr("VendorPlacement")];
 		auto parse_one_vp = [&](const ryml::NodeRef& entry_node) {
 			std::string map_name;
@@ -778,7 +872,6 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 				return;
 			PopulationVendorPlacement p;
 			p.map = map_name;
-			p.vendor_key = key; // RAGNAROKMAC: bind this placement to its declaring VendorKey.
 			if (this->nodeExists(entry_node, "MinSpacing")) {
 				int32_t s = 0;
 				if (this->asInt32(entry_node, "MinSpacing", s)) p.min_spacing = std::max(0, s);
@@ -799,21 +892,21 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 				if (y1 >= 0 && y2 >= 0 && y1 > y2) std::swap(y1, y2);
 				p.area_x1 = x1; p.area_y1 = y1; p.area_x2 = x2; p.area_y2 = y2;
 			}
-			// RAGNAROKMAC: several themed vendors can share a map, each at its own
-			// spot, so keep every placement rather than overwriting. A repeat of
-			// the SAME VendorKey on the SAME map (a reload, or a duplicate block)
-			// replaces its prior entry so the list does not grow without bound.
-			auto &vec = placements_by_map_[map_name];
-			bool replaced = false;
-			for (auto &existing : vec) {
-				if (existing.vendor_key == p.vendor_key) {
-					existing = std::move(p);
-					replaced = true;
-					break;
+			if (placements_by_map_.find(map_name) != placements_by_map_.end()) {
+				const PopulationVendorPlacement &existing = placements_by_map_[map_name];
+				const bool identical =
+					existing.min_spacing == p.min_spacing &&
+					existing.max_vendors == p.max_vendors &&
+					existing.area_x1 == p.area_x1 && existing.area_y1 == p.area_y1 &&
+					existing.area_x2 == p.area_x2 && existing.area_y2 == p.area_y2;
+				if (!identical) {
+					ShowWarning("VendorKey '%s': VendorPlacement Map '%s' already defined by another "
+					            "vendor entry with different settings; overwriting (placements are "
+					            "unioned per map).\n",
+					            key.c_str(), map_name.c_str());
 				}
 			}
-			if (!replaced)
-				vec.push_back(std::move(p));
+			placements_by_map_[map_name] = std::move(p);
 		};
 		if (vp_node.is_seq()) {
 			for (const ryml::NodeRef& en : vp_node.children())
@@ -1120,6 +1213,7 @@ void PopulationEngineDatabase::clear()
 	this->m_validationError = false;
 	this->m_gear_sets.clear();
 	this->m_profiles.clear();
+	this->m_vendor_by_key.clear();
 	this->m_arena_job_pool.clear();
 }
 
@@ -1357,8 +1451,9 @@ static void applyProfile(PopulationEngine* dst, const PopulationEngine& src)
 	dst->dungeon_behavior = src.dungeon_behavior;
 	dst->guard_range      = src.guard_range;
 	// Vendor
-	dst->vendor_message = src.vendor_message;
-	dst->vendor_key     = src.vendor_key;
+	dst->vendor_message  = src.vendor_message;
+	dst->vendor_key      = src.vendor_key;
+	dst->placement_bound = src.placement_bound; // RAGNAROKMAC
 	// Flags and role
 	dst->flags     = src.flags;
 	dst->role_type = src.role_type;
@@ -1490,6 +1585,7 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 		}
 		if (this->nodeExists(node, "VendorMessage")) this->asString(node, "VendorMessage", prof->vendor_message);
 		if (this->nodeExists(node, "VendorKey"))     this->asString(node, "VendorKey",     prof->vendor_key);
+		if (this->nodeExists(node, "PlacementBound")) this->asBool(node, "PlacementBound", prof->placement_bound); // RAGNAROKMAC
 		// Role
 		if (this->nodeExists(node, "Role")) {
 			std::string rs;
@@ -1614,7 +1710,16 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 						}
 					}
 
-					this->put(job_id, equipment);
+					// RAGNAROKMAC: a placement-bound vendor is resolved by its
+					// VendorKey, not its job, so keep it out of the global job map
+					// — that is what lets several vendors share a sprite job and
+					// leaves the engine's own ambient vendors untouched. Its Jobs:
+					// entry becomes purely the shell's sprite.
+					equipment->sprite_job = job_id;
+					if (equipment->placement_bound && !equipment->vendor_key.empty())
+						this->m_vendor_by_key[equipment->vendor_key] = equipment;
+					else
+						this->put(job_id, equipment);
 				}
 			} else if (!jobs_node.is_seed()) {
 				this->invalidWarning(jobs_node,

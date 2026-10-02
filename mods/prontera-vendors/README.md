@@ -4,7 +4,7 @@ Themed player vendors stationed on Prontera's sidewalks, rotating stock every
 few hours so a singleplayer world has somewhere to buy class gear and rare
 items without rolling a new character to farm for them.
 
-Ships two Pool-type vendors, each pinned to its own spot, pulling items from a
+Ships two Pool-type vendors, each with its own spot, pulling items from a
 themed superset. Each spawn draws a random subset and picks a shop title, so a
 vendor reads as a cycling market of different "players". The population engine
 runs the shell as a real `BL_PC`, which means the yellow MC_VENDING banner
@@ -15,33 +15,38 @@ above its head is the authentic vending packet — not an NPC lookalike.
 - **Population engine switched on** — Settings → Population → Fake players.
   Also the vending economy option in the engine's own section
   (`population_engine_vending_enable`), which is the default.
-- A build of the app with the `Pool` vendor type in the population engine. If
-  the server log at startup says `Type must be 'static', 'dynamic', or 'pool'`
-  for this mod's vendor, the engine is older than the Pool addition and the
-  mod cannot work until the build is updated.
+- A build of the app whose population engine has the `Pool` vendor type and
+  mod `Spawns:`. If the server log at startup says `Type must be 'static',
+  'dynamic', or 'pool'`, or warns about an unknown `Spawns` key, the engine is
+  older than this mod and it cannot work until the build is updated.
 
 ## What it does today
 
-Two vendors on the west sidewalk at `x=147`, each pinned to its own spot:
+Two vendors on the west sidewalk at `x=147`, each in its own stretch:
 
-- **`pv_general_gear`** (`y=136..152`, Merchant) — ~22 common gear and
-  consumables, 6–10 per shell.
-- **`pv_forge_supplies`** (`y=155..170`, Whitesmith) — ores, elemental stones
-  and upgrade materials, 5–8 per shell.
+- **`prontera-vendors/general_gear`** (`y=136..152`, Merchant) — ~22 common
+  gear and consumables, 6–10 per shell.
+- **`prontera-vendors/forge_supplies`** (`y=155..170`, Whitesmith) — ores,
+  elemental stones and upgrade materials, 5–8 per shell.
 
-The engine's own generic vendors (`field_drops`, `dungeon_drops`) still run
-alongside these — they're wanted as plain "player selling their loot" stalls.
-Our two just take one job each from them (Merchant, Whitesmith); the generics
-keep their other job (HighMerchant, Blacksmith) and still spawn.
+The engine's own vendors on Prontera spawn exactly as they would without this
+mod: same jobs, same count, same places. Ours are extra. They are placed by
+the mod's own `Spawns:` blocks, so they don't use up the engine's `MaxVendors`,
+and no other mod's vendors are touched. They do count against the global
+population Limit like any other shell.
 
 Each vendor:
 
 - Draws a random subset of its Pool per spawn, with hand-tuned prices.
 - Rotates every 4 hours ±30 min of jitter, so vendors turn over in succession
   rather than all at once.
-- Is bound to its own `VendorPlacement` by VendorKey, so the two never get
-  swapped and each stays at its spot. Add more by appending a VendorKey entry
-  here plus a matching Profile (on a distinct job) in
+- Stands only where its `Spawns:` block says: exactly `Count` shells in its
+  `Areas`. If the spot is taken (by a player or another shell) it waits for a
+  free cell rather than standing somewhere else. `Spawns:` also takes fixed
+  `Positions: [[x, y], ...]`, one shell per seat, and `ScaleWithDensity: true`
+  to follow the population density slider instead of an exact count.
+- Add more by appending a `VendorKey: prontera-vendors/<name>` entry here and a
+  `PlacementBound: true` Profile with the same VendorKey in
   `population_vendor_pop.yml`.
 
 ## Known gaps vs the design
@@ -62,20 +67,17 @@ Agreed scope that is **not** in this MVP yet:
    slightly thinner pool in pre-re.
 3. More themed vendors (cards, ninja gear, pistols, armor, headgear). Two so
    far (general goods + forge supplies). Each additional theme is another
-   `VendorKey:` block here plus a `Profile:` on a distinct job in
-   `population_vendor_pop.yml`. Multiple placements per map now work, so each
-   can have its own spot.
-   - **Job budget:** only the Merchant tree + Super Novice can actually vend,
-     and each vendor needs its own job (the job → VendorKey map is global,
-     last-wins). Vending-capable jobs: Merchant, Blacksmith, Alchemist,
-     HighMerchant, Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo,
-     SuperNovice, HyperNovice (12). The engine's generics use 4
-     (Merchant/HighMerchant/Blacksmith/Whitesmith) and we share two of those,
-     leaving ~8 free jobs → ~8 more themed vendors before the model runs out.
-   - **Past that ceiling** we'd want an engine change letting a
-     `VendorPlacement` name its `VendorKey` directly (and the engine pick a job
-     from that vendor's Profile), removing the one-job-per-vendor limit. Planned
-     if the themed set grows large.
+   `VendorKey:` block with its own `Spawns:` here plus a `PlacementBound: true`
+   `Profile:` in `population_vendor_pop.yml`.
+   - **No job limit.** `PlacementBound` resolves a vendor by its VendorKey, not
+     by job, so the `Jobs:` entry is just the sprite. Any number of vendors can
+     reuse the same sprite (e.g. several `Merchant`s) without colliding, and
+     they never touch the engine's own vendors. Use a can-vend sprite for the
+     illusion — Merchant tree (Merchant, Blacksmith, Alchemist, HighMerchant,
+     Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo) or Super
+     Novice / HyperNovice — since only those can open a vend on a real server.
+   - **Self-contained:** this mod adds only its own keys, profiles and
+     spawns; it changes nothing about the engine's own vendors or other mods.
 4. MVP cards / god items / event-only / non-tradable blocklist. The current
    pool is hand-authored so nothing from those categories is in it, but a
    future dynamic-pool generator will need to apply filters.
@@ -89,7 +91,7 @@ Agreed scope that is **not** in this MVP yet:
 
 ## Testing it
 
-1. Build the app so the engine's `Pool` vendor type is compiled in
+1. Build the app so the engine's `Pool` type and `Spawns:` are compiled in
    (`scripts/apply-server-mods.sh` + the usual docker build; CI covers this
    on every push).
 2. Enable this mod in Settings → Mods.
@@ -108,6 +110,6 @@ mods/prontera-vendors/
 ├── mod.json
 ├── README.md
 └── db/
-    ├── population_vendors.yml       Pool definition + placement
+    ├── population_vendors.yml       Pool definition + Spawns
     └── population_vendor_pop.yml    Shell profile referencing the pool
 ```

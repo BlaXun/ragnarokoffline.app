@@ -75,6 +75,12 @@ class PopulationEngineDatabase : public TypesafeYamlDatabase<uint16_t, Populatio
 	bool m_validationError = false;
 	std::unordered_map<std::string, PopulationGearSet> m_gear_sets;
 	std::unordered_map<std::string, std::shared_ptr<PopulationEngine>> m_profiles;
+	/// RAGNAROKMAC: placement-bound vendor profiles, keyed by VendorKey instead of
+	/// job. These never enter the job map (the TypesafeYamlDatabase container), so
+	/// they can share a sprite job with each other or the engine's own vendors
+	/// without last-wins collisions. The VendorPlacement-driven autosummon resolves
+	/// them by key; see find_by_vendor_key.
+	std::unordered_map<std::string, std::shared_ptr<PopulationEngine>> m_vendor_by_key;
 	std::vector<uint16_t> m_arena_job_pool;
 	/// Per-instance YAML basename. Set by the constructor; getDefaultLocation()
 	/// returns db_path + "/" + this. Allows multiple instances of this class to
@@ -124,6 +130,13 @@ public:
 	const std::vector<uint16_t>& arena_job_pool() const { return m_arena_job_pool; }
 	/// Return all loaded job IDs whose entry inherited from the named Profile.
 	std::vector<uint16_t> jobs_with_profile(const std::string& profile_name);
+	/// RAGNAROKMAC: resolve a placement-bound vendor Profile by its VendorKey, or
+	/// nullptr. Used by the vendor autosummon so a placement spawns exactly its
+	/// own vendor, with its sprite job, independent of the global job map.
+	const PopulationEngine* find_by_vendor_key(const std::string& key) const {
+		auto it = m_vendor_by_key.find(key);
+		return it != m_vendor_by_key.end() ? it->second.get() : nullptr;
+	}
 	/// Set after construction; pass the shared-templates DB so parseBodyNode
 	/// can fall back for unknown GearSet:/Profile: references.
 	void set_shared_source(const PopulationEngineDatabase* src) { m_shared_source = src; }
@@ -143,11 +156,10 @@ public:
 
 class PopulationVendorDatabase : public YamlDatabase {
 	std::unordered_map<std::string, PopulationVendorEntry> entries_;
-	/// RAGNAROKMAC: Derived index: Map name -> every placement declared for it,
-	/// populated from per-vendor VendorPlacement: blocks during parseBodyNode.
-	/// A map may hold several placements (one per themed vendor, at its own spot),
-	/// each bound to the VendorKey that declared it (PopulationVendorPlacement::vendor_key).
-	std::unordered_map<std::string, std::vector<PopulationVendorPlacement>> placements_by_map_;
+	/// Derived index: Map name -> placement constraint, populated from per-vendor
+	/// VendorPlacement: blocks during parseBodyNode. If multiple vendor entries name
+	/// the same Map, the last one parsed wins (a warning is emitted).
+	std::unordered_map<std::string, PopulationVendorPlacement> placements_by_map_;
 
 public:
 	PopulationVendorDatabase();
@@ -156,16 +168,15 @@ public:
 	uint64 parseBodyNode(const ryml::NodeRef& node) override;
 	const PopulationVendorEntry* find(const std::string& key) const;
 	size_t entry_count() const;
-	/// First placement declared for a map, or nullptr. Used by the incidental
-	/// town/field/dungeon fill path as an area/restriction fallback; the vendor
-	/// autosummon pass iterates vendor_placements() and drives each placement
-	/// explicitly, so it does not rely on this.
 	const PopulationVendorPlacement* vendor_placement_for_map(const std::string& map_name) const {
 		auto it = placements_by_map_.find(map_name);
-		return (it != placements_by_map_.end() && !it->second.empty()) ? &it->second.front() : nullptr;
+		return it != placements_by_map_.end() ? &it->second : nullptr;
 	}
 	bool any_vendor_placements() const { return !placements_by_map_.empty(); }
-	const std::unordered_map<std::string, std::vector<PopulationVendorPlacement>>& vendor_placements() const { return placements_by_map_; }
+	/// RAGNAROKMAC: every loaded vendor entry; the mod vendor pass walks the ones
+	/// with Spawns.
+	const std::unordered_map<std::string, PopulationVendorEntry>& vendor_entries() const { return entries_; }
+	const std::unordered_map<std::string, PopulationVendorPlacement>& vendor_placements() const { return placements_by_map_; }
 };
 
 PopulationNamesDatabase& population_names_db();

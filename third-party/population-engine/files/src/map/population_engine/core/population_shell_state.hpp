@@ -202,6 +202,11 @@ struct s_population {
 	// so several themed vendors can share a map without starving each other's
 	// MaxVendors budget.
 	std::string vendor_key;
+	// RAGNAROKMAC: set only on shells spawned by the mod vendor pass. The pass
+	// counts its own shells by this id (base vendors and other mods' never
+	// match), and a fixed-seat block also records which seat the shell holds.
+	std::string vendor_spawn_id;
+	int16_t     vendor_seat = -1;
 
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.

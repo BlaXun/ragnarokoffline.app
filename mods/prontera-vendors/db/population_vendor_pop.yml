@@ -2,26 +2,18 @@
 # prontera-vendors — vendor shell profiles
 ###########################################################################
 #
-# One Profile per vendor. Each Profile's job maps the spawned shell to a
-# VendorKey, and the engine spawns it at that key's VendorPlacement. The two
-# vendors use DIFFERENT jobs on purpose: the vendor job -> VendorKey map is
-# global and last-profile-wins, so two profiles on the same job would collide.
-#   Merchant   -> pv_general_gear    (takes Merchant from field_drops; it keeps HighMerchant)
-#   Whitesmith -> pv_forge_supplies  (takes Whitesmith from dungeon_drops; it keeps Blacksmith)
-# Both are Merchant-tree classes that can actually open a vend (MC_VENDING), so
-# they read as real players. Only the Merchant tree plus Super Novice can vend;
-# the engine force-grants vending to any shell, but using can-vend jobs keeps
-# the illusion. Vending-capable jobs: Merchant, Blacksmith, Alchemist,
-# HighMerchant, Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo,
-# SuperNovice, HyperNovice. The engine's own field_drops/dungeon_drops already
-# use Merchant/HighMerchant/Blacksmith/Whitesmith, so a new themed vendor should
-# take a still-free one (Alchemist, Creator, Mechanic, Genetic, Meister, Biolo,
-# SuperNovice, HyperNovice) — ~8 slots before the one-job-per-vendor model runs
-# out and the engine needs a placement-names-its-vendor option.
+# One Profile per vendor. `PlacementBound: true` makes the engine find the
+# profile by its VendorKey, NOT through the global job map, so the Jobs: entry
+# is purely the shell's sprite. Our vendors can share a job with each other,
+# with other mods' vendors or with the engine's own (field_drops,
+# dungeon_drops), and none of those change.
 #
-# Jobs:/GearSet references and NameProfile reuse what the population engine
-# already ships (para_merchant GearSet, default NameProfile). The important
-# bits are TownBehavior: vendor and the VendorKey pointer.
+# The sprites are real can-vend jobs (the Merchant tree and Super/Hyper Novice
+# can open a vend; the engine grants vending to any shell, but a can-vend sprite
+# keeps the illusion): Merchant for general goods, Whitesmith for the forge.
+#
+# NameProfile/GearSet reuse what the engine ships (para_merchant, default). The
+# load-bearing bits are TownBehavior: vendor, VendorKey and PlacementBound.
 ###########################################################################
 
 Header:
@@ -29,10 +21,9 @@ Header:
   Version: 2
 
 Body:
-  - Profile: pv_general_gear_vendor
-    # Merchant — the classic vendor sprite. This takes Merchant from the
-    # engine's field_drops vendor (last-profile-wins), but field_drops keeps
-    # HighMerchant and still runs as a generic Prontera shop, which is wanted.
+  - Profile: prontera-vendors/general_gear_vendor
+    # Merchant — the classic vendor sprite.
+    PlacementBound: true
     Jobs:
       Merchant: para_merchant
     NameProfile: default
@@ -42,14 +33,13 @@ Body:
     Flags:
       - mortal
     TownBehavior: vendor
-    VendorKey: pv_general_gear
+    VendorKey: prontera-vendors/general_gear
     Script: |
       setcart;
 
-  - Profile: pv_forge_supplies_vendor
-    # Whitesmith — reads as a smith, fitting an ores/forge stall. This takes
-    # Whitesmith from the engine's dungeon_drops vendor, which keeps Blacksmith
-    # and still runs as a generic shop on prt_mk.
+  - Profile: prontera-vendors/forge_supplies_vendor
+    # Whitesmith — reads as a smith, fitting an ores/forge stall.
+    PlacementBound: true
     Jobs:
       Whitesmith: para_merchant
     NameProfile: default
@@ -59,6 +49,6 @@ Body:
     Flags:
       - mortal
     TownBehavior: vendor
-    VendorKey: pv_forge_supplies
+    VendorKey: prontera-vendors/forge_supplies
     Script: |
       setcart;

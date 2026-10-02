@@ -6,9 +6,11 @@
 # every start, which is what this empty stub prevents when no mod ships vendor
 # shell profiles.
 #
-# A mod's db/population_vendor_pop.yml replaces this file. Its Profile entries
-# are synthesized per Job (last-profile-wins per job), so a vendor Profile's
-# Jobs: map its shells to a VendorKey. Use a job no other vendor profile claims.
+# A mod's db/population_vendor_pop.yml replaces this file. For a vendor with
+# Spawns: (see population_vendors.yml), give it a PlacementBound profile with the
+# same VendorKey. Such a profile is looked up by its key, not its job, so it can
+# use any vending job (Merchant tree, Super/Hyper Novice) without displacing the
+# engine's own vendor of that job; its single Jobs: entry is the sprite.
 # See the shipped db/population_vendor_pop.yml for the full schema.
 
 Header:
@@ -16,13 +18,14 @@ Header:
   Version: 2
 
 #Body:
-#  - Profile: my_vendor
+#  - Profile: my-mod/potions_vendor
+#    PlacementBound: true
 #    Jobs:
 #      Alchemist: para_merchant
 #    NameProfile: default
 #    Flags:
 #      - mortal
 #    TownBehavior: vendor
-#    VendorKey: my_vendor
+#    VendorKey: my-mod/potions
 #    Script: |
 #      setcart;
