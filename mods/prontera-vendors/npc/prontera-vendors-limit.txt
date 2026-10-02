@@ -1,0 +1,12 @@
+//===== Ragnarok Offline: prontera-vendors =================================
+//= Hands the "Vendors respect the population limit" setting to the engine.
+//= Its own file because population_vendor_limit is newer than the other
+//= commands: an app build without it rejects only this file, and the
+//= settings in prontera-vendors.txt keep working.
+//===========================================================================
+-	script	ProntVendorsLimit	-1,{
+	end;
+OnInit:
+	population_vendor_limit "prontera-vendors/", callfunc("F_ModSetting", "prontera-vendors", "respect_limit", 1);
+	end;
+}
