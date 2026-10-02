@@ -38,7 +38,10 @@ population Limit like any other shell.
 Each vendor:
 
 - Draws a random subset of its Pool per spawn, with hand-tuned prices.
-- Rotates every 4 hours ±30 min of jitter, so vendors turn over in succession
+- Picks a shop title from `TitleFromPool`; `{name}` in a title becomes the
+  vendor's own name, so "{name}'s Forge Goods" matches whoever is selling.
+- Rotates every 4 hours ±30 min of jitter (`RotationHours`; `RotationMinutes`
+  for short cycles — currently 5 ±1 min for testing), so vendors turn over in succession
   rather than all at once.
 - Stands only where its `Spawns:` block says: exactly `Count` shells in its
   `Areas`. If the spot is taken (by a player or another shell) it waits for a
@@ -99,7 +102,7 @@ Agreed scope that is **not** in this MVP yet:
 4. Launch the world. Within ~10s of the autosummon pass, a vendor shell
    should appear with a yellow banner and a cart somewhere along the
    west sidewalk at `x=147`.
-5. Wait 4h ± 30 min with the server running: the shell should be released
+5. Wait for the rotation (5 ±1 min while the testing value is in) with the server running: the shell should be released
    and a new one (new title, new stock subset) spawn in its place within
    a minute or two.
 

@@ -4978,6 +4978,17 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 				vend_title = vendor_cfg->title.c_str();
 			else if (pop_cfg && !pop_cfg->vendor_message.empty())
 				vend_title = pop_cfg->vendor_message.c_str();
+			// RAGNAROKMAC: {name} in a title is the shell's own name, so a sign like
+			// "{name}'s Forge Goods" matches the player standing behind it. No
+			// shipped title uses it, so stock titles are untouched.
+			std::string vend_title_buf;
+			if (strstr(vend_title, "{name}") != nullptr) {
+				vend_title_buf = vend_title;
+				population_engine_chat_replace_all(vend_title_buf, "{name}", std::string(sd->status.name));
+				if (vend_title_buf.size() >= MESSAGE_SIZE)
+					vend_title_buf.resize(MESSAGE_SIZE - 1);
+				vend_title = vend_title_buf.c_str();
+			}
 
 			// Build the stock list to use.
 			// Priority: static vendor_cfg stock → dynamic (map mob drops) → built-in defaults.

@@ -4,8 +4,8 @@
 #
 # Two Pool-type vendors, each with its own spot on the west sidewalk. The
 # engine draws PickCount items from each Pool at spawn, rotates the shell every
-# RotationHours ± RotationJitterMinutes, and refills with a fresh pick, title
-# and name.
+# RotationHours (or RotationMinutes) ± RotationJitterMinutes, and refills with
+# a fresh pick, title and name. A title may use {name}, the shell's own name.
 #
 # Spawns: makes these the mod's own vendors. They stand only where this file
 # says, exactly Count of them, and never count against the engine's own
@@ -33,7 +33,7 @@ Body:
   - VendorKey: prontera-vendors/general_gear
     Type: Pool
     # Fallback if TitleFromPool is empty for some reason.
-    Title: "Reska's Odds & Ends"
+    Title: "{name}'s Odds & Ends"
     # Shell picks one of these per spawn, so each respawn reads as a different player.
     TitleFromPool:
       - "wts potz n stuff fs"
@@ -45,11 +45,13 @@ Body:
       - "wts random stuff fs"
       - "junk n jewels"
       - "clearing stash, buy"
-      - "Reska's Shop"
+      - "{name}'s Shop"
     MaxSlots: 10
     PickCount: [6, 10]
-    RotationHours: 4
-    RotationJitterMinutes: 30
+    # TESTING: 5 min ± 1. Back to RotationHours: 4 / RotationJitterMinutes: 30
+    # before release.
+    RotationMinutes: 5
+    RotationJitterMinutes: 1
     # Each shell rolls each price ±12% and, 1-in-5000 per item, drops a digit
     # (a "fat-finger" deal). See the header note on prices.
     PriceJitterPct: 12
@@ -98,11 +100,13 @@ Body:
       - "upgrade mats here"
       - "smith supplies fs"
       - "stones n ores"
-      - "Garrett's Forge Goods"
+      - "{name}'s Forge Goods"
     MaxSlots: 8
     PickCount: [5, 8]
-    RotationHours: 4
-    RotationJitterMinutes: 30
+    # TESTING: 5 min ± 1. Back to RotationHours: 4 / RotationJitterMinutes: 30
+    # before release.
+    RotationMinutes: 5
+    RotationJitterMinutes: 1
     PriceJitterPct: 12
     PriceMistakeOneIn: 5000
     # Prices tuned to iRO Valkyrie player-market data (ragnastats.com); these

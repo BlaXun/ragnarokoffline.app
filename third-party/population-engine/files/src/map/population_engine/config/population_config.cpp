@@ -726,6 +726,15 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 			entry.rotation_sec = h * 3600;
 		}
 	}
+	// RotationMinutes: the same in minutes, for short cycles (testing, busy
+	// markets). Wins over RotationHours when both are given.
+	if (this->nodeExists(node, "RotationMinutes")) {
+		int32_t m = 0;
+		if (this->asInt32(node, "RotationMinutes", m) && m > 0) {
+			if (m > 168 * 60) m = 168 * 60;
+			entry.rotation_sec = m * 60;
+		}
+	}
 
 	// RotationJitterMinutes: per-shell ± offset so vendors don't rotate in lockstep.
 	if (this->nodeExists(node, "RotationJitterMinutes")) {

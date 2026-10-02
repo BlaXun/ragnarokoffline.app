@@ -224,7 +224,8 @@ engine's vendors spawn exactly as upstream's do.
 - `Type: Pool` in `population_vendors.yml`: each shell draws `PickCount` items
   from a list, rolls each price by `PriceJitterPct`, rarely drops a digit
   (`PriceMistakeOneIn`), picks a title from `TitleFromPool`, and is replaced
-  after `RotationHours` ± `RotationJitterMinutes` with a fresh pick.
+  after `RotationHours` (or `RotationMinutes`) ± `RotationJitterMinutes` with
+  a fresh pick. `{name}` in a shop title is the shell's own name.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).
