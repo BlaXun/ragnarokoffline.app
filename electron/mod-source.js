@@ -250,15 +250,26 @@ function isNewer(latest, installed) {
 
 /** What kind of code a staged mod carries, for the confirmation. */
 function contents(dir) {
-	const has = relative => fs.existsSync(path.join(dir, relative));
+	// The mod's folder and each era folder its manifest declares: a mod can
+	// keep all its code in "renewal/" and still be carrying code.
+	const roots = [dir];
+	try {
+		const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'mod.json'), 'utf8'));
+		for (const key of ['renewalFolder', 'prerenewalFolder']) {
+			if (typeof manifest[key] === 'string' && manifest[key] && !manifest[key].includes('..')) roots.push(path.join(dir, manifest[key]));
+		}
+	} catch { /* no or unreadable manifest: the supervisor says so */ }
+	const has = relative => roots.some(root => fs.existsSync(path.join(root, relative)));
 	const commandFiles = ['groups.yml', 'atcommands.yml'];
 	let commands = commandFiles.some(f => has(`conf/${f}`));
-	try {
-		for (const option of fs.readdirSync(path.join(dir, 'conf', 'when'))) {
-			if (commandFiles.some(f => has(`conf/when/${option}/${f}`))) commands = true;
-		}
-	} catch { /* no conditional conf */ }
-	return { serverScripts: has('npc'), clientCode: has('client'), commands, tables: has('db') };
+	for (const root of roots) {
+		try {
+			for (const option of fs.readdirSync(path.join(root, 'conf', 'when'))) {
+				if (commandFiles.some(f => fs.existsSync(path.join(root, 'conf', 'when', option, f)))) commands = true;
+			}
+		} catch { /* no conditional conf */ }
+	}
+	return { serverScripts: has('npc') || has('lua'), clientCode: has('client'), commands, tables: has('db') };
 }
 
 /**

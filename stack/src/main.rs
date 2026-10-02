@@ -20,8 +20,11 @@ mod asset_transaction;
 mod cmds;
 mod crashes;
 mod database;
+mod db_backup;
+mod dump_migrations;
 mod host;
 mod config;
+mod control_panel;
 mod cp949;
 mod docker;
 mod groups;
@@ -51,6 +54,7 @@ const USAGE: &str = "usage: ragnarok-stack host-check|capture-crashes|hosting-ch
                      \x20      backup [--full] <file>|restore [--full] <file>\n\
                      \x20      sql [--write] [--file <path>] [<statement>]\n\
                      \x20      accounts (private JSON request on stdin)\n\
+                     \x20      cp (JSON request on stdin: characters|character|reset-position|delete-character)\n\
                      \x20      link-assets <data.grf> [rdata.grf] [official_data.grf] [bgm-dir]";
 
 /// The runtime tree, which is the directory containing bin/ and scripts/.
@@ -171,6 +175,15 @@ fn main() {
             }
             Ok(())
         },
+        // Settings -> Tools -> Control panel (#230). Its writes take the
+        // operation lock themselves, once the request says it is one: the
+        // action is on stdin, not in argv.
+        "cp" => {
+            if let Err(error) = control_panel::run(&cfg, &dk) {
+                fail(verb, &error);
+            }
+            Ok(())
+        },
         "secure-services" => cmds::secure_services(&cfg, &dk, lan, ram_mib),
         "up" => cmds::up(&cfg, &dk, lan, ram_mib),
         "down" => cmds::down(&cfg, &dk),
@@ -198,8 +211,9 @@ fn main() {
             Some(p) => world::backup(&cfg, &dk, p),
             None => Err("destination file required".into()),
         },
+        // Both eras' databases, in one .sql (db_backup.rs).
         "backup" => match args.get(1) {
-            Some(p) => cmds::backup(&cfg, &dk, p),
+            Some(p) => db_backup::backup(&cfg, &dk, p),
             None => Err("destination file required".into()),
         },
         "link-assets" => assets::link(&cfg, &args[1..]),
@@ -248,11 +262,26 @@ fn main() {
             None => Err("folder required".into()),
         },
         "restore" if args.get(1).map(String::as_str) == Some("--full") => match args.get(2) {
-            Some(p) => world::restore(&cfg, &dk, p),
+            Some(p) => world::Choice::parse(&args[3..]).and_then(|choice| world::restore(&cfg, &dk, p, &choice)),
             None => Err("source file required".into()),
         },
+        // What a whole-world backup holds, for Restore to offer: nothing changes.
+        "inspect" if args.get(1).map(String::as_str) == Some("--full") => match args.get(2) {
+            Some(p) => world::inspect(&cfg, p),
+            None => Err("backup file required".into()),
+        },
+        "inspect" => match args.get(1) {
+            Some(p) => db_backup::inspect(&cfg, p),
+            None => Err("backup file required".into()),
+        },
+        // `--eras renewal,prerenewal` chooses; every era in the file otherwise.
         "restore" => match args.get(1) {
-            Some(p) => cmds::restore(&cfg, &dk, p),
+            Some(p) => world::Choice::parse(&args[2..]).and_then(|choice| {
+                if !choice.settings {
+                    return Err("--no-settings is for restore --full; a database backup has no settings".into());
+                }
+                db_backup::restore(&cfg, &dk, p, choice.eras.as_deref())
+            }),
             None => Err("source file required".into()),
         },
         _ => {
@@ -268,7 +297,7 @@ fn main() {
 }
 
 fn fail(verb: &str, error: &str) -> ! {
-    if verb == "accounts" {
+    if verb == "accounts" || verb == "cp" {
         println!("{{\"error\":{}}}", json::quote(error));
     } else {
         eprintln!("{error}");

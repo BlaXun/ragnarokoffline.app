@@ -17,6 +17,13 @@
 //                                            the answer in a file under
 //                                            $FAKE_STATE/backups, which is
 //                                            where /backups is mounted
+//
+// With a `cp` object in $FAKE_DB it is also the database behind
+// `ragnarok-stack cp` (tests/control-panel-transport.test.cjs): rows of
+// login, char, guild, party, inventory and the rest by column name, answering
+// the statements stack/src/control_panel.rs builds. Every write it runs is
+// kept in `cp.log`, and a statement containing `cp.failOn` fails the way
+// mariadb fails, so a rollback can be tested.
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -55,8 +62,17 @@ function answer(sql) {
 	const db = JSON.parse(fs.readFileSync(dbFile, 'utf8'));
 	const cols = columns();
 	const out = [];
-	for (const line of sql.split('\n')) {
+	const lines = sql.split('\n');
+	for (const [n, line] of lines.entries()) {
 		let m;
+		const cp = db.cp && cpStatement(line, db.cp);
+		if (cp && cp.error) {
+			// mariadb stops at the first error and names its line. A script is
+			// not undone: what ran before it stays written, as on MyISAM.
+			fs.writeFileSync(dbFile, JSON.stringify(db));
+			return { out: '', error: `ERROR 1146 (42S02) at line ${n + 1}: ${cp.error}` };
+		}
+		if (cp) { out.push(...cp); continue; }
 		if (/information_schema\.TABLES/.test(line)) {
 			for (const [name, rows] of [['char', db.rows.length], ['inventory', 0], ['login', 2]]) out.push(`t\t${hex(name)}\t${rows}\t${hex('MyISAM')}`);
 		} else if (/information_schema\.STATISTICS/.test(line) && /SELECT 'k', HEX\(TABLE_NAME\)/.test(line)) {
@@ -81,7 +97,85 @@ function answer(sql) {
 			out.push(m[1]);
 		}
 	}
-	return out.length ? out.join('\n') + '\n' : '';
+	if (db.cp) fs.writeFileSync(dbFile, JSON.stringify(db));
+	return { out: out.length ? out.join('\n') + '\n' : '', error: '' };
+}
+
+// ---- The control panel's statements
+
+const PLAYER = a => a.sex !== 'S' && Number(a.account_id) >= 2000000
+	&& !(Number(a.group_id) === 20 && /^aiagent[0-9]?$/.test(a.userid));
+const TABLE_OF = { c: 'char', l: 'login', g: 'guild', p: 'party', i: 'inventory' };
+
+// The columns a SELECT asks for, by alias: HEX(c.`name`), HEX(CAST(c.`zeny` AS CHAR)).
+function selected(line) {
+	return [...line.matchAll(/HEX\((?:CAST\()?([a-z])\.`([a-z_0-9]+)`/g)].map(m => [m[1], m[2]]);
+}
+
+function joinedChars(cp) {
+	return cp.char.map(c => {
+		const l = cp.login.find(a => a.account_id === c.account_id);
+		return { c, l, g: cp.guild.find(g => g.guild_id === c.guild_id) || null, p: cp.party.find(p => p.party_id === c.party_id) || null };
+	}).filter(r => r.l && PLAYER(r.l));
+}
+
+function value(row, column) {
+	if (!row) return null;
+	const v = row[column];
+	return v === undefined || v === null ? null : String(v);
+}
+
+// One statement of a control panel script. Returns the lines it answers, or
+// an error string; null when the line is not one of these.
+function cpStatement(line, cp) {
+	let m;
+	const hexRow = (tag, cols, rows) => rows.map(r => [tag, ...cols.map(([alias, col]) => cell(value(r[alias], col)))].join('\t'));
+	if (/^SELECT 'a', /.test(line)) {
+		return hexRow('a', selected(line), cp.login.filter(PLAYER).map(l => ({ l })));
+	}
+	if (/^SELECT 'c', /.test(line)) {
+		const only = line.match(/c\.`char_id` = (\d+) AND/);
+		return hexRow('c', selected(line), joinedChars(cp).filter(r => !only || String(r.c.char_id) === only[1]));
+	}
+	if ((m = line.match(/^SELECT 'e', .* i\.`char_id` = (\d+) AND i\.`equip` <> 0/))) {
+		return hexRow('e', selected(line), cp.inventory.filter(i => String(i.char_id) === m[1] && Number(i.equip)).map(i => ({ i })));
+	}
+	if ((m = line.match(/^SELECT 'n', \(SELECT COUNT\(\*\) FROM `inventory` WHERE `char_id` = (\d+)\)/))) {
+		const c = cp.char.find(x => String(x.char_id) === m[1]);
+		const count = (table, key, v) => (cp[table] || []).filter(r => String(r[key]) === String(v)).length;
+		return [`n\t${count('inventory', 'char_id', m[1])}\t${count('cart_inventory', 'char_id', m[1])}\t${c ? count('storage', 'account_id', c.account_id) : 0}`];
+	}
+	if ((m = line.match(/^SELECT 'o', COUNT\(\*\) FROM `char` WHERE `account_id` = (\d+) AND `online` <> 0;$/))) {
+		return [`o\t${cp.char.filter(c => String(c.account_id) === m[1] && Number(c.online)).length}`];
+	}
+	if ((m = line.match(/^SELECT 'g', COUNT\(\*\) FROM `guild` WHERE `char_id` = (\d+);$/))) {
+		return [`g\t${cp.guild.filter(g => String(g.char_id) === m[1]).length}`];
+	}
+	if ((m = line.match(/^UPDATE `char` AS c LEFT JOIN `char` AS o .* SET (.*), c\.`last_instanceid` = 0 WHERE c\.`char_id` = (\d+) AND c\.`online` = 0 AND o\.`char_id` IS NULL;$/))) {
+		cp.log.push(line);
+		const c = cp.char.find(x => String(x.char_id) === m[2]);
+		const busy = c && cp.char.some(o => o.account_id === c.account_id && Number(o.online));
+		cp.rowCount = 0;
+		if (c && !Number(c.online) && !busy) {
+			const point = m[1].match(/c\.`last_map` = X'([0-9A-F]*)', c\.`last_x` = (\d+), c\.`last_y` = (\d+)/);
+			const [map, x, y] = point ? [unhex(point[1]), Number(point[2]), Number(point[3])] : [c.save_map, c.save_x, c.save_y];
+			if (c.last_map !== map || c.last_x !== x || c.last_y !== y || c.last_instanceid) cp.rowCount = 1;
+			Object.assign(c, { last_map: map, last_x: x, last_y: y, last_instanceid: 0 });
+		}
+		return [];
+	}
+	if (/^SELECT 'n', ROW_COUNT\(\);$/.test(line)) return [`n\t${cp.rowCount || 0}`];
+	if (/^(DELETE|UPDATE|INSERT) /.test(line)) {
+		if (cp.failOn && line.includes(cp.failOn)) return { error: `Table 'ragnarok.${cp.failOn}' doesn't exist` };
+		cp.log.push(line);
+		// What the tests look at afterwards: rows keyed by char_id go.
+		if ((m = line.match(/^DELETE FROM `([a-z_]+)` WHERE `char_id` = (\d+);$/)) && cp[m[1]]) {
+			cp[m[1]] = cp[m[1]].filter(r => String(r.char_id) !== m[2]);
+		}
+		return [];
+	}
+	if (/^(SET SESSION|START TRANSACTION;|COMMIT;|ROLLBACK;)/.test(line)) return [];
+	return null;
 }
 
 // slimd frames each read of the process's stdout; slim-client reads its
@@ -130,13 +224,31 @@ if (verb === 'exec') {
 	const rest = args.slice(1).filter(a => a !== '-i');
 	const [container, program, ...more] = rest;
 	if (container !== 'ragnarok-db') process.exit(1);
-	if (program === 'mariadb') { process.stdout.write(throughSlimExec(answer(stdin()))); process.exit(0); }
+	if (program === 'mariadb') { process.stdout.write(throughSlimExec(answer(stdin()).out)); process.exit(0); }
 	if (program === 'rm') {
 		for (const f of more.filter(a => a.startsWith('/backups/') || a.startsWith('/tmp/'))) fs.rmSync(inContainer(f), { force: true });
 		process.exit(0);
 	}
 	if (program === 'sh' && more[0] === '-c') {
 		const command = more[1];
+		// load_dump streams the backup into the container's /tmp on stdin,
+		// checks its size, then feeds it to `mariadb ragnarok < /tmp/...`.
+		const write = command.match(/cat > '(\/tmp\/[A-Za-z0-9._-]+)'$/);
+		if (write) { fs.writeFileSync(inContainer(write[1]), fs.readFileSync(0)); process.exit(0); }
+		const size = command.match(/^wc -c < '(\/tmp\/[A-Za-z0-9._-]+)'$/);
+		if (size) {
+			if (!fs.existsSync(inContainer(size[1]))) { process.stderr.write('sh: no such file\n'); process.exit(1); }
+			process.stdout.write(`${fs.statSync(inContainer(size[1])).size}\n`);
+			process.exit(0);
+		}
+		const restore = command.match(/< (\/(?:backups|tmp)\/[A-Za-z0-9._-]+)$/);
+		if (restore) {
+			// The dump's own first line, and the app's version stamp, are
+			// comments the real database skips.
+			const dump = fs.readFileSync(inContainer(restore[1]), 'utf8').replace(/^-- Ragnarok Offline backup: .*\n/m, '');
+			fs.writeFileSync(dbFile, dump.slice(dump.indexOf('\n') + 1));
+			process.exit(0);
+		}
 		const target = command.match(/> (\/(?:backups|tmp)\/[A-Za-z0-9._-]+)/);
 		if (!target) process.exit(2);
 		if (/mariadb-dump /.test(command)) {
@@ -144,9 +256,10 @@ if (verb === 'exec') {
 			process.exit(0);
 		}
 		const errors = command.match(/2> \/backups\/([A-Za-z0-9._-]+)/);
-		fs.writeFileSync(inContainer(target[1]), answer(stdin()));
-		if (errors) fs.writeFileSync(path.join(backups, errors[1]), '');
-		process.exit(0);
+		const result = answer(stdin());
+		fs.writeFileSync(inContainer(target[1]), result.out);
+		if (errors) fs.writeFileSync(path.join(backups, errors[1]), result.error ? result.error + '\n' : '');
+		process.exit(result.error ? 1 : 0);
 	}
 	process.exit(1);
 }

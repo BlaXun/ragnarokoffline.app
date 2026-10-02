@@ -46,7 +46,11 @@
 # BaseLevel:     [min, max] base-level range assigned at spawn.
 # JobLevel:      [min, max] job-level range assigned at spawn.
 # Str/Agi/Vit/Int/Dex/Luk:  [min, max] raw stat ranges at spawn.
-#                            All stats are clamped to [1, 99].
+#                            Keep them within the job's max_*_parameter
+#                            (conf/battle/player.conf): 99, or 130 for 3rd
+#                            and 4th classes.
+# Pow/Sta/Wis/Spl/Con/Crt:  [min, max] trait stat ranges (4th classes only;
+#                            omitted means 0).
 #
 # Behaviour / movement
 # ---------------------
@@ -807,5 +811,492 @@ Body:
     Flags:
       - mortal
     TownBehavior: sit
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+###########################################################################
+# RAGNAROKMAC — 3rd and 4th class companion profiles
+#
+# Companion-only: nothing in db/population_spawn.yml names these, so they
+# never spawn ambiently. They exist because @companion draft (and the
+# Summon tab) looks the job up here, and a grown companion re-gears and
+# spends its stat and trait points from the profile of the class it has
+# just advanced into. Without them a 3rd or 4th class draft is refused
+# ("job N has no population profile to inherit"), and a companion that
+# grows past transcendent keeps its points unspent and its old gear.
+#
+#   tier  base lv   job lv  why
+#   3rd   99-175    30-60   kPopJobAdvanceTable advances trans -> 3rd at
+#                           base 99, so the band starts there; 3rd classes
+#                           cap at 200 / job 70 (db/re/job_exp.yml)
+#   4th   200-250   1-50    advanced into at base 200; cap 275 / job 60
+#
+# Stats go to 130 (max_third_parameter / max_fourth_parameter) and traits
+# to 110 (max_trait_parameter). A stat a profile declares is also the
+# target a growing companion spends its points toward, biggest first, so
+# the ranges below are the build, not just a spawn roll. Traits are only
+# declared on 4th classes: a profile without them spawns with 0, and only
+# a 4th class can spend trait points.
+#
+# Vehicles (dragon, warg, mado) are set by the engine from the skill tree,
+# so these carry no setriding script. Genetic/Biolo get a cart for Cart
+# Cannon and Cart Tornado. 3rd-class transcendent ids (4060-4079) are not
+# listed: nothing advances into them and the Summon tab cannot draft them.
+###########################################################################
+
+  - Profile: companion_third_swordsman    # 3rd  Rune Knight / Royal Guard
+    Jobs:
+      RuneKnight: third_2hsword
+      RoyalGuard: third_spear_shield
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [90, 120]
+    Agi: [40, 80]
+    Vit: [80, 110]
+    Int: [10, 40]
+    Dex: [60, 100]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_caster       # 3rd  Warlock / Sorcerer
+    Jobs:
+      Warlock : third_wizard_staff
+      Sorcerer: third_sage_staff
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [1, 10]
+    Agi: [20, 50]
+    Vit: [40, 80]
+    Int: [100, 130]
+    Dex: [80, 110]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_priest       # 3rd  Arch Bishop
+    Jobs:
+      ArchBishop: third_priest_staff
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [1, 10]
+    Agi: [20, 50]
+    Vit: [60, 90]
+    Int: [100, 130]
+    Dex: [70, 100]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_monk         # 3rd  Sura
+    Jobs:
+      Sura: third_knuckle
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [90, 120]
+    Agi: [30, 60]
+    Vit: [70, 100]
+    Int: [20, 50]
+    Dex: [70, 100]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_archer       # 3rd  Ranger / Minstrel / Wanderer
+    Jobs:
+      Ranger  : third_bow
+      Minstrel: third_bow
+      Wanderer: third_bow
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [10, 40]
+    Agi: [80, 110]
+    Vit: [30, 60]
+    Int: [30, 60]
+    Dex: [100, 130]
+    Luk: [30, 60]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_mechanic     # 3rd  Mechanic
+    Jobs:
+      Mechanic: third_mechanic
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [90, 120]
+    Agi: [20, 50]
+    Vit: [80, 110]
+    Int: [30, 60]
+    Dex: [60, 100]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_genetic      # 3rd  Genetic, cart-bearing
+    Jobs:
+      Genetic: third_genetic
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [90, 120]
+    Agi: [20, 50]
+    Vit: [70, 100]
+    Int: [50, 80]
+    Dex: [60, 90]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+    Script: |
+      setcart;
+
+  - Profile: companion_third_thief        # 3rd  Guillotine Cross / Shadow Chaser
+    Jobs:
+      GuillotineCross: third_katar
+      ShadowChaser   : third_dagger
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [30, 60]
+    Str: [80, 110]
+    Agi: [90, 120]
+    Vit: [40, 70]
+    Int: [10, 40]
+    Dex: [70, 100]
+    Luk: [30, 60]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_swordsman   # 4th  Dragon Knight / Imperial Guard
+    Jobs:
+      DragonKnight : fourth_2hsword
+      ImperialGuard: fourth_spear_shield
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [110, 130]
+    Agi: [60, 90]
+    Vit: [100, 130]
+    Int: [30, 60]
+    Dex: [80, 110]
+    Luk: [20, 50]
+    Pow: [40, 80]
+    Sta: [30, 60]
+    Con: [20, 50]
+    Crt: [1, 20]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_caster      # 4th  Arch Mage / Elemental Master / Soul Ascetic
+    Jobs:
+      ArchMage       : fourth_wizard_staff
+      ElementalMaster: fourth_magic_staff
+      SoulAscetic    : fourth_magic_staff
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [1, 20]
+    Agi: [40, 70]
+    Vit: [70, 100]
+    Int: [110, 130]
+    Dex: [100, 130]
+    Luk: [20, 50]
+    Sta: [20, 40]
+    Wis: [20, 50]
+    Spl: [40, 80]
+    Con: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_priest      # 4th  Cardinal
+    Jobs:
+      Cardinal: fourth_priest_staff
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [1, 20]
+    Agi: [40, 70]
+    Vit: [80, 110]
+    Int: [110, 130]
+    Dex: [90, 120]
+    Luk: [30, 60]
+    Sta: [30, 60]
+    Wis: [30, 60]
+    Spl: [40, 80]
+    Crt: [1, 20]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_brawler     # 4th  Inquisitor / Sky Emperor
+    Jobs:
+      Inquisitor: fourth_knuckle
+      SkyEmperor: fourth_book
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [110, 130]
+    Agi: [60, 90]
+    Vit: [90, 120]
+    Int: [30, 60]
+    Dex: [90, 120]
+    Luk: [20, 50]
+    Pow: [40, 80]
+    Sta: [30, 60]
+    Con: [20, 50]
+    Crt: [1, 20]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_archer      # 4th  Windhawk / Troubadour / Trouvere / Night Watch
+    Jobs:
+      Windhawk  : fourth_bow
+      Troubadour: fourth_bow
+      Trouvere  : fourth_bow
+      NightWatch: fourth_gun
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [30, 60]
+    Agi: [100, 130]
+    Vit: [60, 90]
+    Int: [40, 70]
+    Dex: [110, 130]
+    Luk: [40, 70]
+    Pow: [30, 60]
+    Sta: [10, 30]
+    Con: [40, 80]
+    Crt: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_mechanic    # 4th  Meister
+    Jobs:
+      Meister: fourth_mechanic
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [110, 130]
+    Agi: [40, 70]
+    Vit: [100, 130]
+    Int: [40, 70]
+    Dex: [80, 110]
+    Luk: [20, 50]
+    Pow: [40, 80]
+    Sta: [30, 60]
+    Con: [20, 50]
+    Crt: [1, 20]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_genetic     # 4th  Biolo, cart-bearing
+    Jobs:
+      Biolo: fourth_genetic
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [110, 130]
+    Agi: [40, 70]
+    Vit: [90, 120]
+    Int: [60, 90]
+    Dex: [80, 110]
+    Luk: [20, 50]
+    Pow: [40, 80]
+    Sta: [20, 50]
+    Con: [20, 50]
+    Crt: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+    Script: |
+      setcart;
+
+  - Profile: companion_fourth_thief       # 4th  Shadow Cross / Abyss Chaser / Shinkiro / Shiranui
+    Jobs:
+      ShadowCross: fourth_katar
+      AbyssChaser: fourth_dagger
+      Shinkiro   : fourth_huuma
+      Shiranui   : fourth_huuma
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [100, 130]
+    Agi: [100, 130]
+    Vit: [60, 90]
+    Int: [30, 60]
+    Dex: [90, 120]
+    Luk: [40, 70]
+    Pow: [40, 80]
+    Sta: [10, 30]
+    Con: [30, 60]
+    Crt: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_hyper_novice # 4th  Hyper Novice
+    Jobs:
+      HyperNovice: fourth_hyper_novice
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [90, 120]
+    Agi: [60, 90]
+    Vit: [80, 110]
+    Int: [90, 120]
+    Dex: [90, 120]
+    Luk: [30, 60]
+    Pow: [30, 60]
+    Sta: [20, 40]
+    Wis: [10, 30]
+    Spl: [30, 60]
+    Con: [20, 40]
+    Crt: [1, 20]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_fourth_summoner    # 4th  Spirit Handler
+    Jobs:
+      SpiritHandler: fourth_foxtail
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [200, 250]
+    JobLevel: [1, 50]
+    Str: [1, 20]
+    Agi: [40, 70]
+    Vit: [70, 100]
+    Int: [110, 130]
+    Dex: [100, 130]
+    Luk: [20, 50]
+    Sta: [20, 40]
+    Wis: [20, 50]
+    Spl: [40, 80]
+    Con: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
     FieldBehavior: combat
     DungeonBehavior: combat

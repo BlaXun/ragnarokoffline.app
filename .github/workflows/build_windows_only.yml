@@ -1,4 +1,4 @@
-name: build
+name: build_windows
 
 # Builds Ragnarok Offline for macOS, Linux and Windows.
 #
@@ -148,12 +148,6 @@ jobs:
           path: |
             vendor/roBrowserLegacy/dist/Web
             vendor/roBrowserLegacy/src/DB/Monsters/MonsterTable.js
-            vendor/roBrowserLegacy/src/DB/Jobs/JobConst.js
-            vendor/roBrowserLegacy/src/DB/Jobs/JobNameTable.js
-            vendor/roBrowserLegacy/src/DB/Jobs/PalNameTable.js
-            vendor/roBrowserLegacy/src/DB/Jobs/HairIndexTable.js
-            vendor/roBrowserLegacy/src/DB/Items/HatTable.js
-            vendor/roBrowserLegacy/src/DB/Items/RobeTable.js
             vendor/ROenglishRE/Translation
             vendor/ROenglishRE/Addons/Navigation Legacy
           retention-days: 1
@@ -168,19 +162,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14
-            platform: mac
-            arch: arm64
-            triple: aarch64-apple-darwin
-            clis: macos-aarch64
-          # nebula-slim is validated on Linux and Windows, so these are real
-          # targets rather than packaging exercises. Each pulls the embed kit
-          # built for its own host triple.
-          - os: ubuntu-latest
-            platform: linux
-            arch: x64
-            triple: x64-unknown-linux
-            clis: linux-x86_64
           - os: windows-latest
             platform: win
             arch: x64
