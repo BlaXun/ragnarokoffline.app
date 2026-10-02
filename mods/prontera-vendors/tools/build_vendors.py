@@ -186,6 +186,11 @@ def market(iid, refresh):
 
 def price(e, refresh):
     """A believable player price, or None to leave the item out."""
+    # A price in the table (filled in by hand, or kept from an earlier run)
+    # comes first.
+    if TABLE.get(e["Id"], (0, 0))[0] > 0:
+        lo, hi = TABLE[e["Id"]]
+        return (lo + hi) // 2
     buy = e.get("Buy") or 0
     sell = e.get("Sell") or buy // 2
     avg, seen = market(e["Id"], refresh)
@@ -206,7 +211,8 @@ def price(e, refresh):
             return max(int(buy * 0.9), sell + 1)
         if 40 <= buy < 100 and avg > buy * 500:
             return max(buy * 20, 1000)
-        return avg if avg <= 15_000_000 else None
+        # Equipment "worth" a few zeny is a junk listing, not a price.
+        return avg if 50 <= avg <= 15_000_000 else None
     # Consumables and loot: an average hundreds of times the NPC value is a
     # troll listing (Green Potion "99,990,000z") pulling the mean.
     ref = max(buy, sell * 2, 1)
@@ -322,7 +328,7 @@ THEMES = [
                  "smith supplies fs", "stones n ores", "{name}'s Forge Goods"],
          items=["Phracon", "Emveretarcon", "Oridecon", "Elunium", "Steel", "Iron", "Iron_Ore", "Coal",
                 "Flame_Heart", "Mistic_Frozen", "Rough_Wind", "Great_Nature", "Star_Crumb", "Oridecon_Stone",
-                "Elunium_Stone", "Red_Blood", "Crystal_Blue", "Wind_Of_Verdure", "Yellow_Live"]),
+                "Elunium_Stone", "Boody_Red", "Crystal_Blue", "Wind_Of_Verdure", "Yellow_Live"]),
     dict(key="potions", job="Alchemist", pick=[6, 10], weight=1,
          titles=["S> pots", "potion seller", "wts whites n blues", "pots cheaper than npc", "{name}'s Pharmacy",
                  "fresh pots"],
@@ -374,7 +380,7 @@ THEMES = [
     dict(key="starter_gear", job="Merchant", pick=[6, 10], weight=1,
          titles=["newbie gear", "S> starter set", "for new players", "cheap noob gear", "{name}'s Starter Kits"],
          items=["Knife_", "Cutter_", "Main_Gauche_", "Sword_", "Falchion_", "Bow_", "Rod_", "Club_", "Cotton_Shirt_",
-                "Jacket_", "Adventurere's_Suit_", "Wooden_Mail_", "Guard_", "Buckler_", "Hood_", "Muffler_",
+                "Adventurere's_Suit_", "Wooden_Mail_", "Guard_", "Buckler_", "Hood_", "Muffler_",
                 "Sandals_", "Shoes_", "Bandana", "Cap", "Hat", "Red_Potion", "Wing_Of_Fly"]),
     dict(key="refined_weapons", job="Whitesmith", pick=[3, 6], weight=1,
          titles=["+7 weapons", "refined weapons", "S> high refine weps", "{name}'s Refinery", "+8 +9 weapons fs"],
@@ -821,17 +827,31 @@ def read_table():
                 hi = int(row[3]) if len(row) > 3 and row[3].strip() else lo
             except (ValueError, TypeError):
                 continue
-            out[iid] = (lo, max(lo, hi))
+            out[iid] = (lo, max(lo, hi)) if lo > 0 else (0, 0)
     return out
 
 
 def write_table():
     import csv
     os.makedirs(os.path.dirname(TABLE_CSV), exist_ok=True)
+    # Every tradeable item gets a row: a price if the market had one, else 0,0
+    # ("not priced yet") so it is there to fill in.
+    for e in ITEMS_BY_ID.values():
+        # Priced rows are kept as they are; 0,0 rows are tried again.
+        if TABLE.get(e["Id"], (0, 0))[0] > 0 or not tradeable(e) or not e.get("Name"):
+            continue
+        p = price(e, False)
+        if p is None:
+            TABLE[e["Id"]] = (0, 0)
+        else:
+            band = 0.08 if p >= 1000 else 0.15
+            TABLE[e["Id"]] = (tidy(max(1, int(p * (1 - band)))), tidy(int(p * (1 + band)) + 1))
     with open(TABLE_CSV, "w", encoding="utf-8", newline="") as f:
         f.write("# prontera-vendors price table: what each item sells for, as a range each\n"
                 "# stall rolls inside. Edit freely; the server reads it at startup, and\n"
                 "# tools/build_vendors.py keeps existing rows. Id decides, Name is for you.\n"
+                "# 0,0 = no price yet: fill one in and re-run the generator, and the item\n"
+                "# can then show up in the themes it fits.\n"
                 "# Refined, forged and carded lines are priced in population_vendors.yml.\n")
         w = csv.writer(f, lineterminator="\n")
         w.writerow(["Id", "Name", "Min", "Max"])
@@ -873,7 +893,7 @@ def main():
         for e, spec, p in lines:
             d = {"Item": e["AegisName"], "Amount": amount_for(e, p, rng)}
             plain = not (spec.get("refine") or spec.get("element") or spec.get("stars"))
-            if plain and e["Id"] in TABLE:
+            if plain and TABLE.get(e["Id"], (0, 0))[0] > 0:
                 d["Price"] = list(TABLE[e["Id"]])
             else:
                 band = 0.08 if p >= 1000 else 0.15
