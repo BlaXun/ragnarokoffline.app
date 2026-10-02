@@ -5,6 +5,7 @@
   "description": "Themed player vendors on Prontera's sidewalks: cards, weapons, armor, potions, dungeon loot and more, each stall drawing a random subset of its theme at real-market prices. Stalls come and go like real players, so the market keeps changing. Needs the population engine switched on.",
   "default": "off",
   "requires": { "app": ">=1.4.2", "era": "any" },
+  "prerenewalFolder": "pre-re",
   "settings": [
     { "key": "sell_shops", "type": "boolean", "default": true, "label": "Sell shops", "description": "Vendor stalls selling to you. Off removes them all; the other vendor settings stay as they are for when you switch them back on." },
     { "key": "vendors", "type": "number", "default": 20, "min": 0, "max": 60, "label": "Sell stalls", "description": "How many sell stalls stand on Prontera's sidewalks. With fewer stalls than themes, a different set of themes shows up each time the server starts. 0 removes them all." },

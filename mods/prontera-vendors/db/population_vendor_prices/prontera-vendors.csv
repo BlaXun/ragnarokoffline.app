@@ -658,7 +658,7 @@ Id,Name,Min,Max,Source
 7291,Agate,460000,540000,ragnastats
 28049,Agate Filo,0,0,
 4409,Agav Card,2300000,2700000,kro
-25921,Aged Cacao Beans,2700,3200,estimate
+25921,Aged Cacao Beans,2850,3400,estimate
 15163,Agenda Robe,0,0,
 19281,Agenda Robe,0,0,
 1290,Agent Katar,33500,39500,npc
@@ -1011,10 +1011,10 @@ Id,Name,Min,Max,Source
 4344,Anopheles Card,55000,64500,kro
 1000510,Ant Antennae,10000,12000,estimate
 1014,Ant Jaw,14000,16500,ragnastats
-1000511,Ant Legs,8550,10000,estimate
+1000511,Ant Legs,8300,9750,estimate
 16459,Ant Queen Crown Box,0,0,
 16460,Ant Queen Crown Box,0,0,
-1000512,Ant's Jaw,9800,11500,estimate
+1000512,Ant's Jaw,9750,11000,estimate
 7106,Antelope Horn,570,770,ragnastats
 7107,Antelope Skin,9200,10500,kro
 311060,Antenpou Tuning Device,0,0,
@@ -1631,7 +1631,7 @@ Id,Name,Min,Max,Source
 5898,Autumn Headband,0,0,
 5189,Autumn Leaves,0,0,
 5270,Autumn Leaves,0,0,
-25778,Autumn Light Jelly Piece,13500,15500,estimate
+25778,Autumn Light Jelly Piece,13500,16000,estimate
 12047,Autumn Red Tea,9300,10500,ragnastats
 19405,Autumn Taste,0,0,
 480134,Avareco,0,0,
@@ -1805,7 +1805,7 @@ Id,Name,Min,Max,Source
 480182,Bastawtozaq Heart,0,0,
 7214,Bat Cage,7350,8600,kro
 1000517,Bat Fur,14500,17000,estimate
-1000516,Bat Jawbone,15000,17500,estimate
+1000516,Bat Jawbone,15000,18000,estimate
 420422,Bat Von Blood,0,0,
 300102,Bath Administrator Card,1840000,2160000,kro
 4119,Bathory Card,1288000,1512000,kro
@@ -1850,7 +1850,7 @@ Id,Name,Min,Max,Source
 300470,Bear Bug Card,2759500,3239000,kro
 19353,Bear Catches Balloon,0,0,
 1001234,Bear Hide,0,0,
-11620,Bear Rope,1250,1450,estimate
+11620,Bear Rope,1200,1450,estimate
 948,Bear's Footskin,1350,1600,kro
 4875,Bear's Power,0,0,
 2240,Beard,0,0,
@@ -1926,7 +1926,7 @@ Id,Name,Min,Max,Source
 400576,Bijou's Hat (Vitality),0,0,
 1467,Bill Guisarme,0,0,
 925,Bill of Birds,40,56,kro
-7091,Billow,4800500,5635000,estimate
+7091,Billow,5107500,5996000,estimate
 2296,Binoculars,13500,16000,ragnastats
 19088,Binoculars,13500,16000,sibling
 23993,Bio Lab Material Box,276000,324000,kro
@@ -1971,7 +1971,7 @@ Id,Name,Min,Max,Source
 2702,Bison Horn,804000,944000,ragnastats
 11598,Bitter Cacao Bean,8,12,npc
 621,Bitter Herb,73500,86000,kro
-25817,Bizarre Stone Carvings,320000,375500,estimate
+25817,Bizarre Stone Carvings,329000,386000,estimate
 300017,Black Acidus Card,1380000,1620000,kro
 22516,Black As Night Piece,8,12,npc
 7161,Black Bear Skin,7800,9150,kro
@@ -2094,7 +2094,7 @@ Id,Name,Min,Max,Source
 32026,Blocking Spear,0,0,
 18510,Blood Angel Hair Band,0,0,
 18511,Blood Angel Wing Ear,0,0,
-6061,Blood Beginner,34000,39500,estimate
+6061,Blood Beginner,34500,40500,estimate
 18915,Blood Butterfly Ears,0,0,
 12150,Blood Cartridge,10500,12000,ragnastats
 12099,Blood Flavored Soda,73500,86000,ragnastats
@@ -2124,7 +2124,7 @@ Id,Name,Min,Max,Source
 7024,Bloody Edge,683000,801500,ragnastats
 4320,Bloody Knight Card,828000,972000,kro
 28945,Bloody Knight's Shield,211600000,248400000,kro
-7643,Bloody Letter,131000,154000,estimate
+7643,Bloody Letter,138500,162500,estimate
 25257,Bloody Love Letter,1800,2150,kro
 4214,Bloody Murderer Card,1186500,1393000,kro
 7449,Bloody Page,13500,16000,kro
@@ -2169,7 +2169,7 @@ Id,Name,Min,Max,Source
 13097,Blue Dagger,0,0,
 28720,Blue Dagger,0,0,
 15345,Blue Dragon Armor,0,0,
-25760,Blue Dragon Orb,57500,67500,estimate
+25760,Blue Dragon Orb,57500,68000,estimate
 15395,Blue Dragon Plate,0,0,
 5233,Blue Drooping Cat,207000,243000,npc
 16734,Blue Drooping Cat Box,0,0,
@@ -2552,7 +2552,7 @@ Id,Name,Min,Max,Source
 32408,Bright Mace,0,0,
 16096,Bright Pendulum,0,0,
 5795,Bright Red Dress Hat,0,0,
-1001087,Bright Shining Crystal,18500,22000,estimate
+1001087,Bright Shining Crystal,19000,22000,estimate
 4213,Brilight Card,14000,16500,ragnastats
 450247,Brillance,0,0,
 311943,Brilliant Biosphere Gem (Boss Type),0,0,
@@ -2616,16 +2616,16 @@ Id,Name,Min,Max,Source
 7709,Broken Grape Juice,0,0,
 6649,Broken Horn,110000,129500,kro
 7158,Broken Liquor Jar,4650,5500,ragnastats
-6905,Broken Magic Stone,3950,4650,estimate
+6905,Broken Magic Stone,3900,4550,estimate
 300280,Broken Memory of Thanatos Card,0,0,
 7215,Broken Needle,6100,7150,kro
 300077,Broken Omega Cleaner Card,920000,1080000,kro
 7113,Broken Pharaoh Emblem,82500,97000,kro
 7070,Broken Shell,4200,4950,ragnastats
-25280,Broken Shotgun,9150,10500,estimate
+25280,Broken Shotgun,9200,10500,estimate
 7156,Broken Shuriken,8450,9900,ragnastats
 7110,Broken Sword,11500,13500,kro
-25816,Broken Trap,122000,143000,estimate
+25816,Broken Trap,127500,150000,estimate
 1001239,Broken Trident,0,0,
 7062,Broken Turtle Shell,8250,9700,kro
 673,Bronze Coin,19000,22500,sibling
@@ -2644,7 +2644,7 @@ Id,Name,Min,Max,Source
 5240,Brown Mage Hat,69000,81000,ragnastats
 25283,Brown Muffler,355,480,npc
 27176,Brown Rat Card,2300000,2700000,kro
-25285,Brown Rat Tail,6000,7050,estimate
+25285,Brown Rat Tail,6050,7150,estimate
 7188,Brown Root,495,670,ragnastats
 6550,Brownie Ticket,0,0,
 7571,Bruspetti's Diary,0,0,
@@ -2845,7 +2845,7 @@ Id,Name,Min,Max,Source
 27182,Captain Ferlock Card,1992500,2339500,estimate
 5184,Captain's Hat,0,0,
 5657,Captain's Pipe,0,0,
-6564,Captive Hatchling,8750,10000,estimate
+6564,Captive Hatchling,9150,10500,estimate
 4063,Caramel Card,747000,877000,ragnastats
 4288,Carat Card,484000,568000,estimate
 6379,Card Coin,0,0,
@@ -2910,7 +2910,7 @@ Id,Name,Min,Max,Source
 9096,Cat o Nine Tail Egg,8280000,9720000,kro
 4290,Cat O' Nine Tails Card,869000,1020500,kro
 19976,Cat Santa Hat,63940000,75060000,kro
-7080,Cat Tread,4800500,5635000,estimate
+7080,Cat Tread,5107500,5996000,estimate
 2031,Cat's cane - Swordfish,0,0,
 7263,Cat's Eye,13000,15000,ragnastats
 4289,Caterpillar Card,645000,757000,ragnastats
@@ -3036,7 +3036,7 @@ Id,Name,Min,Max,Source
 7892,Charcoal,0,0,
 300635,Charcoaring Card,1380000,1620000,kro
 4661,Charge Basilisk Card,184000,216000,kro
-6752,Charleston Parts,57500,67500,estimate
+6752,Charleston Parts,58500,68500,estimate
 23706,Charleston Upgrade Parts (Physical),0,0,
 23707,Charleston Upgrade Parts (Ranged),0,0,
 4697,Charleston3 Card,2159500,2535000,estimate
@@ -3195,13 +3195,13 @@ Id,Name,Min,Max,Source
 7007,Claw of Rat,1050,1250,ragnastats
 21054,Claw Sword,0,0,
 29217,Clay,0,0,
-25619,Clay Doll,47000,55500,estimate
+25619,Clay Doll,49000,57500,estimate
 1163,Claymore,61000,71500,npc
 1172,Claymore,61000,71500,npc
 2350,Claytos Cracking Earth Armor,112500,132000,npc
 2351,Claytos Cracking Earth Armor,112500,132000,npc
 7668,Clean Bandage,0,0,
-25276,Clean Bone,6600,7750,estimate
+25276,Clean Bone,6650,7850,estimate
 6466,Clean Water,0,0,
 100655,Cleansing Blueprint Bundle,0,0,
 1300,Cleaver,0,0,
@@ -3316,7 +3316,7 @@ Id,Name,Min,Max,Source
 12257,Cold Medicine,0,0,
 7837,Cold Moonlight,1,2,npc
 11589,Cold Snow Cone,0,0,
-1001425,Cold Water Droplet Gem,83500,98000,estimate
+1001425,Cold Water Droplet Gem,82500,97000,estimate
 12119,Coldproof Potion,6300,7450,kro
 23152,Collectibles SynthesisBox,736000,864000,kro
 22759,Collection Of Scrolls Attack Speed Transformation,0,0,
@@ -3498,7 +3498,7 @@ Id,Name,Min,Max,Source
 1001448,Coral of Coral Marine,1012500,1188500,kro
 7013,Coral Reef,705,955,kro
 100351,Core Combat Manual,1829500,2148000,kro
-25158,Core Jelly,36000,42000,estimate
+25158,Core Jelly,37500,44000,estimate
 7870,Corn,0,0,
 4448,Cornus Card,2760000,3240000,kro
 12349,Cornus' Tears,0,0,
@@ -6547,7 +6547,7 @@ Id,Name,Min,Max,Source
 13060,Counter Dagger,0,0,
 13073,Counter Dagger,0,0,
 973,Counteragent,212000,249000,ragnastats
-7578,Countermagic Crystal,47000,55500,estimate
+7578,Countermagic Crystal,48000,56500,estimate
 18646,Cow Hat,6900000,8100000,ragnastats
 6119,Cow Leather,0,0,
 22658,Cow Steamed Ribs,17,24,npc
@@ -6756,7 +6756,7 @@ Id,Name,Min,Max,Source
 6780,Crucian Carp,0,0,
 25279,Crude Ammo,4450,5250,estimate
 1000947,Crude Glasses,0,0,
-25281,Crude Scimitar,9450,11000,estimate
+25281,Crude Scimitar,9500,11000,estimate
 4297,Cruiser Card,953500,1119500,ragnastats
 5107,Crunch Toast,13500,16000,ragnastats
 101932,Crusade Rune Enchantment,0,0,
@@ -6783,7 +6783,7 @@ Id,Name,Min,Max,Source
 2494,Crystal Pumps,141500,166000,sibling
 490257,Crystal Ring,0,0,
 311907,Crystalization Resistance,0,0,
-6075,Crystalized Teardrop,6100,7150,estimate
+6075,Crystalized Teardrop,6400,7500,estimate
 19347,Cuddly Siamese Cat,0,0,
 1045,Cultish Masque,960,1100,ragnastats
 410271,Cultist's Circlet (Agility),0,0,
@@ -6892,7 +6892,7 @@ Id,Name,Min,Max,Source
 24281,Dancer Shadow Armor,0,0,
 24268,Dancer Shadow Shoes,0,0,
 31021,Dancing Marionette Card,3680000,4320000,kro
-1000513,Dangerous Acid,11000,12500,estimate
+1000513,Dangerous Acid,10500,12500,estimate
 1000883,Dangerous Relic,0,0,
 12025,Dano Festival Egg,0,0,
 12026,Dano Festival Egg,0,0,
@@ -6973,7 +6973,7 @@ Id,Name,Min,Max,Source
 1643,Dead Tree Cane,8250,9700,kro
 631,Deadly Noxious Herb,299000,351000,kro
 12550,Deadly Poison Box,920000,1080000,kro
-25277,Deadly Poison Powder,8500,10000,estimate
+25277,Deadly Poison Powder,8550,10000,estimate
 1001337,Deadly Poison Specimen of the Depths,4500,5250,kro
 300252,Deadre Card,1380000,1620000,kro
 300442,Deadsera Card,12420000,14580000,kro
@@ -7018,12 +7018,12 @@ Id,Name,Min,Max,Source
 1001297,Deep Poison Energy,1700,1950,kro
 1001303,Deep Purification Crystal,31000,36500,kro
 102373,Deep Runic Armor Inscription,0,0,
-25896,Deep Sea Crab,6850,8000,estimate
-25893,Deep Sea Fish's Tail,6850,8050,estimate
-7324,Deep Sea Kraken's Leg,100500,118000,estimate
-25892,Deep Sea Shell,7050,8250,estimate
-25895,Deep Sea Starfish,6950,8150,estimate
-25897,Deep Sea Witch's Crown,101500,119000,estimate
+25896,Deep Sea Crab,6950,8150,estimate
+25893,Deep Sea Fish's Tail,6950,8150,estimate
+7324,Deep Sea Kraken's Leg,102500,120500,estimate
+25892,Deep Sea Shell,7100,8350,estimate
+25895,Deep Sea Starfish,7050,8250,estimate
+25897,Deep Sea Witch's Crown,103000,121000,estimate
 1001302,Deep Soul Crystal,20000,23500,kro
 1001294,Deep Soul Energy,4300,5050,kro
 1001318,Deep Soul Essence,174500,205000,kro
@@ -7570,8 +7570,8 @@ Id,Name,Min,Max,Source
 22097,Dragon Trainer Shoes,0,0,
 2399,Dragon Vest,46000,54000,ragnastats
 1724,Dragon Wing,69000,81000,ragnastats
-6073,Dragon's Mane,2000,2350,estimate
-7858,Dragonball Yellow,67000,78500,estimate
+6073,Dragon's Mane,2050,2450,estimate
+7858,Dragonball Yellow,69000,81000,estimate
 1685,Dragonfly Sitting Foxtail Staff,184000,216000,kro
 600004,Dragonic Slayer,0,0,
 100275,Dragonic Slayer Modification Cube,0,0,
@@ -7594,7 +7594,7 @@ Id,Name,Min,Max,Source
 6483,Dream Scroll,0,0,
 420164,Dreaming Red Sheep,0,0,
 5211,Dress Hat,0,0,
-6683,Dried Flower,50500,59500,estimate
+6683,Dried Flower,51500,60500,estimate
 7887,Dried Fruit Box,0,0,
 1100006,Dried Ice Gangu,0,0,
 18627,Dried Leaf,0,0,
@@ -7639,7 +7639,7 @@ Id,Name,Min,Max,Source
 300083,Dry Rafflesia Card,1104000,1296000,kro
 7264,Dry Sand,1100,1300,ragnastats
 1000504,Dry Sand,1100,1300,sibling
-1001426,Dry Wind Leaf Gem,83500,98000,estimate
+1001426,Dry Wind Leaf Gem,82500,97000,estimate
 4177,Dryad Card,455500,535000,ragnastats
 480306,Dual Shadow World Cloak,0,0,
 10045,Duck Doll's Star Button,460000,540000,kro
@@ -7974,7 +7974,7 @@ Id,Name,Min,Max,Source
 310297,Ember Emblem Lv6,0,0,
 1001445,Emblem of Floral Pegasus,1286000,1509500,kro
 1001455,Emblem of Monarch Penguin,3209500,3768000,kro
-7086,Emblem of the Sun God,4208500,4940500,estimate
+7086,Emblem of the Sun God,4471000,5248500,estimate
 7142,Embryo,8,12,npc
 7419,Embryo Creation Guide,0,0,
 9076,Emelit Egg,0,0,
@@ -8124,8 +8124,8 @@ Id,Name,Min,Max,Source
 1001847,Epesto Walther Megas Card Fragment,0,0,
 17519,Epic Heroes Scroll,0,0,
 16423,Episode 13.1 Key Package,0,0,
-7782,Episode 13.1 Poporing Key,89000,104500,estimate
-7783,Episode 13.2 Poring Key,89000,104500,estimate
+7782,Episode 13.1 Poporing Key,92000,108000,estimate
+7783,Episode 13.2 Poring Key,92000,108000,estimate
 102813,Episode 17-18 Boss Card Album,0,0,
 102767,Episode 17-18 Card Album,6716000,7884000,kro
 1475,Equestrian's Spear,0,0,
@@ -8219,7 +8219,7 @@ Id,Name,Min,Max,Source
 923,Evil Horn,6300,7450,kro
 18522,Evil Marcher Hat,17480000,20520000,kro
 18540,Evil Mask,0,0,
-1001075,Evil Minded Ruby,14000,16500,estimate
+1001075,Evil Minded Ruby,14000,16000,estimate
 4559,Evil Morocc Card,0,0,
 4258,Evil Nymph Card,2225500,2612500,ragnastats
 27372,Evil Obsidian Card,0,0,
@@ -8586,7 +8586,7 @@ Id,Name,Min,Max,Source
 25131,Fallen Energy Particle,1800,2150,kro
 450377,Fallen Flame Armor,0,0,
 470129,Fallen Gods Chant Magic Boots,0,0,
-25157,Fallen Leaves Branch,36000,42000,estimate
+25157,Fallen Leaves Branch,37500,44000,estimate
 28386,Fallen Monk Rosary,0,0,
 480365,Fallen Protect Manteau,0,0,
 490466,Fallen Seraphim Ring,0,0,
@@ -8682,7 +8682,7 @@ Id,Name,Min,Max,Source
 18755,Feather Beret,1794000,2106000,kro
 5018,Feather Bonnet,637500,748000,ragnastats
 420030,Feather In Mouth,460000,540000,kro
-7079,Feather of Angel Wing,4800500,5635000,estimate
+7079,Feather of Angel Wing,5107500,5996000,estimate
 916,Feather of Birds,1700,2050,kro
 1001796,Feather of Judgment,0,0,
 460003,Feather Shield,0,0,
@@ -8817,12 +8817,12 @@ Id,Name,Min,Max,Source
 951,Fin,1100,1300,ragnastats
 5014,Fin Helm,138000,162000,kro
 1001449,Fin of Coral Marine,1103500,1295500,kro
-25617,Fine Chonchon Doll,51000,59500,estimate
+25617,Fine Chonchon Doll,53000,62500,estimate
 1695,Fine Foxtail Replica,87000,102500,kro
 7041,Fine Grit,4000,4700,ragnastats
 1001012,Fine jewelry Box China Manufacturer,0,0,
 6261,Fine Noodles,530,715,npc
-25312,Fine Old Doll,47500,56000,estimate
+25312,Fine Old Doll,48500,57500,estimate
 7043,Fine Sand,1800,2150,kro
 1066,Fine-grained Trunk,295,400,ragnastats
 1811,Finger,48000,56000,npc
@@ -8880,7 +8880,7 @@ Id,Name,Min,Max,Source
 300222,Firewind Kite Card,3647500,4282000,kro
 310850,Firework,0,0,
 490262,Firm Faith Ring,0,0,
-1001430,Firm Land Crystal,83500,98000,estimate
+1001430,Firm Land Crystal,82500,97000,estimate
 7671,First Aid Kit,27000,32000,sibling
 12110,First Aid Kit,27000,32000,ragnastats
 24630,First Exploding Draft Shadow Armor,0,0,
@@ -8891,7 +8891,7 @@ Id,Name,Min,Max,Source
 5403,Fish In Mouth,0,0,
 5792,Fish Pin,0,0,
 1023,Fish Tail,11500,14000,kro
-6096,Fish With Blue Back,17,24,kro
+6096,Fish With Blue Back,5500,6450,kro
 312412,Fisher Badge,0,0,
 24067,Fisher Shoes (Shadow),138000,162000,kro
 2550,Fisher's Muffler,0,0,
@@ -9190,7 +9190,7 @@ Id,Name,Min,Max,Source
 1000255,Fragment of Regret,26500,31000,kro
 1000245,Fragment of Resentment,36500,43000,kro
 1000260,Fragment of Rest,0,0,
-25639,Fragment of Rock,85000,100000,estimate
+25639,Fragment of Rock,87000,102500,estimate
 7211,Fragment of Rossata Stone,156000,183500,kro
 1000256,Fragment of Sorrow,4600,5400,kro
 311979,Fragment of Varmundt (CON) Lv1,0,0,
@@ -9259,7 +9259,7 @@ Id,Name,Min,Max,Source
 11588,Fresh Strawberries,0,0,
 28590,Fresh Tuna Amulet,0,0,
 12601,Fresh Watermelon Juice,0,0,
-7073,Freya's Jewel,4800500,5635000,estimate
+7073,Freya's Jewel,5107500,5996000,estimate
 16216,Freya's Spiritual Bracelet Box,0,0,
 16217,Freya's Spiritual Bracelet Box,0,0,
 16218,Freya's Spiritual Bracelet Box,0,0,
@@ -9321,7 +9321,7 @@ Id,Name,Min,Max,Source
 300452,Friedrich Stolz Heine (Sign Stamp) Card,0,0,
 1012,Frill,425,575,kro
 4088,Frilldora Card,1840000,2160000,kro
-6696,Frilldora's Fiery Nape,43000,50500,estimate
+6696,Frilldora's Fiery Nape,45000,52500,estimate
 12056,Frog Egg Squid Ink Soup,7500,8800,ragnastats
 5447,Frog Hat,2300000,2700000,ragnastats
 5528,Frog King Hat,0,0,
@@ -9624,7 +9624,7 @@ Id,Name,Min,Max,Source
 1143,Gaia Sword,1160500,1362500,ragnastats
 1967,Gaia Whip,7900,9250,ragnastats
 28947,Gaia's Shield,0,0,
-1000514,Gaia's Worn Hat,15500,18000,estimate
+1000514,Gaia's Worn Hat,15500,18500,estimate
 4151,Gajomart Card,920000,1080000,kro
 1714,Gakkung Bow,38500,45000,kro
 1716,Gakkung Bow,184000,216000,kro
@@ -10158,7 +10158,7 @@ Id,Name,Min,Max,Source
 7143,Glass Tube,4600,5400,ragnastats
 2203,Glasses,3650,4300,kro
 2204,Glasses,18399500,21599500,kro
-6609,Glast Decayed Nail,13000,15000,estimate
+6609,Glast Decayed Nail,12500,14500,estimate
 6610,Glast Horrendous Mouth,5350,6300,ragnastats
 7058,Gleipnir,0,0,
 7139,Glistening Coat,425,575,kro
@@ -10307,7 +10307,7 @@ Id,Name,Min,Max,Source
 4072,Golem Card,157500,185000,ragnastats
 9053,Golem Egg,184000,216000,kro
 12875,Golem Stone,0,0,
-6695,Golem's Fiery Stone Tooth,314500,369500,estimate
+6695,Golem's Fiery Stone Tooth,327500,384000,estimate
 300492,Gony Card,0,0,
 102482,Good and Evil Boots Refine Hammer,6256000,7344000,kro
 2931,Good Health Amulet,0,0,
@@ -10342,10 +10342,10 @@ Id,Name,Min,Max,Source
 9065,Gorilla Egg,0,0,
 18930,Gorilla Model Hat,0,0,
 18913,Gossip Raven,0,0,
-25618,Gothic Porcelain Doll,51000,60000,estimate
+25618,Gothic Porcelain Doll,53500,62500,estimate
 400050,Gothic Skull Ribbon,0,0,
 11625,Gourmet Butter Popcorn,0,0,
-12188,Grace Moon Cake,1650,1950,estimate
+12188,Grace Moon Cake,1700,2000,estimate
 450309,Grace of Seth,0,0,
 1001465,Grace of Spirit,90000,105500,kro
 312157,Grace of the Snake God,0,0,
@@ -10451,7 +10451,7 @@ Id,Name,Min,Max,Source
 12245,Green Ale,229500,269000,ragnastats
 18675,Green Apple Hat,0,0,
 2868,Green Batik,0,0,
-25616,Green Bear Rope,66000,77500,estimate
+25616,Green Bear Rope,69000,81000,estimate
 12712,Green Beer,0,0,
 7445,Green Bijou,18000,21500,kro
 16623,Green Bunny Band Box,0,0,
@@ -10469,7 +10469,7 @@ Id,Name,Min,Max,Source
 7814,Green Jenoss's Family Ring,0,0,
 10023,Green Jewel Bag,0,0,
 10015,Green Lace,3200,3800,ragnastats
-1001431,Green Land Crystal,83500,98000,estimate
+1001431,Green Land Crystal,82500,97000,estimate
 993,Green Live,1700,2050,kro
 4373,Green Maiden Card,966000,1134000,kro
 9030,Green Maiden Egg,2760000,3240000,kro
@@ -10595,7 +10595,7 @@ Id,Name,Min,Max,Source
 1908,Guitar,38500,45500,npc
 700008,Gula Gun,460000,540000,kro
 510009,Gula Teeth,105500,124000,kro
-7743,Gulaman,65000,76500,estimate
+7743,Gulaman,69500,81500,estimate
 4164,Gullinbursti Card,920000,1080000,kro
 1911,Gumoongoh,44500,52000,npc
 1912,Gumoongoh,68500,80500,ragnastats
@@ -10707,7 +10707,7 @@ Id,Name,Min,Max,Source
 24187,Hallowed Shadow Armor,1,2,npc
 24199,Hallowed Shadow Shield,1,2,npc
 22669,Halloween Box,1,2,npc
-6658,Halloween Coin,800,1050,estimate
+6658,Halloween Coin,830,1100,estimate
 7941,Halloween Ticket,0,0,
 1001014,Hallows of Sesrumnir,0,0,
 300373,Hallucigenia Baby Card,414000,486000,kro
@@ -10760,7 +10760,7 @@ Id,Name,Min,Max,Source
 24049,Hard Earring (Shadow),1,2,npc
 7163,Hard Feeler,9200,10500,kro
 1002687,Hard Hammer,0,0,
-25641,Hard Mud,56500,66000,estimate
+25641,Hard Mud,58500,69000,estimate
 1002689,Hard Prostate,0,0,
 24028,Hard Shadow Armor,1,2,npc
 6022,Hard Skin,750,1000,npc
@@ -10770,7 +10770,7 @@ Id,Name,Min,Max,Source
 23667,HardChampion Mix,0,0,
 1561,Hardcover Book,69000,81000,ragnastats
 15101,Hardened Breastplate,134000,157500,estimate
-25815,Hardened Dust,10500,12500,estimate
+25815,Hardened Dust,11000,13000,estimate
 4462,Hardrock Mammoth Card,238500,280000,kro
 300443,Hardrock Titan Card,1656000,1944000,kro
 27288,Hardworking Pitman Card,552000,648000,kro
@@ -10868,7 +10868,7 @@ Id,Name,Min,Max,Source
 27149,Heart Hunter Card,391000,459000,kro
 27141,Heart Hunter Evil Card,0,0,
 27151,Heart Hunter Evil Card,99165500,116411500,estimate
-25159,Heart Hunter's Seal,52000,61000,estimate
+25159,Heart Hunter's Seal,53000,62000,estimate
 950,Heart of Mermaid,1800,2150,kro
 490492,Heart of Pure Love-LT,0,0,
 7612,Heart of Queen Fox,0,0,
@@ -11367,7 +11367,7 @@ Id,Name,Min,Max,Source
 100145,Hot Dragon's Power,0,0,
 300214,Hot Molar Card,598000,702000,kro
 11563,Hot Tea,8,12,npc
-1001424,Hot Water Droplet Gem,83500,98000,estimate
+1001424,Hot Water Droplet Gem,82500,97000,estimate
 5070,Hot-blooded Headband,920000,1080000,ragnastats
 2801,Hovering Booster,82500,97000,npc
 6284,How To Grow Plant Genes,920,1050,npc
@@ -11409,7 +11409,7 @@ Id,Name,Min,Max,Source
 810013,HR-55-OSAD,0,0,
 28253,HR-S55-OS,110000,129500,kro
 7198,Huge Leaf,1450,1700,ragnastats
-6961,Huge Metal Scrap,1921500,2255500,estimate
+6961,Huge Metal Scrap,1988500,2334500,estimate
 14453,Huginn's Fifth Egg,0,0,
 14452,Huginn's Fourth Egg,0,0,
 14454,Huginn's Sixth Egg,0,0,
@@ -11936,7 +11936,7 @@ Id,Name,Min,Max,Source
 12085,Immortal Stew,67500,79000,ragnastats
 12255,Immortal Stew,67500,79000,sibling
 31025,Immortal Wind Ghost Card,63479500,74519500,kro
-7973,Immortality Egg,2900,3400,estimate
+7973,Immortality Egg,3050,3600,estimate
 24399,Immune Athena Shadow Shield,9200000,10800000,kro
 22019,Immune Boots,0,0,
 27411,Immune Earth,0,0,
@@ -12325,7 +12325,7 @@ Id,Name,Min,Max,Source
 4589,Jejeling Card,920000,1080000,kro
 6498,Jejellopy,170,230,npc
 909,Jellopy,5,7,kro
-7861,Jelly Bean,63500,74500,estimate
+7861,Jelly Bean,66500,78000,estimate
 300294,Jennifer Card,284500,334000,kro
 25736,Jeremy's Beauty Coupon II,2300000,2700000,kro
 7818,Jessur's Necklace,0,0,
@@ -12333,7 +12333,7 @@ Id,Name,Min,Max,Source
 1002010,Jet Black Illusion Stone,1552500,1822500,kro
 5002,Jewel Crown,184000,216000,kro
 28772,Jewel Detector Mk47,12420000,14580000,kro
-7582,Jewel of Destruction,21000,24500,estimate
+7582,Jewel of Destruction,22000,25500,estimate
 28949,Jewel Shield,0,0,
 1142,Jeweled Sword,147000,172500,kro
 300007,Jeweled Ungoliant Card,2853500,3350000,estimate
@@ -12434,7 +12434,7 @@ Id,Name,Min,Max,Source
 2388,Kandura,427000,501500,estimate
 420389,Kankrai,0,0,
 18882,Kannam On Head,0,0,
-7742,Kaong,34500,40500,estimate
+7742,Kaong,36500,43000,estimate
 4287,Kapha Card,12500,14500,ragnastats
 11508,Karada Meguricha,0,0,
 5426,Karada Meguricha Hat,0,0,
@@ -12654,7 +12654,7 @@ Id,Name,Min,Max,Source
 1411,Lance,26000,31000,ragnastats
 1412,Lance,26000,31000,sibling
 26006,Lance of Evil,0,0,
-7747,Langka,35000,41000,estimate
+7747,Langka,37000,43500,estimate
 1041,Lantern,7350,8600,kro
 2666,Lantern of Hope,0,0,
 1649,Laphine Staff,71500,84500,ragnastats
@@ -12920,14 +12920,14 @@ Id,Name,Min,Max,Source
 9094,Leaf Lunatic Egg,23000000,27000000,kro
 1001450,Leaf of Maple Tree,3314000,3890500,kro
 15269,Leaf Robe,0,0,
-25637,Leaf-like Hair,56000,65500,estimate
+25637,Leaf-like Hair,58000,68500,estimate
 300634,Leafeing Card,0,0,
 4520,Leak Card,73600000,86400000,kro
 7042,Leather Bag of Infinity,0,0,
 15255,Leather Jacket,0,0,
 2544,Leather of Tendrilion,83000,97500,ragnastats
-6068,Leather Rabbit,28000,33000,estimate
-7744,Leche Flan,36500,43000,estimate
+6068,Leather Rabbit,29500,34500,estimate
+7744,Leche Flan,39000,45500,estimate
 1565,Ledger of Death,920000,1080000,kro
 300601,Lee Card,685400000,804600000,kro
 1001853,Lee Card Fragment,18400000,21600000,kro
@@ -13016,12 +13016,12 @@ Id,Name,Min,Max,Source
 470062,Lethargy Thoughtform Shoes,0,0,
 470063,Lethargy Thoughtform Shoes,0,0,
 7183,Letter from Sister,0,0,
-6062,Letter Moon Cake,20500,24000,estimate
-6063,Letter Moon Cake,18500,22000,estimate
-6064,Letter Moon Cake,17000,20000,estimate
-6065,Letter Moon Cake,11000,13000,estimate
-6066,Letter Moon Cake,11000,13000,estimate
-6067,Letter Moon Cake,20000,23500,estimate
+6062,Letter Moon Cake,21500,25500,estimate
+6063,Letter Moon Cake,19500,23000,estimate
+6064,Letter Moon Cake,17500,21000,estimate
+6065,Letter Moon Cake,12000,14000,estimate
+6066,Letter Moon Cake,12000,14000,estimate
+6067,Letter Moon Cake,21000,24500,estimate
 7278,Letter to Wife,0,0,
 7589,Lettered Moon Snack 01,0,0,
 7590,Lettered Moon Snack 02,0,0,
@@ -13313,7 +13313,7 @@ Id,Name,Min,Max,Source
 25940,Loft Stone Garment (Ultimate),0,0,
 25938,Loft Stone Garment (VIT),0,0,
 7201,Log,3650,4300,kro
-25314,Logbooks,70500,82500,estimate
+25314,Logbooks,72000,84500,estimate
 19050,Loki & Nidhoggur's Hat,0,0,
 5332,Loki Mask,0,0,
 102677,Loki's Advice (Defense),211500,248000,kro
@@ -13671,7 +13671,7 @@ Id,Name,Min,Max,Source
 102542,M.Pendant Shadow Box,91000,106500,kro
 102541,M.Shoes Shadow Box,82500,97000,kro
 11529,Maamoul,0,0,
-7750,Macapuno,32500,38000,estimate
+7750,Macapuno,34500,40500,estimate
 1504,Mace,1450,1700,kro
 1505,Mace,18000,21500,kro
 1506,Mace,138000,162000,kro
@@ -14038,7 +14038,7 @@ Id,Name,Min,Max,Source
 480346,Manteau of Mystical Beast: Summer,0,0,
 480348,Manteau of Mystical Beast: Winter,0,0,
 4079,Mantis Card,1150000,1350000,kro
-25774,Mantis Flower,13500,15500,estimate
+25774,Mantis Flower,13500,16000,estimate
 1031,Mantis Scythe,595,805,kro
 2307,Mantle,8250,9700,npc
 2308,Mantle,8250,9700,npc
@@ -14078,7 +14078,7 @@ Id,Name,Min,Max,Source
 450296,Mars Armor-LT,0,0,
 4095,Marse Card,635500,746500,ragnastats
 27177,Marsh Arclouse Card,4370000,5130000,kro
-7862,Marshmallow,63500,74500,estimate
+7862,Marshmallow,66500,78000,estimate
 4046,Martin Card,46000,54000,kro
 2714,Marvelous Pendant,0,0,
 5275,Marvelous Wig,0,0,
@@ -14186,7 +14186,7 @@ Id,Name,Min,Max,Source
 4146,Maya Card,73851000,86694500,estimate
 4198,Maya Purple Card,1380000,1620000,kro
 102404,Maya Purple Scroll (Egg),0,0,
-1000518,Maya's Crown,83000,97000,estimate
+1000518,Maya's Crown,84500,99500,estimate
 12133,McDonald's Ice Cone,0,0,
 25014,Mdef Stone(Lower),0,0,
 4890,MDEF+1,0,0,
@@ -14641,7 +14641,7 @@ Id,Name,Min,Max,Source
 102046,Mocadas Slate (Tavar),0,0,
 102053,Mocadas Slate (Tea Man),0,0,
 102062,Mocadas Slate (Thelin),0,0,
-554,Mochi,85,115,ragnastats
+554,Mochi,3300,3900,ragnastats
 22559,Mock Strawberry,0,0,
 5073,Model Training Hat,1764000,2071000,ragnastats
 25695,Modification Module (Above All),7199000,8451000,kro
@@ -14748,14 +14748,14 @@ Id,Name,Min,Max,Source
 28721,Monokage,174000,204000,estimate
 28738,Monokage,0,0,
 6694,Monster Blood,8,12,npc
-6732,Monster Coin,1250,1500,estimate
+6732,Monster Coin,1350,1550,estimate
 12713,Monster Extract,0,0,
 5921,Monster Fish Gills,0,0,
 626,Monster Juice,138000,162000,kro
 10002,Monster Oxygen Mask,17,24,npc
 7617,Monster Voucher,0,0,
 528,Monster's Feed,51,70,ragnastats
-1001082,Monster's Stone,17000,20000,estimate
+1001082,Monster's Stone,17500,20500,estimate
 1001235,Monster's Tooth,0,0,
 1000823,Monstrous Cell,0,0,
 1001079,Monstrous Tentacles,16000,19000,estimate
@@ -14834,7 +14834,7 @@ Id,Name,Min,Max,Source
 101407,Move Scroll(Convenience),0,0,
 101408,Move Scroll(Danger Areas),0,0,
 311366,Movement Speed ​​Increase,0,0,
-6940,Moving Black Material,14000,16500,estimate
+6940,Moving Black Material,14500,17000,estimate
 2288,Mr. Scream,69000,81000,kro
 2278,Mr. Smile,41000,48500,kro
 19094,Mr. Smile,41000,48500,kro
@@ -14957,7 +14957,7 @@ Id,Name,Min,Max,Source
 12377,Mysterious PET Bottle2,8,12,npc
 13268,Mysterious Powder,85,115,npc
 420313,Mysterious Red Plate,0,0,
-25777,Mysterious Sap,13500,15500,estimate
+25777,Mysterious Sap,13500,16000,estimate
 22675,Mysterious Scroll,0,0,
 12561,Mysterious Seed,25500,30000,ragnastats
 11703,Mystery Blood,0,0,
@@ -15039,7 +15039,7 @@ Id,Name,Min,Max,Source
 18170,Narcissus Bow,0,0,
 100329,Narcissus Bow Remodeling Cube,0,0,
 700049,Narcissus Bow-LT,0,0,
-25615,Nasarin's Soul Stone,7150,8400,estimate
+25615,Nasarin's Soul Stone,7100,8300,estimate
 11532,Nasi Goreng,0,0,
 15140,Natural Cloth,0,0,
 15352,Nature Dress,0,0,
@@ -15068,7 +15068,7 @@ Id,Name,Min,Max,Source
 310736,Nebula of Spell Lv1,0,0,
 310737,Nebula of Spell Lv2,0,0,
 310738,Nebula of Spell Lv3,0,0,
-7607,Neck of Demon Dragon,42000,49500,estimate
+7607,Neck of Demon Dragon,43000,50500,estimate
 2603,Necklace,108500,127500,ragnastats
 2623,Necklace,24500,29000,npc
 2838,Necklace,108500,127500,sibling
@@ -15379,7 +15379,7 @@ Id,Name,Min,Max,Source
 490613,Old Detachment Ring,0,0,
 15375,Old Eclipse Outfit,0,0,
 7031,Old Frying Pan,2150,2500,ragnastats
-6962,Old Fuel,285000,334500,estimate
+6962,Old Fuel,296500,348500,estimate
 12244,Old Gift Box,0,0,
 12187,Old Green Box,0,0,
 13825,Old Green Box,0,0,
@@ -15435,7 +15435,7 @@ Id,Name,Min,Max,Source
 19543,Oliver Wolf Hood,4600000,5400000,kro
 490142,Omega Core,0,0,
 490143,Omega Core,0,0,
-7089,Omen of Tempest,4800500,5635000,estimate
+7089,Omen of Tempest,5107500,5996000,estimate
 27117,Ominous Assaulter Card,1288000,1512000,kro
 27118,Ominous Freezer Card,1196000,1404000,kro
 27116,Ominous Heater Card,1472000,1728000,kro
@@ -15714,7 +15714,7 @@ Id,Name,Min,Max,Source
 541,PecoPeco Food,0,0,
 470075,Peep Toe Sandals,0,0,
 300641,Peeping Card,25300000,29700000,kro
-7860,Peeps,63500,74500,estimate
+7860,Peeps,66500,78000,estimate
 24095,Peerless Shadow Armor,690000,810000,kro
 24354,Peerless Shadow Armor II,0,0,
 24096,Peerless Shadow Shoes,276000,324000,kro
@@ -15893,11 +15893,11 @@ Id,Name,Min,Max,Source
 7150,Piece of Bamboo,1350,1600,ragnastats
 6524,Piece of Bangungot's Spirit,2750,3200,npc
 7205,Piece of Black Cloth,44000,51500,kro
-25311,Piece of Black Horn,38000,44500,estimate
+25311,Piece of Black Horn,39000,45500,estimate
 6525,Piece of Buwaya's Spirit,59000,69500,estimate
 539,Piece of Cake,28500,34000,kro
 25156,Piece of Chimera,1,2,npc
-7703,Piece of Cogwheel,18000,21000,estimate
+7703,Piece of Cogwheel,18500,22000,estimate
 7032,Piece of Egg Shell,1600,1850,ragnastats
 7108,Piece of Shield,137000,160500,kro
 1000257,Piece of Sin,64000,75500,kro
@@ -16196,7 +16196,7 @@ Id,Name,Min,Max,Source
 400087,Potential to Inspire Adventure Cap,0,0,
 400551,Potential to Inspire Adventure Cap-LT,0,0,
 7144,Potion Creation Guide,72000,84500,ragnastats
-25640,Potted Stone,56000,65500,estimate
+25640,Potted Stone,58000,68500,estimate
 9114,Pouring Egg,0,0,
 313131,POW Assistance,0,0,
 313132,POW Enforcement,0,0,
@@ -16406,7 +16406,7 @@ Id,Name,Min,Max,Source
 313956,Purple Butterfly Footprints,0,0,
 1002285,Purple Butterfly Footprints (Garment),110400000,129600000,kro
 5816,Purple Cowboy Hat,0,0,
-25763,Purple Dragon Orb,185000,217500,estimate
+25763,Purple Dragon Orb,193500,227500,estimate
 15394,Purple Dragon Plate,0,0,
 300015,Purple Ferus Card,368000,432000,kro
 2242,Purple Glasses,22000,25500,kro
@@ -16734,7 +16734,7 @@ Id,Name,Min,Max,Source
 9035,Red Deleter Egg,17,24,npc
 5227,Red Deviruchi Hat,0,0,
 15240,Red Dragon Armor,0,0,
-25761,Red Dragon Orb,58000,68000,estimate
+25761,Red Dragon Orb,58000,68500,estimate
 15391,Red Dragon Plate,0,0,
 22077,Red Eco-Friendly Shoes,908500,1066500,estimate
 668,Red Envelope,1,2,npc
@@ -16746,7 +16746,7 @@ Id,Name,Min,Max,Source
 4380,Red Ferus Card,598000,702000,kro
 314095,Red Fighting Spirit Effect,0,0,
 1002194,Red Fighting Spirit Effect (Mid),0,0,
-1001428,Red Flame Heart Gem,83500,98000,estimate
+1001428,Red Flame Heart Gem,82500,97000,estimate
 1965,Red Flame Whip,7350,8650,ragnastats
 490100,Red Force Pendant,128800000,151200000,kro
 490382,Red Force Pendant-LT,0,0,
@@ -17078,7 +17078,7 @@ Id,Name,Min,Max,Source
 101801,Road Bearers Shadow Selection Box,0,0,
 101805,Road Bearers Shoes Shadow Box,0,0,
 300105,Roaming Spellbook Card,1242000,1458000,kro
-11707,Roast Beef,3650,4300,estimate
+11707,Roast Beef,3700,4350,estimate
 1100007,Roasted sausages,0,0,
 15029,Robe Of Affection,151500,178000,kro
 2343,Robe of Cast,103000,121000,npc
@@ -17136,7 +17136,7 @@ Id,Name,Min,Max,Source
 24212,Rookie Shadow Shoes,4370000,5130000,kro
 9113,Roost Of Skelion,17,24,npc
 1001147,Root of a precious plant,0,0,
-7082,Root of Stone,4800500,5635000,estimate
+7082,Root of Stone,5107500,5996000,estimate
 1950,Rope,2050,2400,npc
 1951,Rope,2050,2400,npc
 314066,ROS 2025 Footprint,0,0,
@@ -17165,7 +17165,7 @@ Id,Name,Min,Max,Source
 1985,Rosebine,153000,180000,ragnastats
 4192,Rotar Zairo Card,1367000,1605000,ragnastats
 930,Rotten Bandage,1350,1600,kro
-25894,Rotten Deep Sea Fish,6950,8200,estimate
+25894,Rotten Deep Sea Fish,7050,8300,estimate
 624,Rotten Fish,17000,20000,ragnastats
 28787,Rotten Garden Knife,0,0,
 510031,Rotten Garden Knife,0,0,
@@ -17499,7 +17499,7 @@ Id,Name,Min,Max,Source
 16775,Sagittarius Scroll,0,0,
 470045,Sagittarius Shoes,0,0,
 313340,Sagittarius Stone,0,0,
-7746,Sago,36000,42500,estimate
+7746,Sago,38500,45000,estimate
 24200,Saharic Shadow Shield,460000,540000,kro
 18645,Sailor Hat,0,0,
 5691,Sailor's Bandana,0,0,
@@ -18092,7 +18092,7 @@ Id,Name,Min,Max,Source
 5213,Sheila Hairnet,0,0,
 935,Shell,425,575,kro
 4273,Shell Fish Card,31500,37000,ragnastats
-1000506,Shell of Awareness,4800,5600,estimate
+1000506,Shell of Awareness,4750,5600,estimate
 310227,Shelter Lv1,0,0,
 310228,Shelter Lv2,0,0,
 310229,Shelter Lv3,0,0,
@@ -18218,7 +18218,7 @@ Id,Name,Min,Max,Source
 24463,Shooting Shadow Earring,2576000,3024000,kro
 24462,Shooting Shadow Pendant,920000,1080000,kro
 24461,Shooting Shadow Weapon,1380000,1620000,kro
-25636,Shooting Stone,55000,65000,estimate
+25636,Shooting Stone,57500,67500,estimate
 25263,Short Bat Hair,670,905,npc
 25779,Short Binding Rope,14000,16500,estimate
 1094,Short Daenggie,3500,4150,ragnastats
@@ -18308,7 +18308,7 @@ Id,Name,Min,Max,Source
 24327,Sigrun Shadow Shield,0,0,
 19085,Sigrun's Wings,0,0,
 23868,Sigrun's Wings SynthesisBox,0,0,
-25127,Silent Energy Particle,4850,5700,estimate
+25127,Silent Energy Particle,4900,5750,estimate
 300239,Silent Maya Card,2536000,2977500,estimate
 6937,Silicone Shell,0,0,
 23952,Silit Pong Box,237360000,278640000,kro
@@ -18337,7 +18337,7 @@ Id,Name,Min,Max,Source
 2146,Silver Guard,1288000,1512000,kro
 638,Silver Knife of Chastity,151500,178000,kro
 7232,Silver Ore,0,0,
-7077,Silver Ornament,4208500,4940500,estimate
+7077,Silver Ornament,4471000,5248500,estimate
 2611,Silver Ring,16500,19000,npc
 7947,Silver Ring Of Valentine,0,0,
 2332,Silver Robe,5750,6800,npc
@@ -18373,7 +18373,7 @@ Id,Name,Min,Max,Source
 1052,Single Cell,39,53,kro
 22686,Single Cookie,18000,21500,kro
 6324,Single Horned Helmet,595,805,npc
-25130,Sinister Energy Particle,3000,3550,estimate
+25130,Sinister Energy Particle,3050,3600,estimate
 18558,Sinsuncho Hat,0,0,
 4530,Siorava Card,552000,648000,kro
 300609,Sirena Card,2760000,3240000,kro
@@ -18515,7 +18515,7 @@ Id,Name,Min,Max,Source
 1001076,Small Sewing Kit,20500,24000,estimate
 24074,Small Shadow Armor,2300000,2700000,kro
 24077,Small Shadow Weapon,0,0,
-1000515,Small Shovel,14500,17000,estimate
+1000515,Small Shovel,15000,17500,estimate
 6098,Small Snow Flower,920,1050,ragnastats
 6792,Small Stone (Upper),0,0,
 6592,Small Wooden Chest,1,2,npc
@@ -18554,7 +18554,7 @@ Id,Name,Min,Max,Source
 1001636,Snake Shape Ornament,1550,1800,kro
 1001628,Snake Shape Rosary,1700,2050,kro
 1001635,Snake Shape Stick,1350,1600,kro
-25773,Snake's Venom,13500,16000,estimate
+25773,Snake's Venom,14000,16000,estimate
 4367,Sniper Card,129636500,152182000,estimate
 29430,Sniper Stone (Bottom),1840000,2160000,kro
 25415,Sniper Stone (Lower),1840000,2160000,kro
@@ -19318,7 +19318,7 @@ Id,Name,Min,Max,Source
 311946,Stead of Varmundt Lv3,0,0,
 311947,Stead of Varmundt Lv4,0,0,
 311948,Stead of Varmundt Lv5,0,0,
-11706,Steak,2750,3250,estimate
+11706,Steak,2800,3300,estimate
 29228,Steal,0,0,
 24144,Steal Shadow Armor,9199500,10799500,kro
 24148,Steal Shadow Earring,0,0,
@@ -19377,7 +19377,7 @@ Id,Name,Min,Max,Source
 101109,Stone Cannon Ball Box,0,0,
 7067,Stone Fragment,5300,6200,ragnastats
 953,Stone Heart,120,165,ragnastats
-6693,Stone Of Blessing,39500,46500,estimate
+6693,Stone Of Blessing,41000,48000,estimate
 7224,Stone of Sage,119500,140000,kro
 12040,Stone of Sage,119500,140000,kro
 4225,Stone Shooter Card,828000,972000,kro
@@ -19482,7 +19482,7 @@ Id,Name,Min,Max,Source
 23767,Strong Helmet Box,0,0,
 2125,Strong Shield,8740000,10260000,kro
 6041,Strong Vine,7850,9200,ragnastats
-1001427,Strong Wind Leaf Gem,83500,98000,estimate
+1001427,Strong Wind Leaf Gem,82500,97000,estimate
 4111,Strouf Card,5980000,7020000,kro
 1805,Studded Knuckles,26000,31000,npc
 1806,Studded Knuckles,26000,31000,npc
@@ -19686,10 +19686,10 @@ Id,Name,Min,Max,Source
 25267,Suspicious Pentacle,2750,3200,kro
 400476,Sustained Beret,0,0,
 2188,Svalinn,0,0,
-25284,Swamp Bug Shell,6250,7350,estimate
+25284,Swamp Bug Shell,6300,7400,estimate
 7685,Sweet and Sour Melon,0,0,
-7749,Sweet Bananas,30500,36000,estimate
-7748,Sweet Beans,30500,35500,estimate
+7749,Sweet Bananas,32000,38000,estimate
+7748,Sweet Beans,32000,37500,estimate
 11564,Sweet Canape,2,4,ragnastats
 12225,Sweet Candy Cane,25000,29500,ragnastats
 25655,Sweet Coin,0,0,
@@ -20390,7 +20390,7 @@ Id,Name,Min,Max,Source
 19240,Toy Syringe,644000,756000,kro
 23838,Toy Syringe Combination,0,0,
 555,Traditional Rice Cake,265,360,ragnastats
-6094,Traditional Sweets,17,24,npc
+6094,Traditional Sweets,0,0,
 2466,Training Shoes,0,0,
 103316,Trait Status Shadow Cube,1380000,1620000,kro
 101180,Trait Status Shadow Spellbook,1006500,1182000,kro
@@ -20608,7 +20608,7 @@ Id,Name,Min,Max,Source
 6323,Two-Horned Helmet,53500,63000,ragnastats
 420160,Tyrant of Earth,0,0,
 313328,Tyrant of the Stars,0,0,
-7745,Ube Jam,58500,69000,estimate
+7745,Ube Jam,62500,73500,estimate
 18892,Ufo Poring Hat,0,0,
 2531,Ulfhedinn,9200,10500,ragnastats
 490367,Ulle's Bracelet,0,0,
@@ -20695,8 +20695,8 @@ Id,Name,Min,Max,Source
 26102,Unrivaled Staff,0,0,
 102433,Unsealing Scroll,0,0,
 101745,Unsealing the dimension,0,0,
-7644,Unsent Letter,15500,18000,estimate
-25129,Unstable Energy Particle,3400,4000,estimate
+7644,Unsent Letter,16000,19000,estimate
+25129,Unstable Energy Particle,3450,4100,estimate
 9517,Untouched Gemstone,17500,21000,estimate
 7970,Unwritten Letter1,0,0,
 7971,Unwritten Letter2,0,0,
@@ -21158,7 +21158,7 @@ Id,Name,Min,Max,Source
 24471,Vulcan Shadow Shield,414000,486000,kro
 24472,Vulcan Shadow Shoes,690000,810000,kro
 450298,Vulcanus Armor-LT,0,0,
-25642,Vulnerable Worm,55000,65000,estimate
+25642,Vulnerable Worm,57500,67500,estimate
 300636,Vulring Card,27508000,32292000,kro
 18856,W King Tiger Doll Hat,0,0,
 1801,Waghnak,6600,7750,npc
@@ -21320,7 +21320,7 @@ Id,Name,Min,Max,Source
 18602,Watermelon Bite,0,0,
 18525,Watermelon Cap,0,0,
 13314,Wave Huuma Shuriken,82500,97000,kro
-25128,Weak Energy Particle,7650,8950,estimate
+25128,Weak Energy Particle,7700,9050,estimate
 4557,Weakened Fenrir Card,276000,324000,kro
 22944,Weapon +10 Refine Ticket,40480000,47520000,kro
 22915,Weapon +11 Refine Ticket,75235500,88320000,kro
@@ -21802,7 +21802,7 @@ Id,Name,Min,Max,Source
 2172,Wolf Wrist Guard,37000,43500,npc
 27389,Wolfe Card,0,0,
 27390,Wolfe Lugenburg Card,0,0,
-7081,Woman's Moustache,4800500,5635000,estimate
+7081,Woman's Moustache,5107500,5996000,estimate
 12136,Women's Bundle,0,0,
 15980,Wonder Egg Basket,0,0,
 410027,Wonder Egg Basket,0,0,
@@ -21812,7 +21812,7 @@ Id,Name,Min,Max,Source
 1001077,Wood Block,4050,4800,kro
 27157,Wood Goblin Card,430000,505000,estimate
 18759,Wood Goblin's Nose,0,0,
-7850,Wooden Block,49500,58500,estimate
+7850,Wooden Block,51500,60500,estimate
 7222,Wooden Gnarl,4600,5400,ragnastats
 4259,Wooden Golem Card,9073500,10652000,ragnastats
 7189,Wooden Heart,1200,1400,ragnastats
@@ -21825,10 +21825,10 @@ Id,Name,Min,Max,Source
 9063,Woodie Egg,0,0,
 2528,Wool Scarf,78000,91500,ragnastats
 29219,Woor,0,0,
-25634,Wootan Defender's Shield Piece,87500,102500,estimate
+25634,Wootan Defender's Shield Piece,89500,105000,estimate
 4261,Wootan Fighter Card,575000,675000,kro
 4260,Wootan Shooter Card,82500,97000,kro
-25635,Wootan Warrior's Fur,56500,66000,estimate
+25635,Wootan Warrior's Fur,58500,69000,estimate
 25633,Wootan's Token,9200,10500,kro
 19407,Work Cap,0,0,
 15482,Worker Shirt,0,0,
@@ -21840,8 +21840,8 @@ Id,Name,Min,Max,Source
 4034,Wormtail Card,685000,804500,kro
 1097,Worn Out Page,1150,1400,kro
 618,Worn Out Scroll,7000,8200,ragnastats
-25282,Worn Revolver,9250,10500,estimate
-6939,Worn-Out Belt,31000,36500,estimate
+25282,Worn Revolver,9350,10500,estimate
+6939,Worn-Out Belt,32000,37500,estimate
 7153,Worn-out Kimono,6450,7550,ragnastats
 7099,Worn-out Magic Scroll,13500,16000,kro
 1099,Worn-out Prison Uniform,845,1100,kro
@@ -21857,7 +21857,7 @@ Id,Name,Min,Max,Source
 1001432,Wrath of Polluted Spirit,3400,3950,kro
 1001436,Wrath of Polluted Tera,27000,32000,kro
 1001435,Wrath of Polluted Ventus,7600,8950,kro
-7078,Wrath of Valkyrie,4800500,5635000,estimate
+7078,Wrath of Valkyrie,5107500,5996000,estimate
 510008,Wrath Rack,460000,540000,kro
 650003,Wrath Wheel,2760000,3240000,kro
 1531,Wrench,46000,54000,ragnastats
@@ -21994,12 +21994,12 @@ Id,Name,Min,Max,Source
 22141,YSF01 Greave,82800000,97200000,kro
 20856,YSF01 Manteau,44390000,52110000,kro
 15212,YSF01 Plate,44390000,52110000,kro
-7406,Yuebing,13000,15000,estimate
-7407,Yuebing,13000,15000,estimate
+7406,Yuebing,13500,16000,estimate
+7407,Yuebing,13500,16000,estimate
 7408,Yuebing,0,0,
 7409,Yuebing,0,0,
-7410,Yuebing,57500,67500,estimate
-7411,Yuebing,57500,67500,estimate
+7410,Yuebing,59500,70000,estimate
+7411,Yuebing,59500,70000,estimate
 7412,Yuebing,0,0,
 7413,Yuebing,0,0,
 7414,Yuebing,0,0,

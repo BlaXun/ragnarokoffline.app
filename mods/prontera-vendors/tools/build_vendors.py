@@ -40,12 +40,18 @@ import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MOD = os.path.dirname(HERE)
+# Which era to build for. Renewal writes db/; --era pre-re builds from
+# rAthena's pre-renewal tables into pre-re/db/, which mod.json's
+# "prerenewalFolder" lays over db/ on a pre-renewal server.
+ERA = "pre-re" if "--era" in sys.argv and sys.argv[sys.argv.index("--era") + 1] in ("pre-re", "prere", "pre-renewal") else "re"
+OTHER_ERA = "re" if ERA == "pre-re" else "pre-re"
+OUT_DB = os.path.join(MOD, "pre-re", "db") if ERA == "pre-re" else os.path.join(MOD, "db")
 REPO = os.path.dirname(os.path.dirname(MOD))
 RA = os.path.join(REPO, "vendor", "rathena")
 PRICES = os.path.join(HERE, "prices.json")
 # The price table the server reads (Id,Name,Min,Max). Rows already in it are
 # kept as they are, so hand edits survive a re-run; new items are appended.
-TABLE_CSV = os.path.join(MOD, "db", "population_vendor_prices", "prontera-vendors.csv")
+TABLE_CSV = os.path.join(OUT_DB, "population_vendor_prices", "prontera-vendors.csv")
 # Sell stalls; buy shops will live under prontera-vendors/buy/, so each
 # group can be counted and switched on its own.
 PREFIX = "prontera-vendors/sell/"
@@ -57,6 +63,7 @@ CANDIDATE_CAP = 80
 POOL_MAX = 50_000_000
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
 
 # Prontera's sidewalks: west (x=147) and east (x=164) of the main road.
 AREAS = [
@@ -71,7 +78,7 @@ AREAS = [
 def load_items():
     by_name, by_id = {}, {}
     for f in ("item_db_equip.yml", "item_db_usable.yml", "item_db_etc.yml"):
-        body = yaml.load(open(os.path.join(RA, "db", "re", f), encoding="utf-8"), Loader=Loader).get("Body") or []
+        body = yaml.load(open(os.path.join(RA, "db", ERA, f), encoding="utf-8"), Loader=Loader).get("Body") or []
         for e in body:
             by_name[e["AegisName"].lower()] = e
             by_id[e["Id"]] = e
@@ -79,7 +86,7 @@ def load_items():
 
 
 def load_mobs():
-    body = yaml.load(open(os.path.join(RA, "db", "re", "mob_db.yml"), encoding="utf-8"), Loader=Loader)["Body"]
+    body = yaml.load(open(os.path.join(RA, "db", ERA, "mob_db.yml"), encoding="utf-8"), Loader=Loader)["Body"]
     return {m["Id"]: m for m in body}
 
 
@@ -96,6 +103,8 @@ def npc_shop_prices():
             prices[iid] = min(prices.get(iid, price), price)
 
     for root, _, files in os.walk(os.path.join(RA, "npc")):
+        if os.sep + OTHER_ERA + os.sep in root + os.sep:
+            continue
         for f in files:
             if not f.endswith(".txt"):
                 continue
@@ -117,6 +126,8 @@ def npc_shop_items():
     scripts restock them with."""
     ids = set()
     for root, _, files in os.walk(os.path.join(RA, "npc")):
+        if os.sep + OTHER_ERA + os.sep in root + os.sep:
+            continue
         for f in files:
             if not f.endswith(".txt"):
                 continue
@@ -148,7 +159,9 @@ def spawns(files):
     (a bare file name means dungeons/)."""
     out = []
     for f in files:
-        path = os.path.join(RA, "npc", "re", "mobs", f if "/" in f else os.path.join("dungeons", f))
+        path = os.path.join(RA, "npc", ERA, "mobs", f if "/" in f else os.path.join("dungeons", f))
+        if not os.path.exists(path):
+            continue  # this era has no such place
         for line in open(path, encoding="utf-8", errors="replace"):
             parts = line.rstrip("\n").split("\t")
             if len(parts) >= 4 and parts[1].startswith(("monster", "boss_monster")):
@@ -864,7 +877,7 @@ def area_items(files):
 
 def spawned_mobs():
     out = set()
-    for root, _, files in os.walk(os.path.join(RA, "npc", "re", "mobs")):
+    for root, _, files in os.walk(os.path.join(RA, "npc", ERA, "mobs")):
         for f in files:
             for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
                 parts = line.rstrip("\n").split("\t")
@@ -1096,7 +1109,7 @@ def write_table():
 
 TABLE = {}
 # What the generator wrote last time, to tell hand edits from data changes.
-GENERATED_PATH = os.path.join(HERE, "table_generated.json")
+GENERATED_PATH = os.path.join(HERE, "table_generated.json" if ERA == "re" else "table_generated_pre-re.json")
 try:
     GENERATED = json.load(open(GENERATED_PATH))
 except FileNotFoundError:
@@ -1217,9 +1230,10 @@ def main():
         "###########################################################################\n\n"
         "Header:\n  Type: POPULATION_ENGINE_DB\n  Version: 2\n\nBody:\n"
     )
-    open(os.path.join(MOD, "db", "population_vendors.yml"), "w", encoding="utf-8", newline="\n").write(
+    os.makedirs(OUT_DB, exist_ok=True)
+    open(os.path.join(OUT_DB, "population_vendors.yml"), "w", encoding="utf-8", newline="\n").write(
         vend_doc + "\n\n".join(vendors) + "\n")
-    open(os.path.join(MOD, "db", "population_vendor_pop.yml"), "w", encoding="utf-8", newline="\n").write(
+    open(os.path.join(OUT_DB, "population_vendor_pop.yml"), "w", encoding="utf-8", newline="\n").write(
         pop_doc + "\n\n".join(profiles) + "\n")
 
 

@@ -144,11 +144,18 @@ spawn databases and the price caches `tools/prices_kro.json` (RagMAYA) and
 
 ```
 python3 mods/prontera-vendors/tools/build_vendors.py                   # rebuild from the cache
+python3 mods/prontera-vendors/tools/build_vendors.py --era pre-re      # the pre-renewal variant (pre-re/db/)
 python3 mods/prontera-vendors/tools/build_vendors.py --refresh-prices  # fetch prices the cache lacks
 python3 mods/prontera-vendors/tools/build_vendors.py --all-prices      # fetch every tradeable item (~1-2 h)
 python3 mods/prontera-vendors/tools/build_vendors.py --reprice         # rebuild the CSV from market data
 python3 mods/prontera-vendors/tools/scrape_ragmaya.py --workers 12     # refresh kRO prices (resumable, ~1-2 h)
 ```
+
+Pre-renewal servers get their own set, built the same way from rAthena's
+pre-renewal tables into `pre-re/db/` (`"prerenewalFolder": "pre-re"` in
+mod.json lays it over `db/`): the same themes where the items exist, without
+the renewal-only ones (costumes, shadow gear, Doram), with a price list of
+its own.
 
 Themes are defined at the top of the script: a hand list, a rule over the
 item database, or "what these dungeons' monsters drop". The YAML can be
@@ -162,9 +169,6 @@ where; its `Count` is the theme's share of the Vendors setting.
 
 ## Known gaps
 
-- Pre-renewal: the pools are built from renewal data. Items a pre-renewal
-  server lacks are skipped with a warning at startup, so stalls there are
-  thinner.
 - Names: vendors use the engine's generated names, not a list of
   player-style handles.
 - Restocking in place (the same vendor with new stock) isn't done; a new
@@ -179,8 +183,9 @@ mods/prontera-vendors/
 ├── npc/
 │   ├── prontera-vendors.txt         hands the settings to the engine
 │   └── prontera-vendors-newer.txt   the ones needing a newer app build
+├── pre-re/db/                   the pre-renewal set (same layout as db/)
 ├── db/
-│   ├── population_vendors.yml       themes: pools, spawns (generated)
+│   ├── population_vendors.yml       market + themes (generated)
 │   ├── population_vendor_prices/
 │   │   └── prontera-vendors.csv     the price list (Id,Name,Min,Max); edit freely
 │   └── population_vendor_pop.yml    one shell profile per theme (generated)
