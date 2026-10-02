@@ -197,6 +197,11 @@ struct s_population {
 	// pass then re-fills the map with a fresh pick from the pool. Set at spawn
 	// in the vending branch for vendors whose config has rotation_sec > 0.
 	t_tick vendor_rotation_at = 0;
+	// RAGNAROKMAC: the VendorKey this shell vends under (empty for non-vendors).
+	// Lets the autosummon pass count vendors per placement rather than per map,
+	// so several themed vendors can share a map without starving each other's
+	// MaxVendors budget.
+	std::string vendor_key;
 
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.

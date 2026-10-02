@@ -781,21 +781,21 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 				if (y1 >= 0 && y2 >= 0 && y1 > y2) std::swap(y1, y2);
 				p.area_x1 = x1; p.area_y1 = y1; p.area_x2 = x2; p.area_y2 = y2;
 			}
-			if (placements_by_map_.find(map_name) != placements_by_map_.end()) {
-				const PopulationVendorPlacement &existing = placements_by_map_[map_name];
-				const bool identical =
-					existing.min_spacing == p.min_spacing &&
-					existing.max_vendors == p.max_vendors &&
-					existing.area_x1 == p.area_x1 && existing.area_y1 == p.area_y1 &&
-					existing.area_x2 == p.area_x2 && existing.area_y2 == p.area_y2;
-				if (!identical) {
-					ShowWarning("VendorKey '%s': VendorPlacement Map '%s' already defined by another "
-					            "vendor entry with different settings; overwriting (placements are "
-					            "unioned per map).\n",
-					            key.c_str(), map_name.c_str());
+			// RAGNAROKMAC: several themed vendors can share a map, each at its own
+			// spot, so keep every placement rather than overwriting. A repeat of
+			// the SAME VendorKey on the SAME map (a reload, or a duplicate block)
+			// replaces its prior entry so the list does not grow without bound.
+			auto &vec = placements_by_map_[map_name];
+			bool replaced = false;
+			for (auto &existing : vec) {
+				if (existing.vendor_key == p.vendor_key) {
+					existing = std::move(p);
+					replaced = true;
+					break;
 				}
 			}
-			placements_by_map_[map_name] = std::move(p);
+			if (!replaced)
+				vec.push_back(std::move(p));
 		};
 		if (vp_node.is_seq()) {
 			for (const ryml::NodeRef& en : vp_node.children())
