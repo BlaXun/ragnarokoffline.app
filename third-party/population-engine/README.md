@@ -256,6 +256,9 @@ engine's vendors spawn exactly as upstream's do.
   sold-out stall. Its callouts come from `buyer_call` in population_chat.yml.
   Patch 0019 keeps shells' buying stores out of the database, as 0001 does
   for vending.
+- Patch 0020: a pet egg bought from a shell's stall is created for the buyer
+  there and then (`pet_create_egg`), since a stall's eggs are placeholders
+  with no pet row and would not hatch; unsold eggs leave nothing behind.
 - `@vendorinfo` (patch 0018) lists the mod stalls on the GM's map, or shows a
   theme's stock and prices or a market's themes.
 - A mod's price table, `db/population_vendor_prices/<prefix>.csv` with rows

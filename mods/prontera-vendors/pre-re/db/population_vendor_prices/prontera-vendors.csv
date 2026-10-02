@@ -158,7 +158,7 @@ Id,Name,Min,Max,Source
 919,Animal Skin,30,42,kro
 5486,Anniversary Hat,0,0,
 5089,Annoyed Mask,1123500,1319000,ragnastats
-605,Anodyne,4800,5650,ragnastats
+605,Anodyne,4900,5750,ragnastats
 4234,Anolian Card,391000,459000,kro
 7003,Anolian Skin,3400,3950,kro
 4344,Anopheles Card,55000,64500,kro
@@ -175,7 +175,7 @@ Id,Name,Min,Max,Source
 7811,Anvil,44500,52000,sibling
 4242,Apocalipse Card,578500,679000,ragnastats
 512,Apple,12,18,ragnastats
-13260,Apple Bomb,8700,10000,ragnastats
+13260,Apple Bomb,8850,10000,ragnastats
 6279,Apple Bomb Guidebook,0,0,
 531,Apple Juice,1350,1600,kro
 2285,Apple of Archer,184000,216000,kro
@@ -220,7 +220,7 @@ Id,Name,Min,Max,Source
 1766,Arrow of Counter Evil,34,47,npc
 12575,Arrow Of Elf Cntr,50500,59000,ragnastats
 1767,Arrow of Shadow,25,35,ragnastats
-1755,Arrow of Wind,12,18,ragnastats
+1755,Arrow of Wind,13,19,ragnastats
 12321,Arunafeltz Desert Sandwich,0,0,
 11516,Asai Fruit,12,18,ragnastats
 12084,Ascending Dragon Soup,0,0,
@@ -273,8 +273,8 @@ Id,Name,Min,Max,Source
 4233,Baby Leopard Card,115000,135000,kro
 5110,Baby Pacifier,13500,16000,ragnastats
 7119,Bacillus,3250,3800,ragnastats
-10013,Backpack,1350,1600,npc
-9039,Bacsojin Egg,17,24,npc
+10013,Backpack,1618000,1899500,ragnastats
+9039,Bacsojin Egg,0,0,
 672,Bag of Bronze Coins,0,0,
 670,Bag of Gold Coins,0,0,
 577,Bag of Grain,170,230,kro
@@ -304,7 +304,7 @@ Id,Name,Min,Max,Source
 5280,Baphomet Horns,828000,972000,kro
 5683,Baphomet Horns,828000,972000,sibling
 13503,Baphomet Horns Box,0,0,
-10017,Bark Shorts,7350,8650,ragnastats
+10017,Bark Shorts,33500,39000,ragnastats
 4391,Baroness of Retribution Card,92000,108000,kro
 1068,Barren Trunk,10500,12500,ragnastats
 14287,Barricade Repair Kit,0,0,
@@ -320,7 +320,7 @@ Id,Name,Min,Max,Source
 6386,Bath Water Sample,0,0,
 4119,Bathory Card,1288000,1512000,kro
 7323,Battered Kettle,5150,6050,ragnastats
-10010,Battered Pot,4600,5450,ragnastats
+10010,Battered Pot,21000,24500,ragnastats
 1351,Battle Axe,4950,5800,kro
 1352,Battle Axe,18000,21500,kro
 1353,Battle Axe,27500,32000,kro
@@ -379,7 +379,7 @@ Id,Name,Min,Max,Source
 2702,Bison Horn,904000,1061500,ragnastats
 621,Bitter Herb,73500,86000,kro
 7161,Black Bear Skin,7800,9150,kro
-10037,Black Butterfly Mask,17,24,npc
+10037,Black Butterfly Mask,0,0,
 2747,Black Cat,113500,133000,ragnastats
 7206,Black Cat Doll,20000,23500,kro
 5057,Black Cat Ears,13000,15500,npc
@@ -391,7 +391,7 @@ Id,Name,Min,Max,Source
 737,Black Ladle,340,460,ragnastats
 2425,Black Leather Boots,18000,21500,kro
 2434,Black Leather Boots,46000,54000,kro
-13265,Black Lump,4850,5650,ragnastats
+13265,Black Lump,4900,5800,ragnastats
 12435,Black Mass,1,2,npc
 18613,Black Musang Hat,0,0,
 6245,Black Powder,1650,1950,ragnastats
@@ -412,7 +412,7 @@ Id,Name,Min,Max,Source
 13697,Blessing Scroll 10 Box,0,0,
 13584,Blessing Scroll 30 Box,0,0,
 13585,Blessing Scroll 50 Box,0,0,
-13206,Blind Sphere,44,60,ragnastats
+13206,Blind Sphere,45,61,ragnastats
 12145,Blind Sphere Pack,1,3,npc
 2295,Blinker,18000,21500,kro
 6061,Blood Beginner,0,0,
@@ -522,10 +522,10 @@ Id,Name,Min,Max,Source
 2727,Bowman Scarf,285500,335500,estimate
 7948,Box,0,0,
 12031,Box of Drowsiness,37500,44000,ragnastats
-12029,Box of Gloom,35500,41500,ragnastats
+12029,Box of Gloom,36000,42500,ragnastats
 12034,Box of Panting,7650,8950,ragnastats
 12030,Box of Resentment,42000,49500,ragnastats
-12032,Box of Storms,4750,5550,ragnastats
+12032,Box of Storms,4800,5650,ragnastats
 12033,Box of Sunlight,920,1050,npc
 12028,Box of Thunder,920,1050,ragnastats
 5016,Boy's Cap,69000,81000,sibling
@@ -616,7 +616,7 @@ Id,Name,Min,Max,Source
 1359,Buster,0,0,
 13158,Butcher,240500,282500,ragnastats
 13159,Butcher,107500,126000,npc
-602,Butterfly Wing,115,160,ragnastats
+602,Butterfly Wing,120,165,ragnastats
 5846,Buzzy Ball Gum,0,0,
 1140,Byeollungum,1133000,1330000,ragnastats
 4426,Byorgue Card,809500,950000,kro
@@ -646,7 +646,7 @@ Id,Name,Min,Max,Source
 13857,Candy 5 Box,0,0,
 530,Candy Cane,13500,16000,kro
 5445,Candy Cane In Mouth,0,0,
-18000,Cannon Ball,30,42,ragnastats
+18000,Cannon Ball,31,43,ragnastats
 2226,Cap,11000,12500,kro
 2227,Cap,460000,540000,kro
 6083,Capsule Dolls,0,0,
@@ -741,15 +741,15 @@ Id,Name,Min,Max,Source
 12322,Chocolate Pie,0,0,
 12235,Chocolate Strawberry,27500,32500,ragnastats
 7716,Chocolate Strawberry Recipe,0,0,
-12236,Chocolate Tart,7500,8800,ragnastats
+12236,Chocolate Tart,7650,8950,ragnastats
 7717,Chocolate Tart Recipe,0,0,
 4009,Chonchon Card,64000,75500,kro
 742,Chonchon Doll,2750,3200,kro
-9006,Chonchon Egg,17,24,npc
+9006,Chonchon Egg,274500,322500,ragnastats
 6166,Chonchon Exchange Ticket,0,0,
 4235,Christmas Cookie Card,1840000,2160000,kro
 6182,Christmas Goblin Exchange Ticket,0,0,
-9029,Christmas Goblin's Egg,17,24,npc
+9029,Christmas Goblin's Egg,614000,721000,ragnastats
 2784,Christmas Musicbox,644000000,756000000,kro
 915,Chrysalis,1050,1250,kro
 735,Chung Jah,4600,5400,ragnastats
@@ -762,7 +762,7 @@ Id,Name,Min,Max,Source
 10021,Circular Headgear,0,0,
 7295,Citrin,16000,19000,ragnastats
 12101,Citron,0,0,
-9040,Civil Servant Egg,17,24,npc
+9040,Civil Servant Egg,0,0,
 966,Clam Flesh,4600,5400,kro
 965,Clam Shell,47,65,ragnastats
 12053,Clam Soup,27500,32000,kro
@@ -805,7 +805,7 @@ Id,Name,Min,Max,Source
 12430,Cocktail Warg Blood,174000,204500,kro
 4041,Coco Card,92000,108000,kro
 11515,Coconut,1350,1600,ragnastats
-13261,Coconut Bomb,24000,28000,ragnastats
+13261,Coconut Bomb,24500,29000,ragnastats
 6263,Coconut Fruit,2550,3000,ragnastats
 6281,Coconut Fruit Bomb Guidebook,0,0,
 11531,Coffee,0,0,
@@ -968,7 +968,7 @@ Id,Name,Min,Max,Source
 5808,Dark Bacilium,92000,108000,kro
 5104,Dark Blinder,36500,43000,kro
 5329,Dark Blindfold C,598000,702000,kro
-18002,Dark Cannon Ball,68,94,ragnastats
+18002,Dark Cannon Ball,70,96,ragnastats
 7315,Dark Crystal Fragment,11500,14000,kro
 4170,Dark Frame Card,102000,120000,ragnastats
 4169,Dark Illusion Card,3680000,4320000,kro
@@ -984,7 +984,7 @@ Id,Name,Min,Max,Source
 2005,Dea Staff,460000,540000,kro
 604,Dead Branch,13500,16000,kro
 14233,Dead Branch 10 Box,0,0,
-12999,Dead Branch Box,62000,73000,estimate
+12999,Dead Branch Box,19000,22500,estimate
 1047,Dead Medusa,54500,64000,ragnastats
 1643,Dead Tree Cane,8250,9700,kro
 631,Deadly Noxious Herb,299000,351000,kro
@@ -1302,9 +1302,9 @@ Id,Name,Min,Max,Source
 13501,Experience Scroll Box,0,0,
 2703,Expert Ring,9200000,10800000,kro
 4267,Explosion Card,1104000,1296000,kro
-13294,Explosive Kunai,345,470,ragnastats
+13294,Explosive Kunai,350,480,ragnastats
 6213,Explosive Powder,4350,5100,ragnastats
-13267,Extremely Hard Black Lump,4850,5650,ragnastats
+13267,Extremely Hard Black Lump,4900,5800,ragnastats
 2614,Eye of Dullahan,297500,349000,ragnastats
 7337,Eye of Hellion,1,2,npc
 2212,Eye Patch,765,1000,npc
@@ -1388,7 +1388,7 @@ Id,Name,Min,Max,Source
 12129,Fantastic Cooking Kit,101000,118500,ragnastats
 5202,Fantastic Pumpkin-Head,0,0,
 5276,Fantastic Wig,46000,54000,ragnastats
-10024,Fashion Glasses,17,24,npc
+10024,Fashion Glasses,2205000,2588500,ragnastats
 2641,Fashion Hip Sack,0,0,
 5047,Fashionable Glasses,32000,37500,ragnastats
 632,Fatty Chubby Earthworm,26500,31000,kro
@@ -1450,7 +1450,7 @@ Id,Name,Min,Max,Source
 1510,Flail,13000,15500,npc
 1511,Flail,13000,15500,npc
 1512,Flail,0,0,
-9033,Flail Goblin Egg,17,24,npc
+9033,Flail Goblin Egg,1342000,1575500,ragnastats
 1129,Flamberge,49500,58000,npc
 1149,Flamberge,49500,58000,npc
 6114,Flame Gemstone,920,1050,ragnastats
@@ -1668,7 +1668,7 @@ Id,Name,Min,Max,Source
 4157,Goblin Archer Card,447500,525500,ragnastats
 4060,Goblin Card,736000,864000,kro
 4155,Goblin Leader Card,2295000,2694500,kro
-9046,Goblin Leader Egg,17,24,npc
+9046,Goblin Leader Egg,0,0,
 5090,Goblin Leader Mask,224500,264000,ragnastats
 2297,Goblin Mask,69000,81000,kro
 4156,Goblin Steamrider Card,480500,564500,ragnastats
@@ -1759,7 +1759,7 @@ Id,Name,Min,Max,Source
 511,Green Herb,4100,4850,kro
 7814,Green Jenoss's Family Ring,0,0,
 10023,Green Jewel Bag,0,0,
-10015,Green Lace,3400,4000,ragnastats
+10015,Green Lace,15500,18000,ragnastats
 993,Green Live,1700,2050,kro
 4373,Green Maiden Card,966000,1134000,kro
 9030,Green Maiden Egg,2760000,3240000,kro
@@ -1839,7 +1839,7 @@ Id,Name,Min,Max,Source
 560,Handmade White Chocolate,745,1000,ragnastats
 7519,Handsel,0,0,
 5273,Happy Wig,0,0,
-13266,Hard Black Lump,4850,5650,ragnastats
+13266,Hard Black Lump,4900,5800,ragnastats
 6306,Hard Bloodstain,0,0,
 7163,Hard Feeler,9200,10500,kro
 6022,Hard Skin,750,1000,npc
@@ -1933,8 +1933,8 @@ Id,Name,Min,Max,Source
 1145,Holy Avenger,372500,437000,npc
 18001,Holy Cannon Ball,170,230,npc
 1244,Holy Dagger,0,0,
-12019,Holy Egg,12000,14000,ragnastats
-12703,Holy Egg,12000,14000,sibling
+12019,Holy Egg,12000,14500,ragnastats
+12703,Holy Egg,12000,14500,sibling
 12280,Holy Elemental Scroll,0,0,
 2110,Holy Guard,78000,91500,kro
 2327,Holy Robe,920000,1080000,kro
@@ -2198,7 +2198,7 @@ Id,Name,Min,Max,Source
 1201,Knife,42,58,kro
 1202,Knife,92000,108000,kro
 1203,Knife,92000,108000,kro
-9032,Knife Goblin Egg,17,24,npc
+9032,Knife Goblin Egg,3221000,3781500,ragnastats
 6209,Knight's Honor,0,0,
 4434,Knocker Card,358500,421000,kro
 1803,Knuckle Dusters,20500,24000,npc
@@ -2278,30 +2278,30 @@ Id,Name,Min,Max,Source
 7592,Lettered Moon Snack 04,0,0,
 7593,Lettered Moon Snack 05,0,0,
 7472,Level 1 Cookbook,209000,245000,ragnastats
-696,Level 1 Fire Ball,980,1150,ragnastats
+696,Level 1 Fire Ball,1000,1150,ragnastats
 698,Level 1 Fire Wall,1000,1200,ragnastats
-700,Level 1 Frost Diver,445,605,ragnastats
+700,Level 1 Frost Diver,455,615,ragnastats
 12003,Level 1 Teleport,0,0,
 7481,Level 10 Cookbook,5520000,6480000,kro
 7473,Level 2 Cookbook,920,1050,npc
 688,Level 3 Cold Bolt,1000,1150,ragnastats
 7474,Level 3 Cookbook,61000,71500,ragnastats
-686,Level 3 Earth Spike,1900,2250,ragnastats
-690,Level 3 Fire Bolt,400,545,ragnastats
-12001,Level 3 Heal,1600,1900,ragnastats
-692,Level 3 Lightening Bolt,545,740,ragnastats
-694,Level 3 Soul Strike,1200,1450,ragnastats
+686,Level 3 Earth Spike,1950,2300,ragnastats
+690,Level 3 Fire Bolt,410,555,ragnastats
+12001,Level 3 Heal,1650,1950,ragnastats
+692,Level 3 Lightening Bolt,555,755,ragnastats
+694,Level 3 Soul Strike,1250,1450,ragnastats
 7475,Level 4 Cookbook,920,1050,npc
-689,Level 5 Cold Bolt,1350,1600,ragnastats
+689,Level 5 Cold Bolt,1400,1600,ragnastats
 7476,Level 5 Cookbook,116000,136500,ragnastats
-687,Level 5 Earth Spike,2300,2700,ragnastats
+687,Level 5 Earth Spike,2350,2750,ragnastats
 697,Level 5 Fire Ball,1050,1250,ragnastats
-691,Level 5 Fire Bolt,965,1100,ragnastats
-699,Level 5 Fire Wall,2300,2700,ragnastats
-12000,Level 5 Frost Diver,2300,2750,ragnastats
-12002,Level 5 Heal,540,735,ragnastats
-693,Level 5 Lightening Bolt,1900,2250,ragnastats
-695,Level 5 Soul Strike,535,725,ragnastats
+691,Level 5 Fire Bolt,985,1150,ragnastats
+699,Level 5 Fire Wall,2350,2750,ragnastats
+12000,Level 5 Frost Diver,2350,2800,ragnastats
+12002,Level 5 Heal,550,745,ragnastats
+693,Level 5 Lightening Bolt,1950,2300,ragnastats
+695,Level 5 Soul Strike,545,740,ragnastats
 7477,Level 6 Cookbook,73500,86000,kro
 7478,Level 7 Cookbook,24000,28500,ragnastats
 7479,Level 8 Cookbook,920,1050,npc
@@ -2336,7 +2336,7 @@ Id,Name,Min,Max,Source
 13534,Light White Potion Box,0,0,
 11500,Light Yellow Potion,0,0,
 13533,Light Yellow Potion Box,0,0,
-13204,Lightning Sphere,46,64,ragnastats
+13204,Lightning Sphere,47,65,ragnastats
 12144,Lightning Sphere Pack,1,3,npc
 6363,Lime Green Point,0,0,
 2749,Linen Glove,322000,378000,kro
@@ -2522,7 +2522,7 @@ Id,Name,Min,Max,Source
 5122,Magni's Cap,73500,86000,kro
 14516,Magnificat Scroll,0,0,
 13542,Magnificat Scroll Box,0,0,
-611,Magnifier,28,40,ragnastats
+611,Magnifier,29,41,ragnastats
 4076,Magnolia Card,89500,105000,ragnastats
 5365,Magnolia Hat,46000,54000,kro
 1225,Mailbreaker,377000,442500,ragnastats
@@ -2691,7 +2691,7 @@ Id,Name,Min,Max,Source
 2239,Monocle,8250,9700,npc
 12713,Monster Extract,0,0,
 626,Monster Juice,138000,162000,kro
-10002,Monster Oxygen Mask,17,24,npc
+10002,Monster Oxygen Mask,216000,253500,ragnastats
 7514,Monster Ticket,0,0,
 7617,Monster Voucher,0,0,
 528,Monster's Feed,51,70,ragnastats
@@ -2817,7 +2817,7 @@ Id,Name,Min,Max,Source
 2137,Neo Valkyrja's Shield,0,0,
 1740,Nepenthes Bow,551500,647500,ragnastats
 4167,Nereid Card,205500,241500,ragnastats
-9038,New Year Doll Egg,17,24,npc
+9038,New Year Doll Egg,0,0,
 12238,New Year Rice Cake,9600,11000,estimate
 12239,New Year Rice Cake,9600,11000,estimate
 7039,Newbie Tag,0,0,
@@ -2828,7 +2828,7 @@ Id,Name,Min,Max,Source
 4166,Nightmare Terror Card,183500,215500,kro
 9054,Nightmare Terror Egg,414000,486000,kro
 2658,Nile Rose,460000,540000,kro
-13251,Nimbus Shuriken,5,9,ragnastats
+13251,Nimbus Shuriken,6,10,ragnastats
 4159,Nine Tail Card,920000,1080000,kro
 14241,Nine Tail Dish 20 Box,0,0,
 13574,Nine Tail Dish 30 Box,0,0,
@@ -3103,7 +3103,7 @@ Id,Name,Min,Max,Source
 7931,Poison Kit,49500,58000,ragnastats
 1239,Poison Knife,184000,216000,kro
 13016,Poison Knife,184000,216000,kro
-13205,Poison Sphere,61,83,ragnastats
+13205,Poison Sphere,62,86,ragnastats
 12146,Poison Sphere Pack,1,3,npc
 7033,Poison Spore,920,1050,kro
 4048,Poison Spore Card,91500,107500,kro
@@ -3130,7 +3130,7 @@ Id,Name,Min,Max,Source
 5590,Poring Cake Hat,0,0,
 4001,Poring Card,82500,97000,kro
 741,Poring Doll,1650,1900,kro
-9001,Poring Egg,17,24,npc
+9001,Poring Egg,175000,205500,ragnastats
 6157,Poring Exchange Ticket,0,0,
 5035,Poring Hat,230000,270000,kro
 12021,Pork,0,0,
@@ -3237,7 +3237,7 @@ Id,Name,Min,Max,Source
 13854,Red Butterfly Wing Box,0,0,
 12143,Red Can,0,0,
 7286,Red Chile,17,24,npc
-9035,Red Deleter Egg,17,24,npc
+9035,Red Deleter Egg,2684000,3151000,ragnastats
 668,Red Envelope,1,2,npc
 12134,Red Envelope,1,2,npc
 7440,Red Feather,292500,343500,ragnastats
@@ -3432,7 +3432,7 @@ Id,Name,Min,Max,Source
 752,Rocker Doll,45000,52500,kro
 9011,Rocker Egg,230000,270000,kro
 6176,Rocker Exchange Ticket,0,0,
-10014,Rocker Glasses,1800,2150,ragnastats
+10014,Rocker Glasses,37500,44000,ragnastats
 1601,Rod,42,58,kro
 1602,Rod,18000,21500,kro
 1603,Rod,460000,540000,kro
@@ -3599,7 +3599,7 @@ Id,Name,Min,Max,Source
 2426,Shadow Walk,92000,108000,kro
 5665,Shaman Hat,0,0,
 2803,Shape Shifter,82500,97000,npc
-1764,Sharp Arrow,21,29,ragnastats
+1764,Sharp Arrow,22,30,ragnastats
 7100,Sharp Leaf,2150,2550,ragnastats
 13253,Sharp Leaf Shuriken,34,47,ragnastats
 7112,Sharp Paper,1600,1850,ragnastats
@@ -3618,7 +3618,7 @@ Id,Name,Min,Max,Source
 7109,Shining Spear Blade,2208000,2592000,kro
 640,Shining Stone,161000,189000,kro
 4230,Shinobi Card,402000,472000,ragnastats
-9044,Shinobi Egg,17,24,npc
+9044,Shinobi Egg,1018500,1196000,ragnastats
 2654,Shinobi Sash,15000,18000,ragnastats
 12071,Shiny Marinade Beef,8050,9450,ragnastats
 5274,Shiny Wig,0,0,
@@ -3744,7 +3744,7 @@ Id,Name,Min,Max,Source
 7063,Soft Feather,1250,1500,kro
 7166,Soft Silk,9200,10500,kro
 4100,Sohee Card,1012000,1188000,kro
-9020,Sohee Egg,17,24,npc
+9020,Sohee Egg,8382000,9840000,ragnastats
 6175,Sohee Exchange Ticket,0,0,
 1136,Solar Sword,88500,104000,kro
 13403,Solar Sword,88500,104000,kro
@@ -3765,7 +3765,7 @@ Id,Name,Min,Max,Source
 7594,Sonia's Letter,0,0,
 5342,Sorin Doll Hat,0,0,
 7701,Soul,6500,7650,estimate
-18003,Soul Cannon Ball,220,300,ragnastats
+18003,Soul Cannon Ball,225,305,ragnastats
 7849,Soul Crystal,9500,11000,estimate
 12092,Soul Haunted Bread,18000,21500,kro
 12753,Soul Scroll,0,0,
@@ -3860,7 +3860,7 @@ Id,Name,Min,Max,Source
 5029,Spore Hat,0,0,
 10035,Spring,0,0,
 4227,Spring Rabbit Card,435500,511500,ragnastats
-9031,Spring Rabbit Egg,17,24,npc
+9031,Spring Rabbit Egg,0,0,
 7775,Spring Rabbit Ticket,0,0,
 2387,Sprint Mail,92000,108000,kro
 2744,Sprint Ring,1380000,1620000,kro
@@ -3909,13 +3909,13 @@ Id,Name,Min,Max,Source
 13605,Steamed Tongue 50 Box,0,0,
 13836,Steamed Tongue Box,0,0,
 999,Steel,5200,6150,kro
-1753,Steel Arrow,14,20,ragnastats
+1753,Steel Arrow,15,21,ragnastats
 12006,Steel Arrow Quiver,1,3,npc
 4042,Steel Chonchon Card,96500,113000,kro
 9007,Steel Chonchon Egg,82500,97000,kro
 6167,Steel Chonchon Exchange Ticket,0,0,
 2294,Stellar,27000,32000,ragnastats
-10011,Stellar Hairpin,17,24,npc
+10011,Stellar Hairpin,551000,647000,ragnastats
 905,Stem,380,515,kro
 1979,Stem of Nepenthes,61000,71500,ragnastats
 4224,Stem Worm Card,690000,810000,kro
@@ -3935,7 +3935,7 @@ Id,Name,Min,Max,Source
 7909,Stolen Cookie,0,0,
 7529,Stolen Sandal,0,0,
 7049,Stone,5450,6400,ragnastats
-1756,Stone Arrow,13,19,ragnastats
+1756,Stone Arrow,14,20,ragnastats
 12011,Stone Arrow Quiver,18000,21000,ragnastats
 2114,Stone Buckler,27500,32000,kro
 7067,Stone Fragment,5350,6300,ragnastats
@@ -4142,7 +4142,7 @@ Id,Name,Min,Max,Source
 13288,Throwing Drosera Herb Salad,0,0,
 13274,Throwing Falmons F,0,0,
 13270,Throwing Full Swing K,0,0,
-13277,Throwing Increase HP Potion (Large),7250,8500,ragnastats
+13277,Throwing Increase HP Potion (Large),7400,8700,ragnastats
 13276,Throwing Increase HP Potion (Medium),0,0,
 13275,Throwing Increase HP Potion (Small),0,0,
 13280,Throwing Increase SP Potion (Large),85,115,npc
@@ -4169,7 +4169,7 @@ Id,Name,Min,Max,Source
 1030,Tiger's Footskin,193000,226500,kro
 2330,Tights,65000,76500,kro
 2331,Tights,69000,81000,kro
-10012,Tiny Egg Shell,5450,6400,ragnastats
+10012,Tiny Egg Shell,24500,29000,ragnastats
 1139,Tirfing,184000,216000,ragnastats
 1416,Tjungkuletti,0,0,
 11043,TK Book Basic,0,0,
@@ -4207,7 +4207,7 @@ Id,Name,Min,Max,Source
 6094,Traditional Sweets,17,24,npc
 7274,Translated Ancient Language,1,2,npc
 7165,Transparent Celestial Robe,1300,1500,ragnastats
-10003,Transparent Head Protector,17,24,npc
+10003,Transparent Head Protector,220500,258500,ragnastats
 7352,Transparent Plate,27000,32000,ragnastats
 7353,Transparent Plate,27000,32000,ragnastats
 7354,Transparent Plate,27000,32000,ragnastats
@@ -4433,7 +4433,7 @@ Id,Name,Min,Max,Source
 10005,Wig,64000,75500,kro
 7851,Wii Raffle Ticket,0,0,
 1268,Wild Beast Claw,92000,108000,ragnastats
-10009,Wild Flower,7800,9150,ragnastats
+10009,Wild Flower,35500,41500,ragnastats
 4257,Wild Rose Card,1748000,2052000,kro
 7566,Will of Red Darkness,3500,4150,kro
 7340,Will of the Darkness,3550,4200,kro
