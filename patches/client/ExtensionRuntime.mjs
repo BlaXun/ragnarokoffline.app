@@ -312,6 +312,30 @@ export function createRuntime({ storage, report = (...args) => console.error(...
                 },
                 forget: () => Promise.resolve(bridge.account?.forget() ?? false),
             }),
+            // How an account on the client's GM list (adminList) is drawn:
+            // the GM sprite in place of its class, the GM name style and
+            // GM-styled chat. Each can be turned off (the fork's
+            // Session.AdminLook) -- a GM who wants to look like their class.
+            // Applies to characters drawn from then on, so call it from init.
+            // Put back when the plugin goes.
+            players: Object.freeze({
+                gmLookSupported: () => typeof bridge.gmLook === 'function',
+                gmLook(parts = {}) {
+                    if (disposed) throw new Error(`Plugin ${name} is disposed`);
+                    if (!parts || typeof parts !== 'object') throw new TypeError('gmLook takes { sprite?, name?, chat? }');
+                    const wanted = {};
+                    for (const key of ['sprite', 'name', 'chat']) {
+                        if (!(key in parts)) continue;
+                        if (typeof parts[key] !== 'boolean') throw new TypeError(`gmLook: ${key} must be true or false`);
+                        wanted[key] = parts[key];
+                    }
+                    if (typeof bridge.gmLook !== 'function') return null;
+                    const before = bridge.gmLook();
+                    const now = bridge.gmLook(wanted);
+                    cleanup(() => bridge.gmLook(before));
+                    return freeze(copy(now));
+                },
+            }),
             server: Object.freeze({
                 // Ask the mod's server script for something: it answers an
                 // @command (bindatcmd) with @@reply lines (dispbottom).
