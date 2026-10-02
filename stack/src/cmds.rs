@@ -1523,7 +1523,7 @@ pub fn secure_services(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32
         let backups = cfg.state.join("backups"); crate::private_fs::directory(&backups)?;
         stop_game_services(cfg, dk)?;
         let destination = backups.join(format!("before-service-credentials-{}-{}.sql", crate::service_credentials::era(cfg), crate::private_fs::random_hex(8)?));
-        if let Err(error) = backup(cfg, dk, &destination.to_string_lossy()) {
+        if let Err(error) = backup_snapshot(cfg, dk, &destination.to_string_lossy(), true) {
             return Err(format!("Service credentials were not changed: {error}. Start the server to reconnect."));
         }
         crate::private_fs::protect(&destination, false)?;
@@ -2211,11 +2211,6 @@ pub(crate) fn leading_words(script: &str) -> Vec<String> {
     out
 }
 
-pub fn backup(cfg: &Config, dk: &Docker, dest: &str) -> Result<(), String> {
-    crate::accounts::verify_era(cfg, dk, crate::service_credentials::era(cfg))?;
-    crate::accounts::with_servers_stopped(cfg, dk, "backup", || backup_snapshot(cfg, dk, dest, true))
-}
-
 /// `announce` is off for the safety copies taken on someone else's behalf, so
 /// their line cannot land in the middle of output a caller is parsing.
 /// Whether a backup taken before the first password hashing is already kept:
@@ -2260,6 +2255,8 @@ pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: b
         let _ = fs::remove_file(&staged);
         return Err("the dump came out empty".into());
     }
+    // Which app made it, for a later restore to know what to migrate.
+    crate::dump_migrations::stamp_file(&staged, &crate::dump_migrations::stamp_line(cfg))?;
     crate::private_fs::protect(&staged, false)?;
     if fs::canonicalize(&staged).ok() == fs::canonicalize(dest).ok() {
         return Err("Choose a backup destination outside the internal staging file".into());
@@ -2355,49 +2352,138 @@ fn check_tables(dk: &Docker) -> Result<Vec<String>, String> {
     Ok(text.lines().map(|l| l.trim().replace('\t', " ")).filter(|l| !l.is_empty()).collect())
 }
 
-pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
-    if !Path::new(src).is_file() {
-        return Err(format!("no such backup: {src}"));
+/// What `check_dump` found out about a file before anything was stopped.
+#[derive(Debug)]
+pub(crate) struct DumpInfo {
+    pub size: u64,
+    /// The tables the dump creates, in order.
+    pub tables: Vec<String>,
+    /// Something worth saying that is not a reason to refuse.
+    pub note: Option<String>,
+}
+
+/// Look at a backup before the game is stopped for it: a file that is not a
+/// database dump is refused with what it looks like instead, rather than fed
+/// to the database to fail halfway.
+pub(crate) fn check_dump(src: &Path) -> Result<DumpInfo, String> {
+    let bytes = fs::read(src).map_err(|e| format!("Could not read {}: {e}", src.display()))?;
+    let size = bytes.len() as u64;
+    if size == 0 {
+        return Err(format!("{} is empty.", src.display()));
     }
-    crate::accounts::verify_era(cfg, dk, crate::service_credentials::era(cfg))?;
-    stop_game_services(cfg, dk)?;
-    let backups = cfg.state.join("backups");
-    crate::private_fs::directory(&backups)?;
-    let safety = backups.join(format!("before-restore-{}-{}.sql", crate::service_credentials::era(cfg), crate::private_fs::random_hex(8)?));
-    backup_snapshot(cfg, dk, &safety.to_string_lossy(), true)?;
-    load_dump(cfg, dk, Path::new(src))
-        .map_err(|_| "Restore failed and may have partially changed the database. Keep game services stopped and restore a verified backup.".to_string())?;
-    if let Some(credentials) = crate::service_credentials::load(&cfg.state, crate::service_credentials::era(cfg))? {
-        // An older dump may carry the old interserver login. Restore the
-        // managed service row before any subsequent player reconnect.
-        migrate_service_credentials(dk, &credentials)?;
+    if bytes.starts_with(&[0x1f, 0x8b]) {
+        return Err("That is a \"Back up everything\" archive, not a database backup. Use Restore everything for it.".into());
     }
-    println!("restored from {src}; game services are stopped. Restart the server to reconnect. A pre-restore backup was preserved.");
-    Ok(())
+    if bytes.starts_with(b"PK\x03\x04") || bytes.starts_with(b"Rar!") {
+        return Err("That file is a .zip or .rar archive. Unpack it and choose the .sql file inside.".into());
+    }
+    let text = String::from_utf8_lossy(&bytes);
+    let tables: Vec<String> = text
+        .lines()
+        .filter_map(|l| l.strip_prefix("CREATE TABLE `"))
+        .filter_map(|rest| rest.split('`').next())
+        .map(str::to_string)
+        .collect();
+    if tables.is_empty() {
+        return Err(format!(
+            "{} is not a database backup: it creates no tables. Choose a .sql file made by Back up.",
+            src.display()
+        ));
+    }
+    if !tables.iter().any(|t| t == "char") || !tables.iter().any(|t| t == "login") {
+        return Err(format!(
+            "{} is a database dump, but not of a game database: it has no `char` or `login` table.",
+            src.display()
+        ));
+    }
+    let note = (!text.lines().any(|l| l.trim_end().ends_with("Dump completed on") || l.starts_with("-- Dump completed")))
+        .then(|| "the backup has no \"Dump completed\" line at its end, so it may have been cut short".to_string());
+    Ok(DumpInfo { size, tables, note })
+}
+
+/// A step-by-step account of a long operation: each line is printed as it
+/// happens -- the app shows the supervisor's output alongside any error -- and
+/// kept twice under `state/logs`: in `<what>-<time>.log`, this run alone, which
+/// an error message points to; and appended to `backup-restore.log`, one file
+/// with every backup and restore in it, timestamped, which Settings -> Tools ->
+/// Log viewer shows as "Backup & restore".
+pub(crate) struct StepLog {
+    pub path: Option<PathBuf>,
+    what: String,
+    file: Option<fs::File>,
+    shared: Option<fs::File>,
+    started: std::time::Instant,
+}
+
+/// The one file the Log viewer follows; see `StepLog`.
+pub(crate) const STEP_LOG_SHARED: &str = "backup-restore.log";
+
+impl StepLog {
+    pub fn open(cfg: &Config, what: &str) -> StepLog {
+        let secs = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let dir = cfg.state.join("logs");
+        let path = dir.join(format!("{what}-{secs}.log"));
+        let made = fs::create_dir_all(&dir).is_ok();
+        let file = made.then(|| fs::File::create(&path).ok()).flatten();
+        let shared = made
+            .then(|| fs::OpenOptions::new().create(true).append(true).open(dir.join(STEP_LOG_SHARED)).ok())
+            .flatten();
+        StepLog { path: file.as_ref().map(|_| path), what: what.to_string(), file, shared, started: std::time::Instant::now() }
+    }
+
+    pub fn say(&mut self, line: &str) {
+        println!("{line}");
+        self.record(line);
+    }
+
+    /// Into the files only: for the failure, which the caller reports itself.
+    pub fn record(&mut self, line: &str) {
+        use std::io::Write;
+        let at = self.started.elapsed().as_secs_f64();
+        if let Some(f) = self.file.as_mut() {
+            let _ = writeln!(f, "[{at:7.1}s] {line}");
+        }
+        if let Some(f) = self.shared.as_mut() {
+            let now = crate::world::rfc3339(std::time::SystemTime::now());
+            // One line per line, so a multi-line database error stays readable
+            // in a viewer that lists lines.
+            // A failure is tagged the way the viewer recognises one.
+            let tag = if line.starts_with("failed:") { "[error] " } else { "" };
+            for part in line.lines().filter(|l| !l.trim().is_empty()) {
+                let _ = writeln!(f, "{now} [{}] {tag}{part}", self.what);
+            }
+        }
+    }
 }
 
 /// Feed a dump to the running database. Game services must be stopped.
 ///
-/// The dump carries CREATE DATABASE + USE, so this replaces the schema
-/// wholesale rather than merging into whatever is there now.
-pub(crate) fn load_dump(cfg: &Config, dk: &Docker, src: &Path) -> Result<(), String> {
-    let backups = cfg.state.join("backups");
-    crate::private_fs::directory(&backups)?;
-    let tmp = format!("restore-{}-{}.sql", std::process::id(), crate::private_fs::random_hex(12)?);
-    let staged = backups.join(&tmp);
-    if staged.exists() { crate::private_fs::protect(&staged, false)?; }
-    fs::copy(src, &staged).map_err(|e| format!("staging the backup: {e}"))?;
-    crate::private_fs::protect(&staged, false)?;
-    if cfg!(windows) {
-        dk.copy_into(DB_CONTAINER, &backups, "/backups")?;
-    }
-    let r = dk.output([
-        "exec", DB_CONTAINER, "sh", "-c",
-        &format!("{} < /backups/{tmp}", dk.database_client("mariadb")?),
-    ]);
-    let _ = fs::remove_file(&staged);
-    dk.quiet(["exec", DB_CONTAINER, "rm", "-f", &format!("/backups/{tmp}")]);
-    r.map(|_| ())
+/// The dump is streamed into the database container's own /tmp and read from
+/// there, on every platform, the way `backup_snapshot` dumps into /tmp. It
+/// used to be read through /backups: on macOS and Linux a folder shared with
+/// the host, so the hypervisor's file sharing was part of whether a restore
+/// worked; on Windows a volume that this filled by copying the *whole* backups
+/// folder in first -- every earlier backup, each time -- to read one file.
+///
+/// `ragnarok` is named as the default database, so a dump made without
+/// `--databases` (no `USE`) loads too; one that has `USE` is unaffected. What
+/// the client prints on failure is returned as it is.
+pub(crate) fn load_dump(_cfg: &Config, dk: &Docker, src: &Path) -> Result<(), String> {
+    let inside = format!("/tmp/restore-{}-{}.sql", std::process::id(), crate::private_fs::random_hex(12)?);
+    let result = dk
+        .write_into(DB_CONTAINER, src, &inside)
+        .map_err(|e| format!("copying the backup into the database container: {e}"))
+        .and_then(|()| {
+            let client = dk.database_client("mariadb")?;
+            dk.output(["exec", DB_CONTAINER, "sh", "-c", &format!("{client} ragnarok < {inside}")])
+                .map(|_| ())
+                .map_err(|e| if e.is_empty() { "the database client failed and printed nothing".into() } else { format!("the database said: {e}") })
+        });
+    dk.quiet(["exec", DB_CONTAINER, "rm", "-f", &inside]);
+    result
 }
 
 /// The volume an era's characters live in. See `db_volume`.
@@ -2603,6 +2689,76 @@ pub(crate) fn human(bytes: u64) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    fn dump_file(tag: &str, body: &[u8]) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!("ro-dump-{tag}-{}", std::process::id()));
+        let _ = std::fs::create_dir_all(&dir);
+        let path = dir.join("backup.sql");
+        std::fs::write(&path, body).unwrap();
+        path
+    }
+
+    const DUMP: &str = "/*M!999999\\- enable the sandbox mode */\n-- MariaDB dump 10.19-11.4.12-MariaDB\n\
+        CREATE DATABASE IF NOT EXISTS `ragnarok`;\nUSE `ragnarok`;\n\
+        CREATE TABLE `char` (\n  `char_id` int\n);\nCREATE TABLE `login` (\n  `account_id` int\n);\n\
+        CREATE TABLE `login_tokens` (\n  `token` int\n);\n-- Dump completed on 2026-10-02  9:59:03\n";
+
+    /// A file is looked at before the game is stopped for it, and anything that
+    /// is not a game database dump is refused with what it is instead.
+    #[test]
+    fn a_backup_is_checked_before_anything_stops() {
+        let ok = super::check_dump(&dump_file("ok", DUMP.as_bytes())).unwrap();
+        assert_eq!(ok.tables, ["char", "login", "login_tokens"]);
+        assert!(ok.note.is_none());
+
+        let cut = DUMP.replace("-- Dump completed on 2026-10-02  9:59:03\n", "");
+        let cut = super::check_dump(&dump_file("cut", cut.as_bytes())).unwrap();
+        assert!(cut.note.unwrap().contains("cut short"));
+
+        for (tag, body, says) in [
+            ("empty", &b""[..], "is empty"),
+            ("gzip", &[0x1f, 0x8b, 8, 0][..], "Restore everything"),
+            ("zip", &b"PK\x03\x04rest"[..], ".zip or .rar"),
+            ("rar", &b"Rar!\x1a\x07\x01\x00"[..], ".zip or .rar"),
+            ("text", &b"hello, this is not sql\n"[..], "creates no tables"),
+            ("other", &b"CREATE TABLE `posts` (\n `id` int\n);\n"[..], "not of a game database"),
+        ] {
+            let e = super::check_dump(&dump_file(tag, body)).unwrap_err();
+            assert!(e.contains(says), "{tag}: {e}");
+        }
+    }
+
+    /// Each step is written to state/logs as it happens, with its time; the
+    /// failure goes only to the file, since the caller reports it itself.
+    #[test]
+    fn a_step_log_keeps_every_line() {
+        let root = std::env::temp_dir().join(format!("ro-steplog-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let cfg = crate::config::Config {
+            root: root.join("app"),
+            state: root.join("state"),
+            nebula_home: root.join("nebula"),
+            nebula: root.join("unused"),
+            docker: root.join("unused"),
+            image: String::new(),
+            db_image: String::new(),
+            ports: crate::ports::Ports::DEFAULT,
+            app_version: None,
+        };
+        let mut log = super::StepLog::open(&cfg, "restore");
+        log.say("stopping the game services");
+        log.record("failed: the database said: ERROR 1064");
+        let path = log.path.clone().unwrap();
+        assert!(path.starts_with(cfg.state.join("logs")));
+        let body = std::fs::read_to_string(&path).unwrap();
+        assert!(body.contains("] stopping the game services\n"), "{body}");
+        assert!(body.contains("] failed: the database said: ERROR 1064\n"), "{body}");
+        let shared = std::fs::read_to_string(cfg.state.join("logs").join(super::STEP_LOG_SHARED)).unwrap();
+        assert!(shared.lines().any(|l| l.ends_with("Z [restore] stopping the game services")), "{shared}");
+        assert!(shared.lines().any(|l| l.ends_with("Z [restore] [error] failed: the database said: ERROR 1064")), "{shared}");
+        assert_eq!(shared.lines().count(), 2, "{shared}");
+        let _ = std::fs::remove_dir_all(&root);
+    }
 
     /// What the shell reads to learn where this world's servers are. The
     /// default install's file keeps its keys and values, with the asset port

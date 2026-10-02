@@ -1739,6 +1739,13 @@ async function pickFolderOrArchive(message, filterName) {
 	return r.canceled || !r.filePaths.length ? null : r.filePaths[0];
 }
 
+/** `--eras a,b` for a restore that chose eras; nothing when it did not. */
+function eraArgs(eras) {
+	if (eras === undefined) return [];
+	if (!Array.isArray(eras) || eras.some(e => !['renewal', 'prerenewal'].includes(e))) throw new Error('Unknown era to restore.');
+	return ['--eras', eras.length ? [...new Set(eras)].join(',') : 'none'];
+}
+
 async function refusalNote(name) {
 	try {
 		const rows = (await runStack(['mods'])).split('\n').filter(Boolean);
@@ -2442,6 +2449,14 @@ const handlers = {
 				add(`nebula/${file}`, tail(p2, want));
 			}
 		}
+		// The last database restore, step by step, with what the database said
+		// if it refused the file. Restore used to report only "Restore failed",
+		// and a player could not tell us any more than that.
+		try {
+			const logs = path.join(stateDir(), 'logs');
+			const last = fs.readdirSync(logs).filter(f => /^restore-\d+\.log$/.test(f)).sort().pop();
+			if (last) add(`logs/${last}`, tail(path.join(logs, last), 80));
+		} catch { /* no restore has run */ }
 		// Guest image sizes against what the shipped archives say they should
 		// be. The report that led to this check could not distinguish a
 		// hypervisor problem from a rootfs that antivirus had truncated.
@@ -2638,8 +2653,10 @@ const handlers = {
 		if (getClientPaths().mode !== 'host') throw new Error('Hosting checks belong to your own server.');
 		return JSON.parse(await runStack(['hosting-check']));
 	},
+	// Both eras' databases in one .sql (stack/src/db_backup.rs).
 	db_backup: ({ path: p }) => runStack(['backup', p]),
-	db_restore: ({ path: p }) => runStack(['restore', p]),
+	db_inspect: async ({ path: p }) => JSON.parse(await runStack(['inspect', p])),
+	db_restore: ({ path: p, eras }) => runStack(['restore', p, ...eraArgs(eras)]),
 	// The whole world: every era's database, settings and installed mods, in
 	// one .tar.gz (stack/src/world.rs). Secrets are never in it.
 	db_backup_full: ({ path: p }) => runStack(['backup', '--full', p]),
@@ -2647,14 +2664,20 @@ const handlers = {
 	// restores, and leaves the game stopped. Starting again is the same work
 	// as Apply: the restored settings.json implies battle_conf, the restored
 	// mods a new overlay, so the server is brought up and the client relinked.
-	db_restore_full: async ({ path: p }) => {
+	// What a whole-world backup holds -- eras with their account and character
+	// counts, settings, mods -- for Restore to offer. Reads only.
+	db_inspect_full: async ({ path: p }) => JSON.parse(await runStack(['inspect', '--full', p])),
+	// `eras` and `settings` choose what is put back; left out, everything is.
+	db_restore_full: async ({ path: p, eras, settings }) => {
 		const client = getClientPaths();
 		if (client.mode === 'join') throw new Error('Restoring belongs to your own server. Switch to hosting your own server first.');
+		const choice = eraArgs(eras);
+		if (settings === false) choice.push('--no-settings');
 		const cycleAssets = assetServer.running;
 		if (cycleAssets) await assetsStop();
 		let out;
 		try {
-			out = (await runStack(['restore', '--full', p])).trim();
+			out = (await runStack(['restore', '--full', p, ...choice])).trim();
 		} catch (error) {
 			if (cycleAssets) await assetsStart().catch(() => {});
 			throw error;
