@@ -7,7 +7,7 @@
   "requires": { "app": ">=1.4.2", "era": "any" },
   "settings": [
     { "key": "vendors", "type": "number", "default": 20, "min": 0, "max": 60, "label": "Vendors", "description": "How many stalls stand on Prontera's sidewalks. With fewer stalls than themes, a different set of themes shows up each time the server starts. 0 removes them all." },
-    { "key": "rotation_minutes", "type": "number", "default": 240, "min": 0, "max": 1440, "label": "Minutes before a stall changes", "description": "How long a vendor stays before packing up and another takes the spot, give or take a little so they don't all change at once. 0 keeps them until the server restarts." },
+    { "key": "rotation_minutes", "type": "number", "default": 240, "min": 0, "max": 1440, "label": "Minutes before a stall changes", "description": "How long a vendor stays before packing up; another takes the spot soon after. Each stall varies by up to half this either way so they don't all change at once, and stalls are checked once a minute, at most 8 at a time, so short values run long: 2 means roughly 1 to 5 minutes. A stall that sells out leaves early. 0 keeps them until the server restarts." },
     { "key": "callouts", "type": "boolean", "default": true, "label": "Vendors shout their wares", "description": "Stalls call out an item and its price now and then, like \"S> Elunium 250K\"." },
     { "key": "callout_seconds", "type": "number", "default": 180, "min": 20, "max": 1800, "label": "Seconds between a stall's shouts", "description": "On average, per stall; each waits between half and one and a half times this. Stalls also never shout within a few seconds of one another." }
   ]

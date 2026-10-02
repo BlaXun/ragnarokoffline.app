@@ -164,6 +164,8 @@ class PopulationVendorDatabase : public YamlDatabase {
 public:
 	PopulationVendorDatabase();
 	void clear() override;
+	/// RAGNAROKMAC: applies the price tables in db/import/population_vendor_prices/.
+	void loadingFinished() override;
 	const std::string getDefaultLocation() override;
 	uint64 parseBodyNode(const ryml::NodeRef& node) override;
 	const PopulationVendorEntry* find(const std::string& key) const;

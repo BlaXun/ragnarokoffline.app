@@ -1,118 +1,159 @@
 # prontera-vendors
 
-Themed player vendors stationed on Prontera's sidewalks, rotating stock every
-few hours so a singleplayer world has somewhere to buy class gear and rare
-items without rolling a new character to farm for them.
+Themed player vendors on Prontera's sidewalks, so a singleplayer world has a
+market: cards, weapons, refined gear, potions, gemstones, dungeon loot and
+more, at prices taken from a real server's player market.
 
-Ships two Pool-type vendors, each with its own spot, pulling items from a
-themed superset. Each spawn draws a random subset and picks a shop title, so a
-vendor reads as a cycling market of different "players". The population engine
-runs the shell as a real `BL_PC`, which means the yellow MC_VENDING banner
-above its head is the authentic vending packet — not an NPC lookalike.
+Every vendor is a population-engine shell, a real `BL_PC` with a real
+MC_VENDING stall, not an NPC dressed as one. Stalls come and go like players
+do, and each new one draws a fresh mix from its theme.
 
 ## What it needs
 
-- **Population engine switched on** — Settings → Population → Fake players.
-  Also the vending economy option in the engine's own section
-  (`population_engine_vending_enable`), which is the default.
-- A build of the app whose population engine has the `Pool` vendor type and
-  mod `Spawns:`. If the server log at startup says `Type must be 'static',
-  'dynamic', or 'pool'`, or warns about an unknown `Spawns` key, the engine is
-  older than this mod and it cannot work until the build is updated.
+- **The population engine switched on**: Settings → Population → Fake
+  players, with the engine's vending economy on (`population_engine_vending_enable`,
+  the default).
+- An app build whose engine has mod vendors (`Spawns:`, Pool vendors, and the
+  `population_vendor_*` script commands). On an older build the server log
+  names the unknown keys or the unknown script command.
 
-## What it does today
+## Settings (Settings → Mods)
 
-Two vendors on the west sidewalk at `x=147`, each in its own stretch:
+| Setting | Default | What it does |
+|---|---|---|
+| Vendors | 20 | Stalls on the sidewalks. With fewer stalls than themes, a different set of themes shows up each server start. 0 removes them. |
+| Minutes before a stall changes | 240 | How long a vendor stays before another takes the spot, ± a little so they don't all change at once. 0 keeps them until restart. |
+| Vendors shout their wares | on | Stalls call out a real item and price now and then ("S> Elunium 250K"). |
+| Seconds between a stall's shouts | 180 | Average per stall (each waits ½× to 1½×). Stalls also never shout within 6 s of one another. |
 
-- **`prontera-vendors/general_gear`** (`y=136..152`, Merchant) — ~22 common
-  gear and consumables, 6–10 per shell.
-- **`prontera-vendors/forge_supplies`** (`y=155..170`, Whitesmith) — ores,
-  elemental stones and upgrade materials, 5–8 per shell.
+Settings take effect when the server starts. They reach the engine through
+`npc/prontera-vendors.txt`.
 
-The engine's own vendors on Prontera spawn exactly as they would without this
-mod: same jobs, same count, same places. Ours are extra. They are placed by
-the mod's own `Spawns:` blocks, so they don't use up the engine's `MaxVendors`,
-and no other mod's vendors are touched. They do count against the global
-population Limit like any other shell.
+## What's for sale
 
-Each vendor:
+106 themes, one vendor key each, all on both sidewalks (x=147, y=136–170 and
+x=164, y=135–173). With the default 20 stalls, each server start shows a
+different random fifth of them; raise "Vendors" to see more at once.
 
-- Draws a random subset of its Pool per spawn, with hand-tuned prices.
-- Picks a shop title from `TitleFromPool`; `{name}` in a title becomes the
-  vendor's own name, so "{name}'s Forge Goods" matches whoever is selling.
-- Rotates every 4 hours ±30 min of jitter (`RotationHours`; `RotationMinutes`
-  for short cycles — currently 5 ±1 min for testing), so vendors turn over in succession
-  rather than all at once.
-- Stands only where its `Spawns:` block says: exactly `Count` shells in its
-  `Areas`. If the spot is taken (by a player or another shell) it waits for a
-  free cell rather than standing somewhere else. `Spawns:` also takes fixed
-  `Positions: [[x, y], ...]`, one shell per seat, and `ScaleWithDensity: true`
-  to follow the population density slider instead of an exact count.
-- Add more by appending a `VendorKey: prontera-vendors/<name>` entry here and a
-  `PlacementBound: true` Profile with the same VendorKey in
-  `population_vendor_pop.yml`.
+- **Goods:** general gear, forge supplies, potions, slim potions, healing
+  items, gemstones, Ygg/Ori/Elu, skill supplies, ammo, magic scrolls, dyes,
+  pet and taming items, elemental converters, Undershirt + Pantie, Bloody
+  Branches, OBB/OPB, OCA/MCA.
+- **Cards:** common cards (monsters up to level 60) and rare cards (stronger
+  monsters, mini-bosses). Never MVP cards.
+- **By class:** Knight, Crusader, Wizard, Sage, Hunter, Bard/Dancer, Priest,
+  Monk, Assassin, Rogue, Blacksmith, Alchemist, Taekwon/SG/SL, Ninja,
+  Gunslinger, Super Novice, Doram: gear that class can wear and few others can.
+- **By weapon type:** daggers, swords, two-handers, spears, axes, maces,
+  staves, bows, books, knuckles, instruments and whips, guns, huuma.
+- **By armor slot:** garments, footgear, shields, body armor, slotted gear,
+  headgear, accessories, costumes.
+- **Specials:** starter gear, low- and mid-level weapons, katars, elemental
+  daggers (forged Fire/Water/Earth/Wind, some "Very Strong"), crimson
+  weapons, shadow gear, a stall selling nothing but an Ice Pick, rare etc.
+  collectibles, a "hunter's haul" of popular drops.
+- **Refined:** weapons from their safe limit up to three past it, armor +4 to
+  +7, priced by what it costs to make: the ore, and past the safe limit the
+  expected cost including failures.
+- **Loot:** one stall per dungeon (Byalan, Geffenia, Kiel, Payon Cave, Orc
+  Dungeon, Ant Hell, Sphinx, Pyramids, Sunken Ship, Clock Tower, Glast Heim,
+  Turtle Island, Toy Factory, Niflheim, Magma, Ice Cave, Abyss Lake,
+  Thanatos, Odin, Juperos, Bio Lab, Comodo, Amatsu, the Culverts, the Guild
+  Dungeon), loot by monster level (1–20, 21–40, 41–60, 61–80, 81–99), boss
+  loot (mini-bosses) and MVP items. Loot stalls skip what dozens of
+  monsters drop, so each shows its own place.
+- **Random:** five stalls that each sample a broad pool at random: monster
+  loot, consumables, equipment, cheap junk ("Cart Clearance") and a mixed
+  bag, mostly under generic signs.
 
-## Known gaps vs the design
+Shop signs mix theme names with the kind of vague titles real stalls use
+("Stuff", "SALE", "Happy hunting!", "..."), drawn from a sample of 500 iRO
+shops.
 
-Agreed scope that is **not** in this MVP yet:
+## Prices
 
-1. Prices are tuned to iRO Valkyrie player-market data (ragnastats.com),
-   gathered by a one-off manual scrape. **Done:** per-shell price jitter
-   (`PriceJitterPct`, each shell rolls each price ±%) and rare "fat-finger"
-   mispricing (`PriceMistakeOneIn`, a 1-in-N dropped digit for a deal-of-a-
-   lifetime find). **Caveat:** iRO is a high-zeny economy, so some values are
-   steep for a solo world (Elunium ~263k). Scale the `Price` numbers down in
-   the YAML if that's too rich. A scripted re-scrape and a pre-renewal price
-   pass are still future work.
-2. Pre-renewal price list. Right now the Pool mixes items that exist in both
-   eras — items missing from an era's `item_db.yml` are warned about and
-   zeroed by the engine, so the mod will still load; it will just serve a
-   slightly thinner pool in pre-re.
-3. More themed vendors (cards, ninja gear, pistols, armor, headgear). Two so
-   far (general goods + forge supplies). Each additional theme is another
-   `VendorKey:` block with its own `Spawns:` here plus a `PlacementBound: true`
-   `Profile:` in `population_vendor_pop.yml`.
-   - **No job limit.** `PlacementBound` resolves a vendor by its VendorKey, not
-     by job, so the `Jobs:` entry is just the sprite. Any number of vendors can
-     reuse the same sprite (e.g. several `Merchant`s) without colliding, and
-     they never touch the engine's own vendors. Use a can-vend sprite for the
-     illusion — Merchant tree (Merchant, Blacksmith, Alchemist, HighMerchant,
-     Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo) or Super
-     Novice / HyperNovice — since only those can open a vend on a real server.
-   - **Self-contained:** this mod adds only its own keys, profiles and
-     spawns; it changes nothing about the engine's own vendors or other mods.
-4. MVP cards / god items / event-only / non-tradable blocklist. The current
-   pool is hand-authored so nothing from those categories is in it, but a
-   future dynamic-pool generator will need to apply filters.
-5. Authentic player-handle name pool. The shell's name comes from the
-   engine's `default` NameProfile (syllable grammar / adjective-noun). A
-   `pick_one` strategy with a curated handle list is a planned follow-up.
-6. Settings in `mod.json`. A toggle for the rotation cadence and the max
-   number of simultaneous vendors would be natural; the Pool mechanism
-   already reads them from YAML, so this is a surfacing question, not an
-   engine one.
+From iRO's player market (ragnastats.com averages). Those averages include
+refined and carded copies, so equipment an NPC also sells is priced just
+under the NPC instead, and averages that are absurd next to an item's NPC
+value (troll listings) are ignored.
 
-## Testing it
+Each item has a `[min, max]` range, and each stall rolls inside it. Half the
+time an item is listed 1–5 % under the cheapest rival stall on the map that
+sells it, but never below its range. No price goes below the NPC sell value,
+so nothing can be flipped to an NPC for profit, except a "fat-finger": 1 in
+5000 per item, a price with a digit missing.
 
-1. Build the app so the engine's `Pool` type and `Spawns:` are compiled in
-   (`scripts/apply-server-mods.sh` + the usual docker build; CI covers this
-   on every push).
-2. Enable this mod in Settings → Mods.
-3. Make sure the population engine is on.
-4. Launch the world. Within ~10s of the autosummon pass, a vendor shell
-   should appear with a yellow banner and a cart somewhere along the
-   west sidewalk at `x=147`.
-5. Wait for the rotation (5 ±1 min while the testing value is in) with the server running: the shell should be released
-   and a new one (new title, new stock subset) spawn in its place within
-   a minute or two.
+iRO is a high-zeny economy, so some prices are steep for a solo world
+(Elunium ~263k).
+
+### Changing prices
+
+`db/population_vendor_prices/prontera-vendors.csv` is the price list: one row
+per item, `Id,Name,Min,Max`, and every stall that sells the item rolls inside
+that range. Open it in Excel or any editor, change what you like, and restart
+the server; it wins over the prices in the YAML. The Id decides; the Name is
+there to find things. `;` as the separator is fine too (what Excel writes in
+some locales). Refined, forged and carded lines keep the price in
+`population_vendors.yml`, since a +9 isn't priced like a plain one.
+
+The file only prices this mod's vendors (its name is the key prefix), and
+needs an app build with mod price tables; older builds ignore it and use the
+YAML prices.
+
+## Behaviour
+
+- A stall stays for the rotation time, then packs up; another takes the spot
+  shortly after.
+- A stall that sells out packs up too, as a player would.
+- Vendors stand only on this mod's sidewalks and never count against the
+  engine's own Prontera vendors, which spawn exactly as without the mod.
+
+## Changing it
+
+`db/population_vendors.yml` and `db/population_vendor_pop.yml` are
+**generated** by `tools/build_vendors.py` from rAthena's item, monster and
+spawn databases and the price cache `tools/prices.json`:
+
+```
+python3 mods/prontera-vendors/tools/build_vendors.py                   # rebuild from the cache
+python3 mods/prontera-vendors/tools/build_vendors.py --refresh-prices  # fetch prices the cache lacks
+python3 mods/prontera-vendors/tools/build_vendors.py --all-prices      # fetch every tradeable item (~1-2 h)
+python3 mods/prontera-vendors/tools/build_vendors.py --reprice         # rebuild the CSV from market data
+```
+
+Themes are defined at the top of the script: a hand list, a rule over the
+item database, or "what these dungeons' monsters drop". The YAML can be
+edited by hand for a quick test, but a re-run overwrites it.
+
+Per vendor key in the YAML: `PickCount`, `MaxSlots`, `TitleFromPool`
+(`{name}` is the vendor's name), `RotationHours`/`RotationMinutes`,
+`PriceMistakeOneIn`, `Undercut`, `Callouts`, and per Pool line `Amount`,
+`Price: [min, max]`, `Refine`, `Element`, `Stars`, `Cards`. `Spawns` says
+where; its `Count` is the theme's share of the Vendors setting.
+
+## Known gaps
+
+- Pre-renewal: the pools are built from renewal data. Items a pre-renewal
+  server lacks are skipped with a warning at startup, so stalls there are
+  thinner.
+- Names: vendors use the engine's generated names, not a list of
+  player-style handles.
+- Restocking in place (the same vendor with new stock) isn't done; a new
+  vendor takes the spot instead.
 
 ## Files
 
 ```
 mods/prontera-vendors/
-├── mod.json
+├── mod.json                     settings
 ├── README.md
-└── db/
-    ├── population_vendors.yml       Pool definition + Spawns
-    └── population_vendor_pop.yml    Shell profile referencing the pool
+├── npc/prontera-vendors.txt     hands the settings to the engine
+├── db/
+│   ├── population_vendors.yml       themes: pools, spawns (generated)
+│   ├── population_vendor_prices/
+│   │   └── prontera-vendors.csv     the price list (Id,Name,Min,Max); edit freely
+│   └── population_vendor_pop.yml    one shell profile per theme (generated)
+└── tools/
+    ├── build_vendors.py         the generator
+    └── prices.json              market price cache
 ```

@@ -11,6 +11,7 @@
 #include <string>
 
 #include <common/core.hpp>
+#include <common/utils.hpp>
 #include <common/showmsg.hpp>
 
 #include "../../battle.hpp"
@@ -2228,4 +2229,134 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 	}
 
 	return 1;
+}
+
+// ---------------------------------------------------------------------------
+// RAGNAROKMAC: mod price tables
+// ---------------------------------------------------------------------------
+//
+// db/import/population_vendor_prices/<prefix>.csv, one row per item:
+//
+//     Id,Name,Min,Max
+//     985,Elunium,240000,285000
+//
+// Id decides; Name is for people reading the file, and is looked up (Aegis or
+// display name) only when Id is empty. Max may be left out. Fields may be
+// quoted, and ";" works as the separator too (Excel writes it in some
+// locales). Lines starting with # are comments.
+//
+// A table prices only the vendors whose VendorKey starts with "<prefix>/", so
+// a mod's file (prontera-vendors.csv -> prontera-vendors/*) never touches
+// another mod's vendors or the engine's own. A row wins over the YAML Price of
+// every plain stock line of that item; lines with a refine, element or cards
+// keep their YAML price. Read at load and on every reload.
+
+static std::vector<std::string> s_pop_price_files;
+
+static void pop_collect_price_file(const char* path) {
+	const size_t n = strlen(path);
+	if (n > 4 && strcmpi(path + n - 4, ".csv") == 0)
+		s_pop_price_files.emplace_back(path);
+}
+
+static std::string pop_trim(const std::string& s) {
+	const size_t a = s.find_first_not_of(" \t\r\n\"");
+	if (a == std::string::npos)
+		return "";
+	const size_t b = s.find_last_not_of(" \t\r\n\"");
+	return s.substr(a, b - a + 1);
+}
+
+void PopulationVendorDatabase::loadingFinished() {
+	const std::string dir = std::string(db_path) + "/import/population_vendor_prices";
+	if (check_filepath(dir.c_str()) != 1)
+		return; // no mod ships a price table
+	s_pop_price_files.clear();
+	findfile(dir.c_str(), ".csv", pop_collect_price_file);
+	std::sort(s_pop_price_files.begin(), s_pop_price_files.end());
+
+	for (const std::string& file : s_pop_price_files) {
+		std::string base = file.substr(file.find_last_of("/\\") + 1);
+		base.resize(base.size() - 4);
+		const std::string prefix = base + "/";
+
+		FILE* fp = fopen(file.c_str(), "r");
+		if (fp == nullptr) {
+			ShowWarning("Population engine: cannot read price table '%s'.\n", file.c_str());
+			continue;
+		}
+		std::unordered_map<t_itemid, std::pair<uint32_t, uint32_t>> prices;
+		char buf[1024];
+		int line = 0;
+		while (fgets(buf, sizeof(buf), fp) != nullptr) {
+			++line;
+			const std::string row = pop_trim(buf);
+			if (row.empty() || row[0] == '#' || row.compare(0, 2, "//") == 0)
+				continue;
+			// Split on , or ; outside double quotes ("" inside quotes is a quote).
+			std::vector<std::string> col;
+			std::string cur;
+			bool quoted = false;
+			for (size_t i = 0; i < row.size(); ++i) {
+				const char c = row[i];
+				if (c == '"') {
+					if (quoted && i + 1 < row.size() && row[i + 1] == '"') { cur += '"'; ++i; }
+					else quoted = !quoted;
+				} else if ((c == ',' || c == ';') && !quoted) {
+					col.push_back(pop_trim(cur));
+					cur.clear();
+				} else {
+					cur += c;
+				}
+			}
+			col.push_back(pop_trim(cur));
+			if (strcmpi(col[0].c_str(), "id") == 0)
+				continue; // the header row
+			if (col.size() < 3) {
+				ShowWarning("Population engine: %s:%d: expected Id,Name,Min,Max; skipped.\n", file.c_str(), line);
+				continue;
+			}
+			t_itemid id = 0;
+			if (!col[0].empty()) {
+				id = static_cast<t_itemid>(strtoul(col[0].c_str(), nullptr, 10));
+				if (!item_db.exists(id)) id = 0;
+			} else if (auto idata = item_db.searchname(col[1].c_str())) {
+				id = idata->nameid;
+			}
+			if (id == 0) {
+				ShowWarning("Population engine: %s:%d: unknown item '%s%s'; skipped.\n", file.c_str(), line,
+					col[0].c_str(), col[0].empty() ? col[1].c_str() : "");
+				continue;
+			}
+			const uint32_t lo = static_cast<uint32_t>(strtoul(col[2].c_str(), nullptr, 10));
+			uint32_t hi = col.size() > 3 && !col[3].empty() ? static_cast<uint32_t>(strtoul(col[3].c_str(), nullptr, 10)) : lo;
+			if (lo == 0) {
+				ShowWarning("Population engine: %s:%d: Min must be 1 or more; skipped.\n", file.c_str(), line);
+				continue;
+			}
+			if (hi < lo) hi = lo;
+			prices[id] = { std::min<uint32_t>(lo, MAX_ZENY), std::min<uint32_t>(hi, MAX_ZENY) };
+		}
+		fclose(fp);
+
+		size_t applied = 0;
+		for (auto& kv : entries_) {
+			if (kv.first.compare(0, prefix.size(), prefix) != 0)
+				continue;
+			for (std::vector<PopulationVendorStock>* list : { &kv.second.pool, &kv.second.stock }) {
+				for (PopulationVendorStock& vs : *list) {
+					if (vs.refine_max != 0 || vs.element != 0 || vs.stars != 0 || !vs.cards.empty())
+						continue;
+					auto it = prices.find(vs.nameid);
+					if (it == prices.end())
+						continue;
+					vs.price = it->second.first;
+					vs.price_max = it->second.second > it->second.first ? it->second.second : 0;
+					++applied;
+				}
+			}
+		}
+		ShowStatus("Population engine: price table '%s': %zu items, %zu stall lines priced.\n",
+			file.c_str(), prices.size(), applied);
+	}
 }
