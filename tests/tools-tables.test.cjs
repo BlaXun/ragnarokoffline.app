@@ -65,3 +65,66 @@ test("mods' monster sprites come from their npcidentity/jobname pairs, later mod
 	assert.deepEqual(clientMonsterSprites(web), { 31001: 'MY_MOB', 31002: 'B_OTHER' });
 	assert.deepEqual(clientMonsterSprites(world({ 'Config.local.js': '{}' })), {});
 });
+
+// ---- The Control panel (#230)
+
+const { clientViewTable, clientItemNames, clientLookTables } = require('../electron/tools.js');
+
+test("mods' headgear and garment sprites come from their accessory and robe tables", () => {
+	const web = world({
+		'Config.local.js': "\tcustomLuaTables: { accessory: [['System/accessoryid-a.lub', 'System/accname-a.lub']], robe: [['System/spriterobeid-a.lub', 'System/spriterobename-a.lub']] },\n",
+		'System/accessoryid-a.lub': 'ACCESSORY_IDs = {\n\tACCESSORY_MY_HAT = 3001,\n}\n',
+		'System/accname-a.lub': 'AccNameTable = {\n\t[ACCESSORY_IDs.ACCESSORY_MY_HAT] = "_my_hat",\n}\n',
+		'System/spriterobeid-a.lub': 'SPRITE_ROBE_IDs = { ROBE_MY_WINGS = 401 }\n',
+		'System/spriterobename-a.lub': 'RobeNameTable = { [SPRITE_ROBE_IDs.ROBE_MY_WINGS] = "my_wings" }\n',
+	});
+	assert.deepEqual(clientViewTable(web, 'accessory'), { 3001: '_my_hat' });
+	assert.deepEqual(clientViewTable(web, 'robe'), { 401: 'my_wings' });
+	assert.deepEqual(clientViewTable(web, 'monster'), {});
+});
+
+test('item names and icons, the last definition winning', () => {
+	const web = world({
+		'Config.local.js': "customItemInfo: ['System/itemInfo-m.lua', 'System/itemInfo.lua'],\n",
+		'System/itemInfo.lua': 'tbl = {\n[1201] = { identifiedDisplayName = "Knife", identifiedResourceName = "나이프", slotCount = 3 },\n[501] = { unidentifiedDisplayName = "Potion" },\n}',
+		'System/itemInfo-m.lua': '[1201] = { identifiedDisplayName = "Modded Knife", identifiedResourceName = "knife2" },',
+	});
+	const names = clientItemNames(web);
+	assert.deepEqual(names[1201], { name: 'Modded Knife', resource: 'knife2', slots: 0 });
+	assert.equal(names[501], undefined, 'an item with no identified name is left out');
+});
+
+test("roBrowser's sprite-name tables are run, not pattern-matched, and come out in Korean", () => {
+	const runtime = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-tables-'));
+	const tables = path.join(runtime, 'client-tables');
+	fs.mkdirSync(tables);
+	// Shaped like the real files: ES modules, CRLF, CP949 bytes as \x escapes.
+	const files = {
+		'JobConst.js': 'export default {\r\n\tNOVICE: 0,\r\n\tKNIGHT: 7,\r\n\tCOSTUME_SECOND_JOB_START: 4331,\r\n\tCOSTUME_SECOND_JOB_END: 4350,\r\n};\r\n',
+		'JobNameTable.js': "import JobId from './JobConst.js';\r\nconst JobNameTable = {};\r\nJobNameTable[JobId.NOVICE] = '\\xC3\\xCA\\xBA\\xB8\\xC0\\xDA';\r\nfunction dup(a, b) { JobNameTable[b] = JobNameTable[a]; }\r\ndup(JobId.NOVICE, JobId.KNIGHT);\r\nexport default JobNameTable;\r\n",
+		'PalNameTable.js': "import JobId from './JobConst.js';\r\nimport JobNameTable from './JobNameTable.js';\r\nconst PalNameTable = {};\r\nPalNameTable[JobId.KNIGHT] = JobNameTable[JobId.NOVICE];\r\nexport default PalNameTable;\r\n",
+		'HairIndexTable.js': 'export default [[2, 2], [2, 1], [0], [0]];\r\n',
+		'HatTable.js': "export default {\r\n\t17: '_\\xb8\\xae\\xba\\xbb',\r\n};\r\n",
+		'RobeTable.js': "export default { 1: 'wings' };\r\n",
+	};
+	for (const [name, body] of Object.entries(files)) fs.writeFileSync(path.join(tables, name), body);
+	const web = world({ 'Config.local.js': '{}' });
+	const t = clientLookTables(runtime, web);
+	assert.equal(t.jobs[7], 'KNIGHT');
+	assert.equal(t.classes[0], '초보자');
+	assert.equal(t.classes[7], '초보자', 'entries copied in code are there');
+	assert.equal(t.palettes[7], '초보자');
+	assert.deepEqual(JSON.parse(JSON.stringify(t.hair)), [[2, 2], [2, 1], [0], [0]]);
+	assert.equal(t.hats[17], '_리본');
+	assert.equal(t.robes[1], 'wings');
+	assert.deepEqual(t.costume, [4331, 4350]);
+	// Nothing they define leaks out of their own context.
+	assert.equal(typeof globalThis.JobNameTable, 'undefined');
+});
+
+test('the shipped roBrowser tables load, when the pinned client is checked out', { skip: !fs.existsSync(path.join(__dirname, '..', 'vendor', 'roBrowserLegacy', 'src', 'DB', 'Jobs', 'JobNameTable.js')) && 'needs vendor/roBrowserLegacy' }, () => {
+	const t = clientLookTables(path.join(os.tmpdir(), 'no-runtime-here'), world({ 'Config.local.js': '{}' }));
+	assert.equal(t.classes[4008], '로드나이트');
+	assert.equal(t.palettes[4008], '로드나이트');
+	assert.ok(Object.keys(t.hats).length > 1000);
+});
