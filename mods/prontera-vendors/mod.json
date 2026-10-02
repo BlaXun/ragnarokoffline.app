@@ -1,0 +1,8 @@
+{
+  "name": "prontera-vendors",
+  "version": "0.1.0",
+  "author": "BlaXun",
+  "description": "Themed player vendors on Prontera's sidewalks. One Pool vendor to start, drawing a random subset of items from a themed superset every spawn. Rotates every 4h so a cycling market of fake players stocks everything from potions to upgrade materials. Needs the population engine switched on.",
+  "default": "off",
+  "requires": { "app": ">=1.4.3", "era": "any" }
+}

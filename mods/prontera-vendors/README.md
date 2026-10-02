@@ -1,0 +1,85 @@
+# prontera-vendors
+
+Themed player vendors stationed on Prontera's sidewalks, rotating stock every
+few hours so a singleplayer world has somewhere to buy class gear and rare
+items without rolling a new character to farm for them.
+
+MVP ships one Pool-type vendor pulling items from a themed superset. Each
+spawn draws a random subset and picks a shop title, so one vendor reads as a
+cycling market of different "players". The population engine runs the shell
+as a real `BL_PC`, which means the yellow MC_VENDING banner above its head is
+the authentic vending packet — not an NPC lookalike.
+
+## What it needs
+
+- **Population engine switched on** — Settings → Population → Fake players.
+  Also the vending economy option in the engine's own section
+  (`population_engine_vending_enable`), which is the default.
+- A build of the app with the `Pool` vendor type in the population engine. If
+  the server log at startup says `Type must be 'static', 'dynamic', or 'pool'`
+  for this mod's vendor, the engine is older than the Pool addition and the
+  mod cannot work until the build is updated.
+
+## What it does today
+
+One VendorKey, `pv_general_gear`:
+
+- Pool of ~22 common gear and consumables with hand-tuned prices.
+- Each spawned shell carries 6–10 of them (random pick per shell).
+- Rotation: 4 hours, with ±30 min of jitter so a world with many vendors
+  rotates in succession rather than all at once.
+- Placement: a single-column strip on the west sidewalk at `x=147`,
+  `y=136..170`. One vendor stands here today; with `MinSpacing: 2` and
+  `MaxVendors` raised, ~17 vendors fit along this line.
+
+## Known gaps vs the design
+
+Agreed scope that is **not** in this MVP yet:
+
+1. Prices from a real market. Values here are rough placeholders in the
+   "what a player would charge" direction. The intended source is
+   [ragnastats.com](https://ragnastats.com/) (iRO Valkyrie market data). The
+   scraper has not been written yet.
+2. Pre-renewal price list. Right now the Pool mixes items that exist in both
+   eras — items missing from an era's `item_db.yml` are warned about and
+   zeroed by the engine, so the mod will still load; it will just serve a
+   slightly thinner pool in pre-re.
+3. Themed vendors (potions, cards, ninja gear, pistols, armor, headgear).
+   Only one general-goods vendor so far. Each additional theme is another
+   `VendorKey:` block in `population_vendors.yml` plus another `Profile:`
+   block in `population_vendor_pop.yml`.
+4. MVP cards / god items / event-only / non-tradable blocklist. The current
+   pool is hand-authored so nothing from those categories is in it, but a
+   future dynamic-pool generator will need to apply filters.
+5. Authentic player-handle name pool. The shell's name comes from the
+   engine's `default` NameProfile (syllable grammar / adjective-noun). A
+   `pick_one` strategy with a curated handle list is a planned follow-up.
+6. Settings in `mod.json`. A toggle for the rotation cadence and the max
+   number of simultaneous vendors would be natural; the Pool mechanism
+   already reads them from YAML, so this is a surfacing question, not an
+   engine one.
+
+## Testing it
+
+1. Build the app so the engine's `Pool` vendor type is compiled in
+   (`scripts/apply-server-mods.sh` + the usual docker build; CI covers this
+   on every push).
+2. Enable this mod in Settings → Mods.
+3. Make sure the population engine is on.
+4. Launch the world. Within ~10s of the autosummon pass, a vendor shell
+   should appear with a yellow banner and a cart somewhere along the
+   west sidewalk at `x=147`.
+5. Wait 4h ± 30 min with the server running: the shell should be released
+   and a new one (new title, new stock subset) spawn in its place within
+   a minute or two.
+
+## Files
+
+```
+mods/prontera-vendors/
+├── mod.json
+├── README.md
+└── db/import/
+    ├── population_vendors.yml       Pool definition + placement
+    └── population_vendor_pop.yml    Shell profile referencing the pool
+```

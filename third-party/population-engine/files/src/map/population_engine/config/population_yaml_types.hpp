@@ -175,11 +175,18 @@ struct PopulationVendorStock {
 	uint32_t price  = 0; ///< 0 = auto (item_data.value_buy)
 };
 
+/// Vendor stock sourcing mode. RAGNAROKMAC: added Pool as a third type (was bool dynamic).
+enum class PopulationVendorType : uint8_t {
+	Static  = 0, ///< Serve exactly the YAML `Stock:` list.
+	Dynamic = 1, ///< Derive stock from mob drop tables of source maps at spawn.
+	Pool    = 2, ///< Pick a random subset of `Pool:` entries per shell; optional rotation.
+};
+
 /// A named vendor configuration entry from db/population_vendors.yml.
 struct PopulationVendorEntry {
 	std::string key;
 	std::string title;           ///< Overhead vend title (empty = "Shop")
-	bool        dynamic = false; ///< Derive stock from map mob drop tables at spawn time
+	PopulationVendorType type = PopulationVendorType::Static;
 	int         max_slots = 12;  ///< Cap vend slots (MC_VENDING lv10 = 12)
 	uint32_t    price_multiplier = 100; ///< % of item sell value for dynamic entries
 	std::vector<PopulationVendorStock> stock;
@@ -201,6 +208,19 @@ struct PopulationVendorEntry {
 	// [dyn_amount_min, dyn_amount_max].  Equipment is always capped to 1 (non-stackable).
 	int dyn_amount_min = 0; ///< 0 = use built-in default (30).
 	int dyn_amount_max = 0; ///< 0 = use built-in default (30).
+
+	// RAGNAROKMAC: Pool-type fields. A Pool vendor carries a themed superset
+	// (e.g. 60 ninja-gear items) and every spawned shell draws a random subset
+	// of pick_count items from it. Combined with rotation (shells get released
+	// after rotation_sec and the autosummon pass re-fills with fresh picks),
+	// this gives the "player vendor whose stock changes" feel without any
+	// client-side change.
+	std::vector<PopulationVendorStock> pool;         ///< Superset of items a Pool vendor draws from.
+	int pick_count_min = 0;                          ///< Items per shell (low bound). 0 = max_slots.
+	int pick_count_max = 0;                          ///< Items per shell (high bound). 0 = pick_count_min.
+	int rotation_sec   = 0;                          ///< Shell lifetime before despawn. 0 = never rotate.
+	int rotation_jitter_sec = 0;                     ///< Per-shell random offset: rotation_sec ± rotation_jitter_sec.
+	std::vector<std::string> title_pool;             ///< When non-empty, each shell picks a title from here instead of `title`.
 };
 
 /// Per-map vendor placement constraint (from db/population_engine.yml VendorPlacement: block).

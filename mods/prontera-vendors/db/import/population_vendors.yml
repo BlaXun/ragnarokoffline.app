@@ -1,0 +1,68 @@
+###########################################################################
+# prontera-vendors — vendor definitions
+###########################################################################
+#
+# One Pool-type vendor to validate the mechanism. The population engine draws
+# PickCount items from Pool at spawn, rotates the shell every RotationHours
+# ± RotationJitterMinutes, and the autosummon pass refills the map with a
+# fresh pick + title + name.
+#
+# Prices are hand-tuned placeholders in the "a real player would charge roughly
+# this" direction. Later: replace with values scraped from ragnastats.com.
+###########################################################################
+
+Header:
+  Type: POPULATION_VENDORS_DB
+  Version: 1
+
+Body:
+  - VendorKey: pv_general_gear
+    Type: Pool
+    # Fallback if TitleFromPool is empty for some reason.
+    Title: "Reska's Odds & Ends"
+    # Shell picks one of these per spawn, so each respawn reads as a different player.
+    TitleFromPool:
+      - "wts potz n stuff fs"
+      - "cheap gear, bargains"
+      - "fresh wares, come in"
+      - "stocked up, buy now"
+      - "wts materials cheap"
+      - "AFK vending <3"
+      - "wts random stuff fs"
+      - "junk n jewels"
+      - "clearing stash, buy"
+      - "Reska's Shop"
+    MaxSlots: 10
+    PickCount: [6, 10]
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    Pool:
+      - { Item: Red_Potion,         Amount: 500, Price: 50 }
+      - { Item: Orange_Potion,      Amount: 300, Price: 400 }
+      - { Item: Yellow_Potion,      Amount: 200, Price: 1000 }
+      - { Item: White_Potion,       Amount: 100, Price: 2000 }
+      - { Item: Blue_Potion,        Amount: 100, Price: 7000 }
+      - { Item: Wing_Of_Fly,        Amount: 200, Price: 150 }
+      - { Item: Wing_Of_Butterfly,  Amount: 100, Price: 400 }
+      - { Item: Awakening_Potion,   Amount: 50,  Price: 2500 }
+      - { Item: Center_Potion,      Amount: 50,  Price: 1200 }
+      - { Item: Knife,              Amount: 1,   Price: 500 }
+      - { Item: Sword,              Amount: 1,   Price: 1500 }
+      - { Item: Buckler,            Amount: 1,   Price: 2500 }
+      - { Item: Cotton_Shirt,       Amount: 1,   Price: 250 }
+      - { Item: Sandals,            Amount: 1,   Price: 200 }
+      - { Item: Hood,               Amount: 1,   Price: 350 }
+      - { Item: Jellopy,            Amount: 300, Price: 15 }
+      - { Item: Fluff,              Amount: 200, Price: 10 }
+      - { Item: Clover,             Amount: 100, Price: 50 }
+      - { Item: Phracon,            Amount: 100, Price: 200 }
+      - { Item: Emveretarcon,       Amount: 50,  Price: 1000 }
+      - { Item: Elunium,            Amount: 20,  Price: 15000 }
+      - { Item: Oridecon,           Amount: 20,  Price: 18000 }
+    VendorPlacement:
+      Map: prontera
+      MinSpacing: 2
+      MaxVendors: 1
+      # A single column on the west sidewalk, 34 cells tall. MinSpacing: 2
+      # means ~17 vendors fit here if MaxVendors is raised later.
+      Area: { X1: 147, Y1: 136, X2: 147, Y2: 170 }

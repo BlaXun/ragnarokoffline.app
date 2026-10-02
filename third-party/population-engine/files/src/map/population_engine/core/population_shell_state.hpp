@@ -192,6 +192,12 @@ struct s_population {
 	int    move_fail_count         = 0; ///< Consecutive movement failures chasing current target.
 	int    attack_fail_count       = 0; ///< Consecutive attack command failures on current target.
 
+	// RAGNAROKMAC: Pool-type vendor rotation. When >0, the vendor rotation timer
+	// releases this shell once gettick() >= vendor_rotation_at; the autosummon
+	// pass then re-fills the map with a fresh pick from the pool. Set at spawn
+	// in the vending branch for vendors whose config has rotation_sec > 0.
+	t_tick vendor_rotation_at = 0;
+
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.
 	uint32_t party_request_account = 0; ///< Player who requested this one-shot invitation.
