@@ -62,20 +62,18 @@ Agreed scope that is **not** in this MVP yet:
    slightly thinner pool in pre-re.
 3. More themed vendors (cards, ninja gear, pistols, armor, headgear). Two so
    far (general goods + forge supplies). Each additional theme is another
-   `VendorKey:` block here plus a `Profile:` on a distinct job in
-   `population_vendor_pop.yml`. Multiple placements per map now work, so each
-   can have its own spot.
-   - **Job budget:** only the Merchant tree + Super Novice can actually vend,
-     and each vendor needs its own job (the job → VendorKey map is global,
-     last-wins). Vending-capable jobs: Merchant, Blacksmith, Alchemist,
-     HighMerchant, Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo,
-     SuperNovice, HyperNovice (12). The engine's generics use 4
-     (Merchant/HighMerchant/Blacksmith/Whitesmith) and we share two of those,
-     leaving ~8 free jobs → ~8 more themed vendors before the model runs out.
-   - **Past that ceiling** we'd want an engine change letting a
-     `VendorPlacement` name its `VendorKey` directly (and the engine pick a job
-     from that vendor's Profile), removing the one-job-per-vendor limit. Planned
-     if the themed set grows large.
+   `VendorKey:` block here plus a `PlacementBound: true` `Profile:` in
+   `population_vendor_pop.yml`, and multiple placements per map are supported,
+   so each gets its own spot.
+   - **No job limit.** `PlacementBound` resolves a vendor by its VendorKey, not
+     by job, so the `Jobs:` entry is just the sprite. Any number of vendors can
+     reuse the same sprite (e.g. several `Merchant`s) without colliding, and
+     they never touch the engine's own vendors. Use a can-vend sprite for the
+     illusion — Merchant tree (Merchant, Blacksmith, Alchemist, HighMerchant,
+     Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo) or Super
+     Novice / HyperNovice — since only those can open a vend on a real server.
+   - **Self-contained:** this mod adds only its own keys, profiles and
+     placements; it changes nothing about the engine's generics or other mods.
 4. MVP cards / god items / event-only / non-tradable blocklist. The current
    pool is hand-authored so nothing from those categories is in it, but a
    future dynamic-pool generator will need to apply filters.

@@ -1288,7 +1288,8 @@ static uint32_t population_engine_allocate_index()
 static size_t autosummon_fill_map(int16_t map_id, size_t want, uint16_t job_hint = UINT16_MAX,
                                   size_t* tick_budget = nullptr, uint8_t map_category = 0,
                                   bool bypass_existing_check = false,
-                                  const PopulationVendorPlacement* forced_placement = nullptr)
+                                  const PopulationVendorPlacement* forced_placement = nullptr,
+                                  std::shared_ptr<PopulationEngine> forced_profile = nullptr)
 {
 	if (want == 0)
 		return 0;
@@ -1344,7 +1345,13 @@ static size_t autosummon_fill_map(int16_t map_id, size_t want, uint16_t job_hint
 		const uint16_t pre_job_id = (job_hint != UINT16_MAX && pcdb_checkid(job_hint))
 			? job_hint : get_random_job_id();
 		PopulationDbSource pre_src = PopulationDbSource::Main;
-		auto pre_equipment = population_engine_find_any(pre_job_id, &pre_src);
+		// RAGNAROKMAC: a placement-bound vendor is handed in directly (resolved by
+		// its VendorKey, not the job map), so use it verbatim and skip the job-based
+		// resolution below. job_hint already carries its sprite job.
+		std::shared_ptr<PopulationEngine> pre_equipment =
+			forced_profile ? forced_profile : population_engine_find_any(pre_job_id, &pre_src);
+		if (forced_profile)
+			pre_src = PopulationDbSource::Vendor;
 		if (!pre_equipment) {
 			const uint16_t base_job = get_base_job(pre_job_id);
 			if (base_job != pre_job_id)
@@ -1353,7 +1360,7 @@ static size_t autosummon_fill_map(int16_t map_id, size_t want, uint16_t job_hint
 		// For town spawns (map_category==1), if the resolved entry doesn't have Vendor as its
 		// town_behavior, check vendor_pop_db directly — it may have a VendorKey and the right
 		// town_behavior even if the engine.yml entry shadows it in the general lookup.
-		if (map_category == 1 && pre_equipment &&
+		if (!forced_profile && map_category == 1 && pre_equipment &&
 		    pre_equipment->town_behavior != PopulationBehavior::Vendor) {
 			if (auto vp = population_vendor_pop_db().find(pre_job_id)) {
 				pre_src      = PopulationDbSource::Vendor;
@@ -2369,9 +2376,12 @@ TIMER_FUNC(population_engine_autosummon_timer)
 			g_pop_vendor_job_pool_built = true;
 		}
 
-		if (!g_pop_vendor_job_pool.empty() && population_vendor_db().any_vendor_placements()) {
-			// RAGNAROKMAC: a map may declare several placements, one per themed
-			// vendor at its own spot. Drive each independently.
+		// RAGNAROKMAC: run whenever placements exist — placement-bound vendors
+		// spawn even when the ambient job pool is empty (a world with only
+		// mod-defined vendors and no engine generics).
+		if (population_vendor_db().any_vendor_placements()) {
+			// A map may declare several placements, one per themed vendor at its
+			// own spot. Drive each independently.
 			for (const auto &kv : population_vendor_db().vendor_placements()) {
 				if (pbudget != nullptr && *pbudget == 0) break;
 				if (g_population_engine_count.load() >= max_global) break;
@@ -2383,18 +2393,30 @@ TIMER_FUNC(population_engine_autosummon_timer)
 					if (pbudget != nullptr && *pbudget == 0) break;
 					if (g_population_engine_count.load() >= max_global) break;
 
-					// Which jobs may fill this placement. A placement bound to a
-					// VendorKey draws only that vendor's jobs. If the key has no
-					// vendor job — a Static/decorative entry with no shell Profile,
-					// like the shipped potions/ammo_shop — nothing can spawn it, so
-					// skip. A placement with no key at all (not produced by the
-					// parser today) falls back to the global pool, the old behavior.
+					// Resolve what fills this placement.
+					// 1. Preferred: a placement-bound vendor Profile looked up by
+					//    VendorKey — fully decoupled from the global job map, so it
+					//    never collides with other vendors (across mods) and never
+					//    touches the engine's own ambient vendors. Its job is just
+					//    the shell's sprite.
+					// 2. Fallback: the legacy job pool, for ambient vendors (the
+					//    engine's field_drops/dungeon_drops) and any unbound
+					//    placement. A bound key with neither a placement-bound
+					//    Profile nor any ambient job (e.g. the shipped decorative
+					//    potions/ammo_shop) is not auto-spawnable, so skip it.
+					std::shared_ptr<PopulationEngine> bound_profile;
 					const std::vector<uint16_t> *job_src = &g_pop_vendor_job_pool;
 					if (!vp.vendor_key.empty()) {
-						auto kit = g_pop_vendor_jobs_by_key.find(vp.vendor_key);
-						if (kit == g_pop_vendor_jobs_by_key.end() || kit->second.empty())
-							continue;
-						job_src = &kit->second;
+						if (const PopulationEngine* pb = population_vendor_pop_db().find_by_vendor_key(vp.vendor_key)) {
+							// Non-owning alias: the DB owns the Profile for its lifetime.
+							bound_profile = std::shared_ptr<PopulationEngine>(
+								std::shared_ptr<PopulationEngine>{}, const_cast<PopulationEngine*>(pb));
+						} else {
+							auto kit = g_pop_vendor_jobs_by_key.find(vp.vendor_key);
+							if (kit == g_pop_vendor_jobs_by_key.end() || kit->second.empty())
+								continue;
+							job_src = &kit->second;
+						}
 					}
 
 					int target = vp.max_vendors > 0 ? vp.max_vendors : 12; // sensible default
@@ -2417,12 +2439,19 @@ TIMER_FUNC(population_engine_autosummon_timer)
 					for (size_t d = 0; d < deficit; ++d) {
 						if (pbudget != nullptr && *pbudget == 0) break;
 						if (g_population_engine_count.load() >= max_global) break;
-						const uint16_t vjob = (*job_src)[rnd() % job_src->size()];
 						// map_category=1: selects town_behavior override (Vendor on merchant jobs).
 						// bypass_existing_check=true: the placement pass owns the count above.
 						// &vp: this exact placement drives the area/spacing and per-key count,
 						// since the map may hold several.
-						autosummon_fill_map(mid, 1, vjob, pbudget, 1, /*bypass_existing_check=*/true, &vp);
+						if (bound_profile) {
+							autosummon_fill_map(mid, 1, bound_profile->sprite_job, pbudget, 1,
+								/*bypass_existing_check=*/true, &vp, bound_profile);
+						} else {
+							if (job_src->empty()) break; // no ambient job to fill an unbound placement
+							const uint16_t vjob = (*job_src)[rnd() % job_src->size()];
+							autosummon_fill_map(mid, 1, vjob, pbudget, 1,
+								/*bypass_existing_check=*/true, &vp);
+						}
 					}
 				}
 			}

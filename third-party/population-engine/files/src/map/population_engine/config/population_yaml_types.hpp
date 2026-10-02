@@ -108,6 +108,16 @@ struct PopulationEngine {
 	std::string vendor_message;
 	/// Optional key into db/population_vendors.yml (VendorKey:). Empty = built-in default stock.
 	std::string vendor_key;
+	/// RAGNAROKMAC: when true, this vendor Profile is resolved by its VendorKey
+	/// (from the VendorPlacement that names it), NOT registered in the global
+	/// job -> vendor map. So its Jobs: entry is a cosmetic sprite only: several
+	/// vendors — across mods — can use the same sprite without colliding, and it
+	/// never steals a job from the engine's own ambient vendors. A mod's vendors
+	/// stay fully self-contained. Set via `PlacementBound: true`.
+	bool placement_bound = false;
+	/// RAGNAROKMAC: the job id this (synthetic, per-job) entry was built for —
+	/// used as the shell's sprite when the entry is resolved by VendorKey.
+	uint16_t sprite_job = 0;
 
 	/// Phase 2 identity: -1 / unset = use engine defaults (random or job rule).
 	int16_t str_min = -1, str_max = -1;

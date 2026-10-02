@@ -75,6 +75,12 @@ class PopulationEngineDatabase : public TypesafeYamlDatabase<uint16_t, Populatio
 	bool m_validationError = false;
 	std::unordered_map<std::string, PopulationGearSet> m_gear_sets;
 	std::unordered_map<std::string, std::shared_ptr<PopulationEngine>> m_profiles;
+	/// RAGNAROKMAC: placement-bound vendor profiles, keyed by VendorKey instead of
+	/// job. These never enter the job map (the TypesafeYamlDatabase container), so
+	/// they can share a sprite job with each other or the engine's own vendors
+	/// without last-wins collisions. The VendorPlacement-driven autosummon resolves
+	/// them by key; see find_by_vendor_key.
+	std::unordered_map<std::string, std::shared_ptr<PopulationEngine>> m_vendor_by_key;
 	std::vector<uint16_t> m_arena_job_pool;
 	/// Per-instance YAML basename. Set by the constructor; getDefaultLocation()
 	/// returns db_path + "/" + this. Allows multiple instances of this class to
@@ -124,6 +130,13 @@ public:
 	const std::vector<uint16_t>& arena_job_pool() const { return m_arena_job_pool; }
 	/// Return all loaded job IDs whose entry inherited from the named Profile.
 	std::vector<uint16_t> jobs_with_profile(const std::string& profile_name);
+	/// RAGNAROKMAC: resolve a placement-bound vendor Profile by its VendorKey, or
+	/// nullptr. Used by the vendor autosummon so a placement spawns exactly its
+	/// own vendor, with its sprite job, independent of the global job map.
+	const PopulationEngine* find_by_vendor_key(const std::string& key) const {
+		auto it = m_vendor_by_key.find(key);
+		return it != m_vendor_by_key.end() ? it->second.get() : nullptr;
+	}
 	/// Set after construction; pass the shared-templates DB so parseBodyNode
 	/// can fall back for unknown GearSet:/Profile: references.
 	void set_shared_source(const PopulationEngineDatabase* src) { m_shared_source = src; }

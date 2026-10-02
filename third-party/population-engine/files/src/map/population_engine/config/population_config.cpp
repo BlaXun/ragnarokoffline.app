@@ -1120,6 +1120,7 @@ void PopulationEngineDatabase::clear()
 	this->m_validationError = false;
 	this->m_gear_sets.clear();
 	this->m_profiles.clear();
+	this->m_vendor_by_key.clear();
 	this->m_arena_job_pool.clear();
 }
 
@@ -1357,8 +1358,9 @@ static void applyProfile(PopulationEngine* dst, const PopulationEngine& src)
 	dst->dungeon_behavior = src.dungeon_behavior;
 	dst->guard_range      = src.guard_range;
 	// Vendor
-	dst->vendor_message = src.vendor_message;
-	dst->vendor_key     = src.vendor_key;
+	dst->vendor_message  = src.vendor_message;
+	dst->vendor_key      = src.vendor_key;
+	dst->placement_bound = src.placement_bound; // RAGNAROKMAC
 	// Flags and role
 	dst->flags     = src.flags;
 	dst->role_type = src.role_type;
@@ -1490,6 +1492,7 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 		}
 		if (this->nodeExists(node, "VendorMessage")) this->asString(node, "VendorMessage", prof->vendor_message);
 		if (this->nodeExists(node, "VendorKey"))     this->asString(node, "VendorKey",     prof->vendor_key);
+		if (this->nodeExists(node, "PlacementBound")) this->asBool(node, "PlacementBound", prof->placement_bound); // RAGNAROKMAC
 		// Role
 		if (this->nodeExists(node, "Role")) {
 			std::string rs;
@@ -1614,7 +1617,16 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 						}
 					}
 
-					this->put(job_id, equipment);
+					// RAGNAROKMAC: a placement-bound vendor is resolved by its
+					// VendorKey, not its job, so keep it out of the global job map
+					// — that is what lets several vendors share a sprite job and
+					// leaves the engine's own ambient vendors untouched. Its Jobs:
+					// entry becomes purely the shell's sprite.
+					equipment->sprite_job = job_id;
+					if (equipment->placement_bound && !equipment->vendor_key.empty())
+						this->m_vendor_by_key[equipment->vendor_key] = equipment;
+					else
+						this->put(job_id, equipment);
 				}
 			} else if (!jobs_node.is_seed()) {
 				this->invalidWarning(jobs_node,
