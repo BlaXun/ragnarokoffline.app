@@ -2,21 +2,18 @@
 # prontera-vendors — vendor shell profiles
 ###########################################################################
 #
-# One Profile per vendor. `PlacementBound: true` makes the engine resolve the
-# shell from the VendorPlacement's VendorKey, NOT from the global job map — so
-# the Jobs: entry is purely the shell's sprite. That means:
-#   * Several vendors (even across different mods) can use the same sprite job
-#     without colliding — the one-job-per-vendor limit is gone.
-#   * Our vendors never steal a job from the engine's own field_drops/
-#     dungeon_drops, which keep all of theirs and run untouched. This mod is
-#     fully self-contained.
-# We still use real can-vend sprites (Merchant tree + Super Novice can open a
-# vend; the engine force-grants vending to any shell, but a can-vend sprite
-# keeps the illusion): Merchant for general goods, Whitesmith (a smith) for the
-# forge stall.
+# One Profile per vendor. `PlacementBound: true` makes the engine find the
+# profile by its VendorKey, NOT through the global job map, so the Jobs: entry
+# is purely the shell's sprite. Our vendors can share a job with each other,
+# with other mods' vendors or with the engine's own (field_drops,
+# dungeon_drops), and none of those change.
+#
+# The sprites are real can-vend jobs (the Merchant tree and Super/Hyper Novice
+# can open a vend; the engine grants vending to any shell, but a can-vend sprite
+# keeps the illusion): Merchant for general goods, Whitesmith for the forge.
 #
 # NameProfile/GearSet reuse what the engine ships (para_merchant, default). The
-# load-bearing bits are TownBehavior: vendor, VendorKey, and PlacementBound.
+# load-bearing bits are TownBehavior: vendor, VendorKey and PlacementBound.
 ###########################################################################
 
 Header:
@@ -24,9 +21,8 @@ Header:
   Version: 2
 
 Body:
-  - Profile: pv_general_gear_vendor
-    # Merchant — the classic vendor sprite. PlacementBound, so it does NOT take
-    # Merchant from the engine's field_drops; that vendor keeps all its jobs.
+  - Profile: prontera-vendors/general_gear_vendor
+    # Merchant — the classic vendor sprite.
     PlacementBound: true
     Jobs:
       Merchant: para_merchant
@@ -37,13 +33,12 @@ Body:
     Flags:
       - mortal
     TownBehavior: vendor
-    VendorKey: pv_general_gear
+    VendorKey: prontera-vendors/general_gear
     Script: |
       setcart;
 
-  - Profile: pv_forge_supplies_vendor
-    # Whitesmith — reads as a smith, fitting an ores/forge stall. PlacementBound,
-    # so it does NOT take Whitesmith from the engine's dungeon_drops.
+  - Profile: prontera-vendors/forge_supplies_vendor
+    # Whitesmith — reads as a smith, fitting an ores/forge stall.
     PlacementBound: true
     Jobs:
       Whitesmith: para_merchant
@@ -54,6 +49,6 @@ Body:
     Flags:
       - mortal
     TownBehavior: vendor
-    VendorKey: pv_forge_supplies
+    VendorKey: prontera-vendors/forge_supplies
     Script: |
       setcart;

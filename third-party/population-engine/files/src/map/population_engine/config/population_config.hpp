@@ -156,11 +156,10 @@ public:
 
 class PopulationVendorDatabase : public YamlDatabase {
 	std::unordered_map<std::string, PopulationVendorEntry> entries_;
-	/// RAGNAROKMAC: Derived index: Map name -> every placement declared for it,
-	/// populated from per-vendor VendorPlacement: blocks during parseBodyNode.
-	/// A map may hold several placements (one per themed vendor, at its own spot),
-	/// each bound to the VendorKey that declared it (PopulationVendorPlacement::vendor_key).
-	std::unordered_map<std::string, std::vector<PopulationVendorPlacement>> placements_by_map_;
+	/// Derived index: Map name -> placement constraint, populated from per-vendor
+	/// VendorPlacement: blocks during parseBodyNode. If multiple vendor entries name
+	/// the same Map, the last one parsed wins (a warning is emitted).
+	std::unordered_map<std::string, PopulationVendorPlacement> placements_by_map_;
 
 public:
 	PopulationVendorDatabase();
@@ -169,16 +168,15 @@ public:
 	uint64 parseBodyNode(const ryml::NodeRef& node) override;
 	const PopulationVendorEntry* find(const std::string& key) const;
 	size_t entry_count() const;
-	/// First placement declared for a map, or nullptr. Used by the incidental
-	/// town/field/dungeon fill path as an area/restriction fallback; the vendor
-	/// autosummon pass iterates vendor_placements() and drives each placement
-	/// explicitly, so it does not rely on this.
 	const PopulationVendorPlacement* vendor_placement_for_map(const std::string& map_name) const {
 		auto it = placements_by_map_.find(map_name);
-		return (it != placements_by_map_.end() && !it->second.empty()) ? &it->second.front() : nullptr;
+		return it != placements_by_map_.end() ? &it->second : nullptr;
 	}
 	bool any_vendor_placements() const { return !placements_by_map_.empty(); }
-	const std::unordered_map<std::string, std::vector<PopulationVendorPlacement>>& vendor_placements() const { return placements_by_map_; }
+	/// RAGNAROKMAC: every loaded vendor entry; the mod vendor pass walks the ones
+	/// with Spawns.
+	const std::unordered_map<std::string, PopulationVendorEntry>& vendor_entries() const { return entries_; }
+	const std::unordered_map<std::string, PopulationVendorPlacement>& vendor_placements() const { return placements_by_map_; }
 };
 
 PopulationNamesDatabase& population_names_db();

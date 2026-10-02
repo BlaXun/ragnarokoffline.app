@@ -2,16 +2,20 @@
 # prontera-vendors — vendor definitions
 ###########################################################################
 #
-# Two Pool-type vendors, each pinned to its own spot on the west sidewalk.
-# The engine draws PickCount items from each Pool at spawn, rotates the shell
-# every RotationHours ± RotationJitterMinutes, and refills with a fresh pick +
-# title + name. Each vendor is bound to its own placement by VendorKey, so they
-# stand at different spots and never get swapped for one another.
+# Two Pool-type vendors, each with its own spot on the west sidewalk. The
+# engine draws PickCount items from each Pool at spawn, rotates the shell every
+# RotationHours ± RotationJitterMinutes, and refills with a fresh pick, title
+# and name.
 #
-# Each vendor needs a matching Profile in population_vendor_pop.yml (the shell's
-# job/appearance). The Profile's job maps the shell to this VendorKey:
-#   pv_general_gear  -> Merchant   (profile pv_general_gear_vendor)
-#   pv_forge_supplies-> Alchemist  (profile pv_forge_supplies_vendor)
+# Spawns: makes these the mod's own vendors. They stand only where this file
+# says, exactly Count of them, and never count against the engine's own
+# vendors on Prontera, which spawn exactly as they would without this mod.
+# Keys are prefixed with the mod's name so no other mod can collide with them.
+#
+# Each vendor needs a PlacementBound profile with the same VendorKey in
+# population_vendor_pop.yml (the shell's job and look):
+#   prontera-vendors/general_gear    -> Merchant
+#   prontera-vendors/forge_supplies  -> Whitesmith
 #
 # Prices are tuned to iRO Valkyrie player-market data (ragnastats.com). That is
 # a high-zeny economy, so some values are steep for a solo/low-pop world
@@ -26,7 +30,7 @@ Header:
   Version: 1
 
 Body:
-  - VendorKey: pv_general_gear
+  - VendorKey: prontera-vendors/general_gear
     Type: Pool
     # Fallback if TitleFromPool is empty for some reason.
     Title: "Reska's Odds & Ends"
@@ -77,14 +81,14 @@ Body:
       - { Item: Emveretarcon,       Amount: 50,  Price: 900 }
       - { Item: Elunium,            Amount: 20,  Price: 263000 }
       - { Item: Oridecon,           Amount: 20,  Price: 61000 }
-    VendorPlacement:
-      Map: prontera
-      MinSpacing: 2
-      MaxVendors: 1
-      # North half of the west-sidewalk strip. Second vendor takes the south half.
-      Area: { X1: 147, Y1: 136, X2: 147, Y2: 152 }
+    Spawns:
+      # North half of the west-sidewalk strip. The forge stall takes the south half.
+      - Map: prontera
+        Count: 1
+        Areas:
+          - { X1: 147, Y1: 136, X2: 147, Y2: 152 }
 
-  - VendorKey: pv_forge_supplies
+  - VendorKey: prontera-vendors/forge_supplies
     Type: Pool
     Title: "Forge Supplies"
     TitleFromPool:
@@ -116,9 +120,9 @@ Body:
       - { Item: Mistic_Frozen, Amount: 50,  Price: 26600 }
       - { Item: Rough_Wind,    Amount: 50,  Price: 10800 }
       - { Item: Great_Nature,  Amount: 50,  Price: 6900 }
-    VendorPlacement:
-      Map: prontera
-      MinSpacing: 2
-      MaxVendors: 1
-      # South half of the same strip, non-overlapping with pv_general_gear.
-      Area: { X1: 147, Y1: 155, X2: 147, Y2: 170 }
+    Spawns:
+      # South half of the same strip, apart from the general-goods stall.
+      - Map: prontera
+        Count: 1
+        Areas:
+          - { X1: 147, Y1: 155, X2: 147, Y2: 170 }

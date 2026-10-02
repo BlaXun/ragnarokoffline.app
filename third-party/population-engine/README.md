@@ -214,6 +214,33 @@ engine. It now skips shells whose map holds no real player. A shell standing
 still on an empty map is indistinguishable from one wandering there, and it
 starts moving again the moment somebody arrives.
 
+### Vendors a mod can add
+
+Upstream places vendors per map with one `VendorPlacement` each, and picks the
+shell's stock by its job. A mod can now add its own vendors without changing
+either. The additions do nothing unless a mod uses them; with no mods, the
+engine's vendors spawn exactly as upstream's do.
+
+- `Type: Pool` in `population_vendors.yml`: each shell draws `PickCount` items
+  from a list, rolls each price by `PriceJitterPct`, rarely drops a digit
+  (`PriceMistakeOneIn`), picks a title from `TitleFromPool`, and is replaced
+  after `RotationHours` ± `RotationJitterMinutes` with a fresh pick.
+- `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
+  and either fixed `Positions` (one shell per seat; a taken seat stays empty
+  until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).
+  Counts are exact unless `ScaleWithDensity: true`. Mod vendors are spawned by
+  their own pass after the engine's, never count toward a map's `MaxVendors`,
+  and do count toward the global Limit.
+- `PlacementBound: true` on a profile in `population_vendor_pop.yml` keys the
+  profile by its `VendorKey` instead of its job, so the job is only the sprite.
+  A mod vendor's look comes from the profile with its key.
+- `{item}` and `{price}` in a chat line name a real item from the speaking
+  shell's own stall. The shipped `vendor_call` lines use them.
+- Both vendor databases import `db/import/`, with empty stubs in
+  `db/import-tmpl/`, so a mod's file is read rather than ignored.
+
+`mods/prontera-vendors` is the worked example.
+
 ## Measured cost
 
 Alpine/musl, arm64, packetver 20221005, map server only, 4 GiB guest:
