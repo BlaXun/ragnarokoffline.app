@@ -184,6 +184,15 @@ void population_engine_arena_stop(const char* map_name);
 /// db/population_pvp.yml entries (one entry per Profile.Jobs row).
 std::vector<uint16_t> population_engine_arena_job_pool();
 
+/// RAGNAROKMAC: set how many shells the mod vendors whose VendorKey starts with
+/// `prefix` keep in total, split across their Spawns blocks by their YAML counts.
+/// A negative total goes back to the YAML counts. Script: population_vendor_count.
+void population_engine_set_mod_vendor_total(const char* prefix, int total);
+/// RAGNAROKMAC: rotation in minutes (0 = never) for those vendors; script: population_vendor_rotation.
+void population_engine_set_mod_vendor_rotation(const char* prefix, int minutes);
+/// RAGNAROKMAC: callouts on/off and their pace for those vendors; script: population_vendor_callouts.
+void population_engine_set_mod_vendor_callouts(const char* prefix, int on, int min_sec, int max_sec);
+
 struct block_list;
 /// Arena PvP: classify the relation between two block_list entities so that
 /// `battle_check_target` can treat ally shells (team 2) as friendly to the

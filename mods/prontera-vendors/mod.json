@@ -1,8 +1,14 @@
 {
   "name": "prontera-vendors",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "BlaXun",
-  "description": "Themed player vendors on Prontera's sidewalks. One Pool vendor to start, drawing a random subset of items from a themed superset every spawn. Rotates every 4h so a cycling market of fake players stocks everything from potions to upgrade materials. Needs the population engine switched on.",
+  "description": "Themed player vendors on Prontera's sidewalks: cards, weapons, armor, potions, dungeon loot and more, each stall drawing a random subset of its theme at real-market prices. Stalls come and go like real players, so the market keeps changing. Needs the population engine switched on.",
   "default": "off",
-  "requires": { "app": ">=1.4.2", "era": "any" }
+  "requires": { "app": ">=1.4.2", "era": "any" },
+  "settings": [
+    { "key": "vendors", "type": "number", "default": 20, "min": 0, "max": 60, "label": "Vendors", "description": "How many stalls stand on Prontera's sidewalks. With fewer stalls than themes, a different set of themes shows up each time the server starts. 0 removes them all." },
+    { "key": "rotation_minutes", "type": "number", "default": 240, "min": 0, "max": 1440, "label": "Minutes before a stall changes", "description": "How long a vendor stays before packing up and another takes the spot, give or take a little so they don't all change at once. 0 keeps them until the server restarts." },
+    { "key": "callouts", "type": "boolean", "default": true, "label": "Vendors shout their wares", "description": "Stalls call out an item and its price now and then, like \"S> Elunium 250K\"." },
+    { "key": "callout_seconds", "type": "number", "default": 180, "min": 20, "max": 1800, "label": "Seconds between a stall's shouts", "description": "On average, per stall; each waits between half and one and a half times this. Stalls also never shout within a few seconds of one another." }
+  ]
 }

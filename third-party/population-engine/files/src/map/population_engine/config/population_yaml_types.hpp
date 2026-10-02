@@ -184,6 +184,16 @@ struct PopulationVendorStock {
 	t_itemid nameid = 0;
 	int16_t  amount = 1;
 	uint32_t price  = 0; ///< 0 = auto (item_data.value_buy)
+	/// RAGNAROKMAC: `Price: [min, max]` (Pool). price is then the minimum and each
+	/// shell rolls in the range instead of applying PriceJitterPct.
+	uint32_t price_max = 0;
+	/// RAGNAROKMAC: what a player would actually have in a cart. All optional;
+	/// a plain entry is the plain item, as before.
+	uint8_t refine_min = 0;          ///< Refine level, rolled in [min, max] per shell (equipment only).
+	uint8_t refine_max = 0;
+	uint8_t element = 0;             ///< Forged weapon element (ELE_WATER..ELE_WIND); 0 = not forged.
+	uint8_t stars   = 0;             ///< Forged weapon Star Crumbs, 0-3 ("Very Strong").
+	std::vector<t_itemid> cards;     ///< Cards in its slots (not with a forged element).
 };
 
 /// Vendor stock sourcing mode. RAGNAROKMAC: added Pool as a third type (was bool dynamic).
@@ -261,6 +271,19 @@ struct PopulationVendorEntry {
 	/// dividing its price by 10 — a very low N gives the occasional deal-of-a-
 	/// lifetime find. 0 = never.
 	int price_mistake_one_in = 0;
+	/// RAGNAROKMAC: callout pacing for this vendor's shells. 0 keeps the engine's
+	/// chat cooldown. A street of stalls shouting on the global cooldown is a wall
+	/// of text; these space each stall out and keep stalls on one map from
+	/// talking over one another.
+	int callout_min_sec = 0;                         ///< Each shell waits [min, max] seconds between callouts.
+	int callout_max_sec = 0;
+	int callout_map_gap_sec = 0;                     ///< No two vendor callouts on one map closer than this.
+	/// RAGNAROKMAC: `Undercut: { Chance, StepPct: [min, max] }` (Pool). When a
+	/// stall opens, each plain item has Chance% to be listed StepPct% under the
+	/// cheapest shell stall on the map selling it, never under its own range.
+	int undercut_chance = 0;
+	int undercut_step_min = 0;
+	int undercut_step_max = 0;
 
 	/// RAGNAROKMAC: non-empty only for a mod vendor (an entry with `Spawns:`).
 	/// Its shells come from the mod vendor pass, look like the PlacementBound

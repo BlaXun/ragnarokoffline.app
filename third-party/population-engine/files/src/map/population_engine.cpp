@@ -120,6 +120,9 @@ void population_engine_vendor_job_pool_clear() {
 	g_pop_vendor_job_pool_built = false;
 }
 static std::unordered_map<int32, t_tick> g_pop_chat_next_tick; ///< Per-shell next chat eligibility tick.
+/// RAGNAROKMAC: last vendor callout per map, for a mod vendor's Callouts MapGapSeconds.
+static std::unordered_map<int16, t_tick> g_pop_vendor_last_callout;
+static bool pop_mod_vendor_callout_pace(const map_session_data* sd, const PopulationVendorEntry* ve, int& lo, int& hi);
 static int32 g_pop_chat_timer = INVALID_TIMER;
 static int32 g_population_combat_global_timer = INVALID_TIMER;
 static size_t g_chat_cursor = 0;    ///< Round-robin index for batched chat replies.
@@ -441,6 +444,27 @@ TIMER_FUNC(population_engine_chat_timer) {
 		if (now < next)
 			continue;
 
+		// RAGNAROKMAC: a mod vendor with Callouts waits its turn on the map, so a
+		// street of stalls takes turns instead of talking over one another.
+		const PopulationVendorEntry* mod_ve = nullptr;
+		int pace_lo = 0, pace_hi = 0;
+		if (beh == PopulationBehavior::Vendor && !raw_sd->pop.vendor_spawn_id.empty()) {
+			mod_ve = population_vendor_db().find(raw_sd->pop.vendor_key);
+			if (!pop_mod_vendor_callout_pace(raw_sd, mod_ve, pace_lo, pace_hi)) {
+				// Its mod switched callouts off; look again in a minute.
+				g_pop_chat_next_tick[raw_sd->id] = now + 60000;
+				continue;
+			}
+			if (mod_ve != nullptr && mod_ve->callout_map_gap_sec > 0) {
+				auto lit = g_pop_vendor_last_callout.find(raw_sd->m);
+				if (lit != g_pop_vendor_last_callout.end() &&
+				    DIFF_TICK(now, lit->second) < static_cast<t_tick>(mod_ve->callout_map_gap_sec) * 1000) {
+					g_pop_chat_next_tick[raw_sd->id] = now + 1000 + static_cast<t_tick>(rnd() % 3000);
+					continue;
+				}
+			}
+		}
+
 		const std::string& pick = (*pool)[rnd() % pool->size()];
 		char buf[CHAT_SIZE_MAX];
 		population_engine_format_chat_line(raw_sd, pick.c_str(), buf, sizeof(buf));
@@ -452,7 +476,12 @@ TIMER_FUNC(population_engine_chat_timer) {
 
 		const int32 base_cd = battle_config.population_engine_chat_cooldown_ms;
 		const int32 jit = battle_config.population_engine_chat_cooldown_jitter_ms;
-		const t_tick add = static_cast<t_tick>(base_cd + (jit > 0 ? static_cast<int32>(rnd() % (static_cast<uint32_t>(jit) + 1u)) : 0));
+		t_tick add = static_cast<t_tick>(base_cd + (jit > 0 ? static_cast<int32>(rnd() % (static_cast<uint32_t>(jit) + 1u)) : 0));
+		// RAGNAROKMAC: a mod vendor's own pace replaces the global cooldown.
+		if (pace_hi > 0)
+			add = static_cast<t_tick>(pace_lo + static_cast<int32>(rnd() % static_cast<uint32_t>(pace_hi - pace_lo + 1))) * 1000;
+		if (beh == PopulationBehavior::Vendor)
+			g_pop_vendor_last_callout[raw_sd->m] = now;
 		g_pop_chat_next_tick[raw_sd->id] = now + add;
 		spoken++;
 	}
@@ -2239,7 +2268,135 @@ static bool pop_mod_vendor_spawn_one(int16_t m, const PopulationVendorEntry& ent
 	g_population_engine_count++;
 	g_population_engine_stats.total_created++;
 	g_population_engine_stats.active_units++;
+	// A stall's first callout lands anywhere in its interval, so a street that
+	// spawns at once does not open with every stall shouting together. Always
+	// set, even if its profile has no chat pool: no entry means "speak now".
+	int pace_lo = 0, pace_hi = 0;
+	pop_mod_vendor_callout_pace(sd, &entry, pace_lo, pace_hi);
+	const int32 spread = pace_hi > 0 ? pace_hi
+		: (battle_config.population_engine_chat_cooldown_ms + battle_config.population_engine_chat_cooldown_jitter_ms) / 1000;
+	g_pop_chat_next_tick[sd->id] = gettick() + static_cast<t_tick>(rnd() % (static_cast<uint32_t>(std::max(spread, 1)) + 1u)) * 1000;
 	return true;
+}
+
+/// RAGNAROKMAC: what a mod's scripts set for its vendors (from its settings),
+/// per VendorKey prefix. -1 = not set, keep the YAML.
+struct PopModVendorSettings {
+	std::string prefix;
+	int total = -1;            ///< population_vendor_count
+	int rotation_min = -1;     ///< population_vendor_rotation (0 = never)
+	int callouts = -1;         ///< population_vendor_callouts: 0 off, 1 on
+	int callout_min_sec = -1;
+	int callout_max_sec = -1;
+};
+static std::vector<PopModVendorSettings> g_pop_mod_vendor_settings;
+/// Breaks ties when a total is smaller than the number of blocks, so which
+/// themes sit out changes with each server start rather than always the same.
+static uint32_t g_pop_mod_vendor_seed = 0;
+
+static PopModVendorSettings& pop_mod_vendor_settings_for_prefix(const char* prefix) {
+	const std::string p = prefix ? prefix : "";
+	for (auto& e : g_pop_mod_vendor_settings)
+		if (e.prefix == p)
+			return e;
+	g_pop_mod_vendor_settings.push_back(PopModVendorSettings{});
+	g_pop_mod_vendor_settings.back().prefix = p;
+	return g_pop_mod_vendor_settings.back();
+}
+
+/// The settings that apply to a VendorKey: the longest matching prefix.
+static const PopModVendorSettings* pop_mod_vendor_settings_for_key(const std::string& key) {
+	const PopModVendorSettings* best = nullptr;
+	for (const auto& e : g_pop_mod_vendor_settings)
+		if (key.compare(0, e.prefix.size(), e.prefix) == 0 && (!best || e.prefix.size() > best->prefix.size()))
+			best = &e;
+	return best;
+}
+
+void population_engine_set_mod_vendor_total(const char* prefix, int total) {
+	if (g_pop_mod_vendor_seed == 0)
+		g_pop_mod_vendor_seed = static_cast<uint32_t>(rnd()) | 1u;
+	PopModVendorSettings& e = pop_mod_vendor_settings_for_prefix(prefix);
+	e.total = total < 0 ? -1 : total;
+	ShowInfo("Population engine: mod vendors '%s*': %d in total.\n", e.prefix.c_str(), e.total);
+}
+
+void population_engine_set_mod_vendor_rotation(const char* prefix, int minutes) {
+	PopModVendorSettings& e = pop_mod_vendor_settings_for_prefix(prefix);
+	e.rotation_min = minutes < 0 ? -1 : std::min(minutes, 168 * 60);
+	ShowInfo("Population engine: mod vendors '%s*': rotate every %d min.\n", e.prefix.c_str(), e.rotation_min);
+}
+
+void population_engine_set_mod_vendor_callouts(const char* prefix, int on, int min_sec, int max_sec) {
+	PopModVendorSettings& e = pop_mod_vendor_settings_for_prefix(prefix);
+	e.callouts = on ? 1 : 0;
+	if (max_sec < min_sec) std::swap(min_sec, max_sec);
+	e.callout_min_sec = min_sec > 0 ? min_sec : -1;
+	e.callout_max_sec = max_sec > 0 ? max_sec : -1;
+	ShowInfo("Population engine: mod vendors '%s*': callouts %s, every %d-%d s.\n",
+		e.prefix.c_str(), on ? "on" : "off", e.callout_min_sec, e.callout_max_sec);
+}
+
+/// A mod vendor shell's callout pace: its settings, else its entry, else 0
+/// (the engine's global cooldown). Returns false when its callouts are off.
+static bool pop_mod_vendor_callout_pace(const map_session_data* sd, const PopulationVendorEntry* ve, int& lo, int& hi) {
+	lo = ve ? ve->callout_min_sec : 0;
+	hi = ve ? ve->callout_max_sec : 0;
+	if (const PopModVendorSettings* st = pop_mod_vendor_settings_for_key(sd->pop.vendor_key)) {
+		if (st->callouts == 0)
+			return false;
+		if (st->callout_max_sec > 0) {
+			lo = st->callout_min_sec > 0 ? st->callout_min_sec : st->callout_max_sec;
+			hi = st->callout_max_sec;
+		}
+	}
+	return true;
+}
+
+/// Per spawn block, the count a population_vendor_count total gives it: the
+/// total split by the blocks' YAML counts (largest remainder, so it adds up
+/// exactly), a seat block never above its seats.
+static std::unordered_map<std::string, size_t> pop_mod_vendor_overrides() {
+	std::unordered_map<std::string, size_t> out;
+	for (const auto& tot : g_pop_mod_vendor_settings) {
+		if (tot.total < 0)
+			continue;
+		std::vector<const PopulationModSpawn*> blocks;
+		for (const auto& kv : population_vendor_db().vendor_entries())
+			if (kv.first.compare(0, tot.prefix.size(), tot.prefix) == 0)
+				for (const PopulationModSpawn& sp : kv.second.spawns)
+					blocks.push_back(&sp);
+		std::sort(blocks.begin(), blocks.end(),
+			[](const PopulationModSpawn* a, const PopulationModSpawn* b) { return a->spawn_id < b->spawn_id; });
+		auto weight = [](const PopulationModSpawn* sp) -> size_t {
+			return sp->positions.empty() ? static_cast<size_t>(sp->count) : sp->positions.size();
+		};
+		size_t wsum = 0;
+		for (const auto* sp : blocks) wsum += weight(sp);
+		if (wsum == 0) continue;
+		const size_t total = static_cast<size_t>(tot.total);
+		std::vector<std::pair<size_t, size_t>> rem; // (remainder, index)
+		size_t given = 0;
+		for (size_t i = 0; i < blocks.size(); ++i) {
+			const size_t share = total * weight(blocks[i]);
+			out[blocks[i]->spawn_id] = share / wsum;
+			given += share / wsum;
+			rem.emplace_back(share % wsum, i);
+		}
+		std::vector<size_t> tie(blocks.size());
+		for (size_t i = 0; i < blocks.size(); ++i)
+			tie[i] = std::hash<std::string>()(blocks[i]->spawn_id) ^ (static_cast<size_t>(g_pop_mod_vendor_seed) * 2654435761u);
+		std::sort(rem.begin(), rem.end(),
+			[&](const std::pair<size_t, size_t>& a, const std::pair<size_t, size_t>& b) {
+				return a.first != b.first ? a.first > b.first : tie[a.second] < tie[b.second];
+			});
+		for (size_t r = 0; given < total && r < rem.size(); ++r, ++given)
+			++out[blocks[rem[r].second]->spawn_id];
+		for (const auto* sp : blocks)
+			if (!sp->positions.empty() && out[sp->spawn_id] > sp->positions.size())
+				out[sp->spawn_id] = sp->positions.size();
+	}
+	return out;
 }
 
 /// Keep every mod vendor block on a live map at its count. Exact counts unless
@@ -2260,6 +2417,7 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 		return s < 1 ? 1 : s;
 	};
 
+	const auto overrides = pop_mod_vendor_overrides();
 	for (const auto& kv : population_vendor_db().vendor_entries()) {
 		const PopulationVendorEntry& entry = kv.second;
 		if (entry.spawns.empty())
@@ -2272,14 +2430,38 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 			continue;
 		}
 		for (const PopulationModSpawn& sp : entry.spawns) {
-			if (out_of_room()) return;
 			const int16 m = map_mapname2mapid(sp.map.c_str());
-			if (m < 0 || !pop_map_is_live(m))
+			if (m < 0)
+				continue;
+			auto ov = overrides.find(sp.spawn_id);
+			const size_t base = ov != overrides.end() ? ov->second
+				: (sp.positions.empty() ? static_cast<size_t>(sp.count) : sp.positions.size());
+			const size_t target = std::min(sp.positions.empty() ? SIZE_MAX : sp.positions.size(),
+				scaled(base, sp.scale_with_density));
+
+			// Lowered (a smaller total, or the density slider): release the extra
+			// shells. Seats past the target go first, then any surplus.
+			{
+				std::vector<map_session_data*> extra;
+				size_t kept = 0;
+				for (map_session_data* psd : g_population_engine_pcs) {
+					if (!psd || psd->m != m || psd->pop.vendor_spawn_id != sp.spawn_id) continue;
+					if ((psd->pop.vendor_seat >= 0 && static_cast<size_t>(psd->pop.vendor_seat) >= target) || kept >= target)
+						extra.push_back(psd);
+					else
+						++kept;
+				}
+				for (map_session_data* psd : extra)
+					population_engine_shell_release(psd);
+			}
+
+			if (out_of_room()) return;
+			if (!pop_map_is_live(m))
 				continue;
 
 			if (!sp.positions.empty()) {
 				// Fixed seats: one shell per seat. Scaling down fills the first N.
-				const size_t seats = std::min(sp.positions.size(), scaled(sp.positions.size(), sp.scale_with_density));
+				const size_t seats = target;
 				for (size_t i = 0; i < seats; ++i) {
 					if (out_of_room()) return;
 					const int16_t seat = static_cast<int16_t>(i);
@@ -2295,7 +2477,6 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 			}
 
 			// Count + Areas: that many shells anywhere in the areas.
-			const size_t target = scaled(static_cast<size_t>(sp.count), sp.scale_with_density);
 			size_t cur = population_engine_count_mod_shells(m, sp.spawn_id);
 			if (cur >= target)
 				continue;
@@ -3850,6 +4031,15 @@ TIMER_FUNC(population_engine_vendor_rotation_timer)
 	due.reserve(g_population_engine_pcs.size());
 	for (map_session_data *sd : g_population_engine_pcs) {
 		if (!sd) continue;
+		// RAGNAROKMAC: a mod vendor that has sold everything packs up, as a
+		// player would; the mod pass puts a fresh stall in its place. rAthena
+		// only closes an empty stall for autotraders, so it would otherwise sit
+		// there empty. Base vendors keep upstream's behaviour.
+		if (!sd->pop.vendor_spawn_id.empty() && sd->state.vending && sd->vend_num <= 0) {
+			due.push_back(sd);
+			if (due.size() >= POP_VENDOR_ROTATION_MAX_PER_TICK) break;
+			continue;
+		}
 		if (sd->pop.vendor_rotation_at == 0) continue; // not a rotating vendor
 		if (now < sd->pop.vendor_rotation_at) continue;
 		if (!sd->state.vending) continue; // already stopped vending (edge case: player interactions)
@@ -4978,17 +5168,30 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 				vend_title = vendor_cfg->title.c_str();
 			else if (pop_cfg && !pop_cfg->vendor_message.empty())
 				vend_title = pop_cfg->vendor_message.c_str();
+			// RAGNAROKMAC: {name} in a title is the shell's own name, so a sign like
+			// "{name}'s Forge Goods" matches the player standing behind it. No
+			// shipped title uses it, so stock titles are untouched.
+			std::string vend_title_buf;
+			if (strstr(vend_title, "{name}") != nullptr) {
+				vend_title_buf = vend_title;
+				population_engine_chat_replace_all(vend_title_buf, "{name}", std::string(sd->status.name));
+				if (vend_title_buf.size() >= MESSAGE_SIZE)
+					vend_title_buf.resize(MESSAGE_SIZE - 1);
+				vend_title = vend_title_buf.c_str();
+			}
 
 			// Build the stock list to use.
 			// Priority: static vendor_cfg stock → dynamic (map mob drops) → built-in defaults.
-			struct TmpStock { t_itemid nameid; int16 amount; uint32_t price_override; };
+			// RAGNAROKMAC: src points at the YAML line (refine/element/cards); null for
+			// generated stock, which is always the plain item.
+			struct TmpStock { t_itemid nameid; int16 amount; uint32_t price_override; const PopulationVendorStock* src = nullptr; };
 			std::vector<TmpStock> stock;
 			const int max_slots = vendor_cfg ? vendor_cfg->max_slots : 12;
 
 			if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Static && !vendor_cfg->stock.empty()) {
 				// Static vending: use exactly the YAML-defined stock.
 				for (const auto &vs : vendor_cfg->stock)
-					stock.push_back({ vs.nameid, vs.amount, vs.price });
+					stock.push_back({ vs.nameid, vs.amount, vs.price, &vs });
 
 			} else if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Pool && !vendor_cfg->pool.empty()) {
 				// RAGNAROKMAC: Pool vending. Pick pick_count distinct items from
@@ -5018,27 +5221,77 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 				// buy price", resolved later in the cart loop, so leave it untouched.
 				const int jitter = vendor_cfg->price_jitter_pct;
 				const int mistake_one_in = vendor_cfg->price_mistake_one_in;
-				auto roll_price = [&](uint32_t base) -> uint32_t {
-					if (base == 0) return 0;
-					int64_t p = base;
-					if (jitter > 0) {
-						const int factor = (100 - jitter) + static_cast<int>(rnd() % (2 * jitter + 1));
-						p = p * factor / 100;
+				sd->pop.vendor_mistakes.clear();
+
+				// RAGNAROKMAC: undercutting. The cheapest ask per plain item among
+				// the other shell stalls on this map, built once per stall. Fat-
+				// finger listings are left out, so one typo does not set the price.
+				std::unordered_map<t_itemid, uint32_t> lowest;
+				if (vendor_cfg->undercut_chance > 0) {
+					for (map_session_data* osd : g_population_engine_pcs) {
+						if (!osd || osd == sd || osd->m != sd->m || !osd->state.vending) continue;
+						for (int vi = 0; vi < osd->vend_num; ++vi) {
+							const int16 ci = osd->vending[vi].index;
+							if (ci < 0 || ci >= MAX_CART) continue;
+							const struct item& ct = osd->cart.u.items_cart[ci];
+							if (ct.nameid == 0 || ct.refine != 0 || ct.card[0] != 0) continue;
+							if (std::find(osd->pop.vendor_mistakes.begin(), osd->pop.vendor_mistakes.end(), ct.nameid) != osd->pop.vendor_mistakes.end()) continue;
+							auto it = lowest.find(ct.nameid);
+							if (it == lowest.end() || osd->vending[vi].value < it->second)
+								lowest[ct.nameid] = osd->vending[vi].value;
+						}
+					}
+				}
+
+				auto roll_price = [&](const PopulationVendorStock& vs) -> uint32_t {
+					if (vs.price == 0) return 0;
+					int64_t p, band_lo;
+					if (vs.price_max > 0) {
+						// Price: [min, max] — roll in the range.
+						band_lo = vs.price;
+						p = vs.price + static_cast<int64_t>(rnd() % (vs.price_max - vs.price + 1));
+					} else {
+						p = vs.price;
+						band_lo = jitter > 0 ? p * (100 - jitter) / 100 : p;
+						if (jitter > 0) {
+							const int factor = (100 - jitter) + static_cast<int>(rnd() % (2 * jitter + 1));
+							p = p * factor / 100;
+						}
+					}
+					const bool plain = vs.refine_max == 0 && vs.element == 0 && vs.stars == 0 && vs.cards.empty();
+					if (plain && vendor_cfg->undercut_chance > 0 &&
+					    static_cast<int>(rnd() % 100) < vendor_cfg->undercut_chance) {
+						auto it = lowest.find(vs.nameid);
+						if (it != lowest.end()) {
+							const int lo_s = vendor_cfg->undercut_step_min, hi_s = vendor_cfg->undercut_step_max;
+							const int step = lo_s + static_cast<int>(rnd() % static_cast<uint32_t>(hi_s - lo_s + 1));
+							const int64_t under = static_cast<int64_t>(it->second) * (100 - step) / 100;
+							if (under < p) p = under;
+						}
 					}
 					// Round to a tidy figure players would actually type.
 					if (p >= 10000)     p = p / 500 * 500;
 					else if (p >= 1000) p = p / 50 * 50;
 					else if (p >= 100)  p = p / 5 * 5;
+					// Never below its own range, and never so low that selling it on
+					// to an NPC turns a profit.
+					if (p < band_lo) p = band_lo;
+					if (std::shared_ptr<item_data> pid = item_db.find(vs.nameid))
+						if (p <= static_cast<int64_t>(pid->value_sell)) p = pid->value_sell + 1;
 					// Fat-finger: a very rare dropped digit, left un-rounded so it
-					// reads like a genuine mistake rather than a sale price.
-					if (mistake_one_in > 0 && (rnd() % static_cast<uint32_t>(mistake_one_in)) == 0)
+					// reads like a genuine mistake. The one price allowed under the
+					// NPC floor: that is the jackpot.
+					if (mistake_one_in > 0 && (rnd() % static_cast<uint32_t>(mistake_one_in)) == 0) {
 						p /= 10;
+						sd->pop.vendor_mistakes.push_back(vs.nameid);
+					}
 					if (p < 1) p = 1;
+					if (p > MAX_ZENY) p = MAX_ZENY;
 					return static_cast<uint32_t>(p);
 				};
 				for (int i = 0; i < want; ++i) {
 					const auto &vs = vendor_cfg->pool[idx[i]];
-					stock.push_back({ vs.nameid, vs.amount, roll_price(vs.price) });
+					stock.push_back({ vs.nameid, vs.amount, roll_price(vs), &vs });
 				}
 
 				// Fallthrough to built-in defaults is undesirable for Pool: an
@@ -5261,12 +5514,36 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 				tmp_item.nameid = vs.nameid;
 				tmp_item.amount = 1;
 				tmp_item.identify = 1;
+				// RAGNAROKMAC: refine, forged element or cards from the YAML line.
+				if (vs.src != nullptr && is_equip) {
+					const PopulationVendorStock& src = *vs.src;
+					if (src.refine_max > 0)
+						tmp_item.refine = static_cast<uint8>(src.refine_max > src.refine_min
+							? src.refine_min + rnd() % (src.refine_max - src.refine_min + 1)
+							: src.refine_min);
+					if (src.element != 0 || src.stars != 0) {
+						// Same layout as a Blacksmith's forge (skill_produce_mix), signed
+						// by this shell, so the client names it "<shell>'s Fire Stiletto".
+						tmp_item.card[0] = CARD0_FORGE;
+						tmp_item.card[1] = static_cast<t_itemid>(((src.stars * 5) << 8) + src.element);
+						tmp_item.card[2] = GetWord(sd->status.char_id, 0);
+						tmp_item.card[3] = GetWord(sd->status.char_id, 1);
+					} else {
+						for (size_t ci = 0; ci < src.cards.size() && ci < MAX_SLOTS; ++ci)
+							tmp_item.card[ci] = src.cards[ci];
+					}
+				}
 				if (pc_cart_additem(sd, &tmp_item, slot_amount, LOG_TYPE_NONE) != ADDITEM_SUCCESS)
 					continue;
 
+				// Find the slot holding exactly this item: two lines may share an
+				// item id with different refines or cards.
 				int cart_idx = -1;
 				for (int ci = 0; ci < MAX_CART; ci++) {
-					if (sd->cart.u.items_cart[ci].nameid == vs.nameid) {
+					const struct item& ct = sd->cart.u.items_cart[ci];
+					if (ct.nameid == tmp_item.nameid && ct.refine == tmp_item.refine &&
+					    ct.card[0] == tmp_item.card[0] && ct.card[1] == tmp_item.card[1] &&
+					    ct.card[2] == tmp_item.card[2] && ct.card[3] == tmp_item.card[3]) {
 						cart_idx = ci;
 						break;
 					}
@@ -5293,12 +5570,19 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 				// re-fills with a fresh pool pick + title + name. Jitter spreads
 				// the respawns in time so a Prontera full of ten vendors doesn't
 				// vanish and reappear in lockstep.
-				if (vendor_cfg && vendor_cfg->rotation_sec > 0) {
-					const int jitter = vendor_cfg->rotation_jitter_sec;
+				int rotation_sec = vendor_cfg ? vendor_cfg->rotation_sec : 0;
+				// RAGNAROKMAC: a mod vendor's rotation may come from its mod's settings.
+				if (mod_entry != nullptr)
+					if (const PopModVendorSettings* st = pop_mod_vendor_settings_for_key(mod_entry->key))
+						if (st->rotation_min >= 0)
+							rotation_sec = st->rotation_min * 60;
+				if (vendor_cfg && rotation_sec > 0) {
+					int jitter = vendor_cfg->rotation_jitter_sec;
+					if (jitter > rotation_sec / 2) jitter = rotation_sec / 2; // a short rotation keeps its jitter in proportion
 					int offset = 0;
 					if (jitter > 0)
 						offset = static_cast<int>(rnd() % (jitter * 2 + 1)) - jitter;
-					int lifetime = vendor_cfg->rotation_sec + offset;
+					int lifetime = rotation_sec + offset;
 					if (lifetime < 60) lifetime = 60; // one-minute floor; a negative jitter must not kill newborn shells
 					sd->pop.vendor_rotation_at = gettick() + static_cast<t_tick>(lifetime) * 1000;
 				}
@@ -7606,6 +7890,7 @@ void population_engine_stop() {
     g_population_engine_stats = PopulationEngineStats();
     g_population_engine_running = false;
     g_pop_chat_next_tick.clear();
+    g_pop_vendor_last_callout.clear();
     population_engine_path_clear_all();
     g_chat_cursor = 0;
     for (map_session_data* sd : to_release)
