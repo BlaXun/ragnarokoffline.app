@@ -50,6 +50,10 @@ TABLE_CSV = os.path.join(MOD, "db", "population_vendor_prices", "prontera-vendor
 # group can be counted and switched on its own.
 PREFIX = "prontera-vendors/sell/"
 CANDIDATE_CAP = 80
+# Rule-built themes leave out anything dearer than this: kRO's endgame gear and
+# costumes list for hundreds of millions, which no solo player can reach and
+# which would crowd out the stock people buy. Hand-listed items are exempt.
+POOL_MAX = 50_000_000
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
@@ -78,8 +82,38 @@ def load_mobs():
     return {m["Id"]: m for m in body}
 
 
+def npc_shop_prices():
+    """Item id -> the lowest zeny price any NPC sells it for: shop and
+    marketshop NPCs (-1 = the item's own Buy price), and what scripts stock
+    them with (npcshopupdate; a price of 0 there leaves it unchanged)."""
+    prices = {}
+
+    def note(iid, price):
+        if price == -1:
+            price = (ITEMS_BY_ID.get(iid) or {}).get("Buy") or 0
+        if price > 0:
+            prices[iid] = min(prices.get(iid, price), price)
+
+    for root, _, files in os.walk(os.path.join(RA, "npc")):
+        for f in files:
+            if not f.endswith(".txt"):
+                continue
+            for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) >= 4 and parts[1] in ("shop", "marketshop"):
+                    for tok in parts[3].split(",")[1:]:
+                        m = re.match(r"(\d+):(-?\d+)", tok)
+                        if m:
+                            note(int(m.group(1)), int(m.group(2)))
+                m = re.search(r'npcshopupdate\s+"[^"]+"\s*,\s*(\d+)\s*,\s*(-?\d+)', line)
+                if m:
+                    note(int(m.group(1)), int(m.group(2)))
+    return prices
+
+
 def npc_shop_items():
-    """Item ids any plain zeny `shop` NPC sells."""
+    """Item ids an NPC sells for zeny: shop and marketshop NPCs, and what
+    scripts restock them with."""
     ids = set()
     for root, _, files in os.walk(os.path.join(RA, "npc")):
         for f in files:
@@ -87,11 +121,16 @@ def npc_shop_items():
                 continue
             for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
                 parts = line.rstrip("\n").split("\t")
-                if len(parts) >= 4 and parts[1] == "shop":
+                # Plain zeny shops and market shops (id:price[:stock])...
+                if len(parts) >= 4 and parts[1] in ("shop", "marketshop"):
                     for tok in parts[3].split(",")[1:]:
                         m = re.match(r"(\d+):", tok)
                         if m:
                             ids.add(int(m.group(1)))
+                # ...and what scripts stock them with (the refiners' ores).
+                m = re.search(r'npcshopupdate\s+"[^"]+"\s*,\s*(\d+)\s*,', line)
+                if m:
+                    ids.add(int(m.group(1)))
     return ids
 
 
@@ -121,7 +160,8 @@ def spawns(files):
 ITEMS, ITEMS_BY_ID = load_items()
 MOBS = load_mobs()
 MOBS_BY_AEGIS = {m["AegisName"].upper(): i for i, m in MOBS.items()}
-NPC_SOLD = npc_shop_items()
+NPC_PRICE = npc_shop_prices()
+NPC_SOLD = set(NPC_PRICE)
 MVP_IDS = {i for i, m in MOBS.items() if m.get("MvpExp", 0) > 0}
 
 
@@ -201,6 +241,17 @@ def priced(e, refresh=False):
     row = TABLE.get(e["Id"])
     if row and row[2] == "manual" and row[0] > 0:
         return (row[0] + row[1]) // 2, "manual"
+    p, src = _priced(e, refresh)
+    # Nobody pays a player more than an NPC charges for the same thing; asking
+    # prices above it are listings that never sell, and they drag a median up
+    # (kRO's Phracon "sells" for 10k beside a 200z NPC).
+    npc = NPC_PRICE.get(e["Id"], 0)
+    if p is not None and src != "npc" and npc > 0 and p > npc:
+        p = npc
+    return p, src
+
+
+def _priced(e, refresh):
     iro, iro_origin = iro_price(e, refresh)
     kro = kro_price(e)
     f = FACTOR.get(category(e), FACTOR.get("*", 1.0))
@@ -659,7 +710,7 @@ for _key, _titles, _rule in [
     ("dyes", ["dyes", "S> dyestuffs", "colors n cloth"],
      lambda e: e.get("Type") == "Etc" and ("Dyestuff" in e["Name"] or "Dyestuffs" in e["Name"])),
     ("rare_etc", ["rare loot", "collector items", "S> rare etc"],
-     lambda e: e.get("Type") == "Etc" and (market(e["Id"], False)[0] or 0) >= 100_000),
+     lambda e: e.get("Type") == "Etc" and (price(e) or 0) >= 100_000),
 ]:
     THEMES.append(dict(key=_key, job=random.Random(_key).choice(["Merchant", "Blacksmith", "Whitesmith", "Alchemist", "Creator"]),
                        pick=[5, 9], weight=1, rule=_rule, titles=_titles + [f"{{name}}'s {_titles[0].capitalize()}"]))
@@ -672,9 +723,9 @@ for _key, _titles, _rule in [
     ("random_consumables", ["consumables", "useables", "stuff for hunting"],
      lambda e: e.get("Type") in ("Healing", "Usable", "DelayConsume")),
     ("random_equipment", ["equips", "gear", "old gear"],
-     lambda e: e.get("Type") in ("Weapon", "Armor") and (market(e["Id"], False)[0] or 0) <= 2_000_000),
+     lambda e: e.get("Type") in ("Weapon", "Armor") and (price(e) or 0) <= 2_000_000),
     ("random_cheap", ["Cart Clearance", "MEGA CLEARANCE", "everything cheap", "dirt cheap"],
-     lambda e: e.get("Type") != "Card" and 0 < (market(e["Id"], False)[0] or 0) <= 5_000),
+     lambda e: e.get("Type") != "Card" and 0 < (price(e) or 0) <= 5_000),
     ("random_mixed", ["random", "a bit of everything", "misc"],
      lambda e: e.get("Type") in ("Weapon", "Armor", "Card", "Etc", "Usable", "Healing") and market(e["Id"], False)[1] >= 100),
 ]:
@@ -943,7 +994,7 @@ def resolve(theme, refresh, rng):
             if not tradeable(e):
                 continue
             p = price(e, refresh)
-            if p is None:
+            if p is None or p > POOL_MAX:
                 continue
             ranked.append((popularity(e), e, p))
         limit = theme.get("limit", 30)
