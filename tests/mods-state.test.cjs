@@ -85,3 +85,25 @@ test('settings.html loads mods-state.js before the script that uses it', () => {
   assert.ok(loaded > 0);
   assert.ok(loaded < html.indexOf('ModsState.'));
 });
+
+test('the update count: real updates of installed mods only', () => {
+  const updates = {
+    a: { name: 'a', update: true, installed: 'v1', latest: 'v2' },
+    b: { name: 'b', update: false },
+    c: { name: 'c', update: true, error: 'rate limited' },
+    d: { name: 'd', update: true, listed: false },
+    e: { name: 'e', update: true },
+  };
+  assert.equal(M.updateCount(updates, null), 2);
+  assert.equal(M.updateCount(updates, ['a', 'b', 'c', 'd', 'e']), 2);
+  // Removed since the lookup: no longer counted.
+  assert.equal(M.updateCount(updates, ['a', 'b']), 1);
+  assert.equal(M.updateCount({}, null), 0);
+  assert.equal(M.updateCount(undefined, null), 0);
+});
+
+test('the update count reads as words for a screen reader', () => {
+  assert.equal(M.updateCountLabel(0), '');
+  assert.equal(M.updateCountLabel(1), '1 mod update available');
+  assert.equal(M.updateCountLabel(3), '3 mod updates available');
+});
