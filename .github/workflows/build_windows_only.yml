@@ -1,4 +1,4 @@
-name: build
+name: build_windows
 
 # Builds Ragnarok Offline for macOS, Linux and Windows.
 #
