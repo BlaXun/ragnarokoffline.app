@@ -736,6 +736,24 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 		}
 	}
 
+	// PriceJitterPct: per-item price variation (0-90). 0 = fixed price.
+	if (this->nodeExists(node, "PriceJitterPct")) {
+		int32_t j = 0;
+		if (this->asInt32(node, "PriceJitterPct", j)) {
+			if (j < 0) j = 0;
+			if (j > 90) j = 90; // beyond this prices swing wildly; cap it
+			entry.price_jitter_pct = j;
+		}
+	}
+
+	// PriceMistakeOneIn: 1-in-N chance per item of a "fat-finger" (price / 10).
+	// 0 = never. Keep N large (thousands) so it stays a rare surprise.
+	if (this->nodeExists(node, "PriceMistakeOneIn")) {
+		int32_t n = 0;
+		if (this->asInt32(node, "PriceMistakeOneIn", n) && n > 0)
+			entry.price_mistake_one_in = n;
+	}
+
 	// TitleFromPool: sequence of shop-title strings; shell picks one at spawn.
 	if (this->nodeExists(node, "TitleFromPool")) {
 		const ryml::NodeRef& tp_node = node[c4::to_csubstr("TitleFromPool")];

@@ -26,8 +26,13 @@ Two vendors on the west sidewalk at `x=147`, each pinned to its own spot:
 
 - **`pv_general_gear`** (`y=136..152`, Merchant) — ~22 common gear and
   consumables, 6–10 per shell.
-- **`pv_forge_supplies`** (`y=155..170`, Alchemist) — ores, elemental stones
+- **`pv_forge_supplies`** (`y=155..170`, Whitesmith) — ores, elemental stones
   and upgrade materials, 5–8 per shell.
+
+The engine's own generic vendors (`field_drops`, `dungeon_drops`) still run
+alongside these — they're wanted as plain "player selling their loot" stalls.
+Our two just take one job each from them (Merchant, Whitesmith); the generics
+keep their other job (HighMerchant, Blacksmith) and still spawn.
 
 Each vendor:
 
@@ -43,18 +48,14 @@ Each vendor:
 
 Agreed scope that is **not** in this MVP yet:
 
-1. Prices from a real market. Values here are rough placeholders in the
-   "what a player would charge" direction. The intended source is
-   [ragnastats.com](https://ragnastats.com/) (iRO Valkyrie market data). The
-   scraper has not been written yet.
-   - Per-shell price jitter is also planned: each vendor should roll its own
-     price around the base (vendors undercutting each other, like a real
-     market) instead of every shell showing the same number. Deferred.
-   - "Fat-finger" mispricing (planned): on real servers humans set prices by
-     hand and occasionally drop a digit, so a rare item is listed far too
-     cheap. A VERY low chance (e.g. well under 1% per item) of an item's price
-     being divided by ~10 would recreate the deal-of-a-lifetime moment and sell
-     the illusion of human vendors. Deferred.
+1. Prices are tuned to iRO Valkyrie player-market data (ragnastats.com),
+   gathered by a one-off manual scrape. **Done:** per-shell price jitter
+   (`PriceJitterPct`, each shell rolls each price ±%) and rare "fat-finger"
+   mispricing (`PriceMistakeOneIn`, a 1-in-N dropped digit for a deal-of-a-
+   lifetime find). **Caveat:** iRO is a high-zeny economy, so some values are
+   steep for a solo world (Elunium ~263k). Scale the `Price` numbers down in
+   the YAML if that's too rich. A scripted re-scrape and a pre-renewal price
+   pass are still future work.
 2. Pre-renewal price list. Right now the Pool mixes items that exist in both
    eras — items missing from an era's `item_db.yml` are warned about and
    zeroed by the engine, so the mod will still load; it will just serve a
@@ -63,8 +64,18 @@ Agreed scope that is **not** in this MVP yet:
    far (general goods + forge supplies). Each additional theme is another
    `VendorKey:` block here plus a `Profile:` on a distinct job in
    `population_vendor_pop.yml`. Multiple placements per map now work, so each
-   can have its own spot. (Distinct jobs matter: the vendor-job → VendorKey map
-   is global and last-wins, so two vendors on the same job collide.)
+   can have its own spot.
+   - **Job budget:** only the Merchant tree + Super Novice can actually vend,
+     and each vendor needs its own job (the job → VendorKey map is global,
+     last-wins). Vending-capable jobs: Merchant, Blacksmith, Alchemist,
+     HighMerchant, Whitesmith, Creator, Mechanic, Genetic, Meister, Biolo,
+     SuperNovice, HyperNovice (12). The engine's generics use 4
+     (Merchant/HighMerchant/Blacksmith/Whitesmith) and we share two of those,
+     leaving ~8 free jobs → ~8 more themed vendors before the model runs out.
+   - **Past that ceiling** we'd want an engine change letting a
+     `VendorPlacement` name its `VendorKey` directly (and the engine pick a job
+     from that vendor's Profile), removing the one-job-per-vendor limit. Planned
+     if the themed set grows large.
 4. MVP cards / god items / event-only / non-tradable blocklist. The current
    pool is hand-authored so nothing from those categories is in it, but a
    future dynamic-pool generator will need to apply filters.
