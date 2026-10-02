@@ -210,6 +210,8 @@ struct s_population {
 	// RAGNAROKMAC: items this stall lists by "fat-finger" mistake; undercutting
 	// ignores them, so one typo does not drag the whole street's prices down.
 	std::vector<t_itemid> vendor_mistakes;
+	// RAGNAROKMAC: this mod vendor runs a buying store, not a vending stall.
+	bool vendor_buying = false;
 
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.

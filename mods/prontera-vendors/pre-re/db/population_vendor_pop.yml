@@ -1664,3 +1664,228 @@ Body:
     VendorKey: prontera-vendors/sell/guild_dungeon
     Script: |
       setcart;
+
+  - Profile: prontera-vendors/buy/refine_vendor
+    PlacementBound: true
+    Jobs:
+      RuneKnight: para_knight_base
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/refine
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/cards_common_vendor
+    PlacementBound: true
+    Jobs:
+      Stalker: para_thief
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/cards_common
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/cards_rare_vendor
+    PlacementBound: true
+    Jobs:
+      Alchemist: para_merchant
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/cards_rare
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/boxes_vendor
+    PlacementBound: true
+    Jobs:
+      Champion: para_monk
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/boxes
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/ygg_vendor
+    PlacementBound: true
+    Jobs:
+      RuneKnight: para_knight_base
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/ygg
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/potions_vendor
+    PlacementBound: true
+    Jobs:
+      ArchBishop: low_blunt
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/potions
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/consumables_vendor
+    PlacementBound: true
+    Jobs:
+      Wizard: para_mage
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/consumables
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/gems_vendor
+    PlacementBound: true
+    Jobs:
+      Professor: para_mage
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/gems
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/elemental_vendor
+    PlacementBound: true
+    Jobs:
+      Knight: para_knight_base
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/elemental
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/alchemy_vendor
+    PlacementBound: true
+    Jobs:
+      Monk: para_monk
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/alchemy
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/quest_mats_vendor
+    PlacementBound: true
+    Jobs:
+      Wizard: para_mage
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/quest_mats
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/loot_low_vendor
+    PlacementBound: true
+    Jobs:
+      Blacksmith: para_merchant
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/loot_low
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/loot_mid_vendor
+    PlacementBound: true
+    Jobs:
+      Crusader: para_crusader
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/loot_mid
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/loot_high_vendor
+    PlacementBound: true
+    Jobs:
+      Merchant: para_merchant
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/loot_high
+    Script: |
+      setcart;
+
+  - Profile: prontera-vendors/buy/random_vendor
+    PlacementBound: true
+    Jobs:
+      Wizard: para_mage
+    NameProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    Flags:
+      - mortal
+    TownBehavior: vendor
+    VendorKey: prontera-vendors/buy/random
+    Script: |
+      setcart;

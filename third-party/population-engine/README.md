@@ -247,6 +247,15 @@ engine's vendors spawn exactly as upstream's do.
   first any below its Min, then by weight, each theme's weight divided by
   one plus the stalls of it already standing, skipping any at its Max. So
   the stalls change as they rotate rather than only on a restart.
+- `Buying: true` on a Pool vendor makes its shells open a real buying store
+  instead of a stall: up to 5 items from the pool (only items rAthena lets a
+  buying store take), each with its wanted amount and a price rolled in its
+  range at the mod's price level, never below what an NPC pays. The shell
+  gets one of each item, exactly the zeny it offers and room to carry it all;
+  when its store closes (all bought, or out of zeny) it packs up like a
+  sold-out stall. Its callouts come from `buyer_call` in population_chat.yml.
+  Patch 0019 keeps shells' buying stores out of the database, as 0001 does
+  for vending.
 - `@vendorinfo` (patch 0018) lists the mod stalls on the GM's map, or shows a
   theme's stock and prices or a market's themes.
 - A mod's price table, `db/population_vendor_prices/<prefix>.csv` with rows

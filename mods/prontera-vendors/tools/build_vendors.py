@@ -788,6 +788,95 @@ for _key, _titles, _rule in [
     THEMES.append(dict(key=_key, job=random.Random(_key).choice(["Merchant", "HighMerchant", "Blacksmith", "Alchemist"]),
                        pick=[4, 8], weight=1, rule=_rule, titles=_titles + [f"{{name}}'s {_titles[0].capitalize()}"]))
 
+# Buy shops: players' buying stores, which ask for items instead of selling
+# them. rAthena lets a buying store take only items flagged BuyingStore, and
+# at most 5 kinds at once. They pay under the market (60-85 % of the sell
+# range's low end) and anyone can open one, so buyers wear any job's sprite.
+BUY_PREFIX = "prontera-vendors/buy/"
+BUY_MARKET = BUY_PREFIX + "sidewalks"
+BUY_AREAS = [
+    {"X1": 140, "Y1": 136, "X2": 140, "Y2": 172},
+    {"X1": 171, "Y1": 136, "X2": 171, "Y2": 172},
+]
+BUY_JOBS = {  # sprite -> a gear set that fits it
+    "Knight": "para_knight_base", "LordKnight": "para_knight_base", "RuneKnight": "para_knight_base",
+    "Crusader": "para_crusader", "Paladin": "para_crusader", "RoyalGuard": "para_crusader",
+    "Wizard": "para_mage", "HighWizard": "para_mage", "Sage": "para_mage", "Professor": "para_mage",
+    "Warlock": "para_mage", "Sorcerer": "para_mage", "Priest": "low_blunt", "HighPriest": "low_blunt",
+    "ArchBishop": "low_blunt", "Hunter": "para_bow", "Sniper": "para_bow", "Ranger": "para_bow",
+    "Monk": "para_monk", "Champion": "para_monk", "Sura": "para_monk", "Assassin": "para_thief",
+    "AssassinCross": "para_thief", "Rogue": "para_thief", "Stalker": "para_thief", "GuillotineCross": "para_thief",
+    "Blacksmith": "para_merchant", "Alchemist": "para_merchant", "Merchant": "para_merchant",
+}
+
+
+def buyable(e):
+    return bool((e.get("Flags") or {}).get("BuyingStore")) and tradeable(e)
+
+
+# Items with buyers of their own, kept out of the general potion and
+# consumable buyers.
+BUY_SPECIALS = {"Old_Card_Album", "Magic_Card_Album", "Old_Blue_Box", "Old_Violet_Box", "Bloody_Dead_Branch",
+                "Branch_Of_Dead_Tree", "Old_Gift_Box", "Yggdrasilberry", "Seed_Of_Yggdrasil", "Leaf_Of_Yggdrasil",
+                "Royal_Jelly", "Fruit_Of_Mastela"}
+
+BUY_THEMES = [
+    dict(key="refine", titles=["B> ori elu", "buying ores", "B> Oridecon / Elunium", "WTB refine mats", "{name} buys ores"],
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Oridecon", "Elunium", "Oridecon_Stone", "Elunium_Stone",
+              "Phracon", "Emveretarcon", "Steel", "Iron", "Iron_Ore", "Coal", "Star_Crumb"}, weight=2),
+    dict(key="cards_common", titles=["B> cards", "buying cards", "WTB cards", "B> common cards"],
+         rule=lambda e: buyable(e) and e["Id"] in COMMON_CARDS, weight=2),
+    dict(key="cards_rare", titles=["B> good cards", "buying rare cards", "WTB cards, fair price"],
+         rule=lambda e: buyable(e) and e["Id"] in RARE_CARDS),
+    dict(key="boxes", titles=["B> OCA", "B> OBB OPB", "buying boxes", "B> BB / DB", "WTB albums"],
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Old_Card_Album", "Magic_Card_Album", "Old_Blue_Box",
+              "Old_Violet_Box", "Bloody_Dead_Branch", "Branch_Of_Dead_Tree", "Old_Gift_Box"}),
+    dict(key="ygg", titles=["B> yggs", "buying ygg berries", "WTB ygg seed"],
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Yggdrasilberry", "Seed_Of_Yggdrasil", "Leaf_Of_Yggdrasil",
+              "Royal_Jelly", "Fruit_Of_Mastela"}),
+    dict(key="potions", titles=["B> pots", "buying potions", "B> whites", "WTB herbs n pots"],
+         rule=lambda e: buyable(e) and e.get("Type") == "Healing" and e["AegisName"] not in BUY_SPECIALS),
+    dict(key="consumables", titles=["B> useables", "buying consumables", "WTB awakening/berserk"],
+         rule=lambda e: buyable(e) and e.get("Type") in ("Usable", "DelayConsume") and e["AegisName"] not in BUY_SPECIALS),
+    dict(key="gems", titles=["B> gems", "buying jewels", "B> blue gems"],
+         rule=lambda e: buyable(e) and ("Gemstone" in e["AegisName"] or "Jewel" in e["AegisName"])),
+    dict(key="elemental", titles=["B> ele stones", "buying flame hearts etc", "B> converters"],
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Flame_Heart", "Mistic_Frozen", "Rough_Wind", "Great_Nature",
+              "Boody_Red", "Crystal_Blue", "Wind_Of_Verdure", "Yellow_Live", "Elemental_Fire", "Elemental_Water",
+              "Elemental_Earth", "Elemental_Wind"}),
+    dict(key="alchemy", titles=["B> alche mats", "buying bottles n bowls", "WTB alchemy stuff"],
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Empty_Bottle", "Medicine_Bowl", "Detrimindexta",
+              "Karvodailnirol", "Poison_Bottle", "Acid_Bottle", "Fire_Bottle", "Alcohol", "Fabric", "Stem",
+              "Maneater_Blossom", "Aloe_Leaflet", "Blue_Herb", "White_Herb", "Red_Herb", "Yellow_Herb"}),
+    dict(key="quest_mats", titles=["B> quest items", "buying hat quest mats", "WTB loot for quests"],
+         rule=lambda e: buyable(e) and e.get("Type") == "Etc" and popularity(e) >= 2000),
+    dict(key="loot_low", titles=["B> low lv loot", "buying loot lv 1-40", "B> mob loot"],
+         levels=(1, 40), buyfilter=True),
+    dict(key="loot_mid", titles=["B> loot lv 41-80", "buying mid loot", "B> drops"],
+         levels=(41, 80), buyfilter=True),
+    dict(key="loot_high", titles=["B> high lv loot", "buying loot lv 81+", "B> rare drops"],
+         levels=(81, 175), buyfilter=True),
+    dict(key="random", titles=["Buying", "B> stuff", "buying random loot", "B>"],
+         rule=lambda e: buyable(e) and e.get("Type") in ("Etc", "Card", "Healing", "Usable") and popularity(e) >= 200,
+         sample="random", limit=60),
+]
+for _t in BUY_THEMES:
+    _t.update(buy=True, pick=[2, 5], job=random.Random(_t["key"]).choice(sorted(BUY_JOBS)))
+    _t.setdefault("weight", 1)
+    _t["titles"] = _t["titles"] + [f"{{name}} is buying"]
+
+
+def buy_amount(p, rng):
+    """How many a buyer asks for: lots of cheap loot, a few of anything dear."""
+    if p < 1_000:
+        return rng.choice([100, 200, 300, 500])
+    if p < 20_000:
+        return rng.choice([20, 30, 50, 100])
+    if p < 200_000:
+        return rng.choice([5, 10, 20])
+    return rng.choice([1, 2, 3])
+
+
 # Staples: a real market always has these. In the market each has Min 1 (a
 # spot always holds one), weight 3 and Max 2; card themes weigh 2; the rest 1
 # with Max 1, so the street keeps a mix.
@@ -945,6 +1034,8 @@ def theme_candidates(theme):
         candidates = mvp_items()
     elif "levels" in theme:
         candidates = level_items(*theme["levels"])
+        if theme.get("buyfilter"):
+            candidates = [e for e in candidates if buyable(e)]
     candidates = [e for e in candidates if tradeable(e)]
     cached = [e for e in candidates if str(e["Id"]) in CACHE]
     rest = sorted((e for e in candidates if str(e["Id"]) not in CACHE), key=lambda e: e["Id"])
@@ -1130,24 +1221,38 @@ def main():
     fill_table()
     rng = random.Random(1)
     vendors, profiles, market = [], [], []
-    for t in THEMES:
+    buy_market = []
+    for t in THEMES + BUY_THEMES:
         lines = resolve(t, refresh, rng)
         if not lines:
             print(f"  {t['key']}: nothing to sell, skipped", file=sys.stderr)
             continue
-        key = PREFIX + t["key"]
+        buying = t.get("buy", False)
+        key = (BUY_PREFIX if buying else PREFIX) + t["key"]
         out = [f"  - VendorKey: {key}", "    Type: Pool", f"    Title: {q(t['titles'][0])}", "    TitleFromPool:"]
         titles = list(t["titles"]) + random.Random(t["key"]).sample(GENERIC_TITLES, t.get("generic", 3))
         out += [f"      - {q(x)}" for x in titles]
         lo, hi = t["pick"]
         max_slots = min(12, max(hi, 1))
-        out += [f"    PickCount: [{lo}, {hi}]", f"    MaxSlots: {max_slots}",
-                "    RotationHours: 4", "    RotationJitterMinutes: 30",
-                "    PriceMistakeOneIn: 5000",
-                "    Undercut: { Chance: 50, StepPct: [1, 5] }",
-                "    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }",
-                "    Pool:"]
+        if buying:
+            out += ["    Buying: true", f"    PickCount: [{lo}, {min(hi, 5)}]", "    MaxSlots: 5",
+                    "    RotationHours: 4", "    RotationJitterMinutes: 30",
+                    "    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }",
+                    "    Pool:"]
+        else:
+            out += [f"    PickCount: [{lo}, {hi}]", f"    MaxSlots: {max_slots}",
+                    "    RotationHours: 4", "    RotationJitterMinutes: 30",
+                    "    PriceMistakeOneIn: 5000",
+                    "    Undercut: { Chance: 50, StepPct: [1, 5] }",
+                    "    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }",
+                    "    Pool:"]
         for e, spec, p in lines:
+            if buying:
+                lo_p = TABLE.get(e["Id"], (0, 0, ""))[0] or band(p)[0]
+                d = {"Item": e["AegisName"], "Amount": buy_amount(p, rng),
+                     "Price": [tidy(max(1, int(lo_p * 0.6))), tidy(max(1, int(lo_p * 0.85)))]}
+                out.append(f"      - {flow(d)}")
+                continue
             d = {"Item": e["AegisName"], "Amount": amount_for(e, p, rng)}
             plain = not (spec.get("refine") or spec.get("element") or spec.get("stars"))
             if plain and TABLE.get(e["Id"], (0, 0, ""))[0] > 0:
@@ -1162,12 +1267,12 @@ def main():
                 d["Stars"] = spec["stars"]
             out.append(f"      - {flow(d)}")
         vendors.append("\n".join(out))
-        market.append(key)
+        (buy_market if buying else market).append(key)
         profiles.append("\n".join([
             f"  - Profile: {key}_vendor",
             "    PlacementBound: true",
             "    Jobs:",
-            f"      {t['job']}: para_merchant",
+            f"      {t['job']}: {BUY_JOBS.get(t['job'], 'para_merchant') if buying else 'para_merchant'}",
             "    NameProfile: default",
             "    Hair: [0, 42]",
             "    HairColor: [0, 131]",
@@ -1198,6 +1303,16 @@ def main():
             w = {"Theme": key, "Weight": 1, "Max": 1}
         m.append(f"      - {flow(w)}")
     vendors.insert(0, "\n".join(m))
+
+    # The buy market: the same, on its own sidewalks, replaced by "Buy stalls".
+    if buy_market:
+        bm = [f"  - Market: {BUY_MARKET}", "    Spawns:", "      - Map: prontera", "        Count: 20", "        Areas:"]
+        bm += [f"          - {flow(a)}" for a in BUY_AREAS]
+        bm.append("    Themes:")
+        weights = {BUY_PREFIX + t["key"]: t["weight"] for t in BUY_THEMES}
+        for key in buy_market:
+            bm.append(f"      - {flow({'Theme': key, 'Weight': weights.get(key, 1), 'Max': 3})}")
+        vendors.insert(1, "\n".join(bm))
 
     head = (
         "###########################################################################\n"

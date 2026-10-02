@@ -24,6 +24,8 @@ do, and each new one draws a fresh mix from its theme.
 |---|---|---|
 | Sell shops | on | Off removes every sell stall. |
 | Sell stalls | 20 | How many spots the market fills. |
+| Buy shops | on | Off removes every buying store. |
+| Buy stalls | 20 | How many buying stores the buy market fills. |
 | Minutes before a stall changes | 240 | How long a vendor stays before another takes the spot (± up to half, checked once a minute, so short values run long). 0 keeps them until restart. |
 | Price level (%) | 100 | Every price × this / 100. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count in it). |
@@ -33,8 +35,7 @@ do, and each new one draws a fresh mix from its theme.
 Settings take effect when the server starts. They reach the engine through
 `npc/prontera-vendors.txt` and `npc/prontera-vendors-newer.txt` (the second
 holds the settings that need a newer app build, so an older one only loses
-those). Buy shops will get their own on/off and count under
-`prontera-vendors/buy/`.
+those). 
 
 ## What's for sale
 
@@ -45,6 +46,21 @@ changes while you play. Six staples are always there (general goods,
 potions, forge supplies, healing items, common and rare cards: at least one
 each, at most two); card themes are twice as likely as the rest, and every
 other theme stands at most once at a time.
+
+### Buy shops
+
+A second market, `prontera-vendors/buy/sidewalks`, on the outer sidewalks
+(x=140 and x=171, y=136–172): players' buying stores that buy from you. 15
+themes: refine materials, common and rare cards, OCA/MCA/OBB/OPB and
+branches, Ygg items, potions and herbs, other consumables, gemstones,
+elemental stones and converters, alchemy materials, popular quest materials,
+loot by monster level (three bands), and a random buyer. A store wants 2–5
+kinds of item (rAthena's limit), pays 60–85 % of the low end of the item's
+sell range (never less than an NPC pays), wants lots of cheap loot and a few
+of anything dear, and packs up when it has bought everything or spent its
+zeny. rAthena only lets a buying store take items flagged for it, so
+equipment is never bought. Anyone can open a buying store, so buyers wear
+any job's sprite.
 
 GMs can look behind the scenes with `@vendorinfo` (every mod stall on the
 map, with its theme and time to rotation) and `@vendorinfo <theme>` (its

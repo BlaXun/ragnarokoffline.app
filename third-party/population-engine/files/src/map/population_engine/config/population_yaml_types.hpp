@@ -303,6 +303,9 @@ struct PopulationVendorEntry {
 	/// itself: each of its Spawns' spots rolls one of these themes whenever a
 	/// stall is put there, so the stalls change as they rotate.
 	bool is_market = false;
+	/// RAGNAROKMAC: a buying store (`Buying: true`): its Pool says what it wants
+	/// to buy, how many, and what it pays. Up to MAX_BUYINGSTORE_SLOTS (5) items.
+	bool buying = false;
 	std::vector<PopulationMarketTheme> themes;
 };
 

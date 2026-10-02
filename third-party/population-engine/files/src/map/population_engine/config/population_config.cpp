@@ -838,6 +838,13 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 			entry.rotation_sec = h * 3600;
 		}
 	}
+	// RAGNAROKMAC: Buying: true -- a buying store instead of a vending stall.
+	if (this->nodeExists(node, "Buying")) {
+		bool b = false;
+		if (this->asBool(node, "Buying", b))
+			entry.buying = b;
+	}
+
 	// RAGNAROKMAC: Undercut: { Chance: pct, StepPct: [min, max] }.
 	if (this->nodeExists(node, "Undercut")) {
 		const ryml::NodeRef& un = node[c4::to_csubstr("Undercut")];

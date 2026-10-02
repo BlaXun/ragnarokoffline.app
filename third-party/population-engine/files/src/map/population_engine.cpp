@@ -52,6 +52,7 @@
 #include "status.hpp"
 #include "unit.hpp"
 #include "vending.hpp"
+#include "buyingstore.hpp"
 
 #include "population_engine/config/population_config.hpp"
 #include "population_engine/config/population_yaml_types.hpp"
@@ -179,6 +180,22 @@ static void population_engine_format_zeny_compact(uint32 z, char* out, size_t ou
 /// Returns false when the shell is not vending or the slot is unusable, which the
 /// {item}/{price} formatting path treats as "skip this line".
 static bool population_engine_pick_vend_stock(map_session_data* sd, const char** ename_out, uint32* price_out) {
+	// RAGNAROKMAC: a buying store's callout names something it is buying, at
+	// what it pays.
+	if (sd != nullptr && sd->state.buyingstore && sd->buyingstore.slots > 0) {
+		const int pick = static_cast<int>(rnd() % sd->buyingstore.slots);
+		const auto& bi = sd->buyingstore.items[pick];
+		if (bi.nameid == 0 || bi.amount <= 0)
+			return false;
+		std::shared_ptr<item_data> id = item_db.find(bi.nameid);
+		if (!id || id->ename.empty())
+			return false;
+		if (ename_out != nullptr)
+			*ename_out = id->ename.c_str();
+		if (price_out != nullptr)
+			*price_out = static_cast<uint32>(bi.price);
+		return true;
+	}
 	if (sd == nullptr || sd->vend_num <= 0)
 		return false;
 	const int pick = static_cast<int>(rnd() % static_cast<uint32>(sd->vend_num));
@@ -423,7 +440,13 @@ TIMER_FUNC(population_engine_chat_timer) {
 		// Context-aware pool selection: vendor shells call out, arena shells taunt, hunters talk hunt, else idle/profile.
 		const std::vector<std::string>* pool = nullptr;
 		const auto beh = static_cast<PopulationBehavior>(raw_sd->pop.behavior);
-		if (beh == PopulationBehavior::Vendor)
+		if (beh == PopulationBehavior::Vendor && raw_sd->pop.vendor_buying) {
+			// RAGNAROKMAC: buyers call out what they buy; without buyer_call
+			// lines they stay quiet rather than shout "Selling ...".
+			pool = population_chat_db().lines_for_category("buyer_call");
+			if (pool == nullptr || pool->empty())
+				continue;
+		} else if (beh == PopulationBehavior::Vendor)
 			pool = population_chat_db().lines_for_category("vendor_call");
 		else if (raw_sd->pop.arena_team > 0)
 			pool = population_chat_db().lines_for_category("pvp_taunt");
@@ -2211,6 +2234,44 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 // shell's look comes from the PlacementBound profile whose VendorKey equals the
 // entry's key; its stock comes from the entry itself.
 
+/// RAGNAROKMAC: a sign for a mod stall from its entry's pool, with {name} as
+/// the owner's name, never one another stall on the map already shows
+/// (another from the pool if free, else numbered). The vending path does the
+/// same inline; buying stores use this.
+static std::string pop_mod_pick_title(map_session_data* sd, const PopulationVendorEntry& e) {
+	auto resolve = [&](const std::string& t) {
+		std::string r = t;
+		population_engine_chat_replace_all(r, "{name}", std::string(sd->status.name));
+		if (r.size() >= MESSAGE_SIZE)
+			r.resize(MESSAGE_SIZE - 1);
+		return r;
+	};
+	auto in_use = [&](const std::string& t) {
+		for (map_session_data* o : g_population_engine_pcs)
+			if (o && o != sd && o->m == sd->m && (o->state.vending || o->state.buyingstore) && t == o->message)
+				return true;
+		return false;
+	};
+	std::vector<std::string> cands;
+	for (const std::string& t : e.title_pool)
+		cands.push_back(resolve(t));
+	if (cands.empty())
+		cands.push_back(resolve(e.title.empty() ? std::string("Buying") : e.title));
+	for (size_t i = cands.size(); i > 1; --i)
+		std::swap(cands[i - 1], cands[rnd() % i]);
+	for (const std::string& c : cands)
+		if (!in_use(c))
+			return c;
+	const std::string base = cands.front();
+	for (int n = 2; n < 100; ++n) {
+		const std::string suffix = " " + std::to_string(n);
+		std::string t = base.substr(0, std::min(base.size(), static_cast<size_t>(MESSAGE_SIZE - 1) - suffix.size())) + suffix;
+		if (!in_use(t))
+			return t;
+	}
+	return base;
+}
+
 /// A cell a mod vendor may take: walkable, vending allowed, nobody standing on
 /// it (players and shells are both BL_PC). An occupied seat stays empty until
 /// it is free again; it is never moved.
@@ -2470,6 +2531,85 @@ static const PopulationVendorEntry* pop_market_pick(const PopulationVendorEntry&
 	return from.back().e;
 }
 
+/// RAGNAROKMAC: open a buying store for a mod buyer shell: up to
+/// MAX_BUYINGSTORE_SLOTS items drawn from its pool (only items rAthena lets a
+/// buying store take), each with its wanted amount and a price rolled in its
+/// range at the mod's price level, never below what an NPC pays (or a player
+/// would sell there instead). The shell gets one of each item (rAthena wants
+/// a buyer to own one), exactly the zeny it offers, and room to carry it all.
+static bool pop_shell_open_buyingstore(map_session_data* sd, const PopulationVendorEntry& e) {
+	if (sd == nullptr || e.pool.empty())
+		return false;
+	std::vector<const PopulationVendorStock*> cands;
+	for (const PopulationVendorStock& vs : e.pool) {
+		std::shared_ptr<item_data> id = item_db.find(vs.nameid);
+		if (id && id->flag.buyingstore && vs.price > 0)
+			cands.push_back(&vs);
+	}
+	if (cands.empty())
+		return false;
+	for (size_t i = cands.size(); i > 1; --i)
+		std::swap(cands[i - 1], cands[rnd() % i]);
+	int lo = e.pick_count_min > 0 ? e.pick_count_min : MAX_BUYINGSTORE_SLOTS;
+	int hi = e.pick_count_max > 0 ? e.pick_count_max : lo;
+	if (hi < lo) hi = lo;
+	int want = hi > lo ? lo + static_cast<int>(rnd() % (hi - lo + 1)) : lo;
+	want = std::max(1, std::min({ want, static_cast<int>(MAX_BUYINGSTORE_SLOTS), static_cast<int>(cands.size()) }));
+
+	const int pct = pop_mod_vendor_price_pct(&e);
+	std::vector<PACKET_CZ_REQ_OPEN_BUYING_STORE_sub> list;
+	int64_t budget = 0;
+	for (int i = 0; i < want; ++i) {
+		const PopulationVendorStock& vs = *cands[i];
+		std::shared_ptr<item_data> id = item_db.find(vs.nameid);
+		int64_t p = vs.price_max > vs.price ? vs.price + static_cast<int64_t>(rnd() % (vs.price_max - vs.price + 1)) : vs.price;
+		p = p * pct / 100;
+		if (p >= 10000)     p = p / 500 * 500;
+		else if (p >= 1000) p = p / 50 * 50;
+		else if (p >= 100)  p = p / 5 * 5;
+		if (p <= static_cast<int64_t>(id->value_sell)) p = id->value_sell + 1;
+		p = std::min<int64_t>(std::max<int64_t>(p, 1), 99990000);
+		// Wants between half and all of its listed amount.
+		const int amount = std::max(1, std::min<int>(9998, vs.amount / 2 + static_cast<int>(rnd() % (vs.amount / 2 + 1))));
+		PACKET_CZ_REQ_OPEN_BUYING_STORE_sub sub{};
+		sub.itemId = vs.nameid;
+		sub.amount = static_cast<uint16>(amount);
+		sub.price = static_cast<uint32>(p);
+		list.push_back(sub);
+		budget += p * amount;
+	}
+	budget = std::min<int64_t>(budget, MAX_ZENY);
+
+	// What rAthena asks of a buyer: one of each item, the zeny, and room.
+	for (const auto& sub : list) {
+		if (pc_search_inventory(sd, sub.itemId) >= 0)
+			continue;
+		struct item it = {};
+		it.nameid = sub.itemId;
+		it.identify = 1;
+		pc_additem(sd, &it, 1, LOG_TYPE_NONE);
+	}
+	sd->status.zeny = static_cast<int32>(budget);
+	sd->max_weight = INT32_MAX / 2;
+
+	if (buyingstore_setup(sd, static_cast<unsigned char>(list.size())) != 0)
+		return false;
+	const std::string title = pop_mod_pick_title(sd, e);
+	if (buyingstore_create(sd, static_cast<int32>(budget), 1, title.c_str(), list.data(), static_cast<uint32>(list.size()), nullptr) != 0) {
+		ShowWarning("Population engine: buyer '%s' (%s) could not open its buying store.\n", sd->status.name, e.key.c_str());
+		return false;
+	}
+	// Rotation, like a stall.
+	const PopModVendorSettings* st = pop_mod_vendor_settings_for_key(e.key);
+	const int rotation_sec = st && st->rotation_min >= 0 ? st->rotation_min * 60 : e.rotation_sec;
+	if (rotation_sec > 0) {
+		int jitter = std::min(e.rotation_jitter_sec, rotation_sec / 2);
+		const int offset = jitter > 0 ? static_cast<int>(rnd() % (jitter * 2 + 1)) - jitter : 0;
+		sd->pop.vendor_rotation_at = gettick() + static_cast<t_tick>(std::max(60, rotation_sec + offset)) * 1000;
+	}
+	return true;
+}
+
 /// RAGNAROKMAC: @vendorinfo. No argument: every mod stall on the GM's map.
 /// With one: a vendor theme's settings and stock, or a market's themes.
 /// A key may be given whole or by its last part ("byalan").
@@ -2492,8 +2632,10 @@ void population_engine_vendorinfo(map_session_data* sd, const char* arg) {
 			if (psd->pop.vendor_rotation_at != 0)
 				safesnprintf(rot, sizeof(rot), ", rotates in %lldm",
 					static_cast<long long>(std::max<t_tick>(0, DIFF_TICK(psd->pop.vendor_rotation_at, now)) / 60000));
-			safesnprintf(buf, sizeof(buf), "%s (%d,%d) %s: \"%s\", %d item(s)%s", psd->status.name, psd->x, psd->y,
-				psd->pop.vendor_key.c_str(), psd->state.vending ? psd->message : "(closed)", psd->vend_num, rot);
+			const bool open = psd->state.vending || psd->state.buyingstore;
+			safesnprintf(buf, sizeof(buf), "%s (%d,%d) %s: %s\"%s\", %d item(s)%s", psd->status.name, psd->x, psd->y,
+				psd->pop.vendor_key.c_str(), psd->state.buyingstore ? "buying " : "", open ? psd->message : "(closed)",
+				psd->state.buyingstore ? psd->buyingstore.slots : psd->vend_num, rot);
 			clif_displaymessage(fd, buf);
 			++n;
 		}
@@ -4218,16 +4360,19 @@ TIMER_FUNC(population_engine_vendor_rotation_timer)
 	// Checked first and outside the per-tick cap, so a busy rotation can't keep
 	// an empty stall standing. Base vendors keep upstream's behaviour.
 	for (map_session_data *sd : g_population_engine_pcs)
-		if (sd && !sd->pop.vendor_spawn_id.empty() && sd->state.vending && sd->vend_num <= 0)
+		if (sd && !sd->pop.vendor_spawn_id.empty() &&
+		    ((sd->state.vending && sd->vend_num <= 0) ||
+		     (sd->pop.vendor_buying && !sd->state.buyingstore))) // bought all it wanted, or out of zeny
 			due.push_back(sd);
 	const size_t cap = due.size() + POP_VENDOR_ROTATION_MAX_PER_TICK;
 	for (map_session_data *sd : g_population_engine_pcs) {
 		if (!sd) continue;
-		if (!sd->pop.vendor_spawn_id.empty() && sd->state.vending && sd->vend_num <= 0)
+		if (!sd->pop.vendor_spawn_id.empty() &&
+		    ((sd->state.vending && sd->vend_num <= 0) || (sd->pop.vendor_buying && !sd->state.buyingstore)))
 			continue; // already taken above
 		if (sd->pop.vendor_rotation_at == 0) continue; // not a rotating vendor
 		if (now < sd->pop.vendor_rotation_at) continue;
-		if (!sd->state.vending) continue; // already stopped vending (edge case: player interactions)
+		if (!sd->state.vending && !sd->state.buyingstore) continue; // already stopped vending (edge case: player interactions)
 		due.push_back(sd);
 		if (due.size() >= cap) break;
 	}
@@ -5328,8 +5473,13 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 		if (pop_cfg && !pop_cfg->vendor_message.empty())
 			clif_messagecolor(sd, color_table[COLOR_YELLOW], pop_cfg->vendor_message.c_str(), false, AREA_WOS);
 
+		// RAGNAROKMAC: a mod buyer opens a buying store instead of a stall.
+		if (battle_config.population_engine_vending_enable && mod_entry != nullptr && mod_entry->buying) {
+			sd->pop.vendor_buying = true;
+			pop_shell_open_buyingstore(sd, *mod_entry);
+		}
 		// Vending economy: stock cart and open a real vend.
-		if (battle_config.population_engine_vending_enable) {
+		else if (battle_config.population_engine_vending_enable) {
 			// Look up optional per-job vendor config from population_vendors.yml.
 			const PopulationVendorEntry *vendor_cfg = nullptr;
 			if (pop_cfg && !pop_cfg->vendor_key.empty())
@@ -6594,6 +6744,8 @@ static void population_engine_shell_close_stall(map_session_data *sd)
 		return;
 	if (sd->state.vending)
 		vending_closevending(sd); // clears state.vending, vender_id, the board and vending_db
+	if (sd->state.buyingstore)
+		buyingstore_close(sd);
 	// The intent flag the spawn path sets before calling vending_openvending. openvending normally
 	// clears it itself, including on its early returns, so this is belt-and-braces for a shell that
 	// never got that far.
