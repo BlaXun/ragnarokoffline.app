@@ -50,6 +50,11 @@ Agreed scope that is **not** in this MVP yet:
    - Per-shell price jitter is also planned: each vendor should roll its own
      price around the base (vendors undercutting each other, like a real
      market) instead of every shell showing the same number. Deferred.
+   - "Fat-finger" mispricing (planned): on real servers humans set prices by
+     hand and occasionally drop a digit, so a rare item is listed far too
+     cheap. A VERY low chance (e.g. well under 1% per item) of an item's price
+     being divided by ~10 would recreate the deal-of-a-lifetime moment and sell
+     the illusion of human vendors. Deferred.
 2. Pre-renewal price list. Right now the Pool mixes items that exist in both
    eras — items missing from an era's `item_db.yml` are warned about and
    zeroed by the engine, so the mod will still load; it will just serve a
