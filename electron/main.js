@@ -1715,6 +1715,30 @@ async function installModFrom(src) {
 	return `Installed ${name}.${note} Apply to restart the server.`;
 }
 
+/**
+ * A folder, or a .zip or .rar file, from an open dialog. Only macOS offers
+ * files and folders in one dialog; elsewhere the dialog shows one or the
+ * other, so ask which first. Null when cancelled.
+ */
+async function pickFolderOrArchive(message, filterName) {
+	let props = ['openFile', 'openDirectory'];
+	if (process.platform !== 'darwin') {
+		const parent = BrowserWindow.getFocusedWindow();
+		const question = {
+			type: 'question',
+			buttons: ['A folder…', 'A .zip or .rar…', 'Cancel'],
+			defaultId: 0,
+			cancelId: 2,
+			message,
+		};
+		const { response } = parent ? await dialog.showMessageBox(parent, question) : await dialog.showMessageBox(question);
+		if (response === 2) return null;
+		props = [response === 0 ? 'openDirectory' : 'openFile'];
+	}
+	const r = await dialog.showOpenDialog({ properties: props, filters: [{ name: filterName, extensions: ['zip', 'rar'] }] });
+	return r.canceled || !r.filePaths.length ? null : r.filePaths[0];
+}
+
 async function refusalNote(name) {
 	try {
 		const rows = (await runStack(['mods'])).split('\n').filter(Boolean);
@@ -2122,11 +2146,11 @@ const handlers = {
 	// somebody's code, so this checks before it moves anything, and unpacks
 	// defensively.
 	install_mod: async () => {
-		const picked = await handlers.__dialog_open({
-			filters: [{ name: 'Mod folder, .zip or .rar', extensions: ['zip', 'rar'] }],
-		});
-		if (!picked) return 'Cancelled.';
-		const src = Array.isArray(picked) ? picked[0] : picked;
+		// A folder, a .zip or a .rar: installModFrom reads an archive by its
+		// content, so a RAR with a .zip name installs too. The dialog used to
+		// offer files only, so a mod folder could not be picked at all.
+		const src = await pickFolderOrArchive('Install a mod from…', 'Mod folder, .zip or .rar');
+		if (!src) return 'Cancelled.';
 		return installModFrom(src);
 	},
 	// A UI skin (official client format: a folder of .bmp files, or a zip
@@ -2134,28 +2158,9 @@ const handlers = {
 	// Pictures are data rather than code, but the archive is unpacked with
 	// the same checks as a mod's.
 	install_skin: async () => {
-		let props = ['openFile', 'openDirectory'];
-		// Only macOS offers files and folders in one dialog; elsewhere the
-		// dialog shows one or the other, so ask which.
-		if (process.platform !== 'darwin') {
-			const parent = BrowserWindow.getFocusedWindow();
-			const question = {
-				type: 'question',
-				buttons: ['A folder…', 'A .zip or .rar…', 'Cancel'],
-				defaultId: 0,
-				cancelId: 2,
-				message: 'Install a UI skin or cursor pack from…',
-			};
-			const { response } = parent ? await dialog.showMessageBox(parent, question) : await dialog.showMessageBox(question);
-			if (response === 2) return 'Cancelled.';
-			props = [response === 0 ? 'openDirectory' : 'openFile'];
-		}
-		const r = await dialog.showOpenDialog({
-			properties: props,
-			filters: [{ name: 'Skin folder, .zip or .rar', extensions: ['zip', 'rar'] }],
-		});
-		if (r.canceled || !r.filePaths.length) return 'Cancelled.';
-		return installSkinFrom(r.filePaths[0]);
+		const src = await pickFolderOrArchive('Install a UI skin or cursor pack from…', 'Skin folder, .zip or .rar');
+		if (!src) return 'Cancelled.';
+		return installSkinFrom(src);
 	},
 	// Remove a mod the player installed.
 	//
