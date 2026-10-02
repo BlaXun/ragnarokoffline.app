@@ -10,7 +10,7 @@
 #
 #   name              url                                                commit                                    branch
 # roBrowserLegacy   https://github.com/Flux159/roBrowserLegacy.git   d580daf84affe48ce2ed439eefcd3f62e54a3fdd  ragnarokoffline
-roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   e1eacea9444abbb561d5186aec4c5afa79776925  fix/buyingstore-trade-itemid
+roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   2696016b9278162847307d7639425f8103e9672e  fix/buyingstore-trade-itemid
 ROenglishRE       https://github.com/llchrisll/ROenglishRE.git     66cdfec631603fda6a90ba4bbe26ab07b5204c84
 rathena           https://github.com/Flux159/rathena.git           7b526e61b42054ef1a2d580def083bc145a88726  ragnarokoffline
 #
