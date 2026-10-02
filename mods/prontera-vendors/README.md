@@ -37,16 +37,20 @@ those). Buy shops will get their own on/off and count under
 
 ## What's for sale
 
-106 themes, one vendor key each, all on both sidewalks (x=147, y=136–170 and
-x=164, y=135–173). With the default 20 stalls, each server start shows a
-different random fifth of them; raise "Vendors" to see more at once.
+113 themes, all on both sidewalks (x=147, y=136–170 and x=164, y=135–173).
+Six staples are at every server start: general goods, potions, forge
+supplies, healing items, common cards and rare cards (they weigh three times
+as much in the Sell stalls split). The rest of the stalls are drawn from the
+other themes, a different set each start.
 
 - **Goods:** general gear, forge supplies, potions, slim potions, healing
   items, gemstones, Ygg/Ori/Elu, skill supplies, ammo, magic scrolls, dyes,
   pet and taming items, elemental converters, Undershirt + Pantie, Bloody
   Branches, OBB/OPB, OCA/MCA.
 - **Cards:** common cards (monsters up to level 60) and rare cards (stronger
-  monsters, mini-bosses). Never MVP cards.
+  monsters, mini-bosses), plus binders by slot (weapon, armor, headgear,
+  garment and shoes, shield, accessory) and a cheap-cards stall. Never MVP
+  cards.
 - **By class:** Knight, Crusader, Wizard, Sage, Hunter, Bard/Dancer, Priest,
   Monk, Assassin, Rogue, Blacksmith, Alchemist, Taekwon/SG/SL, Ninja,
   Gunslinger, Super Novice, Doram: gear that class can wear and few others can.

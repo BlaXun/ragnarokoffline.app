@@ -698,6 +698,37 @@ GENERIC_TITLES = ["Stuff", "SALE", "Happy hunting!", "...", "zzz", "Things.", "e
                   "Goodies", "This looks good", "AFK-----AFK", "Come on", "Come here u", "Sell", "See",
                   "Stuff you might want", "Bringing Simples You Need Cheap", "cheap stuff 2", "sale", "random"]
 
+# Card binders by slot, the way players sort them. Cards are among the most
+# traded things on a real server (about one shop in eight in the iRO sample
+# is mostly cards), so besides the two staple card stalls there are these.
+def monster_card(*slots):
+    def rule(e):
+        if e.get("Type") != "Card" or e["Id"] not in COMMON_CARDS | RARE_CARDS:
+            return False
+        return not slots or bool(locs(e) & set(slots))
+    return rule
+
+
+for _key, _titles, _rule in [
+    ("cards_weapon", ["weapon cards", "S> weapon cards", "cards for weapons", "dmg cards fs"], monster_card("Right_Hand")),
+    ("cards_armor", ["armor cards", "S> armor cards", "body cards"], monster_card("Armor")),
+    ("cards_headgear", ["headgear cards", "S> hat cards", "head cards fs"], monster_card("Head_Top", "Head_Mid", "Head_Low")),
+    ("cards_garment_shoes", ["garment n shoe cards", "S> garment cards", "S> shoe cards"], monster_card("Garment", "Shoes")),
+    ("cards_shield", ["shield cards", "S> shield cards", "cards for shields"], monster_card("Left_Hand")),
+    ("cards_accessory", ["accessory cards", "S> acc cards", "ring cards"],
+     monster_card("Both_Accessory", "Left_Accessory", "Right_Accessory")),
+    ("cards_cheap", ["cheap cards", "cards under 50k", "S> cards cheap", "card dump"],
+     lambda e: monster_card()(e) and (price(e) or 0) <= 50_000),
+]:
+    THEMES.append(dict(key=_key, job=random.Random(_key).choice(["Merchant", "HighMerchant", "Blacksmith", "Alchemist"]),
+                       pick=[4, 8], weight=1, rule=_rule, titles=_titles + [f"{{name}}'s {_titles[0].capitalize()}"]))
+
+# Staples: a real market always has these, so they weigh three times as much.
+# The Sell stalls total is split by weight with largest remainders first, so
+# at the default 20 each staple gets a stall every server start and the rest
+# are drawn from the other themes.
+STAPLES = {"general_gear", "potions", "forge_supplies", "healing", "common_cards", "rare_cards"}
+
 # Dungeon loot stalls: what the monsters of a place drop (no cards; those
 # have their own stalls). (key, title, spawn files)
 AREAS_LOOT = [
@@ -1066,7 +1097,8 @@ def main():
             if spec.get("stars"):
                 d["Stars"] = spec["stars"]
             out.append(f"      - {flow(d)}")
-        out += ["    Spawns:", "      - Map: prontera", f"        Count: {t['weight']}", "        Areas:"]
+        weight = 3 if t["key"] in STAPLES else t["weight"]
+        out += ["    Spawns:", "      - Map: prontera", f"        Count: {weight}", "        Areas:"]
         out += [f"          - {flow(a)}" for a in AREAS]
         vendors.append("\n".join(out))
         profiles.append("\n".join([
