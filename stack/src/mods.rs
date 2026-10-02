@@ -570,7 +570,7 @@ fn app_requirement_met(rule: &str, have: Option<&str>) -> Result<(), String> {
 /// Anything after the numbers -- `-beta.1`, `+build` -- is dropped. This is
 /// not semver: a mod that needs to distinguish `1.0.6-beta` from `1.0.6` is
 /// asking a question this mechanism should not answer.
-fn compare_versions(a: &str, b: &str) -> std::cmp::Ordering {
+pub(crate) fn compare_versions(a: &str, b: &str) -> std::cmp::Ordering {
     fn parts(s: &str) -> Vec<u64> {
         s.split(|c: char| c == '-' || c == '+')
             .next()

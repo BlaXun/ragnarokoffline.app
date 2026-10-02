@@ -2212,8 +2212,21 @@ pub(crate) fn leading_words(script: &str) -> Vec<String> {
 }
 
 pub fn backup(cfg: &Config, dk: &Docker, dest: &str) -> Result<(), String> {
-    crate::accounts::verify_era(cfg, dk, crate::service_credentials::era(cfg))?;
-    crate::accounts::with_servers_stopped(cfg, dk, "backup", || backup_snapshot(cfg, dk, dest, true))
+    let mut log = StepLog::open(cfg, "backup");
+    let era = crate::service_credentials::era(cfg);
+    log.record(&format!("backing up the {era} database to {dest}, made by Ragnarok Offline {}", cfg.app_version.as_deref().unwrap_or("(unknown version)")));
+    let result = crate::accounts::verify_era(cfg, dk, era).and_then(|()| {
+        log.record("stopping the game services");
+        crate::accounts::with_servers_stopped(cfg, dk, "backup", || backup_snapshot(cfg, dk, dest, true))
+    });
+    match &result {
+        Ok(()) => log.record("done; the game services are back as they were"),
+        Err(e) => log.record(&format!("failed: {e}")),
+    }
+    result.map_err(|e| match &log.path {
+        Some(path) => format!("{e}\n(Every step of this backup is in {}.)", path.display()),
+        None => e,
+    })
 }
 
 /// `announce` is off for the safety copies taken on someone else's behalf, so
@@ -2260,6 +2273,8 @@ pub(crate) fn backup_snapshot(cfg: &Config, dk: &Docker, dest: &str, announce: b
         let _ = fs::remove_file(&staged);
         return Err("the dump came out empty".into());
     }
+    // Which app made it, for a later restore to know what to migrate.
+    crate::dump_migrations::stamp_file(&staged, &crate::dump_migrations::stamp_line(cfg))?;
     crate::private_fs::protect(&staged, false)?;
     if fs::canonicalize(&staged).ok() == fs::canonicalize(dest).ok() {
         return Err("Choose a backup destination outside the internal staging file".into());
@@ -2370,9 +2385,33 @@ pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
 fn restore_logged(cfg: &Config, dk: &Docker, src: &str, log: &mut StepLog) -> Result<(), String> {
     let era = crate::service_credentials::era(cfg);
     let dump = check_dump(Path::new(src))?;
-    log.say(&format!("restoring {src} ({}) into the {era} database", human(dump.size)));
+    log.say(&format!("restoring {src} ({}, {} tables) into the {era} database", human(dump.size), dump.tables.len()));
     if let Some(note) = &dump.note {
         log.say(note);
+    }
+    // Migrated before the game stops: a backup this version cannot use is
+    // said while everything is still running.
+    let prepared = crate::dump_migrations::prepare(cfg, Path::new(src))?;
+    log.say(&format!("the backup was {}", prepared.describe_version()));
+    if let Err(e) = prepared.check_era(era) {
+        prepared.cleanup();
+        return Err(e);
+    }
+    let result = restore_prepared(cfg, dk, src, &prepared, log);
+    prepared.cleanup();
+    result
+}
+
+fn restore_prepared(
+    cfg: &Config,
+    dk: &Docker,
+    src: &str,
+    prepared: &crate::dump_migrations::Prepared,
+    log: &mut StepLog,
+) -> Result<(), String> {
+    let era = crate::service_credentials::era(cfg);
+    for done in &prepared.done {
+        log.say(&format!("migrated: {done}"));
     }
     crate::accounts::verify_era(cfg, dk, era)?;
     log.say("stopping the game services");
@@ -2385,7 +2424,7 @@ fn restore_logged(cfg: &Config, dk: &Docker, src: &str, log: &mut StepLog) -> Re
         .map_err(|e| format!("Nothing was restored: the backup taken first failed: {e}"))?;
     log.say(&format!("saved the current database as {}", safety.display()));
     log.say("loading the backup into the database");
-    if let Err(e) = load_dump(cfg, dk, Path::new(src)) {
+    if let Err(e) = load_dump(cfg, dk, &prepared.load) {
         // What the database said is the whole point of reporting this: "may
         // have partially changed" alone left a player with nothing to act
         // on, or to send.
@@ -2396,15 +2435,6 @@ fn restore_logged(cfg: &Config, dk: &Docker, src: &str, log: &mut StepLog) -> Re
         ));
     }
     log.say("loaded");
-    // The dump drops and recreates only the tables it contains. The app's own
-    // sign-in tables are tied to account ids, so a dump without them (one from
-    // before 1.4) would leave the previous world's sign-ins pointing at
-    // whoever has those ids now. Startup recreates them empty.
-    for table in stale_session_tables(&dump.tables) {
-        log.say(&format!("clearing {table}, which the backup does not have"));
-        dk.private_sql(&format!("DROP TABLE IF EXISTS `{table}`;"))
-            .map_err(|e| format!("The backup was restored, but clearing {table} failed: {e}"))?;
-    }
     if let Some(credentials) = crate::service_credentials::load(&cfg.state, era)? {
         // An older dump may carry the old interserver login. Restore the
         // managed service row before any subsequent player reconnect.
@@ -2414,14 +2444,6 @@ fn restore_logged(cfg: &Config, dk: &Docker, src: &str, log: &mut StepLog) -> Re
     log.say("done");
     println!("restored from {src}; game services are stopped. Restart the server to reconnect. A pre-restore backup was preserved.");
     Ok(())
-}
-
-/// Tables the app keeps in the game database and makes itself on every start,
-/// which hold sign-ins for particular account ids.
-const SESSION_TABLES: [&str; 3] = ["login_tokens", "app_sign_in_identities", "app_remembered_logins"];
-
-fn stale_session_tables(in_dump: &[String]) -> Vec<&'static str> {
-    SESSION_TABLES.into_iter().filter(|t| !in_dump.iter().any(|d| d == t)).collect()
 }
 
 /// What `check_dump` found out about a file before anything was stopped.
@@ -2475,13 +2497,20 @@ pub(crate) fn check_dump(src: &Path) -> Result<DumpInfo, String> {
 
 /// A step-by-step account of a long operation: each line is printed as it
 /// happens -- the app shows the supervisor's output alongside any error -- and
-/// kept in `state/logs/<what>-<time>.log`, so a failure says where it stopped
-/// even after the window that showed it is gone.
+/// kept twice under `state/logs`: in `<what>-<time>.log`, this run alone, which
+/// an error message points to; and appended to `backup-restore.log`, one file
+/// with every backup and restore in it, timestamped, which Settings -> Tools ->
+/// Log viewer shows as "Backup & restore".
 pub(crate) struct StepLog {
     pub path: Option<PathBuf>,
+    what: String,
     file: Option<fs::File>,
+    shared: Option<fs::File>,
     started: std::time::Instant,
 }
+
+/// The one file the Log viewer follows; see `StepLog`.
+pub(crate) const STEP_LOG_SHARED: &str = "backup-restore.log";
 
 impl StepLog {
     pub fn open(cfg: &Config, what: &str) -> StepLog {
@@ -2491,8 +2520,12 @@ impl StepLog {
             .unwrap_or(0);
         let dir = cfg.state.join("logs");
         let path = dir.join(format!("{what}-{secs}.log"));
-        let file = fs::create_dir_all(&dir).ok().and_then(|_| fs::File::create(&path).ok());
-        StepLog { path: file.as_ref().map(|_| path), file, started: std::time::Instant::now() }
+        let made = fs::create_dir_all(&dir).is_ok();
+        let file = made.then(|| fs::File::create(&path).ok()).flatten();
+        let shared = made
+            .then(|| fs::OpenOptions::new().create(true).append(true).open(dir.join(STEP_LOG_SHARED)).ok())
+            .flatten();
+        StepLog { path: file.as_ref().map(|_| path), what: what.to_string(), file, shared, started: std::time::Instant::now() }
     }
 
     pub fn say(&mut self, line: &str) {
@@ -2500,12 +2533,22 @@ impl StepLog {
         self.record(line);
     }
 
-    /// Into the file only: for the failure, which the caller reports itself.
+    /// Into the files only: for the failure, which the caller reports itself.
     pub fn record(&mut self, line: &str) {
+        use std::io::Write;
         let at = self.started.elapsed().as_secs_f64();
         if let Some(f) = self.file.as_mut() {
-            use std::io::Write;
             let _ = writeln!(f, "[{at:7.1}s] {line}");
+        }
+        if let Some(f) = self.shared.as_mut() {
+            let now = crate::world::rfc3339(std::time::SystemTime::now());
+            // One line per line, so a multi-line database error stays readable
+            // in a viewer that lists lines.
+            // A failure is tagged the way the viewer recognises one.
+            let tag = if line.starts_with("failed:") { "[error] " } else { "" };
+            for part in line.lines().filter(|l| !l.trim().is_empty()) {
+                let _ = writeln!(f, "{now} [{}] {tag}{part}", self.what);
+            }
         }
     }
 }
@@ -2779,19 +2822,6 @@ mod tests {
         }
     }
 
-    /// A dump from before the sign-in tables existed leaves the previous
-    /// world's sign-ins behind unless they are cleared; one that has them
-    /// brings its own.
-    #[test]
-    fn only_session_tables_the_dump_lacks_are_cleared() {
-        let all: Vec<String> = super::SESSION_TABLES.iter().map(|t| t.to_string()).collect();
-        assert!(super::stale_session_tables(&all).is_empty());
-        let old = vec!["char".to_string(), "login".to_string()];
-        assert_eq!(super::stale_session_tables(&old), super::SESSION_TABLES);
-        let some = vec!["login_tokens".to_string()];
-        assert_eq!(super::stale_session_tables(&some), ["app_sign_in_identities", "app_remembered_logins"]);
-    }
-
     /// Each step is written to state/logs as it happens, with its time; the
     /// failure goes only to the file, since the caller reports it itself.
     #[test]
@@ -2817,6 +2847,10 @@ mod tests {
         let body = std::fs::read_to_string(&path).unwrap();
         assert!(body.contains("] stopping the game services\n"), "{body}");
         assert!(body.contains("] failed: the database said: ERROR 1064\n"), "{body}");
+        let shared = std::fs::read_to_string(cfg.state.join("logs").join(super::STEP_LOG_SHARED)).unwrap();
+        assert!(shared.lines().any(|l| l.ends_with("Z [restore] stopping the game services")), "{shared}");
+        assert!(shared.lines().any(|l| l.ends_with("Z [restore] [error] failed: the database said: ERROR 1064")), "{shared}");
+        assert_eq!(shared.lines().count(), 2, "{shared}");
         let _ = std::fs::remove_dir_all(&root);
     }
 

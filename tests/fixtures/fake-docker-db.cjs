@@ -243,7 +243,9 @@ if (verb === 'exec') {
 		}
 		const restore = command.match(/< (\/(?:backups|tmp)\/[A-Za-z0-9._-]+)$/);
 		if (restore) {
-			const dump = fs.readFileSync(inContainer(restore[1]), 'utf8');
+			// The dump's own first line, and the app's version stamp, are
+			// comments the real database skips.
+			const dump = fs.readFileSync(inContainer(restore[1]), 'utf8').replace(/^-- Ragnarok Offline backup: .*\n/m, '');
 			fs.writeFileSync(dbFile, dump.slice(dump.indexOf('\n') + 1));
 			process.exit(0);
 		}

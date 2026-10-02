@@ -416,9 +416,31 @@ everything" archive, a zip or a rar with what to use instead. It prints each
 step as it goes, and keeps them in `state/logs/restore-<time>.log`. If the
 database refuses the dump, the error it gave (with the statement and line) is
 in the message, together with the pre-restore backup to restore to undo it.
-A dump from before 1.4 has no sign-in tables, so the ones already there are
-cleared rather than left pointing at the previous world's accounts. Startup
-makes them again, empty, and players sign in afresh.
+Backups write `state/logs/backup-<time>.log` the same way, and every backup and
+restore is also appended to `state/logs/backup-restore.log`, which Settings →
+Tools → **Log viewer** shows as *Backup & restore*.
+
+Every backup records what made it, in a comment near the top:
+
+```
+-- Ragnarok Offline backup: app 1.4.4, era renewal, packetver 20221005, made 2026-10-02T19:46:28Z
+```
+
+`app` is the version, `era` whose database it is (in "Back up everything",
+each era's dump says its own), `packetver` the client version the server ran,
+and `made` the time in UTC. Restore prints it, and refuses a backup of the
+other era before stopping anything: the tables are the same, so it would load,
+and the world would be wrong. Switch Game era first, then restore it.
+
+Restore also brings an older backup up to date before loading it, by
+running every migration in `stack/src/dump_migrations.rs` newer than the
+backup (a backup from before 1.4.4 has no stamp and gets them all; each one
+checks the dump itself, so it is harmless where nothing needs changing). What
+each did is printed and logged. Today there is one: a backup from before 1.4
+has no sign-in tables, so the ones already there are cleared rather than left
+pointing at the previous world's accounts; startup makes them again, empty,
+and players sign in afresh. A release that changes what a backup must contain
+adds its migration there; the module's comment says how.
 
 That `.sql` is the database of the era that is running, and nothing else. To
 keep or move a whole world, back up everything.

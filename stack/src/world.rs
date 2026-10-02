@@ -206,7 +206,7 @@ fn utc(t: SystemTime) -> (i64, u32, u32, u32, u32, u32) {
     (y, m, d, (rem / 3600) as u32, (rem % 3600 / 60) as u32, (rem % 60) as u32)
 }
 
-fn rfc3339(t: SystemTime) -> String {
+pub(crate) fn rfc3339(t: SystemTime) -> String {
     let (y, mo, d, h, mi, s) = utc(t);
     format!("{y:04}-{mo:02}-{d:02}T{h:02}:{mi:02}:{s:02}Z")
 }
@@ -679,11 +679,24 @@ pub fn restore(cfg: &Config, dk: &Docker, src: &str) -> Result<(), String> {
     };
 
     for (db_era, path) in &manifest.databases {
-        crate::cmds::with_era_database(cfg, dk, db_era, || {
-            crate::cmds::load_dump(cfg, dk, &staged.join(path))
+        // Each era's dump is brought up to this version's expectations
+        // first, as a single-database restore does.
+        let prepared = crate::dump_migrations::prepare(cfg, &staged.join(path))
+            .map_err(|e| failed(format!("Preparing the {} database failed: {e}.", era_name(db_era))))?;
+        if let Err(e) = prepared.check_era(db_era) {
+            prepared.cleanup();
+            return Err(failed(format!("The archive's {} database is not what it says: {e}", era_name(db_era))));
+        }
+        for done in &prepared.done {
+            println!("{} database, {}: migrated: {done}", era_name(db_era), prepared.describe_version());
+        }
+        let loaded = crate::cmds::with_era_database(cfg, dk, db_era, || {
+            crate::cmds::load_dump(cfg, dk, &prepared.load)
                 .map_err(|e| format!("the database did not accept the dump: {e}"))?;
             crate::cmds::adopt_loaded_dump(cfg, dk, db_era)
-        })
+        });
+        prepared.cleanup();
+        loaded
         .map_err(|e| failed(format!("Restoring the {} database failed: {e}.", era_name(db_era))))?;
     }
     apply(&staged, &manifest, &cfg.state).map_err(|e| failed(format!("The databases were restored, but {e}.")))?;

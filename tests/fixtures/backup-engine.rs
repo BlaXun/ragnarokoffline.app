@@ -64,7 +64,17 @@ fn main() {
                 let name = file.trim().trim_end_matches('\'');
                 println!("{}", fs::metadata(root.join("container-tmp").join(name)).unwrap().len());
             } else if let Some((_, file)) = script.split_once("< /tmp/") {
-                fs::copy(root.join("container-tmp").join(file.trim()), &data).unwrap();
+                // The app's version stamp is a comment the real database skips,
+                // and what a migration appends is statements it runs: neither is
+                // part of the data this fake keeps.
+                let dump = fs::read_to_string(root.join("container-tmp").join(file.trim())).unwrap();
+                let added = dump.find("\n\n-- Added by Ragnarok Offline when restoring:").unwrap_or(dump.len());
+                let kept: String = dump[..added]
+                    .lines()
+                    .filter(|l| !l.starts_with("-- Ragnarok Offline backup: "))
+                    .map(|l| format!("{l}\n"))
+                    .collect();
+                fs::write(&data, kept).unwrap();
             } else if let Some((_, file)) = script.split_once("> /tmp/") {
                 // The container's own /tmp: `docker cp` brings the dump out.
                 let tmp = root.join("container-tmp");

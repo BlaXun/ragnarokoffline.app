@@ -20,6 +20,7 @@ mod asset_transaction;
 mod cmds;
 mod crashes;
 mod database;
+mod dump_migrations;
 mod host;
 mod config;
 mod control_panel;

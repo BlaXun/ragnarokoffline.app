@@ -21,7 +21,12 @@ restore is itself undoable.
 
 If a restore fails, the message says what the database objected to, and every
 step is kept in `state/logs/restore-<time>.log` in the app's data folder.
-Settings → **Report a problem** includes it.
+Settings → Tools → **Log viewer** shows every backup and restore under
+*Backup & restore*, and Settings → **Report a problem** includes the last
+restore.
+
+Backups record which version of the app made them, and a backup from an older
+version is brought up to date as it is restored.
 
 An untested backup is not a backup. Restoring one into a throwaway install once
 is worth the five minutes.
