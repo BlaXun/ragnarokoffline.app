@@ -1062,7 +1062,7 @@ CompanionPanel.init = function init() {
 	}
 
 	root.querySelector('.titlebar .close').addEventListener('click', () => {
-		CompanionPanel._host.style.display = 'none';
+		_hidePanel();
 	});
 
 	// Tabs are ui-button elements now, not plain <button>, so select on the class
@@ -1102,14 +1102,30 @@ CompanionPanel.init = function init() {
  */
 
 
+/// Keep where the player left the window. Closing it only hides it, and reopening goes
+/// through append() -> onAppend, which places it from the preference; saving only in
+/// onRemove (a map change or logout) put it back wherever it was before the last move.
+function _savePosition() {
+	// A hidden host reports offsetLeft/Top as 0; its position was saved as it was hidden.
+	if (!CompanionPanel._host || CompanionPanel._host.style.display === 'none') {
+		return;
+	}
+	_preferences.x = CompanionPanel._host.offsetLeft;
+	_preferences.y = CompanionPanel._host.offsetTop;
+	_preferences.squads = _preferences.squads || {};
+	_preferences.save();
+}
+
+function _hidePanel() {
+	_savePosition();
+	CompanionPanel._host.style.display = 'none';
+}
+
 /**
  * When the window is removed
  */
 CompanionPanel.onRemove = function onRemove() {
-	_preferences.x = this._host.offsetLeft;
-	_preferences.y = this._host.offsetTop;
-	_preferences.squads = _preferences.squads || {};
-	_preferences.save();
+	_savePosition();
 };
 
 /**
@@ -1151,7 +1167,7 @@ CompanionPanel.toggle = function toggle() {
 			this._fixPositionOverflow();
 		}
 	} else {
-		this._host.style.display = 'none';
+		_hidePanel();
 	}
 };
 
