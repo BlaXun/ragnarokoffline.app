@@ -30,8 +30,6 @@ button { font: inherit; padding: 2px 8px; cursor: pointer; }
 .empty { color: #889; padding: 4px; }
 .error { color: #a33; }
 .results { max-height: 140px; overflow: auto; }
-.launcher { position: fixed; left: 8px; top: 146px; z-index: 8999; font: bold 11px Tahoma, sans-serif; padding: 4px 6px;
-  border: 1px solid #6b7a99; border-radius: 4px; background: linear-gradient(#f3f6fd, #d3dbef); color: #273256; cursor: pointer; }
 `;
 
 const escape = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -209,16 +207,8 @@ export default function init(parameters, api) {
         if (win.isOpen()) ask('get');
     }
 
-    // Open with Alt+O, or the button.
+    // Open with Alt+O.
     const onKey = event => { if (event.altKey && event.code === 'KeyO') { event.preventDefault(); toggle(); } };
     addEventListener('keydown', onKey, true);
     api.cleanup(() => removeEventListener('keydown', onKey, true));
-    if (parameters?.show_button !== false) {
-        const host = document.createElement('div');
-        const root = host.attachShadow({ mode: 'open' });
-        root.innerHTML = `<style>${STYLE}</style><button class="launcher" title="Autoloot (Alt+O)">Loot</button>`;
-        root.querySelector('button').addEventListener('click', toggle);
-        document.body.appendChild(host);
-        api.cleanup(() => host.remove());
-    }
 }
