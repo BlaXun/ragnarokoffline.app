@@ -108,6 +108,10 @@ struct PopVendorCacheBucket {
 };
 static std::unordered_map<std::string, PopVendorCacheBucket> g_pop_vendor_dyn_cache;
 
+/// RAGNAROKMAC: the base level the next spawn should take, set only around a
+/// hired companion's draft (population_engine_companion_hire). 0 = roll as usual.
+static int16_t g_pop_draft_level = 0;
+
 void population_engine_vendor_dyn_cache_clear() {
 	g_pop_vendor_dyn_cache.clear();
 }
@@ -4047,6 +4051,213 @@ uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job
 	return index;
 }
 
+// ---------------------------------------------------------------------------
+// RAGNAROKMAC: hired companions (Settings -> Population -> Companions).
+//
+// population_engine_companion_hire:
+//   0  free choice: @companion draft offers any job, as before;
+//   1  hired from the Companions panel: only jobs on the player's own class
+//      tier, at the player's level, for a fee;
+//   2  hired from a Companion Recruiter NPC (npc/custom/population/recruiter.txt):
+//      the same rules, and @companion draft sends the player to one.
+// The fee is population_engine_companion_hire_zeny_per_level x the companion's
+// level, and/or population_engine_companion_hire_item x ..._item_amount.
+// Summoning a companion already saved stays free in every mode.
+// ---------------------------------------------------------------------------
+
+/// The class tier of a job: 1 (Novice and 1st), 2 (2nd and transcendent 2nd),
+/// 3 or 4. 0 for a job rAthena does not know.
+int population_engine_job_tier(uint16_t job_id)
+{
+	if (!job_db.exists(job_id))
+		return 0;
+	const uint64 mapid = pc_jobid2mapid(job_id);
+	if (mapid & JOBL_FOURTH) return 4;
+	if (mapid & JOBL_THIRD) return 3;
+	if (mapid & JOBL_2) return 2;
+	return 1;
+}
+
+/// The jobs the Summon tab and the recruiter offer, as @companion jobs names them.
+static const char *const kPopHireJobs[] = {
+	"Swordsman", "Mage", "Archer", "Acolyte", "Merchant", "Thief",
+	"Taekwon", "Gunslinger", "Ninja",
+	"Knight", "Priest", "Wizard", "Blacksmith", "Hunter", "Assassin",
+	"Crusader", "Monk", "Sage", "Rogue", "Alchemist", "Bard", "Dancer",
+	"LordKnight", "HighPriest", "HighWizard", "Whitesmith", "Sniper",
+	"AssassinCross", "Paladin", "Champion", "Professor", "Stalker",
+	"Creator", "Clown", "Gypsy", "StarGladiator", "SoulLinker",
+	"RuneKnight", "Warlock", "Ranger", "ArchBishop", "Mechanic",
+	"GuillotineCross", "RoyalGuard", "Sorcerer", "Minstrel", "Wanderer",
+	"Sura", "Genetic", "ShadowChaser",
+	"DragonKnight", "Meister", "ShadowCross", "ArchMage", "Cardinal",
+	"Windhawk", "ImperialGuard", "Biolo", "AbyssChaser", "ElementalMaster",
+	"Inquisitor", "Troubadour", "Trouvere", "SkyEmperor", "SoulAscetic",
+	"Shinkiro", "Shiranui", "NightWatch", "HyperNovice", "SpiritHandler",
+};
+
+/// The name @companion draft and the recruiter use for a hireable job
+/// ("LordKnight"), which job_name() spells for display ("Lord Knight").
+const char *population_engine_hire_job_name(uint16_t job_id)
+{
+	for (const char *name : kPopHireJobs)
+		if (population_engine_job_id_from_name(name) == job_id)
+			return name;
+	return job_name(job_id);
+}
+
+int population_engine_companion_hire_mode()
+{
+	return battle_config.population_engine_companion_hire;
+}
+
+/// How many of an item the owner carries, unequipped.
+static int pop_hire_item_count(const map_session_data *owner, t_itemid fee_item)
+{
+	int n = 0;
+	for (int i = 0; i < MAX_INVENTORY; ++i) {
+		const struct item &it = owner->inventory.u.items_inventory[i];
+		if (it.nameid == fee_item && it.equip == 0)
+			n += it.amount;
+	}
+	return n;
+}
+
+/// The jobs this owner may hire: their own tier, with a profile to draft from.
+std::vector<uint16_t> population_engine_companion_hire_jobs(map_session_data *owner)
+{
+	std::vector<uint16_t> out;
+	if (!owner)
+		return out;
+	const int tier = population_engine_job_tier(owner->status.class_);
+	for (const char *name : kPopHireJobs) {
+		const uint16_t job = population_engine_job_id_from_name(name);
+		if (job == 0 || population_engine_job_tier(job) != tier)
+			continue;
+		if (population_engine_db_for_shell(owner).find(job) == nullptr)
+			continue;
+		out.push_back(job);
+	}
+	return out;
+}
+
+/// What hiring costs this owner now: zeny for their level, and the item.
+int64_t population_engine_companion_hire_zeny(const map_session_data *owner)
+{
+	if (!owner)
+		return 0;
+	return static_cast<int64>(battle_config.population_engine_companion_hire_zeny_per_level)
+		* owner->status.base_level;
+}
+
+/// Whether this owner may hire `job_id` now. On false, `why` says why.
+static bool pop_hire_allowed(map_session_data *owner, uint16_t job_id, std::string &why)
+{
+	const int tier = population_engine_job_tier(owner->status.class_);
+	if (population_engine_job_tier(job_id) != tier) {
+		why = "You can only hire a companion of your own class tier.";
+		return false;
+	}
+	const int64 zeny = population_engine_companion_hire_zeny(owner);
+	if (zeny > 0 && owner->status.zeny < zeny) {
+		why = "You need " + std::to_string(zeny) + " zeny to hire a companion.";
+		return false;
+	}
+	const t_itemid fee_item = static_cast<t_itemid>(battle_config.population_engine_companion_hire_item);
+	const int amount = battle_config.population_engine_companion_hire_item_amount;
+	if (fee_item > 0 && amount > 0) {
+		if (!itemdb_exists(fee_item)) {
+			why = "The hiring fee names an item this server does not have.";
+			return false;
+		}
+		if (pop_hire_item_count(owner, fee_item) < amount) {
+			why = "You need " + std::to_string(amount) + " " + itemdb_name(fee_item) + " to hire a companion.";
+			return false;
+		}
+	}
+	return true;
+}
+
+/// Draft `job_id` for `owner` under the current hiring rules. `from_npc` is true
+/// when a recruiter asks. Returns the new shell's index, or 0 with `msg` saying
+/// why. On success `msg` says what was paid.
+uint32_t population_engine_companion_hire(map_session_data *owner, uint16_t job_id,
+	const char *name_hint, bool from_npc, std::string &msg)
+{
+	if (!owner)
+		return 0;
+	const int mode = population_engine_companion_hire_mode();
+	if (mode == 0) {
+		const uint32_t made = population_engine_companion_draft(owner, job_id, 1, name_hint);
+		if (made == 0)
+			msg = "Could not draft that companion (see map-server console).";
+		return made;
+	}
+	if (mode == 2 && !from_npc) {
+		msg = "Companions are hired from a Companion Recruiter in town.";
+		return 0;
+	}
+	if (!pop_hire_allowed(owner, job_id, msg))
+		return 0;
+
+	g_pop_draft_level = static_cast<int16_t>(owner->status.base_level);
+	const uint32_t made = population_engine_companion_draft(owner, job_id, 1, name_hint);
+	g_pop_draft_level = 0;
+	if (made == 0) {
+		msg = "Could not draft that companion (see map-server console).";
+		return 0;
+	}
+
+	// Paid only once the companion exists: a failed draft costs nothing.
+	std::string paid;
+	const int64 zeny = population_engine_companion_hire_zeny(owner);
+	if (zeny > 0) {
+		pc_payzeny(owner, static_cast<int32>(zeny), LOG_TYPE_NPC);
+		paid = std::to_string(zeny) + " zeny";
+	}
+	const t_itemid fee_item = static_cast<t_itemid>(battle_config.population_engine_companion_hire_item);
+	int left = battle_config.population_engine_companion_hire_item_amount;
+	if (fee_item > 0 && left > 0) {
+		const int amount = left;
+		for (int i = 0; i < MAX_INVENTORY && left > 0; ++i) {
+			const struct item &it = owner->inventory.u.items_inventory[i];
+			if (it.nameid != fee_item || it.equip != 0)
+				continue;
+			const int take = std::min<int>(left, it.amount);
+			pc_delitem(owner, i, take, 0, 0, LOG_TYPE_NPC);
+			left -= take;
+		}
+		paid += (paid.empty() ? "" : " and ") + std::to_string(amount) + " " + itemdb_name(fee_item);
+	}
+	msg = paid.empty() ? std::string("Hired.") : "Hired for " + paid + ".";
+	return made;
+}
+
+/// @companion terms: the hiring rules for this player, for the Companions
+/// panel. @CPTERMS|mode|tier|zeny|item id|item amount|item name|jobs (':'-joined)
+void population_engine_companion_terms(map_session_data *owner, int fd)
+{
+	if (!owner)
+		return;
+	std::string jobs;
+	for (uint16_t job : population_engine_companion_hire_jobs(owner)) {
+		if (!jobs.empty())
+			jobs += ':';
+		jobs += population_engine_hire_job_name(job);
+	}
+	const t_itemid fee_item = static_cast<t_itemid>(battle_config.population_engine_companion_hire_item);
+	const int amount = battle_config.population_engine_companion_hire_item_amount;
+	const bool has_item = fee_item > 0 && amount > 0 && itemdb_exists(fee_item);
+	std::string line = "@CPTERMS|" + std::to_string(population_engine_companion_hire_mode())
+		+ "|" + std::to_string(population_engine_job_tier(owner->status.class_))
+		+ "|" + std::to_string(population_engine_companion_hire_zeny(owner))
+		+ "|" + std::to_string(has_item ? fee_item : 0)
+		+ "|" + std::to_string(has_item ? amount : 0)
+		+ "|" + (has_item ? itemdb_name(fee_item) : "")
+		+ "|" + jobs;
+	clif_displaymessage(fd, line.c_str());
+}
+
 /// Global combat timer: proximity-driven (mirrors mob_ai_hard).
 /// Only bots within view of a real PC tick. Bots on empty maps cost ~zero,
 /// so the engine scales by real-player count, not by total bot count.
@@ -4776,6 +4987,11 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 				rolled = static_cast<int16_t>(cap_value(mobs + 8,
 					static_cast<int>(pop_cfg->base_level_min), static_cast<int>(hi)));
 		}
+		// RAGNAROKMAC: a hired companion comes at its owner's level, within
+		// the band its profile allows (population_engine_companion_hire).
+		if (g_pop_draft_level > 0)
+			rolled = static_cast<int16_t>(cap_value(static_cast<int>(g_pop_draft_level),
+				static_cast<int>(pop_cfg->base_level_min), static_cast<int>(hi)));
 		sd->status.base_level = cap_value(rolled, 1, MAX_LEVEL);
 	} else {
 		// Upstream defaults an undeclared BaseLevel to 99, which is how a

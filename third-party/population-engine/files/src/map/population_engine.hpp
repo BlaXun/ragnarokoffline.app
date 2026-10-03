@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 class map_session_data;
@@ -19,6 +20,15 @@ const PopulationEngine *population_engine_resolve_equipment(uint16_t job_id);
 /// Swordman/Mage/… first class for `job_id` (same mapping as population spawn fallback).
 uint16_t population_engine_job_base_class(uint16_t job_id);
 uint16_t population_engine_job_id_from_name(const char *name);
+// RAGNAROKMAC: hired companions (population_engine_companion_hire).
+int population_engine_job_tier(uint16_t job_id);
+int population_engine_companion_hire_mode();
+const char *population_engine_hire_job_name(uint16_t job_id);
+std::vector<uint16_t> population_engine_companion_hire_jobs(map_session_data *owner);
+int64_t population_engine_companion_hire_zeny(const map_session_data *owner);
+uint32_t population_engine_companion_hire(map_session_data *owner, uint16_t job_id,
+	const char *name_hint, bool from_npc, std::string &msg);
+void population_engine_companion_terms(map_session_data *owner, int fd);
 
 struct PopulationEngineConfig {
 	uint32_t num_units = 0;
