@@ -1007,6 +1007,14 @@ const SETTINGS_DEFAULTS = {
 	population_town_pct: 100,
 	population_field_pct: 100,
 	population_dungeon_pct: 100,
+	// Companions: 'free' (draft any job from the panel, as before), 'panel'
+	// (hired from the panel: your class tier, your level, for a fee) or 'npc'
+	// (the same, from a Companion Recruiter in town). The fee is zeny per level
+	// of the companion and/or an item (id, amount; 0 = none).
+	population_companion_hire: 'free',
+	population_companion_fee_zeny: 1000,
+	population_companion_fee_item: 0,
+	population_companion_fee_item_amount: 0,
 	// How many shells one player may recruit into their party at once. The
 	// server enforces this per recruiter (not per map), and rAthena's MAX_PARTY
 	// of 12 leaves a slot for real players, which is why the UI tops out at 11.
