@@ -4033,8 +4033,9 @@ uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job
 	if (shell->status.name[0] == '\0')
 		safestrncpy(shell->status.name, "Companion", NAME_LENGTH);
 
-	shell->status.max_hp = 1; shell->status.hp = 1;
-	shell->status.max_sp = 1; shell->status.sp = 1;
+	// No HP/SP here. spawn_shell set its placeholders before status_calc_pc and then filled
+	// SP; writing 1 afterwards left a hired companion believing it had 1 SP, so it cast
+	// nothing that costs SP - no heal, no buff - until a relog recalled it fresh.
 	(void)quality; // gear tier is expressed by the profile's GearSet pools
 
 	// Persist immediately: the row is the companion's identity from here on, and
