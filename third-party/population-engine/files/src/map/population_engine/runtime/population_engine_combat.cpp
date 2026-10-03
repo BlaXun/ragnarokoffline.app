@@ -12,6 +12,7 @@
 #include "population_shell_runtime.hpp"
 
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <ctime>
 #include <unordered_set>
@@ -1040,6 +1041,49 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 		}
 	}
 
+	// RAGNAROKMAC: element. A spell's damage is scaled by rAthena's element table (Fire Bolt does
+	// 150% to Earth, 25% to Fire, and heals a Fire 3 monster), and the rotation ignored it: a Mage
+	// cycled its bolts in list order whatever it fought. The skill the target is weakest to, among
+	// those ready now, goes first; while any ready skill does full damage, one the target resists
+	// is skipped; and one that would do nothing, or heal, never fires. A frozen target counts as
+	// Water, so Jupitel Thunder follows Frost Diver. Skills whose element comes from the weapon
+	// (ELE_WEAPON, endowed, random) count as neutral here.
+	int elem_cutoff = INT_MIN;
+	const int def_ele = (target_bl && !ally_only) ? status_get_element(target_bl) : ELE_NONE;
+	const int def_lv = (target_bl && !ally_only) ? status_get_element_level(target_bl) : 0;
+	auto elem_mult = [&](const PopulationShellCombatSkill &sk) -> int {
+		const int ele = skill_get_ele(sk.skill_id, sk.skill_lv);
+		if (!CHK_ELEMENT(ele) || !CHK_ELEMENT(def_ele))
+			return 100;
+		return elemental_attribute_db.getAttribute(def_lv, ele, def_ele);
+	};
+	if (target_bl && !ally_only && CHK_ELEMENT(def_ele)) {
+		size_t best_idx = SIZE_MAX;
+		int best = 100;
+		bool any_full = false;
+		for (size_t i = 0; i < n; ++i) {
+			const PopulationShellCombatSkill &sk = sd->pop.attack_skills[i];
+			if (!sk.active || sk.skill_id == 0 || sk.target == 2)
+				continue;
+			if (sd->scd.find(sk.skill_id) != sd->scd.end())
+				continue;
+			if (skill_get_sp(sk.skill_id, sk.skill_lv) > static_cast<int>(sd->battle_status.sp))
+				continue;
+			if (!pop_skill_cond_satisfied(sd, sk, target_bl))
+				continue;
+			const int m = elem_mult(sk);
+			if (m >= 100)
+				any_full = true;
+			if (m > best) {
+				best = m;
+				best_idx = i;
+			}
+		}
+		if (combo_promote_idx == SIZE_MAX)
+			combo_promote_idx = best_idx;
+		elem_cutoff = any_full ? 100 : 1;
+	}
+
 	// Round-robin cursor: start from the last-used position so every skill in the
 	// rotation gets equal time at the front. Without this, the first unconditional
 	// Rate:10000 skill in the list monopolises every tick regardless of lower-rate
@@ -1057,6 +1101,8 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 			continue;
 		// Ally-targeted skills are dispatched separately; skip in the enemy-attack rotation.
 		if (!ally_only && sk.target == 2)
+			continue;
+		if (elem_cutoff != INT_MIN && elem_mult(sk) < elem_cutoff)
 			continue;
 		if (ally_only && sk.target != 2)
 			continue;
