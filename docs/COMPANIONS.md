@@ -152,6 +152,20 @@ you already have, from the Party tab or `@companion summon`, is always free.
 `@CPTERMS|mode|tier|zeny|item|amount|item name|jobs`, which is what the
 Companions window reads.
 
+`@companion list raw` prints your saved companions the same way, one line each
+and then `@CPEND|count`, which is how the Companions window draws its rows:
+
+`@CP|name|job|base_level|active|favorite|live_level|live_job|pet|duty`
+
+- `active` and `favorite` are 0 or 1. `live_level` and `live_job` are the
+  summoned companion's current values, which differ from the saved ones once it
+  has levelled.
+- `pet`: -1 when the job cannot have one, otherwise 0 off or 1 on.
+- `duty`: the duty the server holds for it: 0 none yet, 1 tank, 2 support,
+  3 attacker. The window shows this one, not the last button pressed: the server
+  changes the duty of a summoned companion only, so pressing Duty on one that is
+  not out goes back to what the server holds.
+
 ## Current scope
 
 - Companions can be recruited from the existing Population Engine population, or
