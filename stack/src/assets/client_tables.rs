@@ -20,7 +20,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
-use super::{copy_file, copy_over, entries};
+use super::{copy_data_tree, copy_file, copy_over, entries};
 
 /// How a list table's files are listed in the client config.
 enum Order {
@@ -110,7 +110,7 @@ pub const SIGNBOARDS: ListTable = ListTable {
 const LISTS: &[&ListTable] = &[&ITEMS, &QUESTS, &SIGNBOARDS];
 
 /// The list table a file under a mod's `data/` is, by its path there.
-pub(super) fn data_table(rel: &str) -> Option<&'static ListTable> {
+fn data_table(rel: &str) -> Option<&'static ListTable> {
     LISTS.iter().copied().find(|t| t.layer == Layer::Data && (t.matches)(rel))
 }
 
@@ -133,12 +133,6 @@ impl ModTables {
             self.lists.entry(key).or_default().extend(files);
         }
         self.views.extend(other.views);
-    }
-
-    /// `keep_aside` into the table's own directory under the served root
-    /// `web`, named for `mod_name`.
-    pub(super) fn keep_aside_in(&mut self, table: &ListTable, from: &Path, web: &Path, mod_name: &str) -> Result<(), String> {
-        self.keep_aside(table, from, &web.join(table.dir), &safe_name(mod_name))
     }
 
     /// Copy `from` into `dir` as this mod's next table of its kind, numbered
@@ -216,11 +210,23 @@ fn misplaced(root: &Path, mod_name: &str) -> Vec<String> {
         );
     for found in signs {
         out.push(format!(
-            "mods: {mod_name} has {found}, but the client reads signboard tables only from \
-             data/luafiles514/lua files/ -- move it there"
+            "mods: {mod_name} has {found}, but the client reads signboard tables only from {}/ -- move it there",
+            SIGNBOARDS.dir
         ));
     }
     out
+}
+
+/// Copy a mod's `data/` layer over the served root `web`'s, keeping a table
+/// the client merges -- the signboard list -- aside instead of over the stock
+/// one, which it would replace whole.
+pub fn copy_data_layer(src: &Path, web: &Path, mod_name: &str) -> Result<ModTables, String> {
+    let mut tables = ModTables::default();
+    let safe = safe_name(mod_name);
+    for (table, from) in copy_data_tree(src, &web.join("data"), data_table)? {
+        tables.keep_aside(table, &from, &web.join(table.dir), &safe)?;
+    }
+    Ok(tables)
 }
 
 /// Copy a mod's `System/` layer, keeping the client's whole-game tables as
@@ -431,8 +437,8 @@ fn is_quest_table(name: &str) -> bool {
 /// `luafiles514/lua files/SignBoardList.lub` under `data/`, in any case, or as
 /// `.lua`. The translation's `signboardlist_f.lub` is a different file.
 fn is_signboard_table(rel: &str) -> bool {
-    let lower = rel.to_lowercase();
-    lower == "luafiles514/lua files/signboardlist.lub" || lower == "luafiles514/lua files/signboardlist.lua"
+    let read_from = SIGNBOARDS.dir.strip_prefix("data/").unwrap_or(SIGNBOARDS.dir);
+    rel.rsplit_once('/').is_some_and(|(dir, name)| dir.to_lowercase() == read_from && is_signboard_name(name))
 }
 
 /// A file named like the signboard table, wherever it is.
@@ -694,6 +700,27 @@ mod tests {
         let (src, merged) = (tmp.join("mod/System"), tmp.join("merged"));
         write(&src.join("SignBoardList.lub"), "x");
         assert!(copy_system_layer(&src, &merged, "m").unwrap().list(&SIGNBOARDS).is_empty());
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// A mod's signboard table is kept aside under its own name rather than
+    /// laid over the stock one, which it would replace whole -- and everything
+    /// else in data/ still lands, aliases and all.
+    #[test]
+    fn a_signboard_table_is_kept_aside_rather_than_replacing_the_stock_one() {
+        let tmp = tmp("data-layer");
+        let (src, web) = (tmp.join("mod/data"), tmp.join("web"));
+        write(&web.join("data/luafiles514/lua files/SignBoardList.lub"), "STOCK");
+        write(&src.join("luafiles514/lua files/SignBoardList.lub"), "MOD SIGNS");
+        write(&src.join("luafiles514/lua files/signboardlist_f.lub"), "NOT A TABLE OF SIGNS");
+        write(&src.join("texture/ui/x.bmp"), "art");
+        let tables = copy_data_layer(&src, &web, "my mod").unwrap();
+        assert_eq!(tables.list(&SIGNBOARDS), ["SignBoardList-my-mod.lub"]);
+        let signs = web.join("data/luafiles514/lua files");
+        assert_eq!(fs::read_to_string(signs.join("SignBoardList-my-mod.lub")).unwrap(), "MOD SIGNS");
+        assert_eq!(fs::read_to_string(signs.join("SignBoardList.lub")).unwrap(), "STOCK");
+        assert!(signs.join("signboardlist_f.lub").is_file());
+        assert!(web.join("data").join(super::super::client_path("texture/ui/x.bmp")).is_file());
         let _ = fs::remove_dir_all(&tmp);
     }
 
