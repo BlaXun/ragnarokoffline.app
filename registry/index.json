@@ -52,7 +52,7 @@
         },
         {
           "path": "client/index.js",
-          "sha256": "7bdb7f9dd37193fafe230e18ec225fbad347b36f91c2b241de3c9ab890f15450"
+          "sha256": "c03d75d62a3815906c367668e41835a32a2c1a7ce7e4b9635716dee2f36f4f14"
         },
         {
           "path": "db/when/longer_list/extension_db.yml",

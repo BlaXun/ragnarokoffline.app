@@ -33,6 +33,9 @@ button { font: inherit; padding: 2px 8px; cursor: pointer; }
 .preset { display: flex; align-items: center; gap: 4px; padding: 2px 0; }
 .preset input { flex: 1; min-width: 0; font: inherit; padding: 2px 4px; border: 1px solid #aab4cf; border-radius: 3px; }
 .preset button { padding: 1px 6px; }
+.confirm { display: flex; align-items: center; gap: 6px; margin-top: 4px; padding: 4px 6px; border: 1px solid #d9b26a;
+  border-radius: 3px; background: #fff7e6; }
+.confirm span { flex: 1; }
 `;
 
 const escape = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -80,6 +83,7 @@ export default function init(parameters, api) {
         <section>
             <h4>Presets</h4>
             <div data-presets></div>
+            <div class="confirm" data-confirm hidden><span></span><button data-yes>Yes</button><button data-no>No</button></div>
             <div class="note">Type a name and Save to keep the settings below; Load puts them back.</div>
         </section>
         <section>
@@ -163,6 +167,22 @@ export default function init(parameters, api) {
         if (monster) renderMonster();
     }
 
+    // A yes/no question in the window itself, under the presets. A second
+    // question answers the first with "no".
+    let settle = null;
+    function confirmHere(question) {
+        settle?.(false);
+        const bar = $('[data-confirm]');
+        bar.querySelector('span').textContent = question;
+        bar.hidden = false;
+        return new Promise(resolve => {
+            settle = answer => { settle = null; bar.hidden = true; resolve(answer); };
+        });
+    }
+    $('[data-confirm] [data-yes]').addEventListener('click', () => settle?.(true));
+    $('[data-confirm] [data-no]').addEventListener('click', () => settle?.(false));
+    win.onClose(() => settle?.(false));
+
     function renderPresets() {
         const box = $('[data-presets]');
         // Keep what the player is typing when an answer redraws the window.
@@ -175,13 +195,13 @@ export default function init(parameters, api) {
             <button data-preset="rename" data-slot="${slot}" ${name ? '' : 'disabled'} title="Keep the settings, change the name">Rename</button>
             <button data-preset="delete" data-slot="${slot}" ${name ? '' : 'disabled'} title="Empty this slot">×</button>
         </div>`).join('');
-        box.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', () => {
+        box.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', async () => {
             const slot = Number(button.dataset.slot);
             const action = button.dataset.preset;
             const name = box.querySelector(`[data-name="${slot}"]`).value.replace(/[|;]/g, '').trim().slice(0, 24);
-            if (action === 'save' && state.presets[slot] && !confirm(`Replace "${state.presets[slot]}" with the current settings?`)) return;
-            if (action === 'delete' && !confirm(`Delete "${state.presets[slot]}"?`)) return;
             button.blur();
+            if (action === 'save' && state.presets[slot] && !await confirmHere(`Replace "${state.presets[slot]}" with the current settings?`)) return;
+            if (action === 'delete' && !await confirmHere(`Delete "${state.presets[slot]}"?`)) return;
             ask(['save', 'rename'].includes(action) ? `${action} ${slot} ${name}` : `${action} ${slot}`);
         }));
     }
