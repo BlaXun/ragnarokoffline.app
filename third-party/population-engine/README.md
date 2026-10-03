@@ -278,7 +278,8 @@ engine's vendors spawn exactly as upstream's do.
 - Both vendor databases import `db/import/`, with empty stubs in
   `db/import-tmpl/`, so a mod's file is read rather than ignored.
 
-`mods/prontera-vendors` is the worked example.
+`registry/mods/prontera-vendors` is the worked example (its generator is in
+`registry/tools/prontera-vendors`).
 
 ## Measured cost
 

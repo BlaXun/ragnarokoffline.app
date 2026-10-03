@@ -230,6 +230,80 @@
       ]
     },
     {
+      "name": "prontera-vendors",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "A living player market on Prontera's main road. Fake players run real vending stalls on the inner sidewalks (cards, weapons and armor by class, refined gear, potions, gems, pet eggs, loot from every dungeon and more) and real buying stores on the outer sidewalks that buy your ores, cards, boxes and loot. Prices follow a real server's market (kRO), stalls undercut each other and change as their owners come and go, and everything is tunable in Settings. Needs the population engine switched on.",
+      "homepage": "",
+      "tags": [
+        "buying-store",
+        "economy",
+        "market",
+        "population",
+        "prontera",
+        "vending"
+      ],
+      "icon": "images/icon.png",
+      "screenshots": [
+        "images/prontera-vendors.png"
+      ],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.4.5"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "ee09bced2a86795edb1c9890317287a7e2bb739f07ae2d6208c26277f324a51b"
+        },
+        {
+          "path": "db/population_vendor_pop.yml",
+          "sha256": "7acd8f4e1070c803ebc6f3bce1d6a6ee68ec9255b433b86f5e7fab531fee66b2"
+        },
+        {
+          "path": "db/population_vendor_prices/prontera-vendors.csv",
+          "sha256": "193b3b5de0150d3f53f9b8698cbe293c9e87e1c734e36aa20bd9c3a5c4f368e8"
+        },
+        {
+          "path": "db/population_vendors.yml",
+          "sha256": "a8d712e72a8eb60b6388e85cc4bdf4a5750d2ac8ce11a1dca361c264e3e6c129"
+        },
+        {
+          "path": "images/icon.png",
+          "sha256": "7970e5e7d060154e80725ef4653c6b2196b74cab00f022e2f46fc3a4f99052fd"
+        },
+        {
+          "path": "images/prontera-vendors.png",
+          "sha256": "b354081d75c1abc5ccb458b23748cb88f38c96279b21e3ece9f2b712c5028129"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "47a038e1b81d5452fa35139ba3d18be7eafc5e84d4ea6eb60bda27a25682ed0b"
+        },
+        {
+          "path": "npc/prontera-vendors-newer.txt",
+          "sha256": "bc8ad6de84fe69e05aa7d29e7b6c8673c5e3c5d94a65804b496644a879323da1"
+        },
+        {
+          "path": "npc/prontera-vendors.txt",
+          "sha256": "d85a1bd2ee97c8e8de40a352c59943f68bba42115f6148a0f07cbdf597559021"
+        },
+        {
+          "path": "pre-re/db/population_vendor_pop.yml",
+          "sha256": "cb25efb97078a344bc17530aa297564a41d73498326ab265148ffc3c4cedec27"
+        },
+        {
+          "path": "pre-re/db/population_vendor_prices/prontera-vendors.csv",
+          "sha256": "aec97a8bab5e0ee5cacdf9493539d2e0f62a833ff91ce2884f306d3d30a9140f"
+        },
+        {
+          "path": "pre-re/db/population_vendors.yml",
+          "sha256": "0a250ec29a4a1262c6a0ebcac356c8a291b83ce4420ef882459a5bb13fe791b8"
+        }
+      ]
+    },
+    {
       "name": "refine-matk",
       "version": "1.0.0",
       "author": "BlaXun",
