@@ -10,7 +10,7 @@
 #
 #   name              url                                                commit                                    branch
 # roBrowserLegacy   https://github.com/Flux159/roBrowserLegacy.git   28f2a701f5754b69fb6bb0d89591cb85464aaf37  ragnarokoffline
-roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   d387a91a8424d7ab617eb25e14d69159dc7e1b2a  gamepad-twin-stick-aim
+roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   c10a74e08cbfb86145b5c0f6ba62a495f5b250d7  gamepad-twin-stick-aim
 ROenglishRE       https://github.com/llchrisll/ROenglishRE.git     66cdfec631603fda6a90ba4bbe26ab07b5204c84
 rathena           https://github.com/Flux159/rathena.git           510dc4ab8ff8441be0c7c14e4362058db737c436  ragnarokoffline
 #
