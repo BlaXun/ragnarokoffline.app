@@ -12,7 +12,7 @@ const ROOT = path.join(__dirname, '..');
 const read = rel => fs.readFileSync(path.join(ROOT, rel), 'utf8').replace(/\r\n/g, '\n');
 const engine = read('third-party/population-engine/files/src/map/population_engine.cpp');
 const header = read('third-party/population-engine/files/src/map/population_engine.hpp');
-const patch = read('third-party/population-engine/patches/0023-companion-draft-sex.patch');
+const patch = read('third-party/population-engine/patches/0024-companion-draft-sex.patch');
 const panel = read('patches/CompanionPanel.js');
 
 test('the draft takes the chosen sex after the job\'s own and before the profile\'s', () => {
