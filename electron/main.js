@@ -3243,12 +3243,27 @@ ipcMain.handle('invoke', async (event, name, args) => {
 // Menu
 // ---------------------------------------------------------------------------
 
+// GPL-3.0: whoever has the app can get its source. The About panel says where,
+// and the menu item below opens it (macOS draws the panel's credits as plain text).
+const SOURCE_URL = 'https://github.com/Flux159/ragnarokoffline.app';
+
+function setAboutPanel() {
+	app.setAboutPanelOptions({
+		applicationName: app.name,
+		applicationVersion: app.getVersion(),
+		copyright: 'Free software under the GNU General Public License v3.0 (GPL-3.0).',
+		credits: `Source code: ${SOURCE_URL}`,
+		website: SOURCE_URL,
+	});
+}
+
 function buildMenu() {
 	return Menu.buildFromTemplate([
 		{
 			label: app.name,
 			submenu: [
 				{ role: 'about' },
+				{ label: 'Source Code on GitHub', click: () => shell.openExternal(SOURCE_URL) },
 				{ type: 'separator' },
 				{ label: 'Settings…', accelerator: 'CmdOrCtrl+,', click: openSettings },
 				{ type: 'separator' },
@@ -3421,6 +3436,7 @@ app.whenReady().then(() => {
 		if (entry.installed) appLog(`desktop entry ${entry.updated ? 'updated' : 'written'}: ${entry.file}`);
 		else if (entry.file) appLog(`desktop entry not written: ${entry.reason}`);
 	}
+	setAboutPanel();
 	Menu.setApplicationMenu(buildMenu());
 	// Only the listener and its files: the agent's window waits for an agent.
 	try {
