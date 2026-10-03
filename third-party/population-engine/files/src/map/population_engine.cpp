@@ -2272,14 +2272,15 @@ static std::string pop_mod_pick_title(map_session_data* sd, const PopulationVend
 	return base;
 }
 
-/// A cell a mod vendor may take: walkable, vending allowed, nobody standing on
+/// A cell a mod vendor may take: walkable, vending and buying stores allowed, nobody standing on
 /// it (players and shells are both BL_PC). An occupied seat stays empty until
 /// it is free again; it is never moved.
 static bool pop_mod_vendor_cell_free(int16_t m, int16_t x, int16_t y) {
 	struct map_data* md = map_getmapdata(m);
 	if (!md || x < 0 || y < 0 || x >= md->xs || y >= md->ys)
 		return false;
-	if (!map_getcell(m, x, y, CELL_CHKPASS) || map_getcell(m, x, y, CELL_CHKNOVENDING))
+	if (!map_getcell(m, x, y, CELL_CHKPASS) || map_getcell(m, x, y, CELL_CHKNOVENDING) ||
+	    map_getcell(m, x, y, CELL_CHKNOBUYINGSTORE))
 		return false;
 	return map_count_oncell(m, x, y, BL_PC, 0) == 0;
 }

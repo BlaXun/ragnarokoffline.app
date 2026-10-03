@@ -184,7 +184,8 @@ rows of the price list you changed by hand (marked `manual`); everything else
 follows the data. The YAML can be edited by hand for a quick test, but a
 re-run overwrites it.
 
-How the YAML works:
+How the YAML works (the full reference is
+[docs/MOD_VENDORS.md](../../../docs/MOD_VENDORS.md)):
 
 - **The first two entries are the markets.** Each has `Spawns` (map, areas,
   Count) and `Themes` (each with `Weight`, `Min`, `Max`).

@@ -471,6 +471,16 @@ every key, how the headcount is divided between maps, which tables are still
 unreachable, and the two ways this data fails without the server saying
 anything.
 
+### Vendors and buying stores
+
+A mod can also give the world its own fake-player vendors: themed vending
+stalls and buying stores that stand where the mod says, price things like a
+real market and come and go like players. Two tables, `db/population_vendors.yml`
+and `db/population_vendor_pop.yml`, an optional price list, and a few script
+commands for settings: the whole reference is [Mod vendors](MOD_VENDORS.md),
+and [`registry/mods/prontera-vendors`](../registry/mods/prontera-vendors) is
+the worked example.
+
 ## Making new things: items, monsters, and how they look
 
 A mod can add items and monsters that exist in no client and no server, with

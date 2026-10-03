@@ -14,6 +14,9 @@ and game window in one icon.
 - **[Modding](MODDING.md)** — a mod is a folder. Change the world's numbers, add
   NPCs and quests, replace the login and loading screens, build a map that is
   in nobody's GRF, and decide where new characters wake up.
+- **[Mod vendors](MOD_VENDORS.md)** — fake-player vending stalls and buying
+  stores a mod places, stocks and prices: markets, themes, price lists and
+  the settings that steer them.
 - **[Advanced features](ADVANCED_FEATURES.md)** — backups, disk usage, starting
   over, and the other things you never have to touch.
 - **[Custom homunculus AI](CUSTOM_HOMUNCULUS_AI.md)** — installing AzzyAI or
