@@ -61,19 +61,19 @@ test('the picker overlay is MOUNTED, not just constructed', () => {
 	// outside the `#CompanionPanel` wrapper that every rule in the stylesheet is scoped to,
 	// and the window rendered with no background at all.
 	const mount = js.slice(js.indexOf('function _mountSkillPicker('));
-	const mountBody = mount.slice(0, 600);
+	const mountBody = mount.slice(0, mount.indexOf('\n}\n'));
 	assert.match(mountBody, /const wrap = _panelMount\(\);/,
 		'_mountSkillPicker must mount via _panelMount (the #CompanionPanel wrapper)');
-	assert.match(mountBody, /wrap\.append\(_skillPickerOverlay\(\)\)/,
+	assert.match(mountBody, /const overlay = _skillPickerOverlay\(\);\s*wrap\.append\(overlay\);/,
 		'the overlay must be appended to the WRAPPER, not the shadow root');
-	assert.ok(!/root\.append\(_skillPickerOverlay\(\)\)/.test(mountBody),
+	assert.ok(!/root\.append\((?:_skillPickerOverlay\(\)|overlay)\)/.test(mountBody),
 		'the overlay must NOT be appended to getRoot() directly - that is the no-background bug');
 	// _render is the single funnel every redraw goes through, so the call belongs there.
 	const render = js.slice(js.indexOf('function _render()'), js.indexOf('function _page('));
 	assert.match(render, /_mountSkillPicker\(\)/,
 		'_render must mount the picker, or the overlay never appears');
 	// A second overlay would swallow clicks meant for the first.
-	assert.match(mount.slice(0, 600), /querySelectorAll\('\.skill-overlay'\)[\s\S]{0,40}remove\(\)/,
+	assert.match(mountBody, /querySelectorAll\('\.skill-overlay'\)[\s\S]{0,40}remove\(\)/,
 		'a previous overlay must be removed before mounting another');
 });
 
@@ -97,7 +97,7 @@ test('a tick mirrors the server instead of being set optimistically', () => {
 	// The server is authoritative about the selection, so the client re-asks after a
 	// change rather than leaving its own checkbox state as the truth.
 	const cb = js.slice(js.indexOf("cb.addEventListener('change'"));
-	assert.match(cb.slice(0, 900), /askSkills\(_skillTarget\)/,
+	assert.match(cb.slice(0, 900), /askSkills\(_skillTarget, true\)/,
 		'a tick must re-ask the server after the change');
 	assert.match(cb.slice(0, 900), /cb\.disabled = true/,
 		'the box must be disabled while the round-trip is in flight');
@@ -234,4 +234,30 @@ test('skills show their in-game name and a description on right-click', () => {
 	const close = js.slice(js.indexOf('function closeSkillPicker('));
 	assert.match(close.slice(0, close.indexOf('\n}\n')), /_skills\.some\(s => s\.id === SkillDescription\.uid\)/,
 		'closing the picker closes a description it opened, and only that');
+});
+
+// #290 item 9: every tick scrolled the list back to the top. The re-ask after a change
+// emptied the list (the picker redrew as "asking the server…"), and every redraw builds a
+// fresh overlay whose list starts at scrollTop 0. A refresh now keeps the list on screen
+// until the answer replaces it, and the mount carries the scroll position across.
+test('a tick keeps the skill list where it was scrolled', () => {
+	const ask = js.slice(js.indexOf('function askSkills('));
+	const askBody = ask.slice(0, ask.indexOf('\n}\n'));
+	assert.match(askBody, /function askSkills\(name, refresh\)/);
+	assert.match(askBody, /if \(!refresh\) \{\s*_skills = \[\];/,
+		'only a fresh open may empty the list');
+	for (const m of js.matchAll(/setTimeout\(\(\) => askSkills\(([^)]*)\)/g))
+		assert.equal(m[1], '_skillTarget, true', 'every re-ask after a change is a refresh');
+	assert.match(js, /function openSkillPicker\(name\) \{\s*_skillTarget = name;\s*askSkills\(name\);/,
+		'opening the picker still starts from an empty list');
+
+	const mount = js.slice(js.indexOf('function _mountSkillPicker('));
+	const body = mount.slice(0, mount.indexOf('\n}\n'));
+	const read = body.indexOf('.scrollTop : 0');
+	const remove = body.indexOf(".skill-overlay').forEach(el => el.remove())");
+	const restore = body.indexOf('list.scrollTop = scroll');
+	assert.ok(read >= 0 && remove > read, 'the scroll position is read before the old overlay goes');
+	assert.ok(restore > remove, 'and restored on the new list');
+	assert.match(css, /#CompanionPanel \.skill-list \{[^}]*overflow-y: auto/,
+		'.skill-list is the element that scrolls');
 });

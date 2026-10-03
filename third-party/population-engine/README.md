@@ -229,6 +229,9 @@ engine's vendors spawn exactly as upstream's do.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).
+  A shell in `Areas` keeps `min_npc_vendchat_distance` (3 cells) from any
+  NPC, as a player's own shop must, so an NPC another mod puts there is not
+  covered by a stall; fixed `Positions` are taken as given.
   Counts are exact unless `ScaleWithDensity: true`. Mod vendors are spawned by
   their own pass after the engine's, never count toward a map's `MaxVendors`,
   and do count toward the global Limit.

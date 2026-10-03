@@ -8,6 +8,7 @@ import * as Windows from './PluginWindows.mjs';
 import { install as installSignIn } from './SignIn.mjs';
 import * as Pregame from './PregameScreens.mjs';
 import { createAccount } from './RememberLogin.mjs';
+import { createHostRoutes } from './HostRoutes.mjs';
 import ExitHooks from 'UI/ExitHooks.js';
 import Session from 'Engine/SessionStorage.js';
 import Camera from 'Renderer/Camera.js';
@@ -261,6 +262,9 @@ export function init() {
     // The player choosing to leave (Escape menu, character select's Cancel),
     // as the plugin event 'exit'.
     ExitHooks.on(event => Runtime.exit(event));
+    // A mod's NPC script telling its plugin something unasked, as the plugin
+    // event 'server:event'.
+    Windows.listen((command, text) => Runtime.serverEvent(command, text));
     // Any other set() is the client targeting for itself. Hand it back its own
     // callbacks first, or the pending plugin pick would swallow the click and
     // the skill would never be cast.
@@ -391,6 +395,9 @@ export function init() {
         } : undefined,
         // api.account (RememberLogin.mjs). The proof of login goes to the app
         // or the gateway, never to a plugin.
+        // api.host.request (HostRoutes.mjs): the app over IPC on the host's
+        // own window, /_friend/mod/ on a friend's.
+        hostRequest: createHostRoutes({ invoke: window.__ELECTRON__?.core?.invoke }),
         account: createAccount({
             session: () => Session.AID ? { accountId: Session.AID, webToken: String(Session.WebToken || '').replace(/\0[\s\S]*$/, '') } : null,
             invoke: window.__ELECTRON__?.core?.invoke,
