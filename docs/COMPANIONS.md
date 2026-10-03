@@ -125,7 +125,7 @@ window with four tabs.
 | Party | The saved companion list, with each one's job, level and state. Set duty, summon, bench, favorite, or refresh. |
 | Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th. When companions are hired (below), only your own tier's jobs, with the fee. |
 | Battle | Stance (Free / Standard / Hold), Taunt and Recall, and the healer thresholds. |
-| Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it. Gear you gave that a new job cannot wear is handed back when it advances. |
+| Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it; when you take a piece back, it puts its own gear back on in that slot. Gear you gave that a new job cannot wear is handed back when it advances. |
 
 Each companion on the Party tab has a **Skills** button, which lists the skills
 it may use; untick one and it stops using it. The list order is also the
