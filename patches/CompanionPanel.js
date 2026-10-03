@@ -646,10 +646,16 @@ function _drawBattle() {
 
 /// Ask the server for one companion's skill menu. Answered through the chat hook
 /// as @CPSK|... lines, terminated by @CPSKEND.
-function askSkills(name) {
+///
+/// `refresh` re-asks after a change made in the open picker: the list on screen stays
+/// until the answer replaces it. Clearing it here redrew the picker as "asking the
+/// server…" between every tick and its answer, and the list came back scrolled to the top.
+function askSkills(name, refresh) {
 	_skillPending = [];
-	_skills = [];
-	_skillMeta = { job: '', chosen: false, emitted: 0, answered: false };
+	if (!refresh) {
+		_skills = [];
+		_skillMeta = { job: '', chosen: false, emitted: 0, answered: false };
+	}
 	talk(`@companion skills ${name}`, false);
 }
 
@@ -751,7 +757,7 @@ function _skillPickerOverlay() {
 				// rather than being set optimistically here.
 				cb.disabled = true;
 				talk(`@companion skills ${_skillTarget} toggle ${s.id}`, false);
-				window.setTimeout(() => askSkills(_skillTarget), 250);
+				window.setTimeout(() => askSkills(_skillTarget, true), 250);
 			});
 
 			const nm = document.createElement('span');
@@ -772,7 +778,7 @@ function _skillPickerOverlay() {
 	actions.className = 'skill-actions';
 	const mk = (label, cmd, title) => _button(label, 'b', () => {
 		talk(`@companion skills ${_skillTarget} ${cmd}`, false);
-		window.setTimeout(() => askSkills(_skillTarget), 300);
+		window.setTimeout(() => askSkills(_skillTarget, true), 300);
 	}, title);
 	actions.append(
 		mk('All', 'all', 'Use every skill this class can use'),
@@ -855,11 +861,20 @@ function _panelMount() {
 
 function _mountSkillPicker() {
 	const wrap = _panelMount();
+	// The picker is rebuilt on every redraw; carry the list's scroll position over, or each
+	// tick (which redraws twice: the click and the server's answer) jumps back to the top.
+	const old = wrap.querySelector('.skill-overlay .skill-list');
+	const scroll = old ? old.scrollTop : 0;
 	wrap.querySelectorAll('.skill-overlay').forEach(el => el.remove());
 	if (!_skillTarget) {
 		return;
 	}
-	wrap.append(_skillPickerOverlay());
+	const overlay = _skillPickerOverlay();
+	wrap.append(overlay);
+	const list = overlay.querySelector('.skill-list');
+	if (list && scroll) {
+		list.scrollTop = scroll;
+	}
 }
 
 function _drawGear() {
