@@ -1113,6 +1113,41 @@ with colour 0 transparent. Start from one of the job's existing colours.
 rebuilt from nothing every time the app starts — which is why files put there
 keep disappearing. A mod's `data/` is the place that lasts.
 
+### Signboards: icons over NPCs
+
+The backpack over a Kafra and the red potion over a tool dealer are rows of one
+table, `data/luafiles514/lua files/SignBoardList.lub`. A mod's copy of that file
+is **added to the stock one, not laid over it**: ship one holding only your
+signs, and every Kafra keeps its icon.
+
+```lua
+-- my-mod/data/luafiles514/lua files/SignBoardList.lub, plain text
+SignBoardList = {
+	{ "prontera", 160, 185, 0, 1, "information\\over_nmtrade.bmp" },
+	{ "geffen", 120, 66, 10, 3, "information\\over_nmtrade.bmp", "Buying Drops", "#0x00FFFFFF" },
+}
+```
+
+Each row is map, x, y, height, type, icon, and for a board a caption and a
+colour. Type 1 is an icon on its own, as over a Kafra; any other type (the
+stock table uses 3) is a board with the icon and the caption. The client
+ignores the colour. The icon is a path under `data/texture/유저인터페이스/`
+and can be any image there — the stock ones are `information\over_kafra.bmp`,
+`over_store.bmp` (the potion), `over_nmtrade.bmp` (a bag of zeny),
+`over_weaponshop.bmp`, `over_armorshops.bmp`, `over_inn.bmp`, `over_guide.bmp`
+and so on. Or ship your own image there and name it.
+
+- **A sign belongs to a cell, not to an NPC.** Use your NPC's own map and
+  coordinates. A sign on a cell the stock table already has replaces that one,
+  which is also how a mod changes a stock icon. The client ignores the height
+  as well, and puts every sign at the same distance above the ground.
+- **Mods load in order**, after the stock table, and the last sign on a cell
+  wins. The app copies each mod's table aside as
+  `SignBoardList-<mod>.lub` and lists them in the client's
+  `customSignBoardList`.
+- **Write it in ASCII.** The client reads captions in its own codepage, as it
+  does quest text.
+
 ### The client caches, hard
 
 There are two caches between your file and the screen, and they fail

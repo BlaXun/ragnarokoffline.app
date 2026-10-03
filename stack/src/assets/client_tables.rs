@@ -11,7 +11,7 @@
 //! There are two shapes:
 //!
 //! - **List tables** ([`ListTable`]): one file per mod, a config key holding the
-//!   list. Items and quests. A new one is a `ListTable` and an entry in
+//!   list. Items, quests and signboards. A new one is a `ListTable` and an entry in
 //!   [`LISTS`]; nothing else here or in `link` changes.
 //! - **View tables** ([`ViewTables`]): the sprite tables behind a look, which
 //!   the client loads as id/name *pairs*, so they are collected and paired.
@@ -34,10 +34,21 @@ enum Order {
     LastModFirst { base: fn(&Path) -> Vec<String> },
 }
 
+/// Which of a mod's folders a table is found in.
+#[derive(PartialEq)]
+enum Layer {
+    /// Directly in `System/`, matched by file name.
+    System,
+    /// Anywhere under `data/`, matched by the path below `data/` as the mod
+    /// wrote it.
+    Data,
+}
+
 /// A client table that mods add to as a list of further files.
 pub struct ListTable {
-    /// Whether a file, by its name in `System/`, is one of the client's names
-    /// for this table.
+    layer: Layer,
+    /// Whether a file -- by its name in `System/`, or its path under `data/`,
+    /// as `layer` says -- is one of the client's names for this table.
     matches: fn(&str) -> bool,
     /// A mod's copy is `<stem>-<mod>.<ext>`; a second in the same layer is
     /// `<stem>-<mod>.2.<ext>`. A dot cannot appear in a sanitised mod name, so
@@ -57,6 +68,7 @@ pub struct ListTable {
 /// (`_processedItems` in DBManager.js), which is what lets a mod rename a stock
 /// item.
 pub const ITEMS: ListTable = ListTable {
+    layer: Layer::System,
     matches: is_item_table,
     stem: "itemInfo",
     ext: "lua",
@@ -69,6 +81,7 @@ pub const ITEMS: ListTable = ListTable {
 /// (`OngoingQuestInfoList*`, #163). Loaded after the base, a quest at a time by
 /// id.
 pub const QUESTS: ListTable = ListTable {
+    layer: Layer::System,
     matches: is_quest_table,
     stem: "OngoingQuestInfoList",
     ext: "lub",
@@ -77,8 +90,29 @@ pub const QUESTS: ListTable = ListTable {
     order: Order::ModOrder,
 };
 
+/// `customSignBoardList`: the icons and signs drawn over NPCs
+/// (`data/luafiles514/lua files/SignBoardList.lub`). One table for the whole
+/// game, so a mod shipping its own to put an icon over its NPC used to take
+/// away every Kafra's, tool dealer's and guide's. The client merges each over
+/// the stock table by map and cell: a sign on a cell that already has one
+/// replaces it, and every other is kept.
+pub const SIGNBOARDS: ListTable = ListTable {
+    layer: Layer::Data,
+    matches: is_signboard_table,
+    stem: "SignBoardList",
+    ext: "lub",
+    dir: "data/luafiles514/lua files",
+    config_key: "customSignBoardList",
+    order: Order::ModOrder,
+};
+
 /// Every list table, in the order their config entries are written.
-const LISTS: &[&ListTable] = &[&ITEMS, &QUESTS];
+const LISTS: &[&ListTable] = &[&ITEMS, &QUESTS, &SIGNBOARDS];
+
+/// The list table a file under a mod's `data/` is, by its path there.
+pub(super) fn data_table(rel: &str) -> Option<&'static ListTable> {
+    LISTS.iter().copied().find(|t| t.layer == Layer::Data && (t.matches)(rel))
+}
 
 /// The tables a mod -- or, once extended, every mod -- adds to the client's.
 #[derive(Debug, Default, PartialEq)]
@@ -99,6 +133,12 @@ impl ModTables {
             self.lists.entry(key).or_default().extend(files);
         }
         self.views.extend(other.views);
+    }
+
+    /// `keep_aside` into the table's own directory under the served root
+    /// `web`, named for `mod_name`.
+    pub(super) fn keep_aside_in(&mut self, table: &ListTable, from: &Path, web: &Path, mod_name: &str) -> Result<(), String> {
+        self.keep_aside(table, from, &web.join(table.dir), &safe_name(mod_name))
     }
 
     /// Copy `from` into `dir` as this mod's next table of its kind, numbered
@@ -192,7 +232,7 @@ pub fn copy_system_layer(src: &Path, merged: &Path, mod_name: &str) -> Result<Mo
         let from = e.path();
         let name = e.file_name().to_string_lossy().to_string();
         if from.is_file() {
-            for table in LISTS {
+            for table in LISTS.iter().filter(|t| t.layer == Layer::System) {
                 if (table.matches)(&name) {
                     tables.keep_aside(table, &from, merged, &safe)?;
                     continue 'files;
@@ -332,7 +372,8 @@ impl ViewFiles {
     }
 }
 
-/// A mod name as part of a file name, as the item tables do it.
+/// A mod name as part of a file name: anything but ASCII letters, digits, `-`
+/// and `_` becomes `-`.
 fn safe_name(mod_name: &str) -> String {
     mod_name
         .chars()
@@ -368,6 +409,13 @@ fn view_table(name: &str) -> Option<(&'static str, &'static str)> {
 fn is_quest_table(name: &str) -> bool {
     let lower = name.to_lowercase();
     lower.starts_with("ongoingquestinfolist") && (lower.ends_with(".lua") || lower.ends_with(".lub"))
+}
+
+/// `luafiles514/lua files/SignBoardList.lub` under `data/`, in any case, or as
+/// `.lua`. The translation's `signboardlist_f.lub` is a different file.
+fn is_signboard_table(rel: &str) -> bool {
+    let lower = rel.to_lowercase();
+    lower == "luafiles514/lua files/signboardlist.lub" || lower == "luafiles514/lua files/signboardlist.lua"
 }
 
 /// `itemInfo.lua`, `itemInfo_C.lua`, `iteminfo.lub` -- any name the client's
@@ -602,6 +650,43 @@ mod tests {
                     .to_string(),
                 "\tcustomQuestInfo: ['System/OngoingQuestInfoList-a.lub', 'System/OngoingQuestInfoList-b.lub'],\n".to_string(),
             ]
+        );
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn a_signboard_table_is_recognised_in_any_case_and_only_where_the_client_reads_it() {
+        assert!(data_table("luafiles514/lua files/SignBoardList.lub").is_some());
+        assert!(data_table("LuaFiles514/Lua Files/signboardlist.lua").is_some());
+        assert!(data_table("luafiles514/lua files/signboardlist_f.lub").is_none());
+        assert!(data_table("lua files/SignBoardList.lub").is_none());
+        // A data/ table is not one when it sits in System/.
+        let tmp = tmp("sign-in-system");
+        let (src, merged) = (tmp.join("mod/System"), tmp.join("merged"));
+        write(&src.join("SignBoardList.lub"), "x");
+        assert!(copy_system_layer(&src, &merged, "m").unwrap().list(&SIGNBOARDS).is_empty());
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// Signboards load after the stock table, in mod order, under their path
+    /// from the served root.
+    #[test]
+    fn signboard_tables_are_listed_in_mod_order() {
+        let tmp = tmp("signs");
+        let dir = tmp.join("web/data/luafiles514/lua files");
+        let mut all = ModTables::default();
+        for m in ["a", "b"] {
+            write(&tmp.join(m).join("SignBoardList.lub"), m);
+            let mut one = ModTables::default();
+            one.keep_aside(&SIGNBOARDS, &tmp.join(m).join("SignBoardList.lub"), &dir, m).unwrap();
+            all.extend(one);
+        }
+        assert_eq!(fs::read_to_string(dir.join("SignBoardList-b.lub")).unwrap(), "b");
+        assert_eq!(
+            all.config_entries(&tmp.join("web")),
+            vec!["\tcustomSignBoardList: ['data/luafiles514/lua files/SignBoardList-a.lub', \
+                  'data/luafiles514/lua files/SignBoardList-b.lub'],\n"
+                .to_string()]
         );
         let _ = fs::remove_dir_all(&tmp);
     }

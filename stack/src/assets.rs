@@ -9,7 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 mod client_tables;
-use client_tables::{copy_system_layer, warn_misplaced, ModTables};
+use client_tables::{copy_system_layer, data_table, warn_misplaced, ModTables};
 
 /// Where the client's text comes from.
 ///
@@ -378,7 +378,13 @@ fn overlay_mods(
         for root in &m.roots {
             // Served ahead of the GRFs: sprites, .act/.spr, map geometry, Lua.
             // Aliased, so a mod can be written in ASCII rather than in CP949 bytes.
-            copy_data_aliased(&root.join("data"), &server_root.join("data"))?;
+            // A table the client merges, such as the signboard list, is copied
+            // aside instead of over the stock one; see client_tables.
+            let mut data_tables = ModTables::default();
+            for (table, from) in copy_data_tree(&root.join("data"), &server_root.join("data"), data_table)? {
+                data_tables.keep_aside_in(table, &from, server_root, &m.name)?;
+            }
+            tables.extend(data_tables);
             // Music. The client asks for `BGM/<file>`, a root outside data/, so
             // this is its own layer rather than part of the one above.
             copy_over(&root.join("BGM"), &server_root.join("BGM"))?;
@@ -583,8 +589,16 @@ fn client_path(rel: &str) -> String {
 
 /// Copy a mod's `data/` tree, translating ASCII directory aliases as it goes.
 fn copy_data_aliased(src: &Path, dst: &Path) -> Result<(), String> {
+    copy_data_tree(src, dst, |_| None::<()>).map(|_| ())
+}
+
+/// `copy_data_aliased`, except that a file `aside` answers for -- by its path
+/// under `data/`, as the mod wrote it -- is not copied but handed back with the
+/// answer, for the caller to put somewhere of its own.
+fn copy_data_tree<T>(src: &Path, dst: &Path, aside: impl Fn(&str) -> Option<T>) -> Result<Vec<(T, PathBuf)>, String> {
+    let mut kept = Vec::new();
     if !src.exists() {
-        return Ok(());
+        return Ok(kept);
     }
     let mut stack = vec![(src.to_path_buf(), String::new())];
     while let Some((dir, rel)) = stack.pop() {
@@ -604,6 +618,8 @@ fn copy_data_aliased(src: &Path, dst: &Path) -> Result<(), String> {
             };
             if from.is_dir() {
                 stack.push((from, child));
+            } else if let Some(answer) = aside(&child) {
+                kept.push((answer, from));
             } else {
                 let to = dst.join(client_path(&child));
                 if let Some(parent) = to.parent() {
@@ -613,7 +629,10 @@ fn copy_data_aliased(src: &Path, dst: &Path) -> Result<(), String> {
             }
         }
     }
-    Ok(())
+    // The walk is a stack, so it is not in name order; the caller numbers
+    // what it gets, and that has to come out the same on every machine.
+    kept.sort_by(|a, b| a.1.cmp(&b.1));
+    Ok(kept)
 }
 
 /// Copy every file under `src` into `dst`, creating directories as needed.
@@ -1203,6 +1222,26 @@ mod tests {
         let landed = dst
             .join("texture/\u{c0}\u{af}\u{c0}\u{fa}\u{c0}\u{ce}\u{c5}\u{cd}\u{c6}\u{e4}\u{c0}\u{cc}\u{bd}\u{ba}/login_interface/x.bmp");
         assert!(landed.is_file(), "not at {}", landed.display());
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// A mod's signboard table is handed back rather than laid over the stock
+    /// one, which it would replace whole -- and everything else still lands.
+    #[test]
+    fn a_signboard_table_is_kept_aside_rather_than_replacing_the_stock_one() {
+        let tmp = std::env::temp_dir().join(format!("ro-signs-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&tmp);
+        let (src, dst) = (tmp.join("mod/data"), tmp.join("assets/data"));
+        write(&dst.join("luafiles514/lua files/SignBoardList.lub"), "STOCK");
+        write(&src.join("luafiles514/lua files/SignBoardList.lub"), "MOD SIGNS");
+        write(&src.join("luafiles514/lua files/signboardlist_f.lub"), "NOT A TABLE OF SIGNS");
+        write(&src.join("texture/ui/x.bmp"), "art");
+        let aside = copy_data_tree(&src, &dst, data_table).unwrap();
+        assert_eq!(aside.len(), 1);
+        assert_eq!(aside[0].1, src.join("luafiles514/lua files/SignBoardList.lub"));
+        assert_eq!(fs::read_to_string(dst.join("luafiles514/lua files/SignBoardList.lub")).unwrap(), "STOCK");
+        assert!(dst.join("luafiles514/lua files/signboardlist_f.lub").is_file());
+        assert!(dst.join(client_path("texture/ui/x.bmp")).is_file());
         let _ = fs::remove_dir_all(&tmp);
     }
 
