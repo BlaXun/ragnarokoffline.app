@@ -278,9 +278,13 @@ async function daemon(flags) {
         status: async () => ({ ok: true, running: true, url: page.url(), inGame: await inGame(), errors: errors.length }),
         login: async ([user = TESTER.user, pass = TESTER.pass]) => {
             if (!page.url().startsWith(game())) await page.goto(game());
-            await page.locator('#user').waitFor({ timeout: 60000 });
-            await page.locator('#user').fill(user);
-            await page.locator('#pass').fill(pass);
+            // The newer login window (Korean client data) names its fields
+            // #user/#pass; the classic one, which iRO data falls back to
+            // (roBrowserLegacy#49), uses the classes .user/.pass.
+            const userField = page.locator('#user, input.user').first();
+            await userField.waitFor({ timeout: 60000 });
+            await userField.fill(user);
+            await page.locator('#pass, input.pass').first().fill(pass);
             await page.locator('.connect').click();
             const ok = await until(() => page.locator('#slot0').isVisible().catch(() => false), 30000);
             return { ok, screen: ok ? 'character select' : 'still on login (wrong password?)', shot: await shot('login'), errors: newErrors() };

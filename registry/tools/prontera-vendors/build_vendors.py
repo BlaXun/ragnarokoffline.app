@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build prontera-vendors' two YAML files from rAthena's own data.
 
-    python3 mods/prontera-vendors/tools/build_vendors.py [--refresh-prices | --all-prices] [--reprice]
+    python3 registry/tools/prontera-vendors/build_vendors.py [--refresh-prices | --all-prices] [--reprice]
 
 Each theme below says *what* a stall sells: a hand list, a rule over the item
 database, or "whatever the monsters of these dungeons drop". The script
@@ -11,7 +11,7 @@ prices every item, and writes:
     db/population_vendors.yml      one VendorKey per theme, with its Pool
     db/population_vendor_pop.yml   one PlacementBound shell profile per theme
 
-Prices come from tools/prices.json, a cache of iRO player-market averages
+Prices come from registry/tools/prontera-vendors/prices.json, a cache of iRO player-market averages
 (ragnastats.com, roughly 2013-2020 data). --refresh-prices fetches any item
 the cache lacks; --all-prices fetches every tradeable item (about an hour),
 so rule themes rank by what players really traded. Delete an entry to fetch
@@ -39,14 +39,17 @@ import time
 import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-MOD = os.path.dirname(HERE)
+# This script lives in registry/tools/prontera-vendors/, out of the mod: the
+# registry ships every file in a mod's folder to players, and this and its
+# price caches are for building the mod, not for playing it.
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+MOD = os.path.join(REPO, "registry", "mods", "prontera-vendors")
 # Which era to build for. Renewal writes db/; --era pre-re builds from
 # rAthena's pre-renewal tables into pre-re/db/, which mod.json's
 # "prerenewalFolder" lays over db/ on a pre-renewal server.
 ERA = "pre-re" if "--era" in sys.argv and sys.argv[sys.argv.index("--era") + 1] in ("pre-re", "prere", "pre-renewal") else "re"
 OTHER_ERA = "re" if ERA == "pre-re" else "pre-re"
 OUT_DB = os.path.join(MOD, "pre-re", "db") if ERA == "pre-re" else os.path.join(MOD, "db")
-REPO = os.path.dirname(os.path.dirname(MOD))
 RA = os.path.join(REPO, "vendor", "rathena")
 PRICES = os.path.join(HERE, "prices.json")
 # The price table the server reads (Id,Name,Min,Max). Rows already in it are
@@ -69,6 +72,8 @@ Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 AREAS = [
     {"X1": 147, "Y1": 136, "X2": 147, "Y2": 170},
     {"X1": 164, "Y1": 135, "X2": 164, "Y2": 173},
+    {"X1": 147, "Y1": 52, "X2": 147, "Y2": 111},
+    {"X1": 164, "Y1": 52, "X2": 164, "Y2": 111},
 ]
 
 # ---------------------------------------------------------------------------
@@ -822,6 +827,8 @@ BUY_MARKET = BUY_PREFIX + "sidewalks"
 BUY_AREAS = [
     {"X1": 140, "Y1": 136, "X2": 140, "Y2": 172},
     {"X1": 171, "Y1": 136, "X2": 171, "Y2": 172},
+    {"X1": 104, "Y1": 110, "X2": 135, "Y2": 110},
+    {"X1": 104, "Y1": 125, "X2": 135, "Y2": 125},
 ]
 BUY_JOBS = {  # sprite -> a gear set that fits it
     "Knight": "para_knight_base", "LordKnight": "para_knight_base", "RuneKnight": "para_knight_base",
@@ -846,9 +853,16 @@ BUY_SPECIALS = {"Old_Card_Album", "Magic_Card_Album", "Old_Blue_Box", "Old_Viole
                 "Royal_Jelly", "Fruit_Of_Mastela"}
 
 BUY_THEMES = [
-    dict(key="refine", titles=["B> ori elu", "buying ores", "B> Oridecon / Elunium", "WTB refine mats", "{name} buys ores"],
+    # The buyers a real server always has, so each has a Min in the market:
+    # upgrade ores above all, crafting materials, elemental stones, herbs and
+    # alchemy materials.
+    dict(key="upgrade", titles=["B> ori elu", "buying ores", "B> Oridecon / Elunium", "WTB elu ori rough",
+                                "B> rough ori / rough elu", "{name} buys ores"],
          rule=lambda e: buyable(e) and e["AegisName"] in {"Oridecon", "Elunium", "Oridecon_Stone", "Elunium_Stone",
-              "Phracon", "Emveretarcon", "Steel", "Iron", "Iron_Ore", "Coal", "Star_Crumb"}, weight=2),
+              "Emveretarcon"}, weight=3, min=2, max=3),
+    dict(key="crafting", titles=["B> steel iron coal", "buying crafting mats", "B> star crumbs", "WTB smith mats"],
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Steel", "Iron", "Iron_Ore", "Coal", "Star_Crumb"},
+         weight=2, min=1, max=2),
     dict(key="cards_common", titles=["B> cards", "buying cards", "WTB cards", "B> common cards"],
          rule=lambda e: buyable(e) and e["Id"] in COMMON_CARDS, weight=2),
     dict(key="cards_rare", titles=["B> good cards", "buying rare cards", "WTB cards, fair price"],
@@ -868,11 +882,14 @@ BUY_THEMES = [
     dict(key="elemental", titles=["B> ele stones", "buying flame hearts etc", "B> converters"],
          rule=lambda e: buyable(e) and e["AegisName"] in {"Flame_Heart", "Mistic_Frozen", "Rough_Wind", "Great_Nature",
               "Boody_Red", "Crystal_Blue", "Wind_Of_Verdure", "Yellow_Live", "Elemental_Fire", "Elemental_Water",
-              "Elemental_Earth", "Elemental_Wind"}),
+              "Elemental_Earth", "Elemental_Wind"}, weight=2, min=1, max=2),
+    dict(key="herbs", titles=["B> herbs", "buying green herbs", "B> red/yellow herbs", "WTB herbs"],
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Green_Herb", "Red_Herb", "Yellow_Herb", "White_Herb",
+              "Blue_Herb"}, weight=2, min=1, max=2),
     dict(key="alchemy", titles=["B> alche mats", "buying bottles n bowls", "WTB alchemy stuff"],
-         rule=lambda e: buyable(e) and e["AegisName"] in {"Empty_Bottle", "Medicine_Bowl", "Detrimindexta",
-              "Karvodailnirol", "Poison_Bottle", "Acid_Bottle", "Fire_Bottle", "Alcohol", "Fabric", "Stem",
-              "Maneater_Blossom", "Aloe_Leaflet", "Blue_Herb", "White_Herb", "Red_Herb", "Yellow_Herb"}),
+         rule=lambda e: buyable(e) and e["AegisName"] in {"Empty_Bottle", "Poison_Spore", "Medicine_Bowl",
+              "Detrimindexta", "Karvodailnirol", "Poison_Bottle", "Acid_Bottle", "Fire_Bottle", "Stem",
+              "Blossom_Of_Maneater", "Aloe_Leaflet"}, weight=2, min=1, max=2),
     dict(key="quest_mats", titles=["B> quest items", "buying hat quest mats", "WTB loot for quests"],
          rule=lambda e: buyable(e) and e.get("Type") == "Etc" and popularity(e) >= 2000),
     dict(key="loot_low", titles=["B> low lv loot", "buying loot lv 1-40", "B> mob loot"],
@@ -903,7 +920,7 @@ def buy_amount(p, rng):
 
 
 # Pets: eggs (bought from a stall, the server creates a real, hatchable egg
-# for the buyer; engine patch 0020) with incubators and food, and the
+# for the buyer; engine patch 0021) with incubators and food, and the
 # accessories pets wear.
 THEMES += [
     dict(key="pet_eggs", job="Merchant", pick=[4, 8], weight=1,
@@ -1219,7 +1236,7 @@ def write_table():
     with open(TABLE_CSV, "w", encoding="utf-8", newline="") as f:
         f.write("# prontera-vendors price table: what each item sells for, as a range each\n"
                 "# stall rolls inside. Edit freely; the server reads it at startup, and\n"
-                "# tools/build_vendors.py keeps existing rows. Id decides, Name is for you.\n"
+                "# registry/tools/prontera-vendors/build_vendors.py keeps existing rows; Id decides.\n"
                 "# 0,0 = no price yet: fill one in and re-run the generator, and the item\n"
                 "# can then show up in the themes it fits.\n"
                 "# Source: kro (RagMAYA, kRO vending), ragnastats (iRO, converted),\n"
@@ -1347,15 +1364,20 @@ def main():
         bm = [f"  - Market: {BUY_MARKET}", "    Spawns:", "      - Map: prontera", "        Count: 20", "        Areas:"]
         bm += [f"          - {flow(a)}" for a in BUY_AREAS]
         bm.append("    Themes:")
-        weights = {BUY_PREFIX + t["key"]: t["weight"] for t in BUY_THEMES}
+        spec = {BUY_PREFIX + t["key"]: t for t in BUY_THEMES}
         for key in buy_market:
-            bm.append(f"      - {flow({'Theme': key, 'Weight': weights.get(key, 1), 'Max': 3})}")
+            t = spec.get(key, {})
+            w = {"Theme": key, "Weight": t.get("weight", 1)}
+            if t.get("min"):
+                w["Min"] = t["min"]
+            w["Max"] = t.get("max", 2)
+            bm.append(f"      - {flow(w)}")
         vendors.insert(1, "\n".join(bm))
 
     head = (
         "###########################################################################\n"
         "# prontera-vendors — {what}\n"
-        "# GENERATED by tools/build_vendors.py from rAthena's item, monster and\n"
+        "# GENERATED by registry/tools/prontera-vendors/build_vendors.py from rAthena's item, monster and\n"
         "# spawn databases and iRO market prices. Edit by hand if you like, but a\n"
         "# re-run overwrites this file; lasting changes belong in the script.\n"
         "###########################################################################\n"

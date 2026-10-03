@@ -254,12 +254,12 @@ engine's vendors spawn exactly as upstream's do.
   gets one of each item, exactly the zeny it offers and room to carry it all;
   when its store closes (all bought, or out of zeny) it packs up like a
   sold-out stall. Its callouts come from `buyer_call` in population_chat.yml.
-  Patch 0019 keeps shells' buying stores out of the database, as 0001 does
+  Patch 0020 keeps shells' buying stores out of the database, as 0001 does
   for vending.
-- Patch 0020: a pet egg bought from a shell's stall is created for the buyer
+- Patch 0021: a pet egg bought from a shell's stall is created for the buyer
   there and then (`pet_create_egg`), since a stall's eggs are placeholders
   with no pet row and would not hatch; unsold eggs leave nothing behind.
-- `@vendorinfo` (patch 0018) lists the mod stalls on the GM's map, or shows a
+- `@vendorinfo` (patch 0019) lists the mod stalls on the GM's map, or shows a
   theme's stock and prices or a market's themes.
 - A mod's price table, `db/population_vendor_prices/<prefix>.csv` with rows
   `Id,Name,Min,Max`, prices the plain stock lines of the vendors whose key
@@ -267,7 +267,7 @@ engine's vendors spawn exactly as upstream's do.
   spreadsheet.
 - `Callouts: { EverySeconds: [min, max], MapGapSeconds }` paces a mod vendor's
   callouts and keeps stalls on one map from talking over one another.
-- Script commands (patch 0017) let a mod's settings reach its vendors at
+- Script commands (patch 0018) let a mod's settings reach its vendors at
   startup, per VendorKey prefix: `population_vendor_count` (a total split
   across the mod's Spawns by their Counts), `population_vendor_rotation`
   (minutes), `population_vendor_callouts` (on/off and pace),
@@ -278,7 +278,8 @@ engine's vendors spawn exactly as upstream's do.
 - Both vendor databases import `db/import/`, with empty stubs in
   `db/import-tmpl/`, so a mod's file is read rather than ignored.
 
-`mods/prontera-vendors` is the worked example.
+`registry/mods/prontera-vendors` is the worked example (its generator is in
+`registry/tools/prontera-vendors`).
 
 ## Measured cost
 

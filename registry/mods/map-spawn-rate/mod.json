@@ -4,7 +4,7 @@
   "author": "BlaXun",
   "description": "Change how many monsters spawn on any map you choose. Search maps by name or by the monsters on them in the Settings… window, give each one a rate (200% doubles it, 50% halves it), and apply. Bosses and other single-monster spawns are left alone.",
   "requires": {
-    "app": ">=1.4.5",
+    "app": ">=1.4.6",
     "era": "any"
   },
   "tags": [

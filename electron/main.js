@@ -940,7 +940,18 @@ async function linkClientOwned(paths) {
 				env: { ...process.env, PATH: toolPath(), RAGNAROKMAC_STATE: stateDir() },
 				maxBuffer: 8 * 1024 * 1024,
 			},
-			(err, stdout, stderr) => (err ? reject(new Error(stderr || String(err))) : resolve(stdout))
+			(err, stdout, stderr) => {
+				if (err) return reject(new Error(stderr || String(err)));
+				// A link that succeeds can still have something to say about a
+				// mod: a table where the client never reads it, a name table with
+				// no ids. That goes to stderr, and was dropped here, so a mod that
+				// did nothing on screen gave no reason anywhere. The log viewer
+				// files these under App, as warnings.
+				for (const line of String(stderr).split(/\r?\n/)) {
+					if (line.trim()) appLog(`link-assets warning: ${line}`);
+				}
+				resolve(stdout);
+			}
 		);
 	});
 }
@@ -1002,6 +1013,11 @@ const SETTINGS_DEFAULTS = {
 	// spawn tables ask for. This is the dial players actually want; the limit
 	// above is only a safety net.
 	population_density: 100,
+	// Each area's share of that, 0-100 (Settings -> Population): towns,
+	// fields and dungeons. 100 everywhere is the world as authored.
+	population_town_pct: 100,
+	population_field_pct: 100,
+	population_dungeon_pct: 100,
 	// How many shells one player may recruit into their party at once. The
 	// server enforces this per recruiter (not per map), and rAthena's MAX_PARTY
 	// of 12 leaves a slot for real players, which is why the UI tops out at 11.

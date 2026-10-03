@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fetch kRO player-market prices from RagMAYA (ragmaya.kr) into prices_kro.json.
 
-    python3 mods/prontera-vendors/tools/scrape_ragmaya.py [--workers 3]
+    python3 registry/tools/prontera-vendors/scrape_ragmaya.py [--workers 3]
 
 RagMAYA tracks the vending of kRO's official servers and publishes, per item
 id (rAthena ids), the median asking price of the last 90 days and how many
