@@ -25,12 +25,14 @@ test('the server flags skills that end another listed skill, but not a chain ste
 	const ends = fn(engine, 'static bool pop_skill_ends_skill(');
 	assert.match(ends, /status_db\.getEndOnStart\(sa\)/);
 	assert.match(ends, /require\.status/, 'a status the skill needs is a chain, not a rival');
+	const self = fn(engine, 'static std::vector<uint16_t> pop_companion_self_buff_ids(');
+	assert.match(self, /e\.target == 1/, 'only self buffs compete; a debuff on an enemy is no choice');
 	const excl = fn(engine, 'static bool pop_skill_is_exclusive(');
 	assert.match(excl, /pop_skill_ends_skill\(sid, other\) \|\| pop_skill_ends_skill\(other, sid\)/,
 		'either direction counts');
 	const list = fn(engine, 'void population_engine_companion_skill_list(');
 	assert.match(list, /"@CPSK\|%u\|%s\|%d\|%u\|%d"/, 'the flag is a sixth field');
-	assert.match(list, /pop_skill_is_exclusive\(sid, legal\)/);
+	assert.match(list, /pop_skill_is_exclusive\(sid, self_buffs\)/);
 });
 
 test('the panel reads the flag and lists those skills first, under their own heading', () => {

@@ -3895,12 +3895,32 @@ static bool pop_skill_ends_skill(uint16_t a, uint16_t b)
 		== skill->require.status.end();
 }
 
-/// True if `sid` and another skill in `legal` end each other's status, so only one of them can
-/// run at a time: a Bard's songs, a Dancer's dances, the 3rd-job songs, some stances. The panel
-/// groups these, since ticking several means the one listed first plays.
-static bool pop_skill_is_exclusive(uint16_t sid, const std::vector<uint16_t> &legal)
+/// The class's skills it keeps up on itself (a Target: self row), in row order. Only these
+/// compete: the self-buff loop skips every other row (pop_buff_would_end_own), and a debuff
+/// cast on an enemy ending another (Decrease AGI ends Increase AGI) is no choice for the player.
+static std::vector<uint16_t> pop_companion_self_buff_ids(uint16_t class_)
 {
-	for (uint16_t other : legal)
+	std::vector<uint16_t> ids;
+	const std::vector<s_pop_skill_entry>* rows = population_skill_db().find(class_);
+	if (rows == nullptr || rows->empty())
+		rows = population_skill_db().find(population_engine_job_base_class(class_));
+	if (rows == nullptr)
+		return ids;
+	for (const s_pop_skill_entry& e : *rows)
+		if (e.target == 1 && e.skill_id != 0
+			&& std::find(ids.begin(), ids.end(), e.skill_id) == ids.end())
+			ids.push_back(e.skill_id);
+	return ids;
+}
+
+/// True if `sid` and another of the class's self buffs end each other's status, so only one of
+/// them can run at a time: a Bard's songs, a Dancer's dances, the 3rd-job songs, some stances.
+/// The panel groups these, since ticking several means the one listed first plays.
+static bool pop_skill_is_exclusive(uint16_t sid, const std::vector<uint16_t> &self_buffs)
+{
+	if (std::find(self_buffs.begin(), self_buffs.end(), sid) == self_buffs.end())
+		return false;
+	for (uint16_t other : self_buffs)
 		if (other != sid && (pop_skill_ends_skill(sid, other) || pop_skill_ends_skill(other, sid)))
 			return true;
 	return false;
@@ -3974,6 +3994,10 @@ void population_engine_companion_skill_list(uint32_t owner_account, const char* 
 	}
 
 	const std::vector<uint16_t> legal = pop_companion_legal_skill_ids(class_, job_name(class_));
+	std::vector<uint16_t> self_buffs;
+	for (uint16_t sid : pop_companion_self_buff_ids(class_))
+		if (std::find(legal.begin(), legal.end(), sid) != legal.end())
+			self_buffs.push_back(sid);
 	int emitted = 0;
 	for (uint16_t sid : legal) {
 		// On auto every legal skill is in effect, so every box is ticked.
@@ -3984,7 +4008,7 @@ void population_engine_companion_skill_list(uint32_t owner_account, const char* 
 		// id | name | selected | level the preset casts it at | ends another listed skill (0/1)
 		snprintf(msg, sizeof(msg), "@CPSK|%u|%s|%d|%u|%d",
 			static_cast<unsigned>(sid), skill_get_name(sid), selected ? 1 : 0,
-			static_cast<unsigned>(skill_get_max(sid)), pop_skill_is_exclusive(sid, legal) ? 1 : 0);
+			static_cast<unsigned>(skill_get_max(sid)), pop_skill_is_exclusive(sid, self_buffs) ? 1 : 0);
 		clif_displaymessage(fd, msg);
 		++emitted;
 	}
