@@ -3989,7 +3989,12 @@ uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job
 	int16_t x = owner->x, y = owner->y;
 	map_search_freecell(owner, map_id, &x, &y, 3, 3, 0);
 
-	const uint8_t sex = static_cast<uint8_t>(rnd() % 2);
+	// spawn_shell takes the sex as 'M' or 'F'. This was rnd() % 2 - 0 or 1, never 'M' - so
+	// every hired companion came out female, a Bard drawn as a Dancer. Chosen the way an
+	// ambient spawn chooses: the job's own sex, then the profile's, else either.
+	char sex = get_job_required_sex(job_id);
+	if (sex == '\0')
+		sex = prof->sex_override >= 0 ? (prof->sex_override ? 'M' : 'F') : ((rnd() % 2) ? 'M' : 'F');
 	const uint8_t hair = static_cast<uint8_t>(MIN_HAIR_STYLE + rnd() % (MAX_HAIR_STYLE - MIN_HAIR_STYLE + 1));
 	const uint16_t hair_color = static_cast<uint16_t>(rnd() % 8);
 	const uint16_t cloth_color = static_cast<uint16_t>(rnd() % 7);
@@ -7668,9 +7673,13 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 		const char* skill_preset = (data != nullptr) ? presetbuf : nullptr;
 		data = next(); const uint32_t given_mask = data != nullptr ? static_cast<uint32_t>(strtoul(data, nullptr, 10)) : 0;
 		if (index_ == 0 || job_id == 0) continue;
-		// DB stores sex as TINYINT (0=SEX_MALE, 1=SEX_FEMALE); the spawn path
-		// expects the 'M'/'F' letters.
-		population_engine_recall_one_companion(owner, map_id, index_, job_id, sexv == 1 ? 'F' : 'M',
+		// The column holds rAthena's e_sex, written from status.sex: 0 = SEX_FEMALE, 1 = SEX_MALE.
+		// Read the other way round, every companion came back as the other sex at its first
+		// recall and stayed that way. A job with a sex of its own (Bard, Dancer...) keeps it.
+		char sex_letter = get_job_required_sex(static_cast<uint16_t>(job_id));
+		if (sex_letter == '\0')
+			sex_letter = sexv == SEX_MALE ? 'M' : 'F';
+		population_engine_recall_one_companion(owner, map_id, index_, job_id, sex_letter,
 			hair_style, hair_color, cloth_color, garment, option_, weapon, shield, head_top,
 			head_mid, head_bottom, armor, shoes, acc_l, acc_r, base_level, job_level, str, agi, vit, intl, dex, luk,
 			namebuf, c_top, c_mid, c_low, c_garment, sh_armor, sh_weapon, sh_shield, sh_shoes, sh_acc_l, sh_acc_r,
