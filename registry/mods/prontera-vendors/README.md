@@ -24,8 +24,9 @@ browse and trade exactly as you would with a player.
 
 | Sidewalk | What stands there |
 |---|---|
-| Inner, x=147 (y=136–170) and x=164 (y=135–173) | Sell stalls |
+| Inner, x=147 and x=164 (y=136–173, and y=52–111) | Sell stalls |
 | Outer, x=140 and x=171 (y=136–172) | Buying stores |
+| West of the fountain, rows y=110 and y=125 (x=104–135) | Buying stores |
 
 The engine's own Prontera vendors keep spawning exactly as they would
 without the mod; these are extra.
@@ -97,10 +98,17 @@ another takes the spot.
 
 ## Buying stores
 
-15 themes: refine materials, common and rare cards, OCA/MCA/OBB/OPB and
-branches, Ygg items, potions and herbs, other consumables, gemstones,
-elemental stones and converters, alchemy materials, popular quest
-materials, loot by monster level (three bands), and a random buyer.
+17 themes. As on any real server, the common materials always have buyers:
+
+- **Always there:** two buyers of upgrade ores (Elunium, Oridecon, Rough
+  Elunium, Rough Oridecon, Emveretarcon), and one each for crafting
+  materials (Steel, Iron, Iron Ore, Coal, Star Crumb), elemental stones and
+  converters, herbs (Green, Red, Yellow, White, Blue) and alchemy materials
+  (Empty Bottle, Poison Spore, Medicine Bowl, Detrimindexta,
+  Karvodailnirol and more).
+- **The rest rotate:** common and rare cards, OCA/MCA/OBB/OPB and branches,
+  Ygg items, potions, other consumables, gemstones, popular quest
+  materials, loot by monster level (three bands), and a random buyer.
 
 - A store wants 2–5 kinds of item (rAthena's limit) and only items rAthena
   allows in buying stores, so never equipment.
