@@ -851,9 +851,6 @@ static uint8_t pop_ally_hp_threshold(const map_session_data* sd, uint16 skill_id
 	return static_cast<uint8_t>(cap_value(chosen, 1, 100));
 }
 
-/// Unified condition gate that picks between the flat-enum legacy path and the
-/// expanded boolean tree based on whether the entry has a tree attached.
-/// Templated over the skill struct type so it works for both attack and buff entries.
 /// Radius of a blast centred on the caster (Magnum Break, Rolling Cutter, Dragon Howling), or 0
 /// for any other skill. A skill that reaches past melee range (Overbrand, a cone) is not centred
 /// on the caster, so its splash says nothing about where it lands.
@@ -880,6 +877,9 @@ static int pop_enemies_within(map_session_data* sd, int radius)
 	return count;
 }
 
+/// Unified condition gate that picks between the flat-enum legacy path and the
+/// expanded boolean tree based on whether the entry has a tree attached.
+/// Templated over the skill struct type so it works for both attack and buff entries.
 template <typename SkillT>
 static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& sk, block_list* target_bl) {
 	// RAGNAROKMAC: enemy_count_nearby counts the whole detection range (30 cells), so a blast
@@ -996,6 +996,11 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 			// On its own cooldown (Magnum Break: 2 s) it cannot be cast; promoting it anyway
 			// would spend the turn on a refused cast instead of the rotation.
 			if (sd->scd.find(sk.skill_id) != sd->scd.end())
+				continue;
+			// Nor while the caster's own cast delay runs: pre-renewal Magnum Break has no
+			// cooldown, only a 2 s after-cast delay, so without this every tick of it would
+			// pick Magnum Break again and have it refused.
+			if (DIFF_TICK(now_tick, sd->ud.canact_tick) < 0)
 				continue;
 			if (!pop_skill_cond_satisfied(sd, sk, target_bl))
 				continue;

@@ -64,6 +64,8 @@ test('a blast with its crowd inside it is tried first', () => {
 	const block = body.slice(body.lastIndexOf('for (size_t i = 0; i < n; ++i)', promote), body.indexOf('break;', promote));
 	assert.match(block, /PopSkillCondition::EnemyCountNearby/);
 	assert.match(block, /sd->scd\.find\(sk\.skill_id\) != sd->scd\.end\(\)/);
+	// Pre-renewal Magnum Break has no cooldown, only an after-cast delay: skip it while that runs.
+	assert.match(block, /DIFF_TICK\(now_tick, sd->ud\.canact_tick\) < 0/);
 	assert.match(block, /pop_skill_cond_satisfied\(sd, sk, target_bl\)/);
 	assert.match(block, /combo_promote_idx = i;/);
 	assert.ok(promote < body.indexOf('const bool use_cursor'), 'the promotion runs before the cursor is chosen');
