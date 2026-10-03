@@ -6649,7 +6649,11 @@ static void pop_companion_restore_gear_detail(map_session_data *shell, const cha
 			const struct item &w = shell->inventory.u.items_inventory[i];
 			if (w.nameid == saved.nameid && w.equip == 0 && w.amount > 0 && w.refine == saved.refine
 			    && memcmp(w.card, saved.card, sizeof(w.card)) == 0) {
-				(void)pc_equipitem(shell, i, saved.equip, false);
+				// A piece the companion can no longer wear (its job or level changed since)
+				// stays in its inventory, outside the owner's custody of worn slots: say so.
+				if (!pc_equipitem(shell, i, saved.equip, false))
+					ShowWarning("population_engine: companion %u could not wear restored item %u (slot %u); it stays unworn\n",
+						shell->status.char_id, (unsigned)saved.nameid, (unsigned)saved.equip);
 				break;
 			}
 		}
