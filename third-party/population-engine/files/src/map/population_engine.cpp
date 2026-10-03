@@ -6447,13 +6447,39 @@ static bool pop_companion_hand_back(map_session_data *owner, map_session_data *s
 // equip every equip-flagged item immediately (the owner gave it to be worn).
 // Items without equip flags (consumables etc) are returned to the owner —
 // companions are gear carriers, not mules.
+void population_engine_companion_trade_snapshot(map_session_data *shell)
+{
+	if (!shell || !population_engine_is_population_pc(shell->id)) return;
+	auto &before = shell->pop.companion_trade_before;
+	before.assign(MAX_INVENTORY, {0, 0});
+	for (int16 i = 0; i < MAX_INVENTORY; ++i) {
+		const struct item &slot = shell->inventory.u.items_inventory[i];
+		before[i] = {static_cast<uint32_t>(slot.nameid), static_cast<int32_t>(slot.amount)};
+	}
+}
+
 void population_engine_companion_equip_traded(map_session_data *owner, map_session_data *shell)
 {
 	if (!owner || !shell) return;
+	// RAGNAROKMAC: act only on what this trade brought in: a new item in a slot, or a stack that
+	// grew. A companion's bag also holds its own things - spare stacks of every arrow it stocks,
+	// and its own gear a traded piece pushed off - and treating those as traded equipped each
+	// spare stack as the player's and handed the last one to the player, thousands of arrows
+	// and the companion's Ballista onto a full bag and the floor. With no snapshot (trade.cpp
+	// without the hook), every unworn item counts, as before.
+	std::vector<std::pair<uint32_t, int32_t>> before;
+	before.swap(shell->pop.companion_trade_before);
+	auto traded = [&before, shell](int16 i) {
+		if (before.size() != static_cast<size_t>(MAX_INVENTORY))
+			return true;
+		const struct item &it = shell->inventory.u.items_inventory[i];
+		return static_cast<uint32_t>(it.nameid) != before[i].first || static_cast<int32_t>(it.amount) > before[i].second;
+	};
 	bool equipped_any = false;
 	for (int16 i = 0; i < MAX_INVENTORY; ++i) {
 		struct item &slot = shell->inventory.u.items_inventory[i];
 		if (!slot.nameid || slot.equip) continue;
+		if (!traded(i)) continue;
 		struct item_data *id = itemdb_search(slot.nameid);
 		if (!id) continue;
 		if (id->equip) {
