@@ -505,6 +505,61 @@
           "sha256": "2030dc7f52e4e7f11d70f701a2defd3342e3bbca926bda30096e86f09eedef2c"
         }
       ]
+    },
+    {
+      "name": "waypoint-system",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Travel you earn instead of a free warper. Waypoint boards stand on 41 fields and dungeon floors, low to high level. Bring a board the items its monsters drop and it attunes to you; from then on a Waypoint Keeper in any town sends you there for a fee, and the board sends you back. Both eras.",
+      "homepage": "",
+      "tags": [
+        "exploration",
+        "npc",
+        "travel",
+        "warper",
+        "waypoints"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.4.3"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "55bb9ffb5a0e41e3c0ff3a603573ac340130fcbdaf58a907f34304d6ab0d7ee6"
+        },
+        {
+          "path": "System/jobname.lub",
+          "sha256": "bb5b892a96524f080eb422ea9786ee8751de0064dfcb6451186de625d62a7ba1"
+        },
+        {
+          "path": "data/sprite/npc/wp_npc.act",
+          "sha256": "54ddbb8289e8e2976981f054ceea02709dd44e0a94b8b8dbf6e4160b66037b16"
+        },
+        {
+          "path": "data/sprite/npc/wp_npc.spr",
+          "sha256": "fbc4f8a7ccbc412a4004f611ef3b647160fb66248a25aac78c9677341e9645ac"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "5f80d7be5f386e86caf5f93e11b6ef8b7984572cc9209d89ff365d47379c431a"
+        },
+        {
+          "path": "npc/waypoints.txt",
+          "sha256": "05440851946af260e37711407277dc35c7a0ae4ee19fe4e467e707206f85c244"
+        },
+        {
+          "path": "npc/waypoints_placed.txt",
+          "sha256": "158c0d68fd4d334ef3f3e503abd1ac7482f0e5e6adc4ad73d9f6ffa5406abbac"
+        },
+        {
+          "path": "pre-re/npc/waypoints_placed.txt",
+          "sha256": "58a7211f1aac31c3e9ff359239356bde3cb7ef000cb2e371febb219d2f520c29"
+        }
+      ]
     }
   ]
 }

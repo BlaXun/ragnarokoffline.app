@@ -1,0 +1,51 @@
+# waypoint-system: the curated waypoints. One row per waypoint.
+# Id is permanent: a player's unlocks are saved under it. Give a new row the
+#   next unused number, and never renumber or reuse one -- deleting a row is fine.
+# Map and Type are required; Type groups the Waypoint Keeper's menu (Field or Dungeon).
+# Name is what the keeper's menu shows, after the Region. No ':' in either.
+# Floor is a note. PreReLevel/ReLevel: average mob level, - = no spawns in that era.
+# BoardX,BoardY: where the board stands, fixed. For a new row leave them empty
+#   and run --fill-spots: it suggests a spot beside the warp you walk in by.
+# Regenerate the mod's scripts after editing:  python3 build_waypoints.py --write
+Id,Map,Type,Region,Name,Floor,PreReLevel,ReLevel,BoardX,BoardY,Note
+1,prt_fild11,Field,Prontera,Goblin forest,,25,51,299,298,
+2,prt_maze03,Dungeon,Prontera,Labyrinth 3,last,29,50,52,8,
+3,iz_dun02,Dungeon,Izlude,Byalan 3,middle,23,42,233,204,NPC entry
+4,pay_fild07,Field,Payon,Willow / Bigfoot,,18,26,20,207,
+5,pay_dun02,Dungeon,Payon,Payon Cave 3,middle of 5,23,40,19,60,
+6,moc_pryd04,Dungeon,Morroc,Pyramid 4,last upper,43,59,9,18,
+7,in_sphinx3,Dungeon,Morroc,Sphinx 3,middle of 5,40,70,207,54,
+8,gef_dun02,Dungeon,Geffen,Geffen Dungeon 3,middle of 4,40,70,106,129,
+9,gl_prison1,Dungeon,Glast Heim,Prison 2,last,55,91,150,17,
+10,gl_sew02,Dungeon,Glast Heim,Sewer 2,middle of 4,50,96,108,288,
+11,gl_knt02,Dungeon,Glast Heim,Knight Hall 2,last,58,110,15,137,
+12,mjolnir_10,Field,Mjolnir,Argos,,23,48,235,375,
+13,mjolnir_05,Field,Mjolnir,Argiope,,28,66,217,379,
+14,mjo_dun03,Dungeon,Mjolnir,Coal Mine 3,last,32,46,302,259,
+15,c_tower3,Dungeon,Al De Baran,Clock Tower 3F,middle of 4,58,85,65,144,
+16,alde_dun03,Dungeon,Al De Baran,Clock Tower B3,middle of 4,47,74,15,267,
+17,cmd_fild04,Field,Comodo,Sea Otter / Aster,,29,47,368,288,
+18,cmd_fild03,Field,Comodo,Anolian / Alligator,,51,57,180,23,
+19,um_fild03,Field,Umbala,Parasite,,45,66,111,53,
+20,yuno_fild02,Field,Juno,Sleeper / Beetle King,,22,73,20,334,
+21,yuno_fild08,Field,Juno,Grand Peco,,42,67,371,193,re adventurer signpost on map
+22,mag_dun02,Dungeon,Juno,Magma 2,last,66,105,47,37,
+23,juperos_02,Dungeon,Juno,Juperos 2,middle,74,115,125,278,NPC entry
+24,nif_fild01,Field,Niflheim,Niflheim field,,52,103,340,322,
+25,ein_fild06,Field,Einbroch,Holden / Goat,,44,73,249,363,
+26,ein_dun02,Dungeon,Einbroch,Einbroch Mine 2,last,60,94,291,288,
+27,lhz_fild03,Field,Lighthalzen,Breeze / Stem Worm,,27,82,358,283,
+28,hu_fild04,Field,Hugel,Novus,,41,80,373,178,
+29,odin_tem02,Dungeon,Hugel,Odin Temple 2,middle,61,112,25,180,NPC entry
+30,ra_fild05,Field,Rachel,Hill Wind / Kobold,,46,103,338,273,
+31,ice_dun03,Dungeon,Rachel,Ice Cave 3,middle of 4,54,106,146,24,
+32,ve_fild03,Field,Veins,Sandman / Magmaring,,28,99,347,220,
+33,thor_v03,Dungeon,Veins,Thor Volcano 3,last,88,136,35,259,
+34,gon_dun03,Dungeon,Kunlun,Kunlun 3,last,52,87,65,9,
+35,lou_dun03,Dungeon,Louyang,Louyang 3,last,57,85,162,38,
+36,ama_dun02,Dungeon,Amatsu,Amatsu 2,middle,45,85,33,37,NPC entry
+37,ayo_dun02,Dungeon,Ayothaya,Ayothaya 2,last,49,69,20,26,NPC entry
+38,mosk_dun02,Dungeon,Moscovia,Moscovia 2,middle,43,83,162,30,
+39,dew_dun02,Dungeon,Dewata,Krakatau,last,-,86,299,30,renewal only
+40,ma_fild02,Field,Malaya,Malaya field,,-,115,245,36,renewal only
+41,rockmi1,Dungeon,Rockridge,Rockridge mine,,-,136,244,19,renewal only
