@@ -204,6 +204,20 @@ let nextId = 1;
 let installed = false;
 let onServerEvent = null;
 
+// dispbottom arrives as the player's own speech (ZC_NPC_CHAT, or
+// ZC_NOTIFY_PLAYERCHAT without a colour), and the client draws it in a bubble
+// over their head as well as in chat -- before the chat line for one packet,
+// after it for the other. Take down the bubble that shows this line, and only
+// that one, now and once the packet's handler is done.
+function hideBubble(text) {
+	const hide = () => {
+		const dialog = Session.Entity?.dialog;
+		if (dialog && dialog.text === text) dialog.remove();
+	};
+	hide();
+	queueMicrotask(hide);
+}
+
 function install() {
 	if (installed) return;
 	installed = true;
@@ -211,11 +225,13 @@ function install() {
 	ChatBox.addText = function (text, ...rest) {
 		const event = typeof text === 'string' ? EVENT.exec(text) : null;
 		if (event) {
+			hideBubble(text);
 			onServerEvent?.(event[1], event[2] || '');
 			return undefined;
 		}
 		const match = typeof text === 'string' ? REPLY.exec(text) : null;
 		if (!match) return addText.call(this, text, ...rest);
+		hideBubble(text);
 		const request = pending.get(Number(match[1]));
 		if (!request) return undefined;  // late or stray: still not chat
 		const part = Number(match[2]), parts = Number(match[3]);
