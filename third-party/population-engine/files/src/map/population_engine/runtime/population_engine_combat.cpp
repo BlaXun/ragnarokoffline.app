@@ -203,7 +203,7 @@ static bool population_shell_pick_sphere_chain_skill(map_session_data *sd, uint1
 	auto pick = [&](uint16 id, uint16 lv) {
 		if (!population_shell_skill_selected(sd, id))
 			return false;
-		if (!skill_isNotOk(id, *sd) && sd->status.sp >= static_cast<uint32>(skill_get_sp(id, lv))) {
+		if (!skill_isNotOk(id, *sd) && sd->battle_status.sp >= static_cast<uint32>(skill_get_sp(id, lv))) {
 			out_id = id; out_lv = lv; return true;
 		}
 		return false;
@@ -825,18 +825,78 @@ static void population_shell_seed_attack_skills_if_empty(map_session_data *sd);
 
 namespace { // reopen anon namespace for the rest of the file
 
+/// Skills that restore an ally's HP. rAthena marks no such flag, so they are named.
+static bool pop_skill_heals_ally(uint16 skill_id)
+{
+	switch (skill_id) {
+	case AL_HEAL: case AB_CHEAL: case AB_HIGHNESSHEAL: case AB_EPICLESIS:
+	case AM_POTIONPITCHER: case CD_DILECTIO_HEAL: case CD_REPARATIO:
+		return true;
+	default:
+		return false;
+	}
+}
+
+/// The HP% an ally_hp_below heal waits for. A companion's player sets two thresholds in the
+/// panel (cp_companion_persistence.heal_at / emergency_at); the skill database's own value
+/// only says which of the two a heal is - below 50 is an emergency heal (Epiclesis 30,
+/// Reparatio 40), anything else a routine one. Everything else keeps the database's value:
+/// an ambient shell, a skill that is not a heal, a condition that is not about ally HP.
+static uint8_t pop_ally_hp_threshold(const map_session_data* sd, uint16 skill_id, uint8_t condition, uint8_t cond_value)
+{
+	if (static_cast<PopSkillCondition>(condition) != PopSkillCondition::AllyHpBelow
+	    || sd->pop.companion_owner_account == 0 || !pop_skill_heals_ally(skill_id))
+		return cond_value;
+	const int16_t chosen = cond_value < 50 ? sd->pop.companion_emergency_at : sd->pop.companion_heal_at;
+	return static_cast<uint8_t>(cap_value(chosen, 1, 100));
+}
+
+/// Radius of a blast centred on the caster (Magnum Break, Rolling Cutter, Dragon Howling), or 0
+/// for any other skill. A skill that reaches past melee range (Overbrand, a cone) is not centred
+/// on the caster, so its splash says nothing about where it lands.
+static int pop_self_blast_radius(uint16_t skill_id, uint16_t skill_lv)
+{
+	if (!(skill_get_inf(skill_id) & INF_SELF_SKILL))
+		return 0;
+	if (skill_get_range(skill_id, skill_lv) > 1)
+		return 0;
+	return std::max(0, static_cast<int>(skill_get_splash(skill_id, skill_lv)));
+}
+
+/// Living tracked enemies within `radius` cells of the shell, at their current positions.
+static int pop_enemies_within(map_session_data* sd, int radius)
+{
+	int count = 0;
+	for (const auto &pair : sd->pop.mob_tracker.tracked_mobs) {
+		const mob_data *md = map_id2md(pair.second.mob_id);
+		if (!md || md->m != sd->m || status_isdead(*md))
+			continue;
+		if (std::max(std::abs(md->x - sd->x), std::abs(md->y - sd->y)) <= radius)
+			++count;
+	}
+	return count;
+}
+
 /// Unified condition gate that picks between the flat-enum legacy path and the
 /// expanded boolean tree based on whether the entry has a tree attached.
 /// Templated over the skill struct type so it works for both attack and buff entries.
 template <typename SkillT>
 static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& sk, block_list* target_bl) {
+	// RAGNAROKMAC: enemy_count_nearby counts the whole detection range (30 cells), so a blast
+	// around the caster fired at a crowd it could not reach. Count only what the blast hits.
+	if (!sk.expanded && static_cast<PopSkillCondition>(sk.condition) == PopSkillCondition::EnemyCountNearby) {
+		const int radius = pop_self_blast_radius(sk.skill_id, sk.skill_lv);
+		if (radius > 0)
+			return pop_enemies_within(sd, radius) >= static_cast<int>(sk.cond_value_num);
+	}
 	if (sk.expanded) {
 		expanded_ai::TargetBag bag;
 		bag.shell = sd;
 		bag.enemy = target_bl;
 		return (*sk.expanded)(bag);
 	}
-	return population_shell_skill_condition_ok(sd, sk.condition, sk.cond_value_num, sk.cond_sc_resolved, target_bl);
+	return population_shell_skill_condition_ok(sd, sk.condition,
+		pop_ally_hp_threshold(sd, sk.skill_id, sk.condition, sk.cond_value_num), sk.cond_sc_resolved, target_bl);
 }
 
 static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &skill_id, uint16 &skill_lv, block_list* target_bl = nullptr, bool ignore_rate = false, bool ally_only = false)
@@ -859,8 +919,8 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 	//    robin cursor advances past skills that are still on per-skill cooldown.
 	const t_tick now_tick = gettick();
 	const int min_sp_pct = battle_config.population_engine_shell_skill_min_sp_pct;
-	const uint32 sp_floor = (min_sp_pct > 0 && sd->status.max_sp > 0)
-		? static_cast<uint32>(sd->status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
+	const uint32 sp_floor = (min_sp_pct > 0 && sd->battle_status.max_sp > 0)
+		? static_cast<uint32>(sd->battle_status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
 		: 0u;
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 	const bool los_check   = battle_config.population_engine_shell_skill_los_check != 0;
@@ -920,6 +980,35 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 		}
 	}
 
+	// RAGNAROKMAC: a blast around the caster whose crowd is inside it goes first. In the plain
+	// round robin a Lord Knight's Magnum Break was one of 13 slots, so even with ten monsters on
+	// it the companion spent nearly every turn on single-target skills. The count comes from
+	// pop_skill_cond_satisfied, which for these skills only sees enemies inside the splash.
+	if (combo_promote_idx == SIZE_MAX && !ally_only) {
+		for (size_t i = 0; i < n; ++i) {
+			const PopulationShellCombatSkill &sk = sd->pop.attack_skills[i];
+			if (!sk.active || sk.skill_id == 0 || sk.target == 2 || sk.expanded)
+				continue;
+			if (sk.condition != static_cast<uint8_t>(PopSkillCondition::EnemyCountNearby))
+				continue;
+			if (pop_self_blast_radius(sk.skill_id, sk.skill_lv) == 0)
+				continue;
+			// On its own cooldown (Magnum Break: 2 s) it cannot be cast; promoting it anyway
+			// would spend the turn on a refused cast instead of the rotation.
+			if (sd->scd.find(sk.skill_id) != sd->scd.end())
+				continue;
+			// Nor while the caster's own cast delay runs: pre-renewal Magnum Break has no
+			// cooldown, only a 2 s after-cast delay, so without this every tick of it would
+			// pick Magnum Break again and have it refused.
+			if (DIFF_TICK(now_tick, sd->ud.canact_tick) < 0)
+				continue;
+			if (!pop_skill_cond_satisfied(sd, sk, target_bl))
+				continue;
+			combo_promote_idx = i;
+			break;
+		}
+	}
+
 	// Round-robin cursor: start from the last-used position so every skill in the
 	// rotation gets equal time at the front. Without this, the first unconditional
 	// Rate:10000 skill in the list monopolises every tick regardless of lower-rate
@@ -975,11 +1064,11 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 			continue;
 		}
 		const int sp_cost = skill_get_sp(sk.skill_id, sk.skill_lv);
-		if (sp_cost > sd->status.sp) {
+		if (sp_cost > sd->battle_status.sp) {
 			continue;
 		}
 		// SP-reserve floor: don't pick a skill that drops us below the configured floor.
-		if (sp_floor > 0 && static_cast<uint32>(sd->status.sp) - static_cast<uint32>(sp_cost) < sp_floor) {
+		if (sp_floor > 0 && static_cast<uint32>(sd->battle_status.sp) - static_cast<uint32>(sp_cost) < sp_floor) {
 			continue;
 		}
 		// LOS already validated once above for the whole rotation — no per-skill A* here.
@@ -1057,6 +1146,45 @@ static void population_shell_check_unhide(map_session_data *sd, t_tick current_t
 	}
 }
 
+/// True if casting `bs` would end a buff the shell cast itself from a row listed before `bs`.
+/// Mutually exclusive buffs (a Bard's songs, a Dancer's dances, a stance) name each other in
+/// their status EndOnStart, so the second cast silently removes the first. List order is the
+/// priority: a row may replace a later row's buff (the preferred song taking over again once it
+/// is off cooldown), never an earlier one. Only buffs in active_buffs - this shell's own casts,
+/// still running - count, so a status a monster inflicted never blocks anything.
+/// A status the new skill requires is a step in a chain, not a rival: the Inquisitor's Judge
+/// needs First Faith Power and ends it, Third Exor Flame needs Judge and ends it.
+static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
+	const PopulationShellBuffSkill &bs, t_tick now)
+{
+	const sc_type sc_id = skill_get_sc(bs.skill_id);
+	if (!scc || sc_id == SC_NONE)
+		return false;
+	const std::vector<sc_type> ends = status_db.getEndOnStart(sc_id);
+	if (ends.empty())
+		return false;
+	const std::shared_ptr<s_skill_db> skill = skill_db.find(bs.skill_id);
+	const std::vector<sc_type> none;
+	const std::vector<sc_type> &required = skill ? skill->require.status : none;
+	for (const PopulationShellBuffSkill &own : sd->pop.buff_skills) {
+		if (&own == &bs)
+			break; // only rows listed before this one outrank it
+		if (own.target != 1)
+			continue;
+		const sc_type own_sc = skill_get_sc(own.skill_id);
+		if (own_sc == SC_NONE || own_sc == sc_id || !scc->hasSCE(own_sc))
+			continue;
+		if (std::find(ends.begin(), ends.end(), own_sc) == ends.end())
+			continue;
+		if (std::find(required.begin(), required.end(), own_sc) != required.end())
+			continue;
+		for (const s_pe_active_buff &ab : sd->pop.active_buffs)
+			if (ab.skill_id == own.skill_id && ab.expires_at > now)
+				return true;
+	}
+	return false;
+}
+
 static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tick current_tick)
 {
 	if (!sd || sd->pop.buff_skills.empty())
@@ -1067,8 +1195,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 	// SP-reserve floor (same rationale as in the attack picker — buffs shouldn't strand
 	// the shell with no SP for offensive skills).
 	const int min_sp_pct = battle_config.population_engine_shell_skill_min_sp_pct;
-	const uint32 sp_floor = (min_sp_pct > 0 && sd->status.max_sp > 0)
-		? static_cast<uint32>(sd->status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
+	const uint32 sp_floor = (min_sp_pct > 0 && sd->battle_status.max_sp > 0)
+		? static_cast<uint32>(sd->battle_status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
 		: 0u;
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 
@@ -1106,7 +1234,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 			const int16_t skill_range = static_cast<int16_t>(
 				std::max(1, skill_get_range2(sd, bs.skill_id, use_lv, true)));
 			map_session_data *ally = population_shell_find_ally_target(
-				sd, bs.condition, bs.cond_value_num, bs.cond_sc_resolved, skill_range);
+				sd, bs.condition, pop_ally_hp_threshold(sd, bs.skill_id, bs.condition, bs.cond_value_num),
+				bs.cond_sc_resolved, skill_range);
 			if (!ally)
 				continue;
 			// Party-only skills (e.g. Devotion) are rejected server-side when party_id == 0.
@@ -1168,6 +1297,26 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 		}
 		if (already_active)
 			continue;
+		// RAGNAROKMAC: never replace a higher-priority buff this companion cast itself. A Bard's
+		// four songs end each other (status EndOnStart), so each one cast in turn wiped the last,
+		// and the dispatch record above then kept the wiped song from coming back. The first
+		// song in the list now holds until it runs out.
+		if (pop_buff_would_end_own(sd, scc, bs, current_tick))
+			continue;
+		// Pre-renewal: a song is a performance on the ground, the singer holds SC_DANCING while
+		// it plays and never gets the song's own status, so the gate above cannot see it. A new
+		// song would stop the one playing. Renewal songs never set SC_DANCING.
+		if (scc && scc->hasSCE(SC_DANCING) &&
+			skill_get_inf2_(bs.skill_id, { INF2_ISSONG, INF2_ISENSEMBLE }))
+			continue;
+#ifndef RENEWAL
+		// Pre-renewal Adaptation to Circumstances only ends the performance (amp.cpp). Kept up
+		// like a buff it stopped every song 3 s in (its lockout after a song starts), and the
+		// next song in the list took over: the companion cycled through all of them. Renewal
+		// Adaptation is a buff of its own and stays.
+		if (bs.skill_id == BD_ADAPTATION)
+			continue;
+#endif
 
 		// Ground-targeted and trap skills must use position cast.
 		if (skill_get_inf(bs.skill_id) & (INF_GROUND_SKILL | INF_TRAP_SKILL)) {
@@ -1225,7 +1374,7 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		if (plv > 0 && plv < sk.skill_lv)
 			continue;
 		const int sp_cost = skill_get_sp(sk.skill_id, sk.skill_lv);
-		if (sp_cost > sd->status.sp)
+		if (sp_cost > sd->battle_status.sp)
 			continue;
 
 		// Per-skill cooldown gate.
@@ -1239,7 +1388,8 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		const int16_t skill_range = static_cast<int16_t>(
 			std::max(1, skill_get_range2(sd, sk.skill_id, sk.skill_lv, true)));
 		map_session_data *ally = population_shell_find_ally_target(
-			sd, sk.condition, sk.cond_value_num, sk.cond_sc_resolved, skill_range);
+			sd, sk.condition, pop_ally_hp_threshold(sd, sk.skill_id, sk.condition, sk.cond_value_num),
+			sk.cond_sc_resolved, skill_range);
 		if (!ally)
 			continue;
 		// Skip if the ally already carries the SC this skill would apply — without

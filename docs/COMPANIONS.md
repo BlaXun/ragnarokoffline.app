@@ -127,6 +127,17 @@ window with four tabs.
 | Battle | Stance (Free / Standard / Hold), Taunt and Recall, and the healer thresholds. |
 | Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it. Gear you gave that a new job cannot wear is handed back when it advances. |
 
+Each companion on the Party tab has a **Skills** button, which lists the skills
+it may use; untick one and it stops using it. The list order is also the
+priority between buffs that cancel each other: a Bard's songs, a Dancer's
+dances, stances such as Banding and Prestige. The companion keeps up the highest
+one it has ticked, and doesn't cast a lower one over it until the higher one
+runs out. To have it use a different song, untick the ones above it. A
+performance already playing (an ensemble, or any pre-renewal song or dance)
+holds until it ends, whatever its place in the list. A skill that requires the
+buff it ends, such as an Inquisitor's Judge after First Faith Power, still takes
+over, so a chain runs in order.
+
 The window is a real client component, not an overlay: it is draggable, it
 remembers its position, and clicks aimed at it do not reach the game. Each
 control sends the same packet that typing the command sends, so the server
@@ -151,6 +162,20 @@ you already have, from the Party tab or `@companion summon`, is always free.
 `@companion terms` prints the rules for your character as one line,
 `@CPTERMS|mode|tier|zeny|item|amount|item name|jobs`, which is what the
 Companions window reads.
+
+`@companion list raw` prints your saved companions the same way, one line each
+and then `@CPEND|count`, which is how the Companions window draws its rows:
+
+`@CP|name|job|base_level|active|favorite|live_level|live_job|pet|duty`
+
+- `active` and `favorite` are 0 or 1. `live_level` and `live_job` are the
+  summoned companion's current values, which differ from the saved ones once it
+  has levelled.
+- `pet`: -1 when the job cannot have one, otherwise 0 off or 1 on.
+- `duty`: the duty the server holds for it: 0 none yet, 1 tank, 2 support,
+  3 attacker. The window shows this one, not the last button pressed: the server
+  changes the duty of a summoned companion only, so pressing Duty on one that is
+  not out goes back to what the server holds.
 
 ## Current scope
 
