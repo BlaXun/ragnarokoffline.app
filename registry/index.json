@@ -28,6 +28,43 @@
       "files": []
     },
     {
+      "name": "autoloot",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "An Autoloot window in game: loot every drop at or below a rarity you choose, whole item types such as cards, and a list of exact items -- with a monster check that shows what you would pick up. Works even where @autoloot is kept for GMs, and your item list is kept across logins.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/autoloot",
+      "tags": [
+        "drops",
+        "loot",
+        "quality-of-life"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.4.8"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "f64b046033070073fb4d9ef8e12fe8a4e76e7fdb27834518f4f9e413c7d3fffa"
+        },
+        {
+          "path": "client/index.js",
+          "sha256": "0b824bfde3bd66d0472f50f0715e6226b020f025593bb31d13d7e914893fc9b4"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "99d831b471098d1e110120d4698589960c9be8b2d46d7e0731a056103589cad5"
+        },
+        {
+          "path": "npc/autoloot.txt",
+          "sha256": "ca6a6ec16475f0a6410b997078179e3c859fbdd704af3ca873176f108d1e1603"
+        }
+      ]
+    },
+    {
       "name": "blaze-shield",
       "version": "1.0.0",
       "author": "BlaXun, Ragnarok Offline",
