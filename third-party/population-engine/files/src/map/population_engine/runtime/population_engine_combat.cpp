@@ -355,7 +355,10 @@ static bool pop_is_resurrection_job(uint16 job_id)
 ///
 /// Minstrels and Wanderers revive with Death Valley (WM_DEADHILLHERE), which does
 /// nothing to a living target. Curated as a heal, it was cast at every hurt ally for
-/// nothing; it belongs here, on a dead party member only.
+/// nothing; it belongs here, on a dead party member only. It needs an instrument or a
+/// whip, so with Weapon rules on it waits until the companion holds one.
+static bool pop_skill_weapon_ok(map_session_data *sd, uint16 skill_id);
+
 static bool pop_party_revive_skill(map_session_data *sd, uint16 &skill_id, uint16 &skill_lv)
 {
 	if (pop_is_resurrection_job(sd->status.class_)) {
@@ -364,7 +367,7 @@ static bool pop_party_revive_skill(map_session_data *sd, uint16 &skill_id, uint1
 		return true;
 	}
 	const uint16 death_valley = pc_checkskill(sd, WM_DEADHILLHERE);
-	if (death_valley > 0) {
+	if (death_valley > 0 && pop_skill_weapon_ok(sd, WM_DEADHILLHERE)) {
 		skill_id = WM_DEADHILLHERE;
 		skill_lv = death_valley;
 		return true;
