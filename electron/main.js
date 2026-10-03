@@ -1029,6 +1029,11 @@ const SETTINGS_DEFAULTS = {
 	population_companion_fee_zeny: 1000,
 	population_companion_fee_item: 0,
 	population_companion_fee_item_amount: 0,
+	// Whether companions must hold the weapon a skill asks for, as players
+	// must. Off keeps the historic behaviour: any skill with any weapon. On,
+	// a companion whose gear does not fit a skill (a performer's default bow
+	// and its songs) skips it until it is given the right weapon.
+	population_skill_weapon_check: false,
 	// How many shells one player may recruit into their party at once. The
 	// server enforces this per recruiter (not per map), and rAthena's MAX_PARTY
 	// of 12 leaves a slot for real players, which is why the UI tops out at 11.

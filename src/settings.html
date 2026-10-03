@@ -753,6 +753,12 @@
       </label>
     </div>
     <label style="margin-top:6px">
+      <span>Weapon rules</span>
+      <input type="checkbox" id="population_skill_weapon_check" style="accent-color: var(--accent); flex: none" />
+      <span class="val" style="width:auto; color: var(--dim)">companions need the right weapon for a skill, like you do</span>
+    </label>
+    <p class="note" id="weapon-check-note"></p>
+    <label style="margin-top:6px">
       <span>Server memory</span>
       <input type="range" id="vm_ram_mib" min="2048" max="16384" step="1024">
       <span class="val" id="v-vm_ram_mib"></span>
@@ -774,7 +780,11 @@
        any time. <i>Hired</i> makes a companion something you pay for: only jobs of your
        own class tier, at your level, for the fee per level and/or the item set here,
        either from the panel or from a Companion Recruiter standing beside each town's
-       healer. Calling back a companion you already have is always free.</p>
+       healer. Calling back a companion you already have is always free.
+       <b>Weapon rules</b> is a choice between realism and convenience. Off (the default),
+       companions and other fake players use every skill they have whatever they are
+       holding. On, they follow the same weapon rules you do, and a skill their weapon
+       can't use is skipped until you trade them a weapon that can.</p>
     <p class="note" id="ram-note"></p>
   </div>
 
@@ -1424,6 +1434,18 @@ function refreshPopulation() {
   const hired = $('population_companion_hire').value !== 'free';
   $('population_companion_hire').disabled = !on;
   $('companion-fee').hidden = !hired;
+  $('population_skill_weapon_check').disabled = !on;
+  // The trade-off spelled out where the box is ticked: what turning it on
+  // costs, and how to get the skills back.
+  $('weapon-check-note').textContent = $('population_skill_weapon_check').checked
+    ? 'On: a companion only uses skills its weapon allows, as a player would. Some '
+      + 'start with gear that does not fit every skill: Clowns, Minstrels and Troubadours '
+      + 'start with a bow and need an instrument to sing, and Gypsies, Wanderers and '
+      + 'Trouveres a whip to dance; Spear Quicken needs a spear, Double Strafe a bow. '
+      + 'Trade the companion the weapon and it puts it on. '
+      + 'Arrows, gemstones and other items are still never needed.'
+    : 'Off: companions use every skill they have, whatever weapon they hold. A Minstrel '
+      + 'sings with a bow in hand. Easier, but not how the game works for you.';
   const perLevel = Number($('population_companion_fee_zeny').value) || 0;
   $('v-population_companion_fee_zeny').textContent = perLevel
     ? `zeny; a level 50 companion costs ${(perLevel * 50).toLocaleString()}` : 'no zeny';
@@ -1478,6 +1500,7 @@ $('population_density').addEventListener('input', refreshPopulation);
 $('population_companion_limit').addEventListener('input', refreshPopulation);
 for (const area of POPULATION_AREAS) $(`population_${area}_pct`).addEventListener('input', refreshPopulation);
 $('population_companion_hire').addEventListener('change', refreshPopulation);
+$('population_skill_weapon_check').addEventListener('change', refreshPopulation);
 $('population_companion_fee_zeny').addEventListener('input', refreshPopulation);
 $('vm_ram_mib').addEventListener('input', refreshPopulation);
 
@@ -1492,6 +1515,7 @@ $('save-population').onclick = async () => {
   settings.population_companion_fee_zeny = Number($('population_companion_fee_zeny').value) || 0;
   settings.population_companion_fee_item = Number($('population_companion_fee_item').value) || 0;
   settings.population_companion_fee_item_amount = Number($('population_companion_fee_item_amount').value) || 0;
+  settings.population_skill_weapon_check = $('population_skill_weapon_check').checked;
   // Machine-level, so it lives in client.json beside the client paths and the
   // LAN switch rather than in settings.json. Written first: save_settings
   // restarts the stack, which is what makes the new ceiling take effect.
@@ -2704,6 +2728,7 @@ invoke('get_settings').then(s => {
   $('population_companion_fee_item').value = s.population_companion_fee_item ?? 0;
   $('population_companion_fee_item_amount').value = s.population_companion_fee_item_amount ?? 0;
   $('population_companion_limit').value = s.population_companion_limit ?? 4;
+  $('population_skill_weapon_check').checked = s.population_skill_weapon_check === true;
   refreshPopulation();
 });
 

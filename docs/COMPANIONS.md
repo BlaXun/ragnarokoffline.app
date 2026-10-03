@@ -138,6 +138,18 @@ holds until it ends, whatever its place in the list. A skill that requires the
 buff it ends, such as an Inquisitor's Judge after First Faith Power, still takes
 over, so a chain runs in order.
 
+### Weapon rules
+
+By default a companion uses every skill it has, whatever it is holding: a
+Minstrel sings with a bow in hand. **Settings → Population → Weapon rules**
+holds companions, and every other fake player, to the weapon requirements a
+player has. With it on, a skill the companion's weapon can't use is skipped
+until you trade it a weapon that can. Some jobs start with gear that doesn't fit
+all their skills: Clowns, Minstrels and Troubadours start with a bow and need an
+instrument to sing, and Gypsies, Wanderers and Trouveres need a whip to dance.
+Arrows, gemstones and other item costs are never needed either way, since a
+companion has no inventory to manage.
+
 The window is a real client component, not an overlay: it is draggable, it
 remembers its position, and clicks aimed at it do not reach the game. Each
 control sends the same packet that typing the command sends, so the server
