@@ -7214,7 +7214,7 @@ void population_engine_reassert_companions(int32_t party_id)
 /// RAGNAROKMAC (Phase 3): machine-readable companion list for the in-game panel.
 ///
 /// One line per companion, fixed field order, pipe-separated:
-///   @CP|name|job_name|base_level|active(0/1)|favorite(0/1)|level(current,0 if not summoned)|live_job_name
+///   @CP|name|job_name|base_level|active(0/1)|favorite(0/1)|level(current,0 if not summoned)|live_job_name|pet|duty
 ///
 /// The last field is the class the shell is ACTUALLY running (empty when not
 /// summoned). job_name above comes from the persisted row, which lags a job
@@ -7231,7 +7231,7 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 	if (mmysql_handle == nullptr) return;
 	char q[400];
 	snprintf(q, sizeof(q),
-		"SELECT name, job_id, active, favorite, base_level, hom_enabled FROM `cp_companion_persistence`"
+		"SELECT name, job_id, active, favorite, base_level, hom_enabled, duty FROM `cp_companion_persistence`"
 		" WHERE owner_account_id=%u AND owner_char_id=%u ORDER BY favorite DESC, name ASC",
 		owner_account, pop_online_char(owner_account));
 	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) {
@@ -7251,6 +7251,7 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 		Sql_GetData(mmysql_handle, 4, &data, nullptr); int base_lv = atoi(data);
 		Sql_GetData(mmysql_handle, 5, &data, nullptr);
 		int hom_enabled = (data != nullptr && data[0] != '\0') ? atoi(data) : -1;
+		Sql_GetData(mmysql_handle, 6, &data, nullptr); int duty = data != nullptr ? atoi(data) : 0;
 		// and a name is player-chosen, so scrub before sending.
 		for (char *c = namebuf; *c != '\0'; ++c) {
 			if (*c == '|' || *c == '\n' || *c == '\r')
@@ -7281,6 +7282,8 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 			// normal case rather than an edge one.
 			live_job = job_name(sd->status.class_);
 			live_class = sd->status.class_;
+			// The duty it is acting on; the row only catches up on the next snapshot.
+			duty = sd->pop.role;
 			break;
 		}
 
@@ -7293,9 +7296,11 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 			hom = (hom_enabled == 0) ? 0 : 1;
 
 		char msg[NAME_LENGTH + 160];
-		snprintf(msg, sizeof(msg), "@CP|%s|%s|%d|%d|%d|%d|%s|%d",
+		// The duty travels so the panel can show it: kept only in the panel's memory, its
+		// badge went blank on every restart or reload although the server still had it.
+		snprintf(msg, sizeof(msg), "@CP|%s|%s|%d|%d|%d|%d|%s|%d|%d",
 			namebuf, job_name(job_id), base_lv, active, fav, live_lv,
-			live_job != nullptr ? live_job : "", hom);
+			live_job != nullptr ? live_job : "", hom, duty);
 		clif_displaymessage(fd, msg);
 		count++;
 	}

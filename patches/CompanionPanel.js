@@ -51,8 +51,11 @@ let _roster = [];
 let _pending = [];
 /// Set when a redraw is wanted even if the data is unchanged (a manual Refresh).
 let _forceRedraw = false;
-/// Our own duty choices, so a row can show the badge before the server echoes.
+/// Our own duty choices, so a row can show the badge before the next roster says so.
+/// The roster's own duty replaces an entry as soon as it arrives.
 const _duties = {};
+/// The server's duty numbers (PopulationRoleType): 0 is no duty yet.
+const DUTY_NAMES = { 1: 'tank', 2: 'support', 3: 'attacker' };
 
 /// The companion whose skill picker is open ('' = closed), and the menu last
 /// received from the server for it.
@@ -175,7 +178,7 @@ function rosterBody(text) {
 
 /**
  * Parse one @CP line. Format (see population_engine_companion_list_raw):
- *   @CP|name|job|base_level|active|favorite|live_level|live_job
+ *   @CP|name|job|base_level|active|favorite|live_level|live_job|pet|duty
  *   @CPEND|count
  *
  * @param {string} text
@@ -287,7 +290,8 @@ function parseRosterLine(text) {
 				m.name !== _roster[i].name || m.job !== _roster[i].job ||
 				m.liveJob !== _roster[i].liveJob ||
 				m.level !== _roster[i].level || m.active !== _roster[i].active ||
-				m.liveLevel !== _roster[i].liveLevel || m.hom !== _roster[i].hom);
+				m.liveLevel !== _roster[i].liveLevel || m.hom !== _roster[i].hom ||
+				m.duty !== _roster[i].duty);
 		_roster = fresh;
 		_pending = [];
 		const age = _rosterRequestedAt ? Math.round((Date.now() - _rosterRequestedAt) / 1000) : 0;
@@ -328,8 +332,16 @@ function parseRosterLine(text) {
 		hom: (() => {
 			const raw = parts.length > 8 ? parseInt(parts[8], 10) : NaN;
 			return Number.isFinite(raw) ? raw : -1;
-		})()
+		})(),
+		// The duty the server holds: 'tank', 'support', 'attacker', or null for none yet (and
+		// for an older server that does not send it). Kept only in _duties before, the badge
+		// went blank on every restart, reload and relog although the server still had it.
+		duty: DUTY_NAMES[parseInt(parts[9], 10)] || null
 	});
+	// The server has answered for this companion; its duty is the one to show.
+	if (parts.length > 9) {
+		delete _duties[parts[1]];
+	}
 	return true;
 }
 
@@ -430,21 +442,19 @@ function _drawParty() {
 		lv.className = 'lv';
 		lv.textContent = `Lv.${m.liveLevel || m.level}`;
 
+		const current = _duties[m.name] || m.duty;
 		const badge = document.createElement('span');
-		badge.className = `badge ${_duties[m.name] || (m.active ? 'on' : '')}`;
-		badge.textContent = _duties[m.name] || (m.active ? 'ON' : 'OFF');
+		badge.className = `badge ${current || (m.active ? 'on' : '')}`;
+		badge.textContent = current || (m.active ? 'ON' : 'OFF');
 		badge.title = m.active ? 'Summoned' : 'Not summoned';
 
 		const duty = _button('Duty', 'b', () => {
-			// none -> attacker -> tank -> support -> none, sent as party chat
-			const order = [null, 'attacker', 'tank', 'support'];
-			const next = order[(order.indexOf(_duties[m.name] || null) + 1) % order.length];
-			if (next) {
-				_duties[m.name] = next;
-				talk(`${m.name} ${next}`, true);
-			} else {
-				delete _duties[m.name];
-			}
+			// attacker -> tank -> support -> attacker, sent as party chat. No "none" step: the
+			// server has no order for it, so the badge said none while the companion kept its duty.
+			const order = ['attacker', 'tank', 'support'];
+			const next = order[(order.indexOf(current) + 1) % order.length];
+			_duties[m.name] = next;
+			talk(`${m.name} ${next}`, true);
 			_render();
 		}, 'Set this companion\'s duty in battle');
 
