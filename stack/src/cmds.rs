@@ -658,7 +658,12 @@ fn write_mod_conf_files(cfg: &Config, mods: &crate::mods::Assembled) -> Result<(
         // quietly widen it by listing the same group.
         let mut with_agent;
         let entries = if file == "groups.yml" {
-            with_agent = vec![(crate::accounts::AGENT_GROUP_OWNER.to_string(), crate::accounts::AGENT_GROUP_YML.to_string())];
+            // The players' own grant (@companion) is the app's too, for the
+            // same reasons.
+            with_agent = vec![
+                (crate::accounts::AGENT_GROUP_OWNER.to_string(), crate::accounts::AGENT_GROUP_YML.to_string()),
+                (crate::accounts::PLAYER_GRANT_OWNER.to_string(), crate::accounts::PLAYER_GRANT_YML.to_string()),
+            ];
             with_agent.extend(mods.conf.get("file:groups.yml").cloned().unwrap_or_default());
             Some(&with_agent)
         } else {

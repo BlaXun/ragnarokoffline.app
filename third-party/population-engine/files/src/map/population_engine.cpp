@@ -2998,18 +2998,30 @@ TIMER_FUNC(population_engine_autosummon_timer)
 		//
 		// Applied to max_per_map too, or raising the density would quietly do
 		// nothing on any category that declares a cap.
+		//
+		// RAGNAROKMAC: and each area's own share of that (Settings -> Population,
+		// one slider each for towns, fields and dungeons): 0 leaves the area
+		// empty, 100 is all of what the density gives it.
 		const int32 dens = battle_config.population_engine_density_pct;
-		auto scaled = [dens](int32_t v) -> int32_t {
-			if (v <= 0 || dens == 100)
+		auto scaled = [dens](int32_t v, int32_t share) -> int32_t {
+			if (v <= 0)
 				return v;
-			const int64_t out = (static_cast<int64_t>(v) * dens) / 100;
+			if (share <= 0)
+				return 0;
+			const int64_t pct = (static_cast<int64_t>(dens) * share) / 100;
+			if (pct == 100)
+				return v;
+			const int64_t out = (static_cast<int64_t>(v) * pct) / 100;
 			// A category the YAML populated should never round away to nothing.
 			return static_cast<int32_t>(out < 1 ? 1 : out);
 		};
+		const int32 town = battle_config.population_engine_town_pct;
+		const int32 field = battle_config.population_engine_field_pct;
+		const int32 dungeon = battle_config.population_engine_dungeon_pct;
 
-		if (fill_category(se.towns,    scaled(se.towns_population),    scaled(se.towns_max_per_map),    1)) return 0;
-		if (fill_category(se.fields,   scaled(se.fields_population),   scaled(se.fields_max_per_map),   2)) return 0;
-		if (fill_category(se.dungeons, scaled(se.dungeons_population), scaled(se.dungeons_max_per_map), 3)) return 0;
+		if (fill_category(se.towns,    scaled(se.towns_population, town),       scaled(se.towns_max_per_map, town),       1)) return 0;
+		if (fill_category(se.fields,   scaled(se.fields_population, field),     scaled(se.fields_max_per_map, field),     2)) return 0;
+		if (fill_category(se.dungeons, scaled(se.dungeons_population, dungeon), scaled(se.dungeons_max_per_map, dungeon), 3)) return 0;
 	}
 
 	// VendorPlacement-driven pass: directly fill maps listed under VendorPlacement
@@ -3048,10 +3060,14 @@ TIMER_FUNC(population_engine_autosummon_timer)
 				const PopulationVendorPlacement &vp = kv.second;
 				int target = vp.max_vendors > 0 ? vp.max_vendors : 12; // sensible default
 				// RAGNAROKMAC: vendors are most of what makes a town feel busy,
-				// so they scale with the density dial like everyone else.
-				if (battle_config.population_engine_density_pct != 100) {
-					const int64_t t = (static_cast<int64_t>(target)
-						* battle_config.population_engine_density_pct) / 100;
+				// so they scale with the density dial like everyone else, and
+				// with the towns' own share: towns at 0 have no stalls either.
+				if (battle_config.population_engine_town_pct <= 0)
+					continue;
+				const int64_t vendor_pct = (static_cast<int64_t>(battle_config.population_engine_density_pct)
+					* battle_config.population_engine_town_pct) / 100;
+				if (vendor_pct != 100) {
+					const int64_t t = (static_cast<int64_t>(target) * vendor_pct) / 100;
 					target = static_cast<int>(t < 1 ? 1 : t);
 				}
 				const int16 mid  = map_mapname2mapid(vp.map.c_str());

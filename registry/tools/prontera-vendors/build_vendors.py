@@ -906,7 +906,7 @@ def buy_amount(p, rng):
 
 
 # Pets: eggs (bought from a stall, the server creates a real, hatchable egg
-# for the buyer; engine patch 0020) with incubators and food, and the
+# for the buyer; engine patch 0021) with incubators and food, and the
 # accessories pets wear.
 THEMES += [
     dict(key="pet_eggs", job="Merchant", pick=[4, 8], weight=1,
