@@ -203,7 +203,24 @@ fn misplaced(root: &Path, mod_name: &str) -> Vec<String> {
              move it to System/"
         )
     });
-    nested.chain(under_data).collect()
+    let mut out: Vec<String> = nested.chain(under_data).collect();
+    // A signboard table anywhere but the one path under data/: in System/,
+    // or a folder off under data/. Either is copied like any file, and the
+    // client goes on drawing only the stock signs.
+    let signs = files_under(&root.join("System"), "System", is_signboard_name)
+        .into_iter()
+        .chain(
+            files_under(&root.join("data"), "data", is_signboard_name)
+                .into_iter()
+                .filter(|found| !is_signboard_table(&found["data/".len()..])),
+        );
+    for found in signs {
+        out.push(format!(
+            "mods: {mod_name} has {found}, but the client reads signboard tables only from \
+             data/luafiles514/lua files/ -- move it there"
+        ));
+    }
+    out
 }
 
 /// Copy a mod's `System/` layer, keeping the client's whole-game tables as
@@ -418,6 +435,12 @@ fn is_signboard_table(rel: &str) -> bool {
     lower == "luafiles514/lua files/signboardlist.lub" || lower == "luafiles514/lua files/signboardlist.lua"
 }
 
+/// A file named like the signboard table, wherever it is.
+fn is_signboard_name(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    lower == "signboardlist.lub" || lower == "signboardlist.lua"
+}
+
 /// `itemInfo.lua`, `itemInfo_C.lua`, `iteminfo.lub` -- any name the client's
 /// own item tables go by.
 fn is_item_table(name: &str) -> bool {
@@ -431,6 +454,12 @@ fn is_item_table(name: &str) -> bool {
 /// it from -- `System/LuaFiles514/`, `data/luafiles514/` -- so the mod says why
 /// its items are nameless instead of just being nameless.
 fn item_tables_under(dir: &Path, label: &str) -> Vec<String> {
+    files_under(dir, label, is_item_table)
+}
+
+/// Files anywhere under `dir` whose name `is` picks, as paths starting with
+/// `label`, in name order.
+fn files_under(dir: &Path, label: &str, is: fn(&str) -> bool) -> Vec<String> {
     let mut found = Vec::new();
     let Ok(rd) = fs::read_dir(dir) else { return found };
     let mut children: Vec<_> = rd.flatten().collect();
@@ -439,8 +468,8 @@ fn item_tables_under(dir: &Path, label: &str) -> Vec<String> {
         let name = e.file_name().to_string_lossy().to_string();
         let path = e.path();
         if path.is_dir() {
-            found.extend(item_tables_under(&path, &format!("{label}/{name}")));
-        } else if is_item_table(&name) {
+            found.extend(files_under(&path, &format!("{label}/{name}"), is));
+        } else if is(&name) {
             found.push(format!("{label}/{name}"));
         }
     }
@@ -709,6 +738,27 @@ mod tests {
             ]
         );
         assert!(misplaced(&tmp.join("absent"), "m").is_empty());
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// A signboard table the client never reads -- in System/, or in the wrong
+    /// folder under data/ -- is reported; the one in the right place is not.
+    #[test]
+    fn a_misplaced_signboard_table_is_reported() {
+        let tmp = tmp("misplaced-signs");
+        write(&tmp.join("System/SignBoardList.lub"), "x");
+        write(&tmp.join("data/lua files/signboardlist.lua"), "x");
+        write(&tmp.join("data/LuaFiles514/Lua Files/SignBoardList.lub"), "x");
+        write(&tmp.join("data/luafiles514/lua files/signboardlist_f.lub"), "x");
+        assert_eq!(
+            misplaced(&tmp, "m"),
+            [
+                "mods: m has System/SignBoardList.lub, but the client reads signboard tables only from \
+                 data/luafiles514/lua files/ -- move it there",
+                "mods: m has data/lua files/signboardlist.lua, but the client reads signboard tables only from \
+                 data/luafiles514/lua files/ -- move it there",
+            ]
+        );
         let _ = fs::remove_dir_all(&tmp);
     }
 
