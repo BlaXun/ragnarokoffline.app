@@ -140,9 +140,9 @@
     },
     {
       "name": "exp-card",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "BlaXun",
-      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. A level 10 card grants roughly 5% of the exp a level-98 character needs for the next level, and each lower level is about half the one above it. Streamlines offline levelling without touching per-mob drop tables.",
+      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. At 1x, a level 10 card grants roughly 5% of the exp a level-98 character needs for the next level, and each lower level is about half the one above it; card exp scales with the server's Base/Job EXP rates. Streamlines offline levelling without touching per-mob drop tables.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/exp-card",
       "tags": [
         "drops",
@@ -162,15 +162,15 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "41bf812d670f32ad1641f1e1b171a20ed33fb5bd94e2f9604f42e2667a1fc008"
+          "sha256": "8a92b7ab55ec3b76f42385c2ecaa6a6c737f7b1620f0605e7ad56524111e05e9"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "65998dffa84ae55470b28231d7f1d990ffbc50b72196e263ecb4fc712feb133e"
+          "sha256": "b105f6a21ab7f12bb67c16b87b928275bac605850b39707f827c73eec8a8fa8a"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "20b3d15e771766dfe8ad32d2277c4eb358f8456997760d7f3f34783868a14d9f"
+          "sha256": "fb5d7eb528238a877dac9be5d5c0125efb6478c378cfc6b83cc8e70e44b2026d"
         },
         {
           "path": "images/exp-card.png",
@@ -182,7 +182,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "4e7d04f78ecc9dc979f8966abb31e24f828131a01d7c55a3a99d9d7b26eb58e7"
+          "sha256": "952e56168647401194448832c4ffbdb464ee959d0d87ec88acfc1800bc93cdca"
         },
         {
           "path": "npc/exp_card.txt",
