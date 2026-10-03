@@ -2086,7 +2086,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
       - { SkillId: AC_CHARGEARROW, Level: 1, Rate: 9000 }
@@ -2134,7 +2134,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
 
@@ -2163,7 +2163,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
       - { SkillId: AC_CHARGEARROW, Level: 1, Rate: 9000 }
@@ -2211,7 +2211,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
 
