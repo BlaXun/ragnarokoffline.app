@@ -11,7 +11,8 @@ const path = require('node:path');
 const { test } = require('node:test');
 
 const ROOT = path.join(__dirname, '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+// Windows checks out CRLF; the patterns below are written against LF.
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');
 const loader = read('third-party/population-engine/files/src/map/population_engine/config/population_config.cpp');
 const sets = read('third-party/population-engine/files/db/population_gear_sets.yml');
 
