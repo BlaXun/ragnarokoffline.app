@@ -2223,7 +2223,10 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 	if (owner_distance > 4) {
 		population_shell_target_change(sd, 0);
 		unit_stop_attack(sd);
-		unit_walktobl(sd, owner, 3, 1);
+		// RAGNAROKMAC: full path search (flag 0). The easy path (flag 1) never walks round an
+		// obstacle, so with a wall or a tree in between the walk did not start at all and the
+		// companion stood still until the owner was far enough away to warp it.
+		unit_walktobl(sd, owner, 3, 0);
 		return false;
 	}
 	return true;
@@ -4383,7 +4386,12 @@ TIMER_FUNC(population_engine_global_combat_timer)
 			sd->pop.sticky_target_id = 0;
 			sd->pop.sticky_until = 0;
 			unit_stop_attack(sd);
-			if (unit_is_walking(sd) && !sd->pop.companion_formation_active)
+			// RAGNAROKMAC: a walk to the owner is the follow from pop_companion_follow_owner, not
+			// a chase to drop. Halting it once the companion was within 4 cells, with the owner
+			// still moving, made it stop, snap in place and set off again 400 ms later; the faster
+			// the companion (a mounted Lord Knight), the more often it caught up and stuttered.
+			if (unit_is_walking(sd) && !sd->pop.companion_formation_active &&
+				sd->ud.target_to != owner->id)
 				unit_stop_walking(sd, USW_FIXPOS);
 		}
 		if (sd->state.population_combat)
