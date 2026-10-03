@@ -1084,6 +1084,45 @@ static void population_shell_check_unhide(map_session_data *sd, t_tick current_t
 	}
 }
 
+/// True if casting `bs` would end a buff the shell cast itself from a row listed before `bs`.
+/// Mutually exclusive buffs (a Bard's songs, a Dancer's dances, a stance) name each other in
+/// their status EndOnStart, so the second cast silently removes the first. List order is the
+/// priority: a row may replace a later row's buff (the preferred song taking over again once it
+/// is off cooldown), never an earlier one. Only buffs in active_buffs - this shell's own casts,
+/// still running - count, so a status a monster inflicted never blocks anything.
+/// A status the new skill requires is a step in a chain, not a rival: the Inquisitor's Judge
+/// needs First Faith Power and ends it, Third Exor Flame needs Judge and ends it.
+static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
+	const PopulationShellBuffSkill &bs, t_tick now)
+{
+	const sc_type sc_id = skill_get_sc(bs.skill_id);
+	if (!scc || sc_id == SC_NONE)
+		return false;
+	const std::vector<sc_type> ends = status_db.getEndOnStart(sc_id);
+	if (ends.empty())
+		return false;
+	const std::shared_ptr<s_skill_db> skill = skill_db.find(bs.skill_id);
+	const std::vector<sc_type> none;
+	const std::vector<sc_type> &required = skill ? skill->require.status : none;
+	for (const PopulationShellBuffSkill &own : sd->pop.buff_skills) {
+		if (&own == &bs)
+			break; // only rows listed before this one outrank it
+		if (own.target != 1)
+			continue;
+		const sc_type own_sc = skill_get_sc(own.skill_id);
+		if (own_sc == SC_NONE || own_sc == sc_id || !scc->hasSCE(own_sc))
+			continue;
+		if (std::find(ends.begin(), ends.end(), own_sc) == ends.end())
+			continue;
+		if (std::find(required.begin(), required.end(), own_sc) != required.end())
+			continue;
+		for (const s_pe_active_buff &ab : sd->pop.active_buffs)
+			if (ab.skill_id == own.skill_id && ab.expires_at > now)
+				return true;
+	}
+	return false;
+}
+
 static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tick current_tick)
 {
 	if (!sd || sd->pop.buff_skills.empty())
@@ -1196,6 +1235,26 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 		}
 		if (already_active)
 			continue;
+		// RAGNAROKMAC: never replace a higher-priority buff this companion cast itself. A Bard's
+		// four songs end each other (status EndOnStart), so each one cast in turn wiped the last,
+		// and the dispatch record above then kept the wiped song from coming back. The first
+		// song in the list now holds until it runs out.
+		if (pop_buff_would_end_own(sd, scc, bs, current_tick))
+			continue;
+		// Pre-renewal: a song is a performance on the ground, the singer holds SC_DANCING while
+		// it plays and never gets the song's own status, so the gate above cannot see it. A new
+		// song would stop the one playing. Renewal songs never set SC_DANCING.
+		if (scc && scc->hasSCE(SC_DANCING) &&
+			skill_get_inf2_(bs.skill_id, { INF2_ISSONG, INF2_ISENSEMBLE }))
+			continue;
+#ifndef RENEWAL
+		// Pre-renewal Adaptation to Circumstances only ends the performance (amp.cpp). Kept up
+		// like a buff it stopped every song 3 s in (its lockout after a song starts), and the
+		// next song in the list took over: the companion cycled through all of them. Renewal
+		// Adaptation is a buff of its own and stays.
+		if (bs.skill_id == BD_ADAPTATION)
+			continue;
+#endif
 
 		// Ground-targeted and trap skills must use position cast.
 		if (skill_get_inf(bs.skill_id) & (INF_GROUND_SKILL | INF_TRAP_SKILL)) {
