@@ -122,13 +122,11 @@ impl ModTables {
             if files.is_empty() {
                 continue;
             }
-            let mut names: Vec<String> = match table.order {
-                Order::ModOrder => files.iter().map(|f| format!("{}/{f}", table.dir)).collect(),
-                Order::LastModFirst { .. } => files.iter().rev().map(|f| format!("{}/{f}", table.dir)).collect(),
+            let path = |f: &String| format!("{}/{f}", table.dir);
+            let names: Vec<String> = match table.order {
+                Order::ModOrder => files.iter().map(path).collect(),
+                Order::LastModFirst { base } => files.iter().rev().map(path).chain(base(web)).collect(),
             };
-            if let Order::LastModFirst { base } = table.order {
-                names.extend(base(web));
-            }
             let list = names.iter().map(|n| format!("'{n}'")).collect::<Vec<_>>().join(", ");
             out.push(format!("\t{}: [{list}],\n", table.config_key));
         }
@@ -148,17 +146,24 @@ pub(super) fn warn_misplaced(root: &Path, mod_name: &str) {
 }
 
 /// `warn_misplaced`'s messages. Item tables directly in `System/` are added;
-/// nested ones there are reported by `copy_system_layer`, which walks it anyway.
+/// one in a folder under it, or anywhere under `data/`, is never read.
 fn misplaced(root: &Path, mod_name: &str) -> Vec<String> {
-    item_tables_under(&root.join("data"), "data")
+    let nested = item_tables_under(&root.join("System"), "System")
         .into_iter()
+        .filter(|found| found["System/".len()..].contains('/'))
         .map(|found| {
             format!(
-                "mods: {mod_name} has {found}, but the client reads item tables only from System/ -- \
-                 move it to System/"
+                "mods: {mod_name} has {found}, but the client only adds item tables that sit \
+                 directly in System/ -- move it there"
             )
-        })
-        .collect()
+        });
+    let under_data = item_tables_under(&root.join("data"), "data").into_iter().map(|found| {
+        format!(
+            "mods: {mod_name} has {found}, but the client reads item tables only from System/ -- \
+             move it to System/"
+        )
+    });
+    nested.chain(under_data).collect()
 }
 
 /// Copy a mod's `System/` layer, keeping the client's whole-game tables as
@@ -207,12 +212,6 @@ pub fn copy_system_layer(src: &Path, merged: &Path, mod_name: &str) -> Result<Mo
             copy_file(&from, &merged.join(&dst_name))?;
             views.set(kind, role, dst_name);
         } else if from.is_dir() {
-            for nested in item_tables_under(&from, &format!("System/{name}")) {
-                eprintln!(
-                    "mods: {mod_name} has {nested}, but the client only adds item tables that sit \
-                     directly in System/ -- move it there"
-                );
-            }
             copy_over(&from, &merged.join(&name))?;
         } else {
             // This destination belongs to the staged generation.
@@ -280,7 +279,7 @@ impl ViewTables {
 /// One mod's view-table files, before they are paired up.
 #[derive(Default)]
 struct ViewFiles {
-    files: std::collections::BTreeMap<(&'static str, &'static str), String>,
+    files: BTreeMap<(&'static str, &'static str), String>,
 }
 
 impl ViewFiles {
@@ -607,17 +606,22 @@ mod tests {
         let _ = fs::remove_dir_all(&tmp);
     }
 
-    /// An item table under data/ is never read, and the warning says so -- in
-    /// the words it has always used.
+    /// An item table in a folder under System/, or under data/, is never
+    /// read, and the warning says so -- in the words it has always used.
     #[test]
     fn an_item_table_under_data_is_reported() {
         let tmp = tmp("misplaced");
         write(&tmp.join("data/luafiles514/lua files/itemInfo.lua"), "x");
         write(&tmp.join("System/itemInfo.lua"), "x");
+        write(&tmp.join("System/LuaFiles514/itemInfo.lua"), "x");
         assert_eq!(
             misplaced(&tmp, "m"),
-            ["mods: m has data/luafiles514/lua files/itemInfo.lua, but the client reads item tables only \
-              from System/ -- move it to System/"]
+            [
+                "mods: m has System/LuaFiles514/itemInfo.lua, but the client only adds item tables that sit \
+                 directly in System/ -- move it there",
+                "mods: m has data/luafiles514/lua files/itemInfo.lua, but the client reads item tables only \
+                 from System/ -- move it to System/",
+            ]
         );
         assert!(misplaced(&tmp.join("absent"), "m").is_empty());
         let _ = fs::remove_dir_all(&tmp);
