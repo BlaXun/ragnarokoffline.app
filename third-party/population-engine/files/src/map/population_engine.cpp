@@ -1206,7 +1206,7 @@ std::vector<map_session_data*> population_engine_collect_stale_shells()
 				&& !pc_isdead(sd) && map_id2bl(sd->id) == sd) {
 				int16_t tx = owner->x, ty = owner->y;
 				map_search_freecell(owner, owner->m, &tx, &ty, 2, 2, 0);
-				if (pc_setpos(sd, owner->m, tx, ty, CLR_TELEPORT) == SETPOS_OK) {
+				if (pc_setpos(sd, map_id2index(owner->m), tx, ty, CLR_TELEPORT) == SETPOS_OK) {
 					pop_shell_finish_map_placement(sd);
 					pop_shell_broadcast_map_placement(sd);
 					ShowInfo("Population engine: companion %s followed its owner to another map.\n",
@@ -7315,7 +7315,7 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 		pop_companion_set_owner(existing, owner);
 		pop_companion_register_local_party(existing, owner);
 		if (existing->m != owner->m) {
-			pc_setpos(existing, map_id, x, y, CLR_TELEPORT);
+			pc_setpos(existing, map_id2index(map_id), x, y, CLR_TELEPORT);
 			// pc_setpos removed the shell from the block grid (prev==nullptr);
 			// shells have no client LoadEndAck to re-add them, so finish the
 			// placement here or the stale sweep will reap them in <100 ms.
@@ -7329,7 +7329,7 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 			int16_t fx = existing->x, fy = existing->y;
 			if (!pop_companion_formation_cell(existing, owner, fx, fy)) { fx = existing->x; fy = existing->y; }
 			if (fx != existing->x || fy != existing->y) {
-				pc_setpos(existing, map_id, fx, fy, CLR_TELEPORT);
+				pc_setpos(existing, map_id2index(map_id), fx, fy, CLR_TELEPORT);
 				pop_shell_finish_map_placement(existing);
 				pop_shell_broadcast_map_placement(existing);
 			}
@@ -7441,7 +7441,9 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 
 	int16_t fx = x, fy = y;
 	if (!pop_companion_formation_cell(shell, owner, fx, fy)) { fx = x; fy = y; }
-	pc_setpos(shell, map_id, fx, fy, CLR_TELEPORT);
+	// pc_setpos takes a map INDEX; map_id is the map's id (owner->m). Passed as-is, the move
+	// failed or named another map.
+	pc_setpos(shell, map_id2index(map_id), fx, fy, CLR_TELEPORT);
 	// pc_setpos removes an on-grid shell from the block grid and only re-adds
 	// real players later via their client's LoadEndAck. Shells have no client:
 	// finish the placement explicitly, then broadcast the spawn + party dots.
@@ -8671,32 +8673,34 @@ void population_engine_on_party_chat(map_session_data *from_sd, const char *mess
 		requested_roles.insert(PopulationRoleType::Support);
 	if (population_companion_has_token(tokens, "attacker") || population_companion_has_token(tokens, "dd"))
 		requested_roles.insert(PopulationRoleType::Attacker);
-	if (requested_roles.size() != 1)
-		return;
-
-	const PopulationRoleType role = *requested_roles.begin();
-	for (map_session_data *bot : g_population_engine_pcs) {
-		if (!pop_is_companion(bot) || bot->status.party_id != from_sd->status.party_id)
-			continue;
-		std::string shell_name(bot->status.name);
-		std::transform(shell_name.begin(), shell_name.end(), shell_name.begin(),
-			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-		if (!population_companion_has_token(tokens, shell_name.c_str()))
-			continue;
-		bot->pop.role = static_cast<int8_t>(role);
-		population_companion_clear_target(bot);
-		population_engine_persist_companion_gear(bot); // duty survives restart
-		const char *role_name = role == PopulationRoleType::Tank ? "Tank"
-			: role == PopulationRoleType::Support ? "Support" : "Attacker";
-		char reply[CHAT_SIZE_MAX];
-		// Send this through the real party channel as the shell. The party-chat
-		// command hook only handles packets from real clients, so this reply cannot
-		// recursively issue another command.
-		safesnprintf(reply, sizeof(reply), "%s : Understood. My role is now %s.",
-			bot->status.name, role_name);
-		party_send_message(bot, reply, strlen(reply) + 1);
-		ShowInfo("Population engine: party leader %s set companion %s role to %s.\n",
-			from_sd->status.name, bot->status.name, role_name);
+	// A role needs exactly one role word, and only applies to the companion named in the
+	// message. Not an early return: the orders below must still be read from a message
+	// that sets no role, which is every "taunt" and "recall" the panel sends.
+	if (requested_roles.size() == 1) {
+		const PopulationRoleType role = *requested_roles.begin();
+		for (map_session_data *bot : g_population_engine_pcs) {
+			if (!pop_is_companion(bot) || bot->status.party_id != from_sd->status.party_id)
+				continue;
+			std::string shell_name(bot->status.name);
+			std::transform(shell_name.begin(), shell_name.end(), shell_name.begin(),
+				[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+			if (!population_companion_has_token(tokens, shell_name.c_str()))
+				continue;
+			bot->pop.role = static_cast<int8_t>(role);
+			population_companion_clear_target(bot);
+			population_engine_persist_companion_gear(bot); // duty survives restart
+			const char *role_name = role == PopulationRoleType::Tank ? "Tank"
+				: role == PopulationRoleType::Support ? "Support" : "Attacker";
+			char reply[CHAT_SIZE_MAX];
+			// Send this through the real party channel as the shell. The party-chat
+			// command hook only handles packets from real clients, so this reply cannot
+			// recursively issue another command.
+			safesnprintf(reply, sizeof(reply), "%s : Understood. My role is now %s.",
+				bot->status.name, role_name);
+			party_send_message(bot, reply, strlen(reply) + 1);
+			ShowInfo("Population engine: party leader %s set companion %s role to %s.\n",
+				from_sd->status.name, bot->status.name, role_name);
+		}
 	}
 
 	// --- Orders ---
@@ -8741,7 +8745,7 @@ void population_engine_on_party_chat(map_session_data *from_sd, const char *mess
 			if (bot->m == from_sd->m && distance_bl(bot, from_sd) <= 3) continue;
 			int16_t tx = from_sd->x, ty = from_sd->y;
 			map_search_freecell(from_sd, from_sd->m, &tx, &ty, 2, 2, 0);
-			if (pc_setpos(bot, from_sd->m, tx, ty, CLR_TELEPORT) == SETPOS_OK) {
+			if (pc_setpos(bot, from_sd->mapindex, tx, ty, CLR_TELEPORT) == SETPOS_OK) {
 				pop_shell_finish_map_placement(bot);
 				pop_shell_broadcast_map_placement(bot);
 				moved++;
