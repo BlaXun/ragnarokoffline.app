@@ -69,17 +69,17 @@ test('the roster hook is installed from init(), not at module scope', () => {
 
 test('the roster wire format matches what the server writes', () => {
 	// population_engine_companion_list_raw writes:
-	//   "@CP|%s|%s|%d|%d|%d|%d|%s|%d|%d"
-	//     name, job, base_level, active, favorite, live_level, live_job, pet switch
-	//     (-1 = this job cannot have one, 0 = switched off, 1 = on), duty
-	//     (PopulationRoleType: 0 none, 1 tank, 2 support, 3 attacker)
+	//   "@CP|%s|%s|%d|%d|%d|%d|%s|%d|%d|%d"
+	//     name, job, base_level, active, favorite, live_level, live_job, pet switch,
+	//     duty (PopulationRoleType: 0 none, 1 tank, 2 support, 3 attacker), rebirth
+	//     readiness (-1 = this class cannot be reborn, 0 = not ready, 1 = ready)
 	//   "@CPEND|%d"              (count)
 	const engine = fs.readFileSync(
 		path.join(ROOT, 'third-party', 'population-engine', 'files', 'src', 'map', 'population_engine.cpp'),
 		'utf8'
 	).replace(/\r\n/g, '\n');
-	assert.match(engine, /"@CP\|%s\|%s\|%d\|%d\|%d\|%d\|%s\|%d\|%d"/,
-		'server @CP format changed (expected the 10-field form: the 9th is the pet switch, the 10th the duty)');
+	assert.match(engine, /"@CP\|%s\|%s\|%d\|%d\|%d\|%d\|%s\|%d\|%d\|%d"/,
+		'server @CP format changed (expected the 11-field form: pet switch, duty, rebirth)');
 	assert.match(engine, /"@CPEND\|%d"/, 'server sentinel changed');
 	// The client must consume exactly that prefix and that sentinel.
 	assert.match(src, /'@CP'/, 'client no longer keys on the @CP prefix');
