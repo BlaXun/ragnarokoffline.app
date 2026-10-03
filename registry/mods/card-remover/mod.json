@@ -4,7 +4,7 @@
   "author": "BlaXun",
   "description": "A Card Remover in Prontera, Geffen, Alberta, Morroc, Payon, Izlude and Al De Baran takes one card out of the equipment you are wearing -- the item and the card both survive. He is paid in cards, not zeny: every card is worth points by its tier, and the cost depends on the tier of the card you free. Pick the card and your payment in his window.",
   "requires": {
-    "app": ">=1.4.7",
+    "app": ">=1.4.6",
     "era": "any"
   },
   "tags": [

@@ -155,7 +155,7 @@
       "requires": {
         "mods": [],
         "era": "any",
-        "app": ">=1.4.7"
+        "app": ">=1.4.6"
       },
       "files": [
         {
@@ -172,7 +172,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "0194a93e9747a9b838216938ed234874c8e9de78f1c7d4c93d9e144523eb63e4"
+          "sha256": "30e4c26b77f6b3412e3b17c1b0e050d386915f47c045bc03e9058433286b0cd1"
         },
         {
           "path": "npc/card_remover.txt",
