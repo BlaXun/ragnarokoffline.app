@@ -12,14 +12,5 @@
     "drops",
     "quality-of-life"
   ],
-  "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/autoloot",
-  "settings": [
-    {
-      "key": "longer_list",
-      "type": "boolean",
-      "default": false,
-      "label": "Let the exact-item list hold 30 items",
-      "description": "Instead of rAthena's 10. Takes effect when the server restarts."
-    }
-  ]
+  "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/autoloot"
 }
