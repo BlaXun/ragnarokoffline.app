@@ -12,7 +12,7 @@ const path = require('node:path');
 const { test } = require('node:test');
 
 const src = fs.readFileSync(path.join(__dirname, '..', 'third-party', 'population-engine', 'files', 'src',
-	'map', 'population_engine.cpp'), 'utf8');
+	'map', 'population_engine.cpp'), 'utf8').replace(/\r\n/g, '\n'); // Windows checks out CRLF
 
 const body = (name) => {
 	const m = new RegExp(`\\n[^\\n]*\\b${name}\\([^)]*\\)\\n\\{([\\s\\S]*?)\\n\\}\\n`).exec(src);
