@@ -101,6 +101,13 @@ export default function init(parameters, api) {
             <span class="error" data-error></span>
         </section>
     </div>`;
+    // A click in the window must not reach the map behind it, which walks the
+    // character. Clients from before the fix in PluginWindows.mjs let it
+    // through, so stop it at the window's frame (the title bar included).
+    const frame = body.getRootNode().host || body;
+    const swallow = event => event.stopPropagation();
+    frame.addEventListener('mousedown', swallow);
+    api.cleanup(() => frame.removeEventListener('mousedown', swallow));
     const $ = selector => body.querySelector(selector);
     const rarity = $('[data-rarity]'), rateInput = $('[data-rate]'), errorLine = $('[data-error]');
     const searchInput = $('[data-search] input'), mobInput = $('[data-mob] input');
