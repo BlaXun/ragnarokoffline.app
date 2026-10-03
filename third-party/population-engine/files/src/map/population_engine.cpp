@@ -3884,8 +3884,19 @@ int population_engine_companion_toggle_skill(uint32_t owner_account, const char*
 /// is a chain (the Inquisitor's Judge needs First Faith Power and ends it), not a choice.
 static bool pop_skill_ends_skill(uint16_t a, uint16_t b)
 {
+#ifndef RENEWAL
+	// Pre-renewal songs and ensembles are performances on the ground: the performer holds
+	// SC_DANCING, and a new one stops the one playing, with no status naming the other.
+	const std::vector<e_skill_inf2> perf = { INF2_ISSONG, INF2_ISENSEMBLE };
+	if (a != b && skill_get_inf2_(a, perf) && skill_get_inf2_(b, perf))
+		return true;
+#endif
 	const sc_type sa = skill_get_sc(a), sb = skill_get_sc(b);
 	if (sa == SC_NONE || sb == SC_NONE || sa == sb)
+		return false;
+	// A common ailment is a side effect, not a buff to choose: Grand Cross blinds its caster,
+	// and King's Grace, which cures Blind, is not its rival.
+	if ((sa >= SC_COMMON_MIN && sa <= SC_COMMON_MAX) || (sb >= SC_COMMON_MIN && sb <= SC_COMMON_MAX))
 		return false;
 	const std::vector<sc_type> ends = status_db.getEndOnStart(sa);
 	if (std::find(ends.begin(), ends.end(), sb) == ends.end())

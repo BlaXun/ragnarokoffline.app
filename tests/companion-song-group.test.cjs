@@ -25,6 +25,9 @@ test('the server flags skills that end another listed skill, but not a chain ste
 	const ends = fn(engine, 'static bool pop_skill_ends_skill(');
 	assert.match(ends, /status_db\.getEndOnStart\(sa\)/);
 	assert.match(ends, /require\.status/, 'a status the skill needs is a chain, not a rival');
+	assert.match(ends, /SC_COMMON_MIN && s[ab] <= SC_COMMON_MAX/, 'an ailment a skill inflicts on its caster is no buff');
+	assert.match(ends, /#ifndef RENEWAL[\s\S]*INF2_ISSONG, INF2_ISENSEMBLE[\s\S]*#endif/,
+		'pre-renewal performances end each other without a status naming the other');
 	const self = fn(engine, 'static std::vector<uint16_t> pop_companion_self_buff_ids(');
 	assert.match(self, /e\.target == 1/, 'only self buffs compete; a debuff on an enemy is no choice');
 	const excl = fn(engine, 'static bool pop_skill_is_exclusive(');
