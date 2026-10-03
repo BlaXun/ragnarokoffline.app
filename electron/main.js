@@ -1029,6 +1029,11 @@ const SETTINGS_DEFAULTS = {
 	population_companion_fee_zeny: 1000,
 	population_companion_fee_item: 0,
 	population_companion_fee_item_amount: 0,
+	// Whether companions must hold the weapon a skill asks for, as players
+	// must. Off keeps the historic behaviour: any skill with any weapon. On,
+	// a companion whose gear does not fit a skill (a performer's default bow
+	// and its songs) skips it until it is given the right weapon.
+	population_skill_weapon_check: false,
 	// How many shells one player may recruit into their party at once. The
 	// server enforces this per recruiter (not per map), and rAthena's MAX_PARTY
 	// of 12 leaves a slot for real players, which is why the UI tops out at 11.
@@ -2139,7 +2144,7 @@ const handlers = {
 		// the app would not run it, and the difference is the whole point of
 		// having a reason to show.
 		return out.split('\n').filter(Boolean).map(l => {
-			const [state, name, description, reason, origin, version, author, grants, settings, problems, settingsPage, dir, kind] = l.split('\t');
+			const [state, name, description, reason, origin, version, author, grants, settings, problems, settingsPage, dir, kind, client] = l.split('\t');
 			return {
 				name,
 				enabled: state === 'on',
@@ -2183,6 +2188,11 @@ const handlers = {
 				// `skin` or `cursor`: at most one of each is on, and Settings
 				// draws them as a choice rather than as independent switches.
 				kind: kind || '',
+				// Whether the mod has layers the game window loads (data/,
+				// System/, BGM/, client/), so Settings asks for the game to be
+				// reopened only after an Apply that changed one. Null from an
+				// older supervisor, which cannot tell: Settings then asks.
+				clientSide: client === undefined ? null : client === 'client',
 			};
 		});
 	},

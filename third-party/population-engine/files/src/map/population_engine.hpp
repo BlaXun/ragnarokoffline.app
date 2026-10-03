@@ -27,7 +27,9 @@ const char *population_engine_hire_job_name(uint16_t job_id);
 std::vector<uint16_t> population_engine_companion_hire_jobs(map_session_data *owner);
 int64_t population_engine_companion_hire_zeny(const map_session_data *owner);
 uint32_t population_engine_companion_hire(map_session_data *owner, uint16_t job_id,
-	const char *name_hint, bool from_npc, std::string &msg);
+	const char *name_hint, bool from_npc, std::string &msg, char sex = '\0');
+/// 'M' or 'F' for a job that is only ever one sex (Bard, Dancer, Kagerou...), else '\0'.
+char population_engine_job_required_sex(uint16_t job_id);
 void population_engine_companion_terms(map_session_data *owner, int fd);
 
 struct PopulationEngineConfig {
@@ -137,7 +139,10 @@ int population_engine_companion_toggle_skill(uint32_t owner_account, const char*
 /// NULL = never chosen (auto), empty string = a chosen empty selection.
 size_t population_engine_companion_parse_skill_override(const char* stored,
 	std::vector<uint16_t>& out);
-uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job_id, int quality, const char *name_hint);
+/// RAGNAROKMAC: `sex` is 'M' or 'F' when the player chose one, '\0' to choose as an
+/// ambient spawn does. A job with a sex of its own (Bard, Dancer...) keeps it either way.
+uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job_id, int quality, const char *name_hint,
+	char sex = '\0');
 void population_engine_companion_list_raw(uint32_t owner_account, int fd);
 /// Goal 3 friend list: print the owner's saved companions to their chat (fd = client fd).
 void population_engine_companion_list(uint32_t owner_account, int fd);

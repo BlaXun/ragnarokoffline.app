@@ -243,20 +243,24 @@ async function main() {
       ]);
       return mine;
     });
-    // Consent through the Settings UI itself: the switch on the mod's card.
+    // Consent through the Settings UI itself: the switch in the mod's row,
+    // under Host service once the row is open.
     await check('consent switched on from the Mods tab card', async () => {
       await page.bringToFront();
       await page.locator('#tab-mods').click();
-      const toggle = page.locator('#mods-list label:has(b:text-is("host-local-ai")) + div input[type=checkbox]');
+      await page.locator('#modstab-installed').click();
+      const row = page.locator('#mods-list .mrow[data-mod="host-local-ai"]');
+      await row.locator('.mrow-hit').click();
+      const toggle = row.locator('.hostroute input[type=checkbox]');
       await expect(toggle).toBeVisible({ timeout: 30000 });
       await expect(toggle).not.toBeChecked();
-      const caption = await page.locator('#mods-list label:has(b:text-is("host-local-ai")) + div').innerText();
+      const caption = await row.locator('.hostroute').innerText();
       expect(caption).toContain(`may connect to: http://127.0.0.1:${AI_PORT}`);
       await toggle.check();
       await expect.poll(async () => (await invoke('mod_host_list')).find(e => e.name === 'host-local-ai').allowed).toBe(true);
       const stored = JSON.parse(fs.readFileSync(consentPath, 'utf8'));
       expect(stored).toEqual({ 'host-local-ai': { enabled: true, connect: [`http://127.0.0.1:${AI_PORT}`] } });
-      await page.locator('#mods-list label:has(b:text-is("host-local-ai")) + div').screenshot({ path: path.join(out, 'settings-consent.png') });
+      await row.locator('.mbox.host').screenshot({ path: path.join(out, 'settings-consent.png') });
       report.screens.push('settings-consent.png');
       return { caption, stored };
     });

@@ -41,7 +41,9 @@ const _preferences = Preferences.get(
 		// the window is as wide as the widest tab needs, so nothing is cropped.
 		width: 0,
 		height: 0,
-		squads: {}
+		squads: {},
+		// The Summon tab's sex choice: 'm', 'f' or '' for either.
+		draftSex: ''
 	},
 	1.0
 );
@@ -92,6 +94,30 @@ const JOB_TIERS = [
 		'Inquisitor', 'Troubadour', 'Trouvere', 'SkyEmperor', 'SoulAscetic',
 		'Shinkiro', 'Shiranui', 'NightWatch', 'HyperNovice', 'SpiritHandler']]
 ];
+
+/**
+ * Jobs that are only ever one sex. The engine keeps their sex whatever the
+ * draft asks for (get_job_required_sex); the Summon tab says so instead of
+ * offering a choice that would be ignored.
+ */
+const FIXED_SEX = {
+	Bard: 'm', Clown: 'm', Minstrel: 'm', Troubadour: 'm', Kagerou: 'm', Shinkiro: 'm',
+	Dancer: 'f', Gypsy: 'f', Wanderer: 'f', Trouvere: 'f', Oboro: 'f', Shiranui: 'f'
+};
+
+/**
+ * The @companion draft line for a job and the chosen sex ('m', 'f' or '').
+ * A fixed-sex job is sent without one, so the reply does not complain.
+ *
+ * @param {string} job
+ * @param {string} sex
+ * @returns {string}
+ */
+function _draftCommand(job, sex) {
+	return (sex === 'm' || sex === 'f') && !FIXED_SEX[job]
+		? `@companion draft ${job} ${sex}`
+		: `@companion draft ${job}`;
+}
 
 /**
  * Which job tier a class name belongs to, read off JOB_TIERS.
@@ -556,6 +582,27 @@ function _drawSummon() {
 		hint.textContent = 'Draft a new companion of any job. It joins your party at once.';
 	}
 
+	// Male / Female / Random for the next draft. Remembered, like the window's place.
+	const sexRow = document.createElement('div');
+	sexRow.className = 'sex-choice';
+	const sexLabel = document.createElement('span');
+	sexLabel.textContent = 'Sex:';
+	sexRow.append(sexLabel);
+	[['m', 'Male'], ['f', 'Female'], ['', 'Random']].forEach(([value, label]) => {
+		const b = _button(label, 'b', () => {
+			_preferences.draftSex = value;
+			_preferences.save();
+			_drawSummon();
+		}, value ? `Draft ${label.toLowerCase()} companions` : 'Draft either sex, at random');
+		b.classList.toggle('on', (_preferences.draftSex || '') === value);
+		sexRow.append(b);
+	});
+	page.append(sexRow);
+	const sexNote = document.createElement('div');
+	sexNote.className = 'hint';
+	sexNote.textContent = 'Jobs marked \u2642 or \u2640 are always that sex.';
+	page.append(sexNote);
+
 	tiers.forEach(([tier, jobs]) => {
 		const h = document.createElement('h4');
 		h.textContent = tier;
@@ -564,14 +611,15 @@ function _drawSummon() {
 		const wrap = document.createElement('div');
 		wrap.className = 'jobs';
 		jobs.forEach(job => {
+			const fixed = FIXED_SEX[job];
 			wrap.append(_button(
-				job.replace(/([a-z])([A-Z])/g, '$1 $2'),
+				job.replace(/([a-z])([A-Z])/g, '$1 $2') + (fixed ? (fixed === 'm' ? ' \u2642' : ' \u2640') : ''),
 				'',
 				() => {
-					talk(`@companion draft ${job}`, false);
+					talk(_draftCommand(job, _preferences.draftSex || ''), false);
 					window.setTimeout(refreshRoster, 900);
 				},
-				`Draft a ${job}`
+				fixed ? `Draft a ${job} (always ${fixed === 'm' ? 'male' : 'female'})` : `Draft a ${job}`
 			));
 		});
 		page.append(wrap);

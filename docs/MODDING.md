@@ -270,7 +270,7 @@ sets several, a preview — a mod can ship its own settings page:
 }
 ```
 
-The Mods tab then shows a **Settings…** button under the mod instead of drawing
+The mod's row in the Mods tab then shows a **Settings…** button instead of drawing
 the options itself, and the page opens in a window the mod owns. The options
 are still declared in `settings` — that is what the app validates, stores and
 hands to `init(parameters, api)` and `npc/when/` — the page only decides how
@@ -304,7 +304,7 @@ options in the Mods tab as before. See
 
 ## Installing a mod
 
-**Settings → Mods → Install a mod…** takes a folder, a `.zip` or a `.rar` and
+**Settings → Mods → Add mod from folder…** takes a folder, a `.zip` or a `.rar` and
 puts it in the right place. An archive must contain exactly one folder, named
 for the mod; anything with two top-level folders, a link, or a path that would
 escape the mods directory, is refused rather than unpacked.
@@ -318,14 +318,14 @@ on Arch and SteamOS) or unpack the archive and choose the folder.
 Or do it by hand: drop the folder in the mods directory yourself. Same result.
 
 A UI skin or a cursor pack in the official client's format is not a mod yet;
-**Install a UI skin…** makes it one. See [UI skins](#ui-skins).
+**Add UI skin…** makes it one. See [UI skins](#ui-skins).
 
 A mod adds scripts and tables to your server and can run JavaScript in the game
 window. Installing one is running somebody's code — install ones you trust.
 
 ## Turning mods off
 
-Settings → Mods lists what is installed with a checkbox each. Under the hood
+Settings → Mods → Installed lists what is installed with a switch each. Under the hood
 that is `state/mods/disabled.txt`, one name per line. Disable by naming it
 there rather than by moving the folder: a folder that moves loses its place in
 the merge order.
@@ -1421,7 +1421,7 @@ there, the same names the official client uses, so the official client's skin
 format maps onto it almost one to one: a skin's root is that folder's root, and
 its `basic_interface/` is that folder's `basic_interface/`.
 
-**Settings → Mods → Install a UI skin…** does the conversion. Give it a skin
+**Settings → Mods → Add UI skin…** does the conversion. Give it a skin
 folder — the one you would put in the official client's `skin/` directory — or
 a `.zip` or `.rar` of one, and it builds a mod named `skin-<name>`, switches it on, and
 switches whichever skin was on off. It is client-side only, so there is no
@@ -1470,7 +1470,7 @@ What a skin cannot change:
 ### Cursor packs
 
 The mouse pointer is a sprite, `data/sprite/cursors.spr` and `cursors.act`,
-and a mod that ships those two replaces it. Give **Install a UI skin…** a
+and a mod that ships those two replaces it. Give **Add UI skin…** a
 folder or archive holding them — most travel as a `.rar`, which macOS and
 Windows open with their built-in `tar`, and Linux with `bsdtar` if it is
 installed; otherwise unpack it and choose the folder — and it builds a
@@ -2279,7 +2279,7 @@ plain-text body.
 
 ### Switching it on
 
-**Settings → Mods** shows, under a mod that declares a host route, *"Runs a
+**Settings → Mods** shows, in the open row of a mod that declares a host route, *"Runs a
 host service on this computer that friends you invite can use, and that may
 connect to: …"* with a switch. It is off for every mod until the host ticks it,
 and it takes effect at once, without Apply. The choice is stored, with the
