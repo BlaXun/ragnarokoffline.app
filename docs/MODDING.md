@@ -13,7 +13,8 @@ rebuild, no compiler, no Docker.
 ├── data/        client assets: sprites, textures, map geometry, Lua
 ├── BGM/         music, merged over the client's own tracks
 ├── System/      client tables: itemInfo.lua and friends
-└── client/      a roBrowser plugin: styling, viewport, UI
+├── client/      a roBrowser plugin: styling, viewport, UI
+└── host/        a host route: JavaScript that answers requests on the host's computer
 ```
 
 The mods directory is:
@@ -89,6 +90,9 @@ patchwork. Any other value is refused by name; leave it out for everything
 else. See [UI skins](#ui-skins). (An app from before
 this key ignores it, so a skin still loads there, just without the others
 being switched off.)
+
+`"host"` declares a [host route](#host-routes): JavaScript of the mod's own
+that runs on the host's computer, and the addresses it may connect to.
 
 ### renewalFolder / prerenewalFolder — one mod for both eras
 
@@ -1749,6 +1753,7 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 | `api.cleanup(fn)` | Register idempotent cleanup immediately after allocating a resource. The returned function can release it early. Runs on failure, scope replacement and page teardown. |
 | `api.screens.replace(screen, hook)` / `.stage(canvas)` / `.image(path)` | Draw the login screen, server list, character select or character creation yourself. See [below](#the-screens-before-the-game--apiscreens). |
 | `api.account.status()` / `.remember()` / `.resume()` / `.forget()` | A remembered login the page never holds, traded for a one-time login token. See [below](#leaving-the-game-and-remembered-logins--exit-and-apiaccount). |
+| `api.host.request(path, { method, body, timeout })` | Ask this mod's own [host route](#host-routes), on the host's computer, from the host's window or an invited friend's alike. Resolves `{ status, type, body, data }` for every answer (`data` is the parsed JSON, or `null`); rejects only when nothing answered. Absent in an older app. |
 
 ### Graphics passes
 
@@ -2122,6 +2127,159 @@ call it from `init`, and it is put back when the mod is turned off. An app
 before 1.4.5 has no `api.players`, and a client without the switches answers
 `gmLookSupported()` with `false` (`gmLook` then returns `null`). It reads `Session.AdminLook` in the
 roBrowser fork. See [`mods/gm-class-look`](../mods/gm-class-look).
+
+---
+
+## Host routes
+
+A host route is JavaScript of the mod's own that runs **on the host's
+computer** and answers HTTP requests from the game — from the host's own game
+window and from every friend invited through a sharing link. It is for what a
+friend's browser cannot do by itself: reach a program on the host's machine,
+such as a local AI model, and give everyone the same answer.
+
+It is somebody else's code running on the host's computer, so it runs in a
+box (below), it can connect only to the addresses its `mod.json` names, and it
+does **nothing until the host switches it on**.
+
+### mod.json
+
+```json
+{
+  "name": "host-local-ai",
+  "host": {
+    "entry": "host/index.js",
+    "connect": ["http://127.0.0.1:8080"]
+  }
+}
+```
+
+- **`entry`** — an ES module inside the mod's `host/` folder. Only `host/` is
+  served to the handler: it cannot read the rest of the mod, or anything else
+  on disk. `..`, absolute paths and links that lead out of `host/` are
+  refused.
+- **`connect`** — up to 8 origins the handler may `fetch`: `http://` or
+  `https://`, host and port, no path (`"http://127.0.0.1:8080"`, written the way
+  a browser writes it, so no trailing `/` and no `:80`). Leave it out, or `[]`,
+  for a handler that reaches nothing. The app's own ports — the asset server
+  (3338), login (6900), char (6121), map (5121), the agent API (7490) and the
+  sharing gateway (3339), or this copy's own if they were moved — are refused
+  on **any** host name, since a name can lead back to this machine.
+
+A mistake in `"host"` does not stop the rest of the mod from loading; its card
+in Settings says what is wrong, and the route stays off.
+
+### The handler
+
+```js
+// host/index.js
+export default async function handle(request, host) {
+    if (request.method === 'GET' && request.path === '/hello') {
+        return { body: { hello: request.from } };
+    }
+    return { status: 404, body: { error: 'Not found' } };
+}
+```
+
+`request`:
+
+| | |
+|---|---|
+| `method` | `GET`, `POST`, `PUT` or `DELETE` |
+| `path` | what follows the mod's name, starting with `/` (`/_friend/mod/host-local-ai/complete` → `/complete`) |
+| `query` | the query string without `?`, or `''` |
+| `headers` | `content-type` and `accept` only, when sent |
+| `body` | text, or `null`. JSON arrives as text: `JSON.parse(request.body)` |
+| `from` | `'host'` or `'friend'` |
+
+Return `{ status, type, body }`: `status` 200–599 (default 200); `body` a
+string, or an object sent as JSON; `type` the content type (default
+`application/json` for an object, `text/plain` for a string). Throwing, or
+returning anything else, answers 502 with a fixed message, and the details go
+to the host's app log only.
+
+`host` has `host.name`, `host.connect` and `host.log(...)`, which writes a
+line to the host's app log under the mod's name (at most 30 a minute). It has
+nothing else: no files, no Node, no Electron, no other mod.
+
+The module is loaded once and kept, so it can hold state between requests in
+module variables. It is started on the first request after the app starts,
+and again after it crashes, hangs, or the mod is updated or switched.
+
+### Asking it from the game
+
+```js
+const answer = await api.host.request('/complete', { method: 'POST', body: { prompt: 'Hi' } });
+if (answer.status === 200) console.log(answer.data.text);
+```
+
+`api.host.request` reaches only this plugin's own mod's route: the client
+binds the mod's name. On the host's window it goes to the app directly; on a
+friend's it is `fetch('/_friend/mod/<mod>/<path>')` on the sharing link. A mod
+that is off, not switched on as a host service, or has no route answers 404.
+
+All plugins share one page, so this is a convenience, not a wall between mods:
+a plugin can always `fetch` another mod's path on a friend's page itself.
+What *is* enforced is everything on the host's side.
+
+### The box, and the limits
+
+Each mod's handler runs in a hidden window of its own
+([`electron/mod-host/sandbox.js`](../electron/mod-host/sandbox.js)):
+
+- a sandboxed renderer with context isolation, no Node and no Electron APIs,
+  which cannot show itself, navigate, open windows, download, or be granted
+  any permission;
+- a session of its own, in memory only: no cookies, storage or cache shared
+  with the game, another mod, or the next start;
+- every request it makes is checked before it leaves: its own `host/` files,
+  and URLs whose origin is exactly one in `connect`. Anything else — another
+  host or port, WebSockets, `file:`, `data:` — is cancelled and logged, and
+  the page's Content-Security-Policy says the same again. Responses from the
+  `connect` origins are given CORS headers, so a local server that sends none
+  can still be read.
+
+The app enforces, outside the box:
+
+| | |
+|---|---|
+| request body | 200 KiB → 413 |
+| response body | 1 MiB → 502 |
+| time | 30 s per request → 504 |
+| at once | 4 requests per mod → 429 |
+| rate | 60 requests a minute per friend (and 60 for the host) → 429 |
+
+A friend's request carries no cookie, address or other header to the handler,
+and the answer carries back only its status, content type and body, under a
+Content-Security-Policy that stops it running script on the sharing link.
+`POST`, `PUT` and `DELETE` must come from the game's own page, with a JSON or
+plain-text body.
+
+### Switching it on
+
+**Settings → Mods** shows, under a mod that declares a host route, *"Runs a
+host service on this computer that friends you invite can use, and that may
+connect to: …"* with a switch. It is off for every mod until the host ticks it,
+and it takes effect at once, without Apply. The choice is stored, with the
+list it was made for, in `state/mod-host.json`; a mod update that changes
+`connect` switches it off again until the host has seen the new list. Removing
+the mod forgets it.
+
+### Who can reach it
+
+| | |
+|---|---|
+| the host, in the app | yes |
+| a friend, through a sharing link (Cloudflare) | yes, while sharing is on |
+| a player who joined over **LAN** | **no** |
+
+A LAN player loads the game straight from the host's asset server, not
+through the sharing gateway, and the asset server forwards only
+`/_friend/remember/` to the app (for remembered logins). `api.host.request`
+answers 404 there, the same as a mod with no route, so a mod should treat 404
+as "not available here". Inviting LAN players with a sharing link works.
+
+See [`examples/mods/host-local-ai`](../examples/mods/host-local-ai).
 
 ---
 
