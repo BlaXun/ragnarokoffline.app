@@ -9,7 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 mod client_tables;
-use client_tables::{copy_system_layer, item_tables_under, ModTables};
+use client_tables::{copy_system_layer, warn_misplaced, ModTables};
 
 /// Where the client's text comes from.
 ///
@@ -385,13 +385,9 @@ fn overlay_mods(
             // Client tables. The whole-game ones are added to rather than
             // replaced; see client_tables.
             tables.extend(copy_system_layer(&root.join("System"), merged, &m.name)?);
-            for misplaced in item_tables_under(&root.join("data"), "data") {
-                eprintln!(
-                    "mods: {} has {misplaced}, but the client reads item tables only from System/ -- \
-                     move it to System/",
-                    m.name
-                );
-            }
+            // A table where the client never reads it is copied like any file
+            // and does nothing, so the mod says why.
+            warn_misplaced(root, &m.name);
         }
         // A roBrowser plugin: styling, UI, anything the client can be told to
         // load. Served from the root, so the path in the config is

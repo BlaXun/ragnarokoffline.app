@@ -139,6 +139,28 @@ impl ModTables {
     }
 }
 
+/// Say what in a mod folder (`root`: the mod's own, or its era's) is a table
+/// in a place the client never reads it from.
+pub(super) fn warn_misplaced(root: &Path, mod_name: &str) {
+    for message in misplaced(root, mod_name) {
+        eprintln!("{message}");
+    }
+}
+
+/// `warn_misplaced`'s messages. Item tables directly in `System/` are added;
+/// nested ones there are reported by `copy_system_layer`, which walks it anyway.
+fn misplaced(root: &Path, mod_name: &str) -> Vec<String> {
+    item_tables_under(&root.join("data"), "data")
+        .into_iter()
+        .map(|found| {
+            format!(
+                "mods: {mod_name} has {found}, but the client reads item tables only from System/ -- \
+                 move it to System/"
+            )
+        })
+        .collect()
+}
+
 /// Copy a mod's `System/` layer, keeping the client's whole-game tables as
 /// *additions*.
 ///
@@ -361,7 +383,7 @@ fn is_item_table(name: &str) -> bool {
 /// For the places a mod author reasonably puts one and the client never reads
 /// it from -- `System/LuaFiles514/`, `data/luafiles514/` -- so the mod says why
 /// its items are nameless instead of just being nameless.
-pub(super) fn item_tables_under(dir: &Path, label: &str) -> Vec<String> {
+fn item_tables_under(dir: &Path, label: &str) -> Vec<String> {
     let mut found = Vec::new();
     let Ok(rd) = fs::read_dir(dir) else { return found };
     let mut children: Vec<_> = rd.flatten().collect();
@@ -582,6 +604,22 @@ mod tests {
                 "\tcustomQuestInfo: ['System/OngoingQuestInfoList-a.lub', 'System/OngoingQuestInfoList-b.lub'],\n".to_string(),
             ]
         );
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// An item table under data/ is never read, and the warning says so -- in
+    /// the words it has always used.
+    #[test]
+    fn an_item_table_under_data_is_reported() {
+        let tmp = tmp("misplaced");
+        write(&tmp.join("data/luafiles514/lua files/itemInfo.lua"), "x");
+        write(&tmp.join("System/itemInfo.lua"), "x");
+        assert_eq!(
+            misplaced(&tmp, "m"),
+            ["mods: m has data/luafiles514/lua files/itemInfo.lua, but the client reads item tables only \
+              from System/ -- move it to System/"]
+        );
+        assert!(misplaced(&tmp.join("absent"), "m").is_empty());
         let _ = fs::remove_dir_all(&tmp);
     }
 
