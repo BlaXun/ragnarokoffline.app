@@ -576,6 +576,127 @@ names a file that isn't there and the item is invisible on you. An ASCII
 name for your own art has no such problem. The sex folders and file prefix
 (`남`, `여`) have no ASCII alias yet.
 
+### Which id to use
+
+Every NPC and monster has a number, its **view id**, and the server and the
+client each check it against fixed ranges. An id outside them still loads, but
+the thing is invisible or drawn as something else:
+
+| What | Server accepts (rAthena) | Client draws it as | Use for your own |
+|---|---|---|---|
+| NPC | 46–~129, 401–999, 10001–19999 (`npcdb_checkid`, `src/map/npc.hpp`) | an NPC, from `data/sprite/npc/`, for 46–129, 401–999 and 10001–**19998** (`DB.isNPC`) | **19000–19998**: official NPCs stop around 13000 |
+| Monster | 1001–3999 and 20020–31999 (`mobdb_checkid`, `src/map/mob.cpp`) | a monster, from `data/sprite/몬스터/` (any id that is not a player, NPC, homunculus or mercenary) | **25000–31999**: official monsters stop around 22300 |
+| Player jobs | 0–44, 4001–4361 | a player | — |
+| Homunculus / mercenary | 6001–6052 | from `data/sprite/homun/`, the human folder | — |
+
+Two consequences worth knowing:
+
+- An NPC's sprite comes from `data/sprite/npc/` only if its id is an NPC id.
+  Give an NPC script a monster id (`25001,{`) and the server accepts it as a
+  monster's look, and the client draws it from the **monster** folder.
+- Ids 4000–20019 that aren't NPCs are rAthena's clone range; don't use them for
+  monsters.
+
+### A new NPC with its own sprite
+
+Three files in your mod, plus the art. The worked example is
+[`examples/mods/custom-npc-sprite`](../examples/mods/custom-npc-sprite): an NPC
+in Prontera drawn from a PNG.
+
+```
+my-mod/
+├── mod.json
+├── npc/guide.txt                    the NPC: where it stands, what it says
+├── System/jobname.lub               id 19500 → sprite name RO_GUIDE
+└── data/sprite/npc/ro_guide.spr     the pictures
+    data/sprite/npc/ro_guide.act     how to show them
+```
+
+**1. Pick an id** from the NPC column above: say `19500`.
+
+**2. Name its sprite** in `System/jobname.lub`, with only your rows:
+
+```lua
+JobNameTable = {
+	[19500] = "RO_GUIDE",
+}
+```
+
+The app adds your rows to the client's own table, so nothing else changes. The
+client lower-cases the name and loads `data/sprite/npc/ro_guide.spr` and
+`.act`. A numeric key is enough; you don't need `npcidentity.lub` for an NPC.
+To reuse a stock NPC's look under a new id instead, put its name here
+(`"4_F_KAFRA1"`) and skip the art.
+
+**3. Make the art**: `data/sprite/npc/ro_guide.spr` and `.act`. See the next
+section.
+
+**4. Place the NPC** in `npc/guide.txt`, with the id as its sprite:
+
+```
+prontera,156,197,4	script	Ro the Guide	19500,{
+	mes "[Ro the Guide]";
+	mes "Hello! I am drawn with a sprite of my own.";
+	close;
+}
+```
+
+Fields are separated by **tabs**. `4` is the direction it faces, in
+rAthena's numbering: 0 north, 2 west, 4 south (towards the player), 6 east.
+
+**5. Install and look.** Install the mod (Settings → Mods), restart the
+server, and walk there. If the name floats with no body, see "When it doesn't
+show" below.
+
+### Making the .spr and .act
+
+A Ragnarok sprite is two files with the same name:
+
+- **`.spr`**: the pictures. Each frame is a palette-indexed image of up to 256
+  colours. Colour 0 is the transparent background, magenta in the stock files.
+- **`.act`**: the animation. A list of actions, each one an animation for one
+  facing direction. NPCs use the first eight actions: standing, one per
+  direction (0 south, 1 south-west, … 7 south-east). Monsters also use walk,
+  attack, hurt and die, eight directions each.
+
+**From a PNG**, with no other tools, use `scripts/mksprite.py` in this
+repository (Python 3, no packages):
+
+```
+python3 scripts/mksprite.py guide.png --out my-mod/data/sprite/npc/ro_guide
+python3 scripts/mksprite.py frame1.png frame2.png frame3.png --delay 200 --out my-mod/data/sprite/npc/ro_guide
+python3 scripts/mksprite.py my_monster.png --monster --out my-mod/data/sprite/monster/my_monster
+```
+
+- Use a transparent background. Pixels under half opacity become the
+  background.
+- The bottom edge of the picture is where the NPC stands, and it is centred
+  on its cell.
+- Every direction shows the same picture; that suits most NPCs.
+- Several PNGs play as an animation, `--delay` milliseconds per frame, 150 by
+  default.
+- Up to 255 colours. Pixel art comes through exactly; a picture with more
+  colours is reduced, so flat colours look best.
+- The stock NPCs are about 40–60 px wide and 70–110 px tall. The example is
+  40×76.
+
+**With an editor**, for different art per direction or per action, use the
+community's **Act Editor** (Tokeiburu's, "ActEditor" on GitHub). It opens a
+`.spr` and `.act` pair, imports PNGs as frames, and edits each action and
+direction. The easy start is a file from `mksprite.py`, or a stock NPC's pair.
+Get a stock pair from your client's `data.grf` with **GRF Editor** (also by
+Tokeiburu): they're under `data/sprite/npc/`. Save under your own name; don't
+overwrite the stock file unless you mean to replace that NPC everywhere.
+
+### When it doesn't show
+
+| What you see | Why |
+|---|---|
+| The name, no body | The client didn't find the sprite. **Settings → Tools → Log viewer** names the file it asked for. Check the folder (`data/sprite/npc/`), and the name in lower case, matching `jobname.lub`. |
+| A different NPC or a Poring | The id isn't in the client's NPC range, so it was drawn as a monster, or the `jobname.lub` row is missing. |
+| Nothing at all, and `npc_parseview: Invalid NPC constant` in the map log | The sprite field isn't a number or a known constant. |
+| The old picture after you changed the art | The client caches sprites by file name. Restart the app; changing mods clears the cache, editing a file inside an installed mod may not. |
+
 ### Checking your work
 
 **Settings → Tools → Item browser** and **Monster browser** read the same
