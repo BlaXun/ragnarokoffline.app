@@ -562,7 +562,7 @@ through a table, and a mod adds rows to those tables the same way:
 |---|---|---|
 | Headgear | `accname.lub` (+ `accessoryid.lub` for named ids) | `data/sprite/accessory/남/남_<name>.spr`, `여/여_<name>.spr` |
 | Garments | `spriterobename.lub` (+ `spriterobeid.lub`) | `data/sprite/robe/…` |
-| Weapons | `weapontable.lub` | `data/sprite/human/…` |
+| Weapons | `weapontable.lub` | one per class: see [A new weapon look](#a-new-weapon-look) |
 
 ```lua
 AccNameTable = {
@@ -696,6 +696,90 @@ overwrite the stock file unless you mean to replace that NPC everywhere.
 | A different NPC or a Poring | The id isn't in the client's NPC range, so it was drawn as a monster, or the `jobname.lub` row is missing. |
 | Nothing at all, and `npc_parseview: Invalid NPC constant` in the map log | The sprite field isn't a number or a known constant. |
 | The old picture after you changed the art | The client caches sprites by file name. Restart the app; changing mods clears the cache, editing a file inside an installed mod may not. |
+
+### A new weapon look
+
+A weapon is not one picture. It is drawn as a layer over the character, frame
+for frame with the body's own attack, walk and sit animations. So each weapon
+look is **a sprite per class line and sex**, in that class's own folder:
+
+```
+data/sprite/인간족/로그/로그_여_단검.spr     Rogue, female, dagger
+data/sprite/인간족/기사/기사_남_검.spr       Knight, male, sword
+```
+
+Each class's sprite is shaped to that class's own motions. Three ways to give
+an item a look, from least work to most:
+
+**1. Look like a stock weapon.** No art: in the item's `System/itemInfo.lua`
+entry, set `ClassNum` to that weapon type's look. 1 is a dagger, 2 a sword, 4 a
+spear, 6 an axe, 8 a mace, 10 a rod, 11 a bow, and so on (the list is
+`WeaponType.js` in roBrowserLegacy). An official look's id works too: 31–102 in
+the client's `weapontable.lub`, e.g. Main Gauche, Lacma.
+
+**2. A recoloured stock weapon, for every class at once.** `scripts/mkweapon.py`
+takes one stock weapon type's sprites for every class from your running game,
+recolours them, and writes them into your mod with a new name. Only the
+colours change, so every class's animation stays right:
+
+```
+python3 scripts/mkweapon.py --type shortsword --name jade --look 5001 \
+    --hue 150 --saturation 1.3 --mod my-mod
+```
+
+- `--type`: the stock type to start from: `shortsword` (dagger), `sword`,
+  `twohandsword`, `spear`, `axe`, `mace`, `rod`, `bow`, `knukle`, `instrument`,
+  `whip`, `book`, `katar`, `gun_handgun`, … (`--help` lists them).
+- `--name`: your look's name, in ASCII. Files are `<class>_<sex>_<name>.spr`.
+- `--look`: the new look id, which items use as `ClassNum`. **Use 103 or
+  more**; 0–102 are official. This guide uses 5000–5999. It needs app 1.4.7 or
+  later, whose client draws a mod's looks above 102 (roBrowserLegacy#61).
+- `--hue` turns the colour wheel by that many degrees. `--saturation` and
+  `--lightness` scale those (1.0 = unchanged).
+
+It writes the sprites under `data/sprite/human/`, the app's ASCII name for
+`인간족`. One pair goes in per class and sex that has that weapon type: 52 for a
+dagger with the iRO data. It also writes `System/weapontable.lub`:
+
+```lua
+WeaponNameTable = {
+	[5001] = "_jade",          -- the sprite name: <class>_<sex>_jade.spr
+}
+Expansion_Weapon_IDs = {
+	[5001] = 1,                -- attacks like a dagger (WeaponType 1)
+}
+```
+
+Then the item. In `db/item_db.yml` leave **`View:` out**. Without it the
+server sends the item's own id, and the client reads `ClassNum` from
+`itemInfo`. With `View: 5001` the server sends 5001 itself, which the client
+reads as item 5001, a stock headgear:
+
+```lua
+-- System/itemInfo.lua
+[50101] = {
+	identifiedDisplayName = "Jade Dagger",
+	identifiedResourceName = "나이프",   -- icon and dropped picture: the Knife's
+	-- ...
+	ClassNum = 5001
+}
+```
+
+The sprites are recoloured copies of your client's own, so don't put them in a
+public mod repository. A mod for others can ship `weapontable.lub`, the item
+and the command line, and let each player run it. The worked example does
+this: [`examples/mods/custom-weapon-look`](../examples/mods/custom-weapon-look).
+
+**3. New art.** Same `weapontable.lub` and item as in 2, but you draw each
+class's sprite yourself. Start from the stock `.act` for that class and weapon
+type, so the frames line up. Open it in Act Editor and redraw the frames, one
+class at a time. A class you don't make a sprite for holds nothing: the weapon
+is invisible on that class.
+
+**Checking it:** `@item 50101`, equip it, and attack something. A dagger is
+small and only clearly visible mid-swing. If the character holds nothing, the
+Log viewer names the sprite the client asked for. Check the class folder, the
+sex (`남` male, `여` female) and `_<name>` against your `weapontable.lub`.
 
 ### Checking your work
 
