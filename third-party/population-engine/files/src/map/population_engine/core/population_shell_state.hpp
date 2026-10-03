@@ -192,6 +192,27 @@ struct s_population {
 	int    move_fail_count         = 0; ///< Consecutive movement failures chasing current target.
 	int    attack_fail_count       = 0; ///< Consecutive attack command failures on current target.
 
+	// RAGNAROKMAC: Pool-type vendor rotation. When >0, the vendor rotation timer
+	// releases this shell once gettick() >= vendor_rotation_at; the autosummon
+	// pass then re-fills the map with a fresh pick from the pool. Set at spawn
+	// in the vending branch for vendors whose config has rotation_sec > 0.
+	t_tick vendor_rotation_at = 0;
+	// RAGNAROKMAC: the VendorKey this shell vends under (empty for non-vendors).
+	// Lets the autosummon pass count vendors per placement rather than per map,
+	// so several themed vendors can share a map without starving each other's
+	// MaxVendors budget.
+	std::string vendor_key;
+	// RAGNAROKMAC: set only on shells spawned by the mod vendor pass. The pass
+	// counts its own shells by this id (base vendors and other mods' never
+	// match), and a fixed-seat block also records which seat the shell holds.
+	std::string vendor_spawn_id;
+	int16_t     vendor_seat = -1;
+	// RAGNAROKMAC: items this stall lists by "fat-finger" mistake; undercutting
+	// ignores them, so one typo does not drag the whole street's prices down.
+	std::vector<t_itemid> vendor_mistakes;
+	// RAGNAROKMAC: this mod vendor runs a buying store, not a vending stall.
+	bool vendor_buying = false;
+
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.
 	uint32_t party_request_account = 0; ///< Player who requested this one-shot invitation.
