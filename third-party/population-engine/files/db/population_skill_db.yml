@@ -800,7 +800,6 @@ Body:
       - { SkillId: AC_CONCENTRATION, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_CONCENTRATE }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
@@ -833,7 +832,6 @@ Body:
       - { SkillId: AC_CONCENTRATION, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_CONCENTRATE }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
@@ -1348,7 +1346,6 @@ Body:
       - { SkillId: AC_CONCENTRATION, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_CONCENTRATE }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
@@ -1384,7 +1381,6 @@ Body:
       - { SkillId: AC_CONCENTRATION, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_CONCENTRATE }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
@@ -2095,7 +2091,6 @@ Body:
       - { SkillId: BA_MUSICALSTRIKE, Level: 5, Rate: 9000 }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
@@ -2171,7 +2166,6 @@ Body:
       - { SkillId: AC_SHOWER, Level: 10, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
@@ -2479,6 +2473,7 @@ Body:
       - { SkillId: BS_ADRENALINE, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADRENALINE }
       - { SkillId: BS_HAMMERFALL, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: BS_MAXIMIZE, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_MAXIMIZEPOWER }
+      - { SkillId: WS_OVERTHRUSTMAX, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_MAXOVERTHRUST }
       - { SkillId: BS_OVERTHRUST, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_OVERTHRUST }
       - { SkillId: BS_WEAPONPERFECT, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WEAPONPERFECTION }
       - { SkillId: MT_A_MACHINE, Level: 5, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
@@ -2494,7 +2489,6 @@ Body:
       - { SkillId: MT_TRIPLE_LASER, Level: 5, Rate: 9000 }
       - { SkillId: WS_CARTTERMINATION, Level: 10, Rate: 9000 }
       - { SkillId: WS_MELTDOWN, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_MELTDOWN }
-      - { SkillId: WS_OVERTHRUSTMAX, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_MAXOVERTHRUST }
 
   - JobId: 4254
     Skills:
@@ -2986,7 +2980,6 @@ Body:
       - { SkillId: BA_WHISTLE, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WHISTLE }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
@@ -3039,7 +3032,6 @@ Body:
       - { SkillId: AC_SHOWER, Level: 10, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: BD_ADAPTATION, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADAPTATION }
       - { SkillId: BD_DRUMBATTLEFIELD, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DRUMBATTLE }
-      - { SkillId: BD_ENCORE, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCING }
       - { SkillId: BD_ETERNALCHAOS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ETERNALCHAOS }
       - { SkillId: BD_INTOABYSS, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INTOABYSS }
       - { SkillId: BD_LULLABY, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SLEEP }
