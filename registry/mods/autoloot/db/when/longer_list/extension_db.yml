@@ -1,0 +1,12 @@
+# Only while "longer_list" is ticked: the rAthena fork's autoloot_item_limit
+# extension, which lets @autolootitem hold more than 10 items.
+Header:
+  Type: EXTENSION_DB
+  Version: 1
+
+Body:
+  - Id: autoloot_item_limit
+    Enabled: true
+    Values:
+      - Key: limit
+        Value: 30
