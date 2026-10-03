@@ -110,7 +110,8 @@ def write_table(path, look, name, type_id):
     lines += [f"\t[{k}] = {v[1]}," for k, v in sorted(rows.items()) if v[1] is not None]
     lines += ["}", ""]
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    # newline="\n": the same file on every system, not CRLF on Windows.
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lines))
 
 
