@@ -274,7 +274,29 @@ struct PopAllySearchCtx {
 	int               best_hp_pct;     ///< Tracks lowest HP% seen (100=no winner yet)
 	map_session_data *result;          ///< Best ally found (nullptr if none)
 	sc_type           gives_sc = SC_NONE; ///< Status the skill gives the ally, if any
+	int               result_rank = 3;   ///< pop_ally_rank() of `result`; lower goes first
 };
+
+/// Who a buff goes to first when several allies lack it: the companion's owner (0), then other
+/// players (1), then companions and AI players (2). The scan used to take whoever the map listed
+/// first, so in a party of companions the player was often buffed last, or not at all.
+static int pop_ally_rank(const map_session_data *shell, const map_session_data *ally)
+{
+	if (shell->pop.companion_owner_account != 0 && ally->status.account_id == shell->pop.companion_owner_account)
+		return 0;
+	return population_engine_is_population_pc(ally->id) ? 2 : 1;
+}
+
+/// Keep `ally` if it outranks the one found so far. Returns 1 (stop the scan) once the owner is found.
+static int32 pop_ally_offer(PopAllySearchCtx *ctx, map_session_data *ally)
+{
+	const int rank = pop_ally_rank(ctx->shell, ally);
+	if (ctx->result == nullptr || rank < ctx->result_rank) {
+		ctx->result = ally;
+		ctx->result_rank = rank;
+	}
+	return rank == 0 ? 1 : 0;
+}
 
 /// True if giving `ally` the status `sc_id` would end a buff it holds that in turn ends `sc_id`.
 /// Two such buffs cancel each other (pre-renewal Kyrie Eleison and Assumptio), so two rows
@@ -489,10 +511,8 @@ static int32 pop_ally_status_scan_cb(block_list *bl, va_list ap)
 	if (ctx->sc_resolved < 0) return 0;
 	const status_change *sca = status_get_sc(ally);
 	const bool has_it = sca && sca->hasSCE(static_cast<sc_type>(ctx->sc_resolved));
-	if (has_it == ctx->want_has_status) {
-		ctx->result = ally;
-		return 1; // stop scan
-	}
+	if (has_it == ctx->want_has_status)
+		return pop_ally_offer(ctx, ally);
 	return 0;
 }
 
@@ -509,8 +529,7 @@ static int32 pop_ally_any_scan_cb(block_list *bl, va_list ap)
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
-	ctx->result = ally;
-	return 1; // take the first one
+	return pop_ally_offer(ctx, ally);
 }
 
 /// Context for Tank-role intercept: find a mob targeting a nearby real-party ally.
@@ -1220,6 +1239,11 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 {
 	if (!sd || sd->pop.buff_skills.empty())
 		return false;
+	// Already casting, or in the after-cast delay: rAthena refuses any cast until it ends, so
+	// trying spent the turn on a refusal (an Arch Bishop's ally buffs failed three times in four
+	// because a self buff had just started in the same tick).
+	if (sd->ud.skilltimer != INVALID_TIMER || DIFF_TICK(current_tick, sd->ud.canact_tick) < 0)
+		return false;
 
 	status_change *scc = status_get_sc(sd);
 
@@ -1238,6 +1262,9 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 		const uint16_t use_lv = (plv > 0) ? std::min(bs.skill_lv, plv) : bs.skill_lv;
 
 		if (skill_isNotOk(bs.skill_id, *sd))
+			continue;
+		// On its own cooldown (Suffragium, Praefatio): rAthena would refuse it ("skill interval").
+		if (sd->scd.find(bs.skill_id) != sd->scd.end())
 			continue;
 		// Strict gate: silence/sleep/sit/etc. (no target — pass nullptr).
 		if (strict_gate && !status_check_skilluse(sd, nullptr, bs.skill_id, 0))
@@ -1387,6 +1414,11 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 {
 	if (!sd || sd->pop.attack_skills.empty())
 		return false;
+	// Already casting, or in the after-cast delay: rAthena refuses any cast until it ends, so
+	// trying spent the turn on a refusal (an Arch Bishop's ally buffs failed three times in four
+	// because a self buff had just started in the same tick).
+	if (sd->ud.skilltimer != INVALID_TIMER || DIFF_TICK(current_tick, sd->ud.canact_tick) < 0)
+		return false;
 
 	const size_t n = sd->pop.attack_skills.size();
 	for (size_t t = 0; t < n; ++t) {
@@ -1400,6 +1432,9 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		if (!pop_skill_cond_satisfied(sd, sk, nullptr))
 			continue;
 		if (skill_isNotOk(sk.skill_id, *sd))
+			continue;
+		// On its own cooldown (Suffragium, Praefatio): rAthena would refuse it ("skill interval").
+		if (sd->scd.find(sk.skill_id) != sd->scd.end())
 			continue;
 		// YAML-authoritative: allow cast even if the class hasn't learned it.
 		const uint16_t plv = pc_checkskill(sd, sk.skill_id);
