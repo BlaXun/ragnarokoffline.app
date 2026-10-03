@@ -102,6 +102,9 @@ bool population_engine_companion_can_trade_with(const map_session_data *player, 
 /// Goal 2 trade: after items land in the companion's inventory, equip equipment
 /// and return non-equipment items to the owner (companions are not mules).
 void population_engine_companion_equip_traded(map_session_data *owner, map_session_data *shell);
+/// Goal 2 trade: record the companion's inventory just before the trade's items move, so
+/// population_engine_companion_equip_traded can tell what the trade brought in.
+void population_engine_companion_trade_snapshot(map_session_data *shell);
 /// Goal 2: unequip every worn item on the shell and hand each piece to the owner (or drop at feet when overweight). Returns count moved, -1 on bad args.
 int population_engine_companion_return_gear(map_session_data *owner, map_session_data *shell, uint32_t slot_mask = 0);
 int population_engine_companion_set_heal_thresholds(uint32_t owner_account, int16_t heal_at, int16_t emergency_at);
