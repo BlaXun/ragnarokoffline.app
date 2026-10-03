@@ -414,7 +414,6 @@ Body:
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_FREEZE }
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_STONE }
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SLEEP }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: PR_BENEDICTIO, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
@@ -671,7 +670,6 @@ Body:
       - { SkillId: MO_BALKYOUNG, Level: 1, Rate: 9000 }
       - { SkillId: AL_HEAL, Level: 10, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
       - { SkillId: AL_HEAL, Level: 10, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -927,7 +925,6 @@ Body:
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_FREEZE }
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_STONE }
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SLEEP }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: PR_BENEDICTIO, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
@@ -1194,7 +1191,6 @@ Body:
       - { SkillId: MO_BALKYOUNG, Level: 1, Rate: 9000 }
       - { SkillId: AL_HEAL, Level: 10, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
       - { SkillId: AL_HEAL, Level: 10, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -1703,7 +1699,6 @@ Body:
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SLEEP }
       - { SkillId: PR_SUFFRAGIUM, Level: 3, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SUFFRAGIUM }
       - { SkillId: PR_TURNUNDEAD, Level: 10, Rate: 9000 }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: PR_BENEDICTIO, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
@@ -2086,7 +2081,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
       - { SkillId: AC_CHARGEARROW, Level: 1, Rate: 9000 }
@@ -2134,7 +2129,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
 
@@ -2163,7 +2158,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
       - { SkillId: AC_CHARGEARROW, Level: 1, Rate: 9000 }
@@ -2211,7 +2206,7 @@ Body:
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 6000, Target: self }
       - { SkillId: WM_UNLIMITED_HUMMING_VOICE, Level: 5, Rate: 5000, Target: self }
-      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
+      - { SkillId: WM_FRIGG_SONG,      Level: 5,  Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_SIRCLEOFNATURE,  Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 40 }
       - { SkillId: WM_POEMOFNETHERWORLD, Level: 5, Rate: 4000 }
 
@@ -2259,7 +2254,6 @@ Body:
       - { SkillId: MO_STEELBODY, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_STEELBODY }
       - { SkillId: AL_HEAL, Level: 10, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
       - { SkillId: AL_HEAL, Level: 10, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -2664,7 +2658,6 @@ Body:
       - { SkillId: PR_STRECOVERY, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SLEEP }
       - { SkillId: PR_SUFFRAGIUM, Level: 3, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SUFFRAGIUM }
       - { SkillId: PR_TURNUNDEAD, Level: 10, Rate: 9000 }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: PR_BENEDICTIO, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
@@ -2964,7 +2957,6 @@ Body:
       - { SkillId: SR_POWERVELOCITY, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
       - { SkillId: SR_RAISINGDRAGON, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_RAISINGDRAGON }
       - { SkillId: SR_RIDEINLIGHTNING, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -3120,7 +3112,15 @@ Body:
     Skills:
       - { SkillId: SOA_EXORCISM_OF_MALICIOUS_SOUL, Level: 10, Rate: 9000 }
       - { SkillId: SOA_TALISMAN_OF_WARRIOR, Level: 5, Rate: 10000 }
-      - { SkillId: SOA_SOUL_GATHERING, Level: 1, Rate: 10000, Condition: sp_below, CondValue: 50 }
+      # Soul Gathering fills Soul Energy to its cap (soulgathering.cpp) and fails unless Soul
+      # Collect is up; it restores no SP, so it fires when the energy has run out.
+      - SkillId: SOA_SOUL_GATHERING
+        Level: 1
+        Rate: 10000
+        Condition:
+          AND:
+            - self_soulcollect
+            - not_self_soulenergy
       - { SkillId: SOA_CIRCLE_OF_DIRECTIONS_AND_ELEMENTALS, Level: 5, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: SOA_SOUL_OF_HEAVEN_AND_EARTH, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_HEAVEN_AND_EARTH }
       - { SkillId: SOA_TALISMAN_OF_BLACK_TORTOISE, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
@@ -3295,7 +3295,6 @@ Body:
       - { SkillId: WZ_STORMGUST, Level: 10, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: WZ_VERMILION, Level: 10, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: WZ_WATERBALL, Level: 5, Rate: 9000 }
-      - { SkillId: AL_WARP, Level: 4, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }

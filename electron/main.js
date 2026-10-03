@@ -2144,7 +2144,7 @@ const handlers = {
 		// the app would not run it, and the difference is the whole point of
 		// having a reason to show.
 		return out.split('\n').filter(Boolean).map(l => {
-			const [state, name, description, reason, origin, version, author, grants, settings, problems, settingsPage, dir, kind] = l.split('\t');
+			const [state, name, description, reason, origin, version, author, grants, settings, problems, settingsPage, dir, kind, client] = l.split('\t');
 			return {
 				name,
 				enabled: state === 'on',
@@ -2188,6 +2188,11 @@ const handlers = {
 				// `skin` or `cursor`: at most one of each is on, and Settings
 				// draws them as a choice rather than as independent switches.
 				kind: kind || '',
+				// Whether the mod has layers the game window loads (data/,
+				// System/, BGM/, client/), so Settings asks for the game to be
+				// reopened only after an Apply that changed one. Null from an
+				// older supervisor, which cannot tell: Settings then asks.
+				clientSide: client === undefined ? null : client === 'client',
 			};
 		});
 	},
