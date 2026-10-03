@@ -865,7 +865,9 @@ Body:
       - { SkillId: LK_PARRYING,      Level: 10, Rate: 9000, Target: self, Condition: damaged_gt, CondValue: 15, Cooldown: 6000 }
 
   # JOB_HIGH_PRIEST = 4009
-      - { SkillId: KN_AUTOCOUNTER, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOCOUNTER }
+      # Auto Counter roots the caster and lasts moments: kept up on not_self_status it was recast
+      # every turn and the knight never fought. Raised on a burst hit instead, as the Knight does.
+      - { SkillId: KN_AUTOCOUNTER, Level: 5, Rate: 9000, Target: self, Condition: damaged_gt, CondValue: 20, Cooldown: 4000 }
       - { SkillId: KN_CHARGEATK, Level: 1, Rate: 9000 }
       - { SkillId: KN_ONEHAND, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ONEHAND }
       - { SkillId: KN_SPEARSTAB, Level: 10, Rate: 9000 }
@@ -1420,7 +1422,9 @@ Body:
       - { SkillId: RK_DRAGONBREATH,        Level: 10, Rate: 9000, Condition: after_skill, CondValue: RK_IGNITIONBREAK, Cooldown: 500 }
       # -- damaged_gt: Death Bound rebound on burst melee hit --
       - { SkillId: RK_DEATHBOUND,          Level: 10, Rate: 9000, Target: self, Condition: damaged_gt, CondValue: 15, Cooldown: 5000 }
-      - { SkillId: KN_AUTOCOUNTER, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOCOUNTER }
+      # Auto Counter roots the caster and lasts moments: kept up on not_self_status it was recast
+      # every turn and the knight never fought. Raised on a burst hit instead, as the Knight does.
+      - { SkillId: KN_AUTOCOUNTER, Level: 5, Rate: 9000, Target: self, Condition: damaged_gt, CondValue: 20, Cooldown: 4000 }
       - { SkillId: KN_CHARGEATK, Level: 1, Rate: 9000 }
       - { SkillId: KN_ONEHAND, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ONEHAND }
       - { SkillId: KN_PIERCE, Level: 10, Rate: 9000 }
@@ -2444,7 +2448,9 @@ Body:
       - { SkillId: DK_SERVANT_W_PHANTOM, Level: 5, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: DK_STORMSLASH, Level: 5, Rate: 9000 }
       - { SkillId: DK_VIGOR, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_VIGOR }
-      - { SkillId: KN_AUTOCOUNTER, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOCOUNTER }
+      # Auto Counter roots the caster and lasts moments: kept up on not_self_status it was recast
+      # every turn and the knight never fought. Raised on a burst hit instead, as the Knight does.
+      - { SkillId: KN_AUTOCOUNTER, Level: 5, Rate: 9000, Target: self, Condition: damaged_gt, CondValue: 20, Cooldown: 4000 }
       - { SkillId: KN_BOWLINGBASH, Level: 10, Rate: 9000 }
       - { SkillId: KN_CHARGEATK, Level: 1, Rate: 9000 }
       - { SkillId: KN_ONEHAND, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ONEHAND }

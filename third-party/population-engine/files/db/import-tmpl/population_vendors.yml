@@ -13,7 +13,8 @@
 # the mod's own: they never count against the engine's MaxVendors for that map,
 # and the engine's vendors keep spawning exactly as they would without the mod.
 # Each block is either fixed seats (one shell per position; an occupied seat
-# stays empty until it is free) or Count shells anywhere in Areas. Counts are
+# stays empty until it is free) or Count shells anywhere in Areas, never within
+# min_npc_vendchat_distance (3 cells) of an NPC. Counts are
 # exact unless ScaleWithDensity: true. The shells' look comes from a
 # PlacementBound profile in population_vendor_pop.yml with the same VendorKey.
 # See the shipped db/population_vendors.yml for the stock fields.
