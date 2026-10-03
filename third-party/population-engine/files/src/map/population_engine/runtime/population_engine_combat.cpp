@@ -1272,10 +1272,11 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 		const uint16_t plv = pc_checkskill(sd, bs.skill_id);
 		const uint16_t use_lv = (plv > 0) ? std::min(bs.skill_lv, plv) : bs.skill_lv;
 
-		if (skill_isNotOk(bs.skill_id, *sd))
-			continue;
-		// On its own cooldown (Suffragium, Praefatio): rAthena would refuse it ("skill interval").
+		// On its own cooldown (Suffragium, Praefatio): skip it before skill_isNotOk, which would
+		// say so by sending the companion a "skill interval" failure each time it is asked.
 		if (sd->scd.find(bs.skill_id) != sd->scd.end())
+			continue;
+		if (skill_isNotOk(bs.skill_id, *sd))
 			continue;
 		// Strict gate: silence/sleep/sit/etc. (no target — pass nullptr).
 		if (strict_gate && !status_check_skilluse(sd, nullptr, bs.skill_id, 0))
@@ -1442,10 +1443,11 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		// Condition check (no enemy target_bl for ally skills).
 		if (!pop_skill_cond_satisfied(sd, sk, nullptr))
 			continue;
-		if (skill_isNotOk(sk.skill_id, *sd))
-			continue;
-		// On its own cooldown (Suffragium, Praefatio): rAthena would refuse it ("skill interval").
+		// On its own cooldown (Suffragium, Praefatio): skip it before skill_isNotOk, which would
+		// say so by sending the companion a "skill interval" failure each time it is asked.
 		if (sd->scd.find(sk.skill_id) != sd->scd.end())
+			continue;
+		if (skill_isNotOk(sk.skill_id, *sd))
 			continue;
 		// YAML-authoritative: allow cast even if the class hasn't learned it.
 		const uint16_t plv = pc_checkskill(sd, sk.skill_id);
