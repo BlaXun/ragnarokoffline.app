@@ -3880,6 +3880,32 @@ int population_engine_companion_toggle_skill(uint32_t owner_account, const char*
 	return static_cast<int>(picked.size());
 }
 
+/// True if `a`'s status ends `b`'s (status EndOnStart), unless `a` needs `b` up to be cast: that
+/// is a chain (the Inquisitor's Judge needs First Faith Power and ends it), not a choice.
+static bool pop_skill_ends_skill(uint16_t a, uint16_t b)
+{
+	const sc_type sa = skill_get_sc(a), sb = skill_get_sc(b);
+	if (sa == SC_NONE || sb == SC_NONE || sa == sb)
+		return false;
+	const std::vector<sc_type> ends = status_db.getEndOnStart(sa);
+	if (std::find(ends.begin(), ends.end(), sb) == ends.end())
+		return false;
+	const std::shared_ptr<s_skill_db> skill = skill_db.find(a);
+	return !skill || std::find(skill->require.status.begin(), skill->require.status.end(), sb)
+		== skill->require.status.end();
+}
+
+/// True if `sid` and another skill in `legal` end each other's status, so only one of them can
+/// run at a time: a Bard's songs, a Dancer's dances, the 3rd-job songs, some stances. The panel
+/// groups these, since ticking several means the one listed first plays.
+static bool pop_skill_is_exclusive(uint16_t sid, const std::vector<uint16_t> &legal)
+{
+	for (uint16_t other : legal)
+		if (other != sid && (pop_skill_ends_skill(sid, other) || pop_skill_ends_skill(other, sid)))
+			return true;
+	return false;
+}
+
 void population_engine_companion_skill_list(uint32_t owner_account, const char* name_, int fd)
 {
 	if (mmysql_handle == nullptr || name_ == nullptr || !name_[0])
@@ -3955,10 +3981,10 @@ void population_engine_companion_skill_list(uint32_t owner_account, const char* 
 			? true
 			: (std::find(picked.begin(), picked.end(), sid) != picked.end());
 		char msg[128];
-		// id | name | selected | level the preset casts it at
-		snprintf(msg, sizeof(msg), "@CPSK|%u|%s|%d|%u",
+		// id | name | selected | level the preset casts it at | ends another listed skill (0/1)
+		snprintf(msg, sizeof(msg), "@CPSK|%u|%s|%d|%u|%d",
 			static_cast<unsigned>(sid), skill_get_name(sid), selected ? 1 : 0,
-			static_cast<unsigned>(skill_get_max(sid)));
+			static_cast<unsigned>(skill_get_max(sid)), pop_skill_is_exclusive(sid, legal) ? 1 : 0);
 		clif_displaymessage(fd, msg);
 		++emitted;
 	}
