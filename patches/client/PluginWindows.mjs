@@ -17,8 +17,11 @@
 
 import ChatBox from 'UI/Components/ChatBox/ChatBox.js';
 import Client from 'Core/Client.js';
+import Mouse from 'Controls/MouseEventHandler.js';
 import DB from 'DB/DBManager.js';
 import ItemTable from 'DB/Items/ItemTable.js';
+import Session from 'Engine/SessionStorage.js';
+import EntityManager from 'Renderer/EntityManager.js';
 
 // ---------------------------------------------------------------------------
 // Windows
@@ -91,12 +94,32 @@ export function createWindow(plugin, spec, deps) {
 	root.addEventListener('focusout', () => { release?.(); release = null; });
 	for (const type of ['keydown', 'keyup', 'keypress']) root.addEventListener(type, event => event.stopPropagation());
 
+	// Clicking in the window must not walk the character either. The map reads
+	// every click on the page and acts on it while Mouse.intersect is set, so
+	// the pointer over the window clears it, as the client's own windows do
+	// (GUIComponent's MouseMode.STOP), and leaving or closing puts it back.
+	let covering = false;
+	const uncover = () => {
+		if (!covering) return;
+		covering = false;
+		if (!Session.FreezeUI) Mouse.intersect = true;
+		EntityManager.setOverEntity(null);
+	};
+	host.addEventListener('mouseenter', () => {
+		if (covering || !Mouse.intersect) return;
+		covering = true;
+		Mouse.intersect = false;
+		EntityManager.setOverEntity(null);
+	});
+	host.addEventListener('mouseleave', uncover);
+
 	const closers = new Set();
 	let visible = false;
 	const hide = () => {
 		if (!visible) return;
 		visible = false;
 		host.remove();
+		uncover();
 		release?.(); release = null;
 		for (const fn of closers) { try { fn(); } catch (error) { console.error(error); } }
 	};

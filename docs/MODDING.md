@@ -1873,8 +1873,8 @@ lamp glow, haze, tone mapping and more in a single pass.
 `api.ui.window` gives a plugin a window in the game's style: a title bar to
 drag it by, a close button, a corner to resize it, and a `body` element that is
 the plugin's to fill. It sits in its own shadow root, so a mod's CSS and the
-game's never meet. The game remembers where the player left it, and typing in
-it doesn't move the character or fire shortcuts.
+game's never meet. The game remembers where the player left it, and clicking
+or typing in it doesn't move the character or fire shortcuts.
 
 ```js
 const win = api.ui.window({ id: 'notes', title: 'Notes', width: 300, height: 200 });
