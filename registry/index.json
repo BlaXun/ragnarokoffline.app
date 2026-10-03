@@ -49,10 +49,6 @@
       },
       "files": [
         {
-          "path": "README.md",
-          "sha256": "bd1245c6e777d0fd5b7cfe1cedf8517870ad1971d4407627a1576e51dc4aa79d"
-        },
-        {
           "path": "db/when/pin/extension_db.yml",
           "sha256": "5341be24dc624bcf285b747f3c91522c288f95d7c855d3b5acb6f5853d774e68"
         },
@@ -75,6 +71,10 @@
         {
           "path": "mod.json",
           "sha256": "43c77439a61c9f66a6fc332c447ecf44f99eea915b784be8e65990e334c6b578"
+        },
+        {
+          "path": "README.md",
+          "sha256": "bd1245c6e777d0fd5b7cfe1cedf8517870ad1971d4407627a1576e51dc4aa79d"
         }
       ]
     },
@@ -100,14 +100,6 @@
         "app": ">=1.3.9"
       },
       "files": [
-        {
-          "path": "README.md",
-          "sha256": "5f2d4e31f5cf7e137efd0c370e82b8345faa9fb003292505cf95361ce57f0355"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "d221e9ae3be42ce9e000ab7ee10fec928ba20a8cf24778ba094b4a2264c7bbef"
-        },
         {
           "path": "client/index.js",
           "sha256": "548b39feaf671a6852749693858b8f9b2371b3d43cb90f389c0147f11b2f2252"
@@ -135,6 +127,14 @@
         {
           "path": "npc/bounty.txt",
           "sha256": "018afb13dc418b9a30afbf733d4b8caa809421c4a2eb0d053cb947f4b00e10ef"
+        },
+        {
+          "path": "README.md",
+          "sha256": "5f2d4e31f5cf7e137efd0c370e82b8345faa9fb003292505cf95361ce57f0355"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "d221e9ae3be42ce9e000ab7ee10fec928ba20a8cf24778ba094b4a2264c7bbef"
         }
       ]
     },
@@ -161,14 +161,6 @@
       },
       "files": [
         {
-          "path": "README.md",
-          "sha256": "41bf812d670f32ad1641f1e1b171a20ed33fb5bd94e2f9604f42e2667a1fc008"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "65998dffa84ae55470b28231d7f1d990ffbc50b72196e263ecb4fc712feb133e"
-        },
-        {
           "path": "db/item_db.yml",
           "sha256": "20b3d15e771766dfe8ad32d2277c4eb358f8456997760d7f3f34783868a14d9f"
         },
@@ -187,6 +179,14 @@
         {
           "path": "npc/exp_card.txt",
           "sha256": "e06490d46d57710a922eb67fffdb3f584e98725fb8bebb1a4264d8b0536bd774"
+        },
+        {
+          "path": "README.md",
+          "sha256": "41bf812d670f32ad1641f1e1b171a20ed33fb5bd94e2f9604f42e2667a1fc008"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "65998dffa84ae55470b28231d7f1d990ffbc50b72196e263ecb4fc712feb133e"
         }
       ]
     },
@@ -254,10 +254,6 @@
       },
       "files": [
         {
-          "path": "README.md",
-          "sha256": "ee09bced2a86795edb1c9890317287a7e2bb739f07ae2d6208c26277f324a51b"
-        },
-        {
           "path": "db/population_vendor_pop.yml",
           "sha256": "7acd8f4e1070c803ebc6f3bce1d6a6ee68ec9255b433b86f5e7fab531fee66b2"
         },
@@ -300,6 +296,10 @@
         {
           "path": "pre-re/db/population_vendors.yml",
           "sha256": "0a250ec29a4a1262c6a0ebcac356c8a291b83ce4420ef882459a5bb13fe791b8"
+        },
+        {
+          "path": "README.md",
+          "sha256": "ee09bced2a86795edb1c9890317287a7e2bb739f07ae2d6208c26277f324a51b"
         }
       ]
     },
@@ -326,10 +326,6 @@
       },
       "files": [
         {
-          "path": "README.md",
-          "sha256": "7479b14de61bb67f3b6c96c121995a6f9ad481186b2039579192fc8d7526d1db"
-        },
-        {
           "path": "images/icon.png",
           "sha256": "f9621e735cd714c578f61dc93dcf526c93ac44ddace1129729049cb165a5ea47"
         },
@@ -344,6 +340,10 @@
         {
           "path": "npc/refine_matk.txt",
           "sha256": "0819a593314d4254b1fea0b8d209de0ddab2b0176bed8a8bf0646f266f84a663"
+        },
+        {
+          "path": "README.md",
+          "sha256": "7479b14de61bb67f3b6c96c121995a6f9ad481186b2039579192fc8d7526d1db"
         }
       ]
     },
@@ -396,10 +396,6 @@
       },
       "files": [
         {
-          "path": "README.md",
-          "sha256": "56a65ddcf4587e4dc5efd801d35c81c86f0ed78640c1e0bab6441e7a88fd5407"
-        },
-        {
           "path": "db/mob_db.yml",
           "sha256": "fa2331cb9fca381ca655ed6c3cb3a1ccf0c0c2dbf992bc20d4b19391b37baf96"
         },
@@ -418,6 +414,10 @@
         {
           "path": "mod.json",
           "sha256": "2030dc7f52e4e7f11d70f701a2defd3342e3bbca926bda30096e86f09eedef2c"
+        },
+        {
+          "path": "README.md",
+          "sha256": "56a65ddcf4587e4dc5efd801d35c81c86f0ed78640c1e0bab6441e7a88fd5407"
         }
       ]
     }
