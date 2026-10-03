@@ -1,6 +1,6 @@
 # autoloot
 
-An **Autoloot** window in game. Open it with the **Loot** button or **Alt+O**.
+An **Autoloot** window in game. Open it with **Alt+O**.
 
 - **By rarity**: loot every drop whose chance is at or below a percent you
   choose. 5% picks up everything rarer than a 1-in-20 drop; 100% picks up
