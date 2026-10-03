@@ -366,7 +366,7 @@ Body:
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
       - { SkillId: SM_ENDURE, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ENDURE }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
 
   - JobId: 8
     Skills:
@@ -589,7 +589,7 @@ Body:
       - { SkillId: CR_SHRINK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SHRINK }
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -872,7 +872,7 @@ Body:
       - { SkillId: LK_TENSIONRELAX, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_TENSIONRELAX }
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
 
   - JobId: 4009
     Skills:
@@ -1116,7 +1116,7 @@ Body:
       - { SkillId: PA_SACRIFICE, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SACRIFICE }
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -1427,7 +1427,7 @@ Body:
       - { SkillId: KN_SPEARSTAB, Level: 10, Rate: 9000 }
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
 
   - JobId: 4060
     Skills:
@@ -1926,7 +1926,7 @@ Body:
       - { SkillId: LG_RAGEBURST, Level: 1, Rate: 9000 }
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -2468,7 +2468,7 @@ Body:
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
       - { SkillId: SM_ENDURE, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ENDURE }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
 
   - JobId: 4253
     Skills:
@@ -2773,7 +2773,7 @@ Body:
       - { SkillId: SM_AUTOBERSERK, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_AUTOBERSERK }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
       - { SkillId: SM_ENDURE, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ENDURE }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
@@ -3280,7 +3280,7 @@ Body:
       - { SkillId: RG_RAID, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_RAID }
       - { SkillId: SM_BASH, Level: 10, Rate: 9000 }
       - { SkillId: SM_ENDURE, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ENDURE }
-      - { SkillId: SM_MAGNUM, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_WATK_ELEMENT }
+      - { SkillId: SM_MAGNUM, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: TF_DETOXIFY, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
       - { SkillId: TF_HIDING, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_HIDING }
       - { SkillId: TF_POISON, Level: 10, Rate: 9000 }
