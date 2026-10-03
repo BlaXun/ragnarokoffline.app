@@ -29,6 +29,8 @@ Body:
         Areas:
           - { X1: 147, Y1: 136, X2: 147, Y2: 170 }
           - { X1: 164, Y1: 135, X2: 164, Y2: 173 }
+          - { X1: 147, Y1: 52, X2: 147, Y2: 111 }
+          - { X1: 164, Y1: 52, X2: 164, Y2: 111 }
     Themes:
       - { Theme: prontera-vendors/sell/general_gear, Weight: 3, Min: 1, Max: 2 }
       - { Theme: prontera-vendors/sell/forge_supplies, Weight: 3, Min: 1, Max: 2 }
@@ -153,22 +155,26 @@ Body:
         Areas:
           - { X1: 140, Y1: 136, X2: 140, Y2: 172 }
           - { X1: 171, Y1: 136, X2: 171, Y2: 172 }
+          - { X1: 104, Y1: 110, X2: 135, Y2: 110 }
+          - { X1: 104, Y1: 125, X2: 135, Y2: 125 }
     Themes:
-      - { Theme: prontera-vendors/buy/refine, Weight: 2, Max: 3 }
-      - { Theme: prontera-vendors/buy/cards_common, Weight: 2, Max: 3 }
-      - { Theme: prontera-vendors/buy/cards_rare, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/boxes, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/ygg, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/potions, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/consumables, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/gems, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/elemental, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/alchemy, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/quest_mats, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/loot_low, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/loot_mid, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/loot_high, Weight: 1, Max: 3 }
-      - { Theme: prontera-vendors/buy/random, Weight: 1, Max: 3 }
+      - { Theme: prontera-vendors/buy/upgrade, Weight: 3, Min: 2, Max: 3 }
+      - { Theme: prontera-vendors/buy/crafting, Weight: 2, Min: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/cards_common, Weight: 2, Max: 2 }
+      - { Theme: prontera-vendors/buy/cards_rare, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/boxes, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/ygg, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/potions, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/consumables, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/gems, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/elemental, Weight: 2, Min: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/herbs, Weight: 2, Min: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/alchemy, Weight: 2, Min: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/quest_mats, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/loot_low, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/loot_mid, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/loot_high, Weight: 1, Max: 2 }
+      - { Theme: prontera-vendors/buy/random, Weight: 1, Max: 2 }
 
   - VendorKey: prontera-vendors/sell/general_gear
     Type: Pool
@@ -5807,19 +5813,20 @@ Body:
       - { Item: Bear's_Foot, Amount: 20, Price: [1350, 1600] }
       - { Item: Elemental_Sword, Amount: 1, Price: [460000, 540000] }
 
-  - VendorKey: prontera-vendors/buy/refine
+  - VendorKey: prontera-vendors/buy/upgrade
     Type: Pool
     Title: "B> ori elu"
     TitleFromPool:
       - "B> ori elu"
       - "buying ores"
       - "B> Oridecon / Elunium"
-      - "WTB refine mats"
+      - "WTB elu ori rough"
+      - "B> rough ori / rough elu"
       - "{name} buys ores"
       - "{name} is buying"
-      - "AFK-----AFK"
-      - "See"
-      - "Sell"
+      - "Come here u"
+      - "Happy hunting!"
+      - "junk shop"
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5829,15 +5836,34 @@ Body:
     Pool:
       - { Item: Elunium, Amount: 50, Price: [7200, 10000] }
       - { Item: Oridecon, Amount: 50, Price: [7500, 10500] }
-      - { Item: Steel, Amount: 100, Price: [3100, 4400] }
       - { Item: Oridecon_Stone, Amount: 100, Price: [1050, 1500] }
-      - { Item: Iron, Amount: 20, Price: [2250, 3200] }
-      - { Item: Elunium_Stone, Amount: 30, Price: [2050, 2900] }
-      - { Item: Coal, Amount: 100, Price: [1650, 2300] }
-      - { Item: Iron_Ore, Amount: 20, Price: [2450, 3450] }
-      - { Item: Star_Crumb, Amount: 50, Price: [4100, 5850] }
-      - { Item: Phracon, Amount: 200, Price: [100, 140] }
-      - { Item: Emveretarcon, Amount: 30, Price: [550, 780] }
+      - { Item: Elunium_Stone, Amount: 100, Price: [2050, 2900] }
+      - { Item: Emveretarcon, Amount: 20, Price: [550, 780] }
+
+  - VendorKey: prontera-vendors/buy/crafting
+    Type: Pool
+    Title: "B> steel iron coal"
+    TitleFromPool:
+      - "B> steel iron coal"
+      - "buying crafting mats"
+      - "B> star crumbs"
+      - "WTB smith mats"
+      - "{name} is buying"
+      - "Goodies"
+      - "Happy hunting!"
+      - "junk shop"
+    Buying: true
+    PickCount: [2, 5]
+    MaxSlots: 5
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Pool:
+      - { Item: Steel, Amount: 30, Price: [3100, 4400] }
+      - { Item: Iron, Amount: 100, Price: [2250, 3200] }
+      - { Item: Coal, Amount: 20, Price: [1650, 2300] }
+      - { Item: Iron_Ore, Amount: 50, Price: [2450, 3450] }
+      - { Item: Star_Crumb, Amount: 30, Price: [4100, 5850] }
 
   - VendorKey: prontera-vendors/buy/cards_common
     Type: Pool
@@ -5858,36 +5884,36 @@ Body:
     RotationJitterMinutes: 30
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Archer_Skeleton_Card, Amount: 2, Price: [276000, 391000] }
+      - { Item: Archer_Skeleton_Card, Amount: 1, Price: [276000, 391000] }
       - { Item: Soldier_Skeleton_Card, Amount: 2, Price: [828000, 1173000] }
-      - { Item: Hydra_Card, Amount: 3, Price: [165500, 234500] }
-      - { Item: Phen_Card, Amount: 2, Price: [276000, 391000] }
-      - { Item: Creamy_Card, Amount: 1, Price: [328000, 464500] }
-      - { Item: Marc_Card, Amount: 2, Price: [1104000, 1564000] }
+      - { Item: Hydra_Card, Amount: 2, Price: [165500, 234500] }
+      - { Item: Phen_Card, Amount: 3, Price: [276000, 391000] }
+      - { Item: Creamy_Card, Amount: 2, Price: [328000, 464500] }
+      - { Item: Marc_Card, Amount: 1, Price: [1104000, 1564000] }
       - { Item: Thara_Frog_Card, Amount: 2, Price: [220500, 312500] }
-      - { Item: Pecopeco_Card, Amount: 1, Price: [496500, 703500] }
-      - { Item: Andre_Card, Amount: 3, Price: [162500, 230000] }
-      - { Item: Sword_Fish_Card, Amount: 1, Price: [465500, 659500] }
+      - { Item: Pecopeco_Card, Amount: 2, Price: [496500, 703500] }
+      - { Item: Andre_Card, Amount: 1, Price: [162500, 230000] }
+      - { Item: Sword_Fish_Card, Amount: 3, Price: [465500, 659500] }
       - { Item: Drainliar_Card, Amount: 1, Price: [248000, 351500] }
-      - { Item: Spore_Card, Amount: 10, Price: [49500, 70000] }
-      - { Item: Andre_Egg_Card, Amount: 3, Price: [220500, 312500] }
+      - { Item: Spore_Card, Amount: 5, Price: [49500, 70000] }
+      - { Item: Andre_Egg_Card, Amount: 2, Price: [220500, 312500] }
       - { Item: Mummy_Card, Amount: 20, Price: [55000, 78000] }
-      - { Item: Smokie_Card, Amount: 2, Price: [276000, 391000] }
+      - { Item: Smokie_Card, Amount: 3, Price: [276000, 391000] }
       - { Item: Whisper_Card, Amount: 2, Price: [251000, 355500] }
       - { Item: Vitata_Card, Amount: 2, Price: [276000, 391000] }
       - { Item: Verit_Card, Amount: 2, Price: [1104000, 1564000] }
       - { Item: Skel_Worker_Card, Amount: 2, Price: [380500, 539000] }
       - { Item: Flora_Card, Amount: 10, Price: [27500, 39000] }
       - { Item: Orc_Warrior_Card, Amount: 2, Price: [441500, 625500] }
-      - { Item: Elder_Wilow_Card, Amount: 20, Price: [55000, 78000] }
+      - { Item: Elder_Wilow_Card, Amount: 10, Price: [55000, 78000] }
       - { Item: Yoyo_Card, Amount: 3, Price: [276000, 391000] }
       - { Item: Orc_Skeleton_Card, Amount: 20, Price: [82500, 117000] }
       - { Item: Alligator_Card, Amount: 3, Price: [124000, 175500] }
-      - { Item: Matyr_Card, Amount: 1, Price: [524000, 742500] }
-      - { Item: Horn_Card, Amount: 20, Price: [38000, 54000] }
-      - { Item: Zombie_Card, Amount: 5, Price: [44000, 62000] }
+      - { Item: Matyr_Card, Amount: 3, Price: [524000, 742500] }
+      - { Item: Horn_Card, Amount: 5, Price: [38000, 54000] }
+      - { Item: Zombie_Card, Amount: 20, Price: [44000, 62000] }
       - { Item: Poporing_Card, Amount: 5, Price: [49500, 70000] }
-      - { Item: Coco_Card, Amount: 10, Price: [55000, 78000] }
+      - { Item: Coco_Card, Amount: 5, Price: [55000, 78000] }
 
   - VendorKey: prontera-vendors/buy/cards_rare
     Type: Pool
@@ -5907,35 +5933,35 @@ Body:
     RotationJitterMinutes: 30
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Daydric_Card, Amount: 3, Price: [1048500, 1485500] }
-      - { Item: Knight_Of_Abyss_Card, Amount: 2, Price: [12254000, 17360000] }
+      - { Item: Daydric_Card, Amount: 2, Price: [1048500, 1485500] }
+      - { Item: Knight_Of_Abyss_Card, Amount: 3, Price: [12254000, 17360000] }
       - { Item: Hunter_Fly_Card, Amount: 2, Price: [828000, 1173000] }
-      - { Item: Side_Winder_Card, Amount: 3, Price: [1931500, 2736500] }
-      - { Item: Mantis_Card, Amount: 1, Price: [690000, 977500] }
-      - { Item: Antique_Firelock_Card, Amount: 2, Price: [1048500, 1485500] }
+      - { Item: Side_Winder_Card, Amount: 2, Price: [1931500, 2736500] }
+      - { Item: Mantis_Card, Amount: 3, Price: [690000, 977500] }
+      - { Item: Antique_Firelock_Card, Amount: 1, Price: [1048500, 1485500] }
       - { Item: Hodremlin_Card, Amount: 2, Price: [828000, 1173000] }
       - { Item: Petit_Card, Amount: 2, Price: [126500, 179500] }
       - { Item: Evil_Druid_Card, Amount: 2, Price: [1380000, 1955000] }
       - { Item: Porcellio_Card, Amount: 2, Price: [897000, 1270500] }
-      - { Item: Pasana_Card, Amount: 3, Price: [414000, 586500] }
-      - { Item: Bathory_Card, Amount: 2, Price: [772500, 1094500] }
-      - { Item: Aunoe_Card, Amount: 1, Price: [579500, 821000] }
-      - { Item: Magmaring_Card, Amount: 3, Price: [110000, 156000] }
-      - { Item: Khalitzburg_Card, Amount: 1, Price: [414000, 586500] }
+      - { Item: Pasana_Card, Amount: 2, Price: [414000, 586500] }
+      - { Item: Bathory_Card, Amount: 3, Price: [772500, 1094500] }
+      - { Item: Aunoe_Card, Amount: 2, Price: [579500, 821000] }
+      - { Item: Magmaring_Card, Amount: 1, Price: [110000, 156000] }
+      - { Item: Khalitzburg_Card, Amount: 3, Price: [414000, 586500] }
       - { Item: Grand_Peco_Card, Amount: 5, Price: [54500, 77500] }
       - { Item: Harpy_Card, Amount: 5, Price: [55000, 78000] }
-      - { Item: Scaraba_Card, Amount: 3, Price: [496500, 703500] }
-      - { Item: Flying_Deleter_Card, Amount: 2, Price: [176000, 249500] }
-      - { Item: Zerom_Card, Amount: 3, Price: [546000, 773500] }
-      - { Item: Sohee_Card, Amount: 2, Price: [607000, 860000] }
-      - { Item: Alice_Card, Amount: 1, Price: [3864000, 5474000] }
-      - { Item: Incubus_Card, Amount: 3, Price: [1269500, 1798500] }
+      - { Item: Scaraba_Card, Amount: 1, Price: [496500, 703500] }
+      - { Item: Flying_Deleter_Card, Amount: 3, Price: [176000, 249500] }
+      - { Item: Zerom_Card, Amount: 2, Price: [546000, 773500] }
+      - { Item: Sohee_Card, Amount: 3, Price: [607000, 860000] }
+      - { Item: Alice_Card, Amount: 2, Price: [3864000, 5474000] }
+      - { Item: Incubus_Card, Amount: 1, Price: [1269500, 1798500] }
       - { Item: Dark_Priest_Card, Amount: 3, Price: [469000, 664500] }
       - { Item: Deleter_Card, Amount: 3, Price: [828000, 1173000] }
-      - { Item: Roween_Card, Amount: 10, Price: [55000, 78000] }
+      - { Item: Roween_Card, Amount: 20, Price: [55000, 78000] }
       - { Item: The_Paper_Card, Amount: 2, Price: [441500, 625500] }
-      - { Item: Vanberk_Card, Amount: 3, Price: [524000, 742500] }
-      - { Item: Carat_Card, Amount: 2, Price: [290000, 411000] }
+      - { Item: Vanberk_Card, Amount: 2, Price: [524000, 742500] }
+      - { Item: Carat_Card, Amount: 3, Price: [290000, 411000] }
       - { Item: Pinguicula_Dark_Card, Amount: 2, Price: [828000, 1173000] }
 
   - VendorKey: prontera-vendors/buy/boxes
@@ -5958,11 +5984,11 @@ Body:
     RotationJitterMinutes: 30
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Old_Card_Album, Amount: 50, Price: [5500, 7800] }
-      - { Item: Old_Violet_Box, Amount: 100, Price: [10500, 15000] }
-      - { Item: Branch_Of_Dead_Tree, Amount: 50, Price: [8100, 11000] }
+      - { Item: Old_Card_Album, Amount: 100, Price: [5500, 7800] }
+      - { Item: Old_Violet_Box, Amount: 50, Price: [10500, 15000] }
+      - { Item: Branch_Of_Dead_Tree, Amount: 100, Price: [8100, 11000] }
       - { Item: Bloody_Dead_Branch, Amount: 3, Price: [552000, 782000] }
-      - { Item: Magic_Card_Album, Amount: 20, Price: [94500, 134000] }
+      - { Item: Magic_Card_Album, Amount: 10, Price: [94500, 134000] }
       - { Item: Old_Blue_Box, Amount: 30, Price: [5450, 7750] }
 
   - VendorKey: prontera-vendors/buy/ygg
@@ -6168,6 +6194,31 @@ Body:
       - { Item: Crystal_Blue, Amount: 50, Price: [1350, 1950] }
       - { Item: Flame_Heart, Amount: 50, Price: [3800, 5350] }
 
+  - VendorKey: prontera-vendors/buy/herbs
+    Type: Pool
+    Title: "B> herbs"
+    TitleFromPool:
+      - "B> herbs"
+      - "buying green herbs"
+      - "B> red/yellow herbs"
+      - "WTB herbs"
+      - "{name} is buying"
+      - "This looks good"
+      - "Stuff"
+      - "zzz"
+    Buying: true
+    PickCount: [2, 5]
+    MaxSlots: 5
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Pool:
+      - { Item: Blue_Herb, Amount: 100, Price: [2400, 3400] }
+      - { Item: White_Herb, Amount: 300, Price: [255, 360] }
+      - { Item: Green_Herb, Amount: 100, Price: [2450, 3450] }
+      - { Item: Yellow_Herb, Amount: 50, Price: [550, 780] }
+      - { Item: Red_Herb, Amount: 100, Price: [810, 1100] }
+
   - VendorKey: prontera-vendors/buy/alchemy
     Type: Pool
     Title: "B> alche mats"
@@ -6186,16 +6237,14 @@ Body:
     RotationJitterMinutes: 30
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Blossom_Of_Maneater, Amount: 30, Price: [720, 1000] }
       - { Item: Stem, Amount: 500, Price: [225, 320] }
-      - { Item: Poison_Bottle, Amount: 50, Price: [2750, 3900] }
-      - { Item: Blue_Herb, Amount: 100, Price: [2400, 3400] }
-      - { Item: White_Herb, Amount: 300, Price: [255, 360] }
-      - { Item: Karvodailnirol, Amount: 100, Price: [6600, 9350] }
-      - { Item: Detrimindexta, Amount: 30, Price: [1650, 2300] }
-      - { Item: Yellow_Herb, Amount: 100, Price: [550, 780] }
-      - { Item: Red_Herb, Amount: 100, Price: [810, 1100] }
-      - { Item: Empty_Bottle, Amount: 500, Price: [155, 220] }
-      - { Item: Medicine_Bowl, Amount: 100, Price: [49, 69] }
+      - { Item: Poison_Bottle, Amount: 100, Price: [2750, 3900] }
+      - { Item: Poison_Spore, Amount: 100, Price: [550, 780] }
+      - { Item: Karvodailnirol, Amount: 20, Price: [6600, 9350] }
+      - { Item: Detrimindexta, Amount: 20, Price: [1650, 2300] }
+      - { Item: Empty_Bottle, Amount: 200, Price: [155, 220] }
+      - { Item: Medicine_Bowl, Amount: 200, Price: [49, 69] }
 
   - VendorKey: prontera-vendors/buy/quest_mats
     Type: Pool
@@ -6215,36 +6264,36 @@ Body:
     RotationJitterMinutes: 30
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Elunium, Amount: 20, Price: [7200, 10000] }
+      - { Item: Elunium, Amount: 30, Price: [7200, 10000] }
       - { Item: Oridecon, Amount: 30, Price: [7500, 10500] }
-      - { Item: Blossom_Of_Maneater, Amount: 30, Price: [720, 1000] }
-      - { Item: Stem, Amount: 200, Price: [225, 320] }
-      - { Item: Coagulated_Spell, Amount: 5, Price: [24000, 34000] }
-      - { Item: Elder_Branch, Amount: 20, Price: [3400, 4800] }
-      - { Item: Poison_Spore, Amount: 20, Price: [550, 780] }
-      - { Item: Transparent_Cloth, Amount: 50, Price: [550, 780] }
-      - { Item: Steel, Amount: 30, Price: [3100, 4400] }
-      - { Item: Starsand_Of_Witch, Amount: 500, Price: [360, 510] }
+      - { Item: Blossom_Of_Maneater, Amount: 20, Price: [720, 1000] }
+      - { Item: Stem, Amount: 100, Price: [225, 320] }
+      - { Item: Coagulated_Spell, Amount: 10, Price: [24000, 34000] }
+      - { Item: Elder_Branch, Amount: 30, Price: [3400, 4800] }
+      - { Item: Poison_Spore, Amount: 100, Price: [550, 780] }
+      - { Item: Transparent_Cloth, Amount: 20, Price: [550, 780] }
+      - { Item: Steel, Amount: 100, Price: [3100, 4400] }
+      - { Item: Starsand_Of_Witch, Amount: 200, Price: [360, 510] }
       - { Item: Karvodailnirol, Amount: 20, Price: [6600, 9350] }
-      - { Item: Oridecon_Stone, Amount: 100, Price: [1050, 1500] }
-      - { Item: Temporal_Crystal, Amount: 30, Price: [2250, 3150] }
-      - { Item: Anger_Seagod, Amount: 1, Price: [2980500, 4222500] }
+      - { Item: Oridecon_Stone, Amount: 20, Price: [1050, 1500] }
+      - { Item: Temporal_Crystal, Amount: 100, Price: [2250, 3150] }
+      - { Item: Anger_Seagod, Amount: 3, Price: [2980500, 4222500] }
       - { Item: Emperium, Amount: 5, Price: [49500, 70000] }
-      - { Item: Iron, Amount: 100, Price: [2250, 3200] }
-      - { Item: Elunium_Stone, Amount: 20, Price: [2050, 2900] }
-      - { Item: Wind_Of_Verdure, Amount: 30, Price: [2700, 3800] }
-      - { Item: Beef_Head_Meat, Amount: 20, Price: [14500, 20500] }
-      - { Item: Gold, Amount: 10, Price: [104500, 148000] }
-      - { Item: Drocera_Tentacle, Amount: 50, Price: [6900, 9750] }
-      - { Item: Blue_Gemstone, Amount: 100, Price: [180, 255] }
+      - { Item: Iron, Amount: 30, Price: [2250, 3200] }
+      - { Item: Elunium_Stone, Amount: 100, Price: [2050, 2900] }
+      - { Item: Wind_Of_Verdure, Amount: 50, Price: [2700, 3800] }
+      - { Item: Beef_Head_Meat, Amount: 5, Price: [14500, 20500] }
+      - { Item: Gold, Amount: 20, Price: [104500, 148000] }
+      - { Item: Drocera_Tentacle, Amount: 20, Price: [6900, 9750] }
+      - { Item: Blue_Gemstone, Amount: 500, Price: [180, 255] }
       - { Item: Mandragora_Flowerpot, Amount: 20, Price: [3000, 4250] }
-      - { Item: Ice_Fragment, Amount: 100, Price: [5750, 8200] }
-      - { Item: Yellow_Live, Amount: 20, Price: [1000, 1400] }
-      - { Item: Wolf_Blood, Amount: 10, Price: [21500, 31000] }
-      - { Item: Immortal_Heart, Amount: 50, Price: [1050, 1500] }
-      - { Item: Darkgreen_Dyestuffs, Amount: 1, Price: [151500, 214500] }
-      - { Item: Alchol, Amount: 100, Price: [2150, 3100] }
-      - { Item: Light_Granule, Amount: 20, Price: [5500, 7800] }
+      - { Item: Ice_Fragment, Amount: 50, Price: [5750, 8200] }
+      - { Item: Yellow_Live, Amount: 50, Price: [1000, 1400] }
+      - { Item: Wolf_Blood, Amount: 5, Price: [21500, 31000] }
+      - { Item: Immortal_Heart, Amount: 100, Price: [1050, 1500] }
+      - { Item: Darkgreen_Dyestuffs, Amount: 3, Price: [151500, 214500] }
+      - { Item: Alchol, Amount: 20, Price: [2150, 3100] }
+      - { Item: Light_Granule, Amount: 30, Price: [5500, 7800] }
 
   - VendorKey: prontera-vendors/buy/loot_low
     Type: Pool
@@ -6264,10 +6313,10 @@ Body:
     RotationJitterMinutes: 30
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
-      - { Item: Poison_Spore, Amount: 30, Price: [550, 780] }
-      - { Item: Sticky_Webfoot, Amount: 20, Price: [550, 780] }
-      - { Item: Four_Leaf_Clover, Amount: 10, Price: [48500, 69000] }
-      - { Item: Illusion_Flower, Amount: 1, Price: [220500, 312500] }
+      - { Item: Poison_Spore, Amount: 20, Price: [550, 780] }
+      - { Item: Sticky_Webfoot, Amount: 100, Price: [550, 780] }
+      - { Item: Four_Leaf_Clover, Amount: 5, Price: [48500, 69000] }
+      - { Item: Illusion_Flower, Amount: 3, Price: [220500, 312500] }
       - { Item: Posionous_Canine, Amount: 100, Price: [630, 890] }
       - { Item: Mushroom_Spore, Amount: 300, Price: [455, 650] }
       - { Item: Cactus_Needle, Amount: 500, Price: [500, 710] }
