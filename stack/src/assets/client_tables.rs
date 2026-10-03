@@ -11,7 +11,7 @@
 //! There are two shapes:
 //!
 //! - **List tables** ([`ListTable`]): one file per mod, a config key holding the
-//!   list. Items and quests. A new one is a `ListTable` and an entry in
+//!   list. Items, quests and signboards. A new one is a `ListTable` and an entry in
 //!   [`LISTS`]; nothing else here or in `link` changes.
 //! - **View tables** ([`ViewTables`]): the sprite tables behind a look, which
 //!   the client loads as id/name *pairs*, so they are collected and paired.
@@ -20,7 +20,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
-use super::{copy_file, copy_over, entries};
+use super::{copy_data_tree, copy_file, copy_over, entries};
 
 /// How a list table's files are listed in the client config.
 enum Order {
@@ -34,10 +34,21 @@ enum Order {
     LastModFirst { base: fn(&Path) -> Vec<String> },
 }
 
+/// Which of a mod's folders a table is found in.
+#[derive(PartialEq)]
+enum Layer {
+    /// Directly in `System/`, matched by file name.
+    System,
+    /// Anywhere under `data/`, matched by the path below `data/` as the mod
+    /// wrote it.
+    Data,
+}
+
 /// A client table that mods add to as a list of further files.
 pub struct ListTable {
-    /// Whether a file, by its name in `System/`, is one of the client's names
-    /// for this table.
+    layer: Layer,
+    /// Whether a file -- by its name in `System/`, or its path under `data/`,
+    /// as `layer` says -- is one of the client's names for this table.
     matches: fn(&str) -> bool,
     /// A mod's copy is `<stem>-<mod>.<ext>`; a second in the same layer is
     /// `<stem>-<mod>.2.<ext>`. A dot cannot appear in a sanitised mod name, so
@@ -57,6 +68,7 @@ pub struct ListTable {
 /// (`_processedItems` in DBManager.js), which is what lets a mod rename a stock
 /// item.
 pub const ITEMS: ListTable = ListTable {
+    layer: Layer::System,
     matches: is_item_table,
     stem: "itemInfo",
     ext: "lua",
@@ -69,6 +81,7 @@ pub const ITEMS: ListTable = ListTable {
 /// (`OngoingQuestInfoList*`, #163). Loaded after the base, a quest at a time by
 /// id.
 pub const QUESTS: ListTable = ListTable {
+    layer: Layer::System,
     matches: is_quest_table,
     stem: "OngoingQuestInfoList",
     ext: "lub",
@@ -77,8 +90,29 @@ pub const QUESTS: ListTable = ListTable {
     order: Order::ModOrder,
 };
 
+/// `customSignBoardList`: the icons and signs drawn over NPCs
+/// (`data/luafiles514/lua files/SignBoardList.lub`). One table for the whole
+/// game, so a mod shipping its own to put an icon over its NPC used to take
+/// away every Kafra's, tool dealer's and guide's. The client merges each over
+/// the stock table by map and cell: a sign on a cell that already has one
+/// replaces it, and every other is kept.
+pub const SIGNBOARDS: ListTable = ListTable {
+    layer: Layer::Data,
+    matches: is_signboard_table,
+    stem: "SignBoardList",
+    ext: "lub",
+    dir: "data/luafiles514/lua files",
+    config_key: "customSignBoardList",
+    order: Order::ModOrder,
+};
+
 /// Every list table, in the order their config entries are written.
-const LISTS: &[&ListTable] = &[&ITEMS, &QUESTS];
+const LISTS: &[&ListTable] = &[&ITEMS, &QUESTS, &SIGNBOARDS];
+
+/// The list table a file under a mod's `data/` is, by its path there.
+fn data_table(rel: &str) -> Option<&'static ListTable> {
+    LISTS.iter().copied().find(|t| t.layer == Layer::Data && (t.matches)(rel))
+}
 
 /// The tables a mod -- or, once extended, every mod -- adds to the client's.
 #[derive(Debug, Default, PartialEq)]
@@ -163,7 +197,36 @@ fn misplaced(root: &Path, mod_name: &str) -> Vec<String> {
              move it to System/"
         )
     });
-    nested.chain(under_data).collect()
+    let mut out: Vec<String> = nested.chain(under_data).collect();
+    // A signboard table anywhere but the one path under data/: in System/,
+    // or a folder off under data/. Either is copied like any file, and the
+    // client goes on drawing only the stock signs.
+    let signs = files_under(&root.join("System"), "System", is_signboard_name)
+        .into_iter()
+        .chain(
+            files_under(&root.join("data"), "data", is_signboard_name)
+                .into_iter()
+                .filter(|found| !is_signboard_table(&found["data/".len()..])),
+        );
+    for found in signs {
+        out.push(format!(
+            "mods: {mod_name} has {found}, but the client reads signboard tables only from {}/ -- move it there",
+            SIGNBOARDS.dir
+        ));
+    }
+    out
+}
+
+/// Copy a mod's `data/` layer over the served root `web`'s, keeping a table
+/// the client merges -- the signboard list -- aside instead of over the stock
+/// one, which it would replace whole.
+pub fn copy_data_layer(src: &Path, web: &Path, mod_name: &str) -> Result<ModTables, String> {
+    let mut tables = ModTables::default();
+    let safe = safe_name(mod_name);
+    for (table, from) in copy_data_tree(src, &web.join("data"), data_table)? {
+        tables.keep_aside(table, &from, &web.join(table.dir), &safe)?;
+    }
+    Ok(tables)
 }
 
 /// Copy a mod's `System/` layer, keeping the client's whole-game tables as
@@ -192,7 +255,7 @@ pub fn copy_system_layer(src: &Path, merged: &Path, mod_name: &str) -> Result<Mo
         let from = e.path();
         let name = e.file_name().to_string_lossy().to_string();
         if from.is_file() {
-            for table in LISTS {
+            for table in LISTS.iter().filter(|t| t.layer == Layer::System) {
                 if (table.matches)(&name) {
                     tables.keep_aside(table, &from, merged, &safe)?;
                     continue 'files;
@@ -332,7 +395,8 @@ impl ViewFiles {
     }
 }
 
-/// A mod name as part of a file name, as the item tables do it.
+/// A mod name as part of a file name: anything but ASCII letters, digits, `-`
+/// and `_` becomes `-`.
 fn safe_name(mod_name: &str) -> String {
     mod_name
         .chars()
@@ -370,6 +434,19 @@ fn is_quest_table(name: &str) -> bool {
     lower.starts_with("ongoingquestinfolist") && (lower.ends_with(".lua") || lower.ends_with(".lub"))
 }
 
+/// `luafiles514/lua files/SignBoardList.lub` under `data/`, in any case, or as
+/// `.lua`. The translation's `signboardlist_f.lub` is a different file.
+fn is_signboard_table(rel: &str) -> bool {
+    let read_from = SIGNBOARDS.dir.strip_prefix("data/").unwrap_or(SIGNBOARDS.dir);
+    rel.rsplit_once('/').is_some_and(|(dir, name)| dir.to_lowercase() == read_from && is_signboard_name(name))
+}
+
+/// A file named like the signboard table, wherever it is.
+fn is_signboard_name(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    lower == "signboardlist.lub" || lower == "signboardlist.lua"
+}
+
 /// `itemInfo.lua`, `itemInfo_C.lua`, `iteminfo.lub` -- any name the client's
 /// own item tables go by.
 fn is_item_table(name: &str) -> bool {
@@ -383,6 +460,12 @@ fn is_item_table(name: &str) -> bool {
 /// it from -- `System/LuaFiles514/`, `data/luafiles514/` -- so the mod says why
 /// its items are nameless instead of just being nameless.
 fn item_tables_under(dir: &Path, label: &str) -> Vec<String> {
+    files_under(dir, label, is_item_table)
+}
+
+/// Files anywhere under `dir` whose name `is` picks, as paths starting with
+/// `label`, in name order.
+fn files_under(dir: &Path, label: &str, is: fn(&str) -> bool) -> Vec<String> {
     let mut found = Vec::new();
     let Ok(rd) = fs::read_dir(dir) else { return found };
     let mut children: Vec<_> = rd.flatten().collect();
@@ -391,8 +474,8 @@ fn item_tables_under(dir: &Path, label: &str) -> Vec<String> {
         let name = e.file_name().to_string_lossy().to_string();
         let path = e.path();
         if path.is_dir() {
-            found.extend(item_tables_under(&path, &format!("{label}/{name}")));
-        } else if is_item_table(&name) {
+            found.extend(files_under(&path, &format!("{label}/{name}"), is));
+        } else if is(&name) {
             found.push(format!("{label}/{name}"));
         }
     }
@@ -606,6 +689,64 @@ mod tests {
         let _ = fs::remove_dir_all(&tmp);
     }
 
+    #[test]
+    fn a_signboard_table_is_recognised_in_any_case_and_only_where_the_client_reads_it() {
+        assert!(data_table("luafiles514/lua files/SignBoardList.lub").is_some());
+        assert!(data_table("LuaFiles514/Lua Files/signboardlist.lua").is_some());
+        assert!(data_table("luafiles514/lua files/signboardlist_f.lub").is_none());
+        assert!(data_table("lua files/SignBoardList.lub").is_none());
+        // A data/ table is not one when it sits in System/.
+        let tmp = tmp("sign-in-system");
+        let (src, merged) = (tmp.join("mod/System"), tmp.join("merged"));
+        write(&src.join("SignBoardList.lub"), "x");
+        assert!(copy_system_layer(&src, &merged, "m").unwrap().list(&SIGNBOARDS).is_empty());
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// A mod's signboard table is kept aside under its own name rather than
+    /// laid over the stock one, which it would replace whole -- and everything
+    /// else in data/ still lands, aliases and all.
+    #[test]
+    fn a_signboard_table_is_kept_aside_rather_than_replacing_the_stock_one() {
+        let tmp = tmp("data-layer");
+        let (src, web) = (tmp.join("mod/data"), tmp.join("web"));
+        write(&web.join("data/luafiles514/lua files/SignBoardList.lub"), "STOCK");
+        write(&src.join("luafiles514/lua files/SignBoardList.lub"), "MOD SIGNS");
+        write(&src.join("luafiles514/lua files/signboardlist_f.lub"), "NOT A TABLE OF SIGNS");
+        write(&src.join("texture/ui/x.bmp"), "art");
+        let tables = copy_data_layer(&src, &web, "my mod").unwrap();
+        assert_eq!(tables.list(&SIGNBOARDS), ["SignBoardList-my-mod.lub"]);
+        let signs = web.join("data/luafiles514/lua files");
+        assert_eq!(fs::read_to_string(signs.join("SignBoardList-my-mod.lub")).unwrap(), "MOD SIGNS");
+        assert_eq!(fs::read_to_string(signs.join("SignBoardList.lub")).unwrap(), "STOCK");
+        assert!(signs.join("signboardlist_f.lub").is_file());
+        assert!(web.join("data").join(super::super::client_path("texture/ui/x.bmp")).is_file());
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// Signboards load after the stock table, in mod order, under their path
+    /// from the served root.
+    #[test]
+    fn signboard_tables_are_listed_in_mod_order() {
+        let tmp = tmp("signs");
+        let dir = tmp.join("web/data/luafiles514/lua files");
+        let mut all = ModTables::default();
+        for m in ["a", "b"] {
+            write(&tmp.join(m).join("SignBoardList.lub"), m);
+            let mut one = ModTables::default();
+            one.keep_aside(&SIGNBOARDS, &tmp.join(m).join("SignBoardList.lub"), &dir, m).unwrap();
+            all.extend(one);
+        }
+        assert_eq!(fs::read_to_string(dir.join("SignBoardList-b.lub")).unwrap(), "b");
+        assert_eq!(
+            all.config_entries(&tmp.join("web")),
+            vec!["\tcustomSignBoardList: ['data/luafiles514/lua files/SignBoardList-a.lub', \
+                  'data/luafiles514/lua files/SignBoardList-b.lub'],\n"
+                .to_string()]
+        );
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
     /// An item table in a folder under System/, or under data/, is never
     /// read, and the warning says so -- in the words it has always used.
     #[test]
@@ -624,6 +765,27 @@ mod tests {
             ]
         );
         assert!(misplaced(&tmp.join("absent"), "m").is_empty());
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// A signboard table the client never reads -- in System/, or in the wrong
+    /// folder under data/ -- is reported; the one in the right place is not.
+    #[test]
+    fn a_misplaced_signboard_table_is_reported() {
+        let tmp = tmp("misplaced-signs");
+        write(&tmp.join("System/SignBoardList.lub"), "x");
+        write(&tmp.join("data/lua files/signboardlist.lua"), "x");
+        write(&tmp.join("data/LuaFiles514/Lua Files/SignBoardList.lub"), "x");
+        write(&tmp.join("data/luafiles514/lua files/signboardlist_f.lub"), "x");
+        assert_eq!(
+            misplaced(&tmp, "m"),
+            [
+                "mods: m has System/SignBoardList.lub, but the client reads signboard tables only from \
+                 data/luafiles514/lua files/ -- move it there",
+                "mods: m has data/lua files/signboardlist.lua, but the client reads signboard tables only from \
+                 data/luafiles514/lua files/ -- move it there",
+            ]
+        );
         let _ = fs::remove_dir_all(&tmp);
     }
 
