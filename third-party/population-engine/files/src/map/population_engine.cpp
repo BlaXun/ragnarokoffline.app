@@ -6303,6 +6303,7 @@ static void population_engine_persist_companion_sql(
 		" heal_at=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), heal_at, 75),"
 		" emergency_at=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), emergency_at, 35),"
 		" given_mask=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), given_mask, 0),"
+		" gear_detail=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), gear_detail, NULL),"
 		" owner_account_id=VALUES(owner_account_id), owner_char_id=VALUES(owner_char_id),"
 		" name=VALUES(name), job_id=VALUES(job_id),"
 		" sex=VALUES(sex), hair_style=VALUES(hair_style), hair_color=VALUES(hair_color),"
@@ -6525,6 +6526,140 @@ int population_engine_companion_return_gear(map_session_data *owner, map_session
 	return returned;
 }
 
+/// Every worn piece in full, for cp_companion_persistence.gear_detail (v11).
+///
+/// The *_nameid columns hold one number per slot, and that number is all recall had: a piece
+/// came back with no refine, no cards and no options, and the bare copy is what `@companion
+/// gear` then handed to the player - the cards were gone for good. The headgear columns are
+/// worse: they are written from status.head_*, which pc_set_costume_view fills with the
+/// item's LOOK, so a hat came back as whatever item has that look's number, or as nothing.
+///
+/// "v1" then one entry per worn piece, separated by ';': equip, nameid, refine, card0-3,
+/// enchantgrade, bound, unique_id, then id,value,param for each random option. `attribute`
+/// is not kept: it is rAthena's broken flag, and a broken piece is unequipped on the spot
+/// and cannot be put back on, so a worn one is always 0.
+static std::string pop_companion_gear_detail(const map_session_data *sd)
+{
+	std::string out = "v1";
+	char entry[512];
+	for (int16 i = 0; i < MAX_INVENTORY; ++i) {
+		const struct item &it = sd->inventory.u.items_inventory[i];
+		if (!it.nameid || !it.equip || it.amount <= 0)
+			continue;
+		int n = snprintf(entry, sizeof(entry), ";%u,%u,%d,%u,%u,%u,%u,%u,%d,%" PRIu64,
+			it.equip, (unsigned)it.nameid, (int)it.refine,
+			(unsigned)it.card[0], (unsigned)it.card[1], (unsigned)it.card[2], (unsigned)it.card[3],
+			(unsigned)it.enchantgrade, (int)it.bound, (uint64_t)it.unique_id);
+		for (int o = 0; o < MAX_ITEM_RDM_OPT && n > 0 && static_cast<size_t>(n) < sizeof(entry); ++o)
+			n += snprintf(entry + n, sizeof(entry) - n, ",%d,%d,%d",
+				(int)it.option[o].id, (int)it.option[o].value, (int)it.option[o].param);
+		if (n > 0 && static_cast<size_t>(n) < sizeof(entry))
+			out += entry;
+	}
+	return out;
+}
+
+/// One gear_detail entry back into an item, or false when it is not one this build wrote.
+static bool pop_companion_parse_gear_entry(const char *text, struct item &it)
+{
+	unsigned long long v[10 + 3 * MAX_ITEM_RDM_OPT];
+	size_t count = 0;
+	const char *p = text;
+	while (count < sizeof(v) / sizeof(v[0])) {
+		char *end = nullptr;
+		const bool negative = (*p == '-');
+		const unsigned long long n = strtoull(negative ? p + 1 : p, &end, 10);
+		if (end == (negative ? p + 1 : p))
+			return false;
+		v[count++] = negative ? static_cast<unsigned long long>(-static_cast<long long>(n)) : n;
+		p = end;
+		if (*p != ',')
+			break;
+		++p;
+	}
+	if (count != sizeof(v) / sizeof(v[0]) || (*p != '\0' && *p != ';'))
+		return false;
+	it = {};
+	it.equip = static_cast<uint32>(v[0]);
+	it.nameid = static_cast<t_itemid>(v[1]);
+	it.refine = static_cast<char>(v[2]);
+	for (int c = 0; c < MAX_SLOTS; ++c)
+		it.card[c] = static_cast<t_itemid>(v[3 + c]);
+	it.enchantgrade = static_cast<uint8>(v[7]);
+	it.bound = static_cast<char>(v[8]);
+	it.unique_id = static_cast<uint64>(v[9]);
+	for (int o = 0; o < MAX_ITEM_RDM_OPT; ++o) {
+		it.option[o].id = static_cast<int16>(v[10 + 3 * o]);
+		it.option[o].value = static_cast<int16>(v[11 + 3 * o]);
+		it.option[o].param = static_cast<char>(v[12 + 3 * o]);
+	}
+	it.amount = 1;
+	it.identify = 1;
+	return it.nameid != 0 && it.equip != 0 && itemdb_exists(it.nameid) != nullptr;
+}
+
+/// Put a recalled companion's gear back the way it was saved: refine, cards, options and the
+/// right item in every slot. Recall has already equipped what the *_nameid columns name; a
+/// piece that matches a saved entry takes its details, and a slot holding the wrong item (a
+/// hat recalled by its look number) or nothing has it replaced by the saved piece. Those
+/// wrong pieces were made by recall a moment ago from a bad number - they were never anyone's.
+/// A row with no detail (saved before v11) is left exactly as recall made it.
+static void pop_companion_restore_gear_detail(map_session_data *shell, const char *detail)
+{
+	if (shell == nullptr || detail == nullptr || strncmp(detail, "v1", 2) != 0)
+		return;
+	for (const char *p = strchr(detail, ';'); p != nullptr; p = strchr(p + 1, ';')) {
+		struct item saved;
+		if (!pop_companion_parse_gear_entry(p + 1, saved))
+			continue;
+		int16 match = -1;
+		for (int16 i = 0; i < MAX_INVENTORY && match < 0; ++i) {
+			const struct item &w = shell->inventory.u.items_inventory[i];
+			if (w.nameid == saved.nameid && w.equip == saved.equip && w.amount > 0)
+				match = i;
+		}
+		if (match >= 0) {
+			struct item &w = shell->inventory.u.items_inventory[match];
+			w.refine = saved.refine;
+			memcpy(w.card, saved.card, sizeof(w.card));
+			memcpy(w.option, saved.option, sizeof(w.option));
+			w.enchantgrade = saved.enchantgrade;
+			w.bound = saved.bound;
+			if (saved.unique_id != 0)
+				w.unique_id = saved.unique_id;
+			continue;
+		}
+		// Clear the slot: whatever recall put where the saved piece goes.
+		for (int16 i = 0; i < MAX_INVENTORY; ++i) {
+			const struct item &w = shell->inventory.u.items_inventory[i];
+			if (w.nameid && w.equip && (w.equip & saved.equip)) {
+				if (pc_unequipitem(shell, i, 2))
+					pc_delitem(shell, i, w.amount, 0, 1, LOG_TYPE_NONE);
+			}
+		}
+		shell->max_weight = 2000000; // as population_engine_shell_equip_item: status_calc resets it
+		struct item add = saved;
+		add.equip = 0;
+		if (pc_additem(shell, &add, 1, LOG_TYPE_NONE) != ADDITEM_SUCCESS) {
+			ShowWarning("population_engine: could not restore item %u on companion %u\n",
+				(unsigned)saved.nameid, shell->status.char_id);
+			continue;
+		}
+		for (int16 i = 0; i < MAX_INVENTORY; ++i) {
+			const struct item &w = shell->inventory.u.items_inventory[i];
+			if (w.nameid == saved.nameid && w.equip == 0 && w.amount > 0 && w.refine == saved.refine
+			    && memcmp(w.card, saved.card, sizeof(w.card)) == 0) {
+				// A piece the companion can no longer wear (its job or level changed since)
+				// stays in its inventory, outside the owner's custody of worn slots: say so.
+				if (!pc_equipitem(shell, i, saved.equip, false))
+					ShowWarning("population_engine: companion %u could not wear restored item %u (slot %u); it stays unworn\n",
+						shell->status.char_id, (unsigned)saved.nameid, (unsigned)saved.equip);
+				break;
+			}
+		}
+	}
+}
+
 // Goal 2: re-snapshot a summoned companion's current equipment + stats into its
 // persistence row. Called (debounced) whenever the shell's equipment changes, so
 // gear the owner gives the companion after recruit survives a restart too.
@@ -6570,7 +6705,9 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 	// UPDATE only the mutable columns — identity (owner, index, name, job, sex,
 	// looks) never changes after recruit, and map_id tracks the owner anyway.
 	if (mmysql_handle == nullptr) return;
-	char q[1024];
+	// Sized for the full gear detail: about 120 bytes for each worn piece.
+	const std::string detail = pop_companion_gear_detail(sd);
+	std::vector<char> q(1536 + detail.size());
 
 	// The pet's own state is ours to keep - hom_id stays 0, so nothing stock can save it. Written
 	// ONLY while the pet exists: a companion whose pet is switched off, or that is not an
@@ -6584,7 +6721,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 			(long long)sd->hd->homunculus.exp);
 	}
 
-	snprintf(q, sizeof(q),
+	const int written = snprintf(q.data(), q.size(),
 		"UPDATE `cp_companion_persistence` SET weapon_nameid=%u, shield_nameid=%u,"
 		" head_top_nameid=%u, head_mid_nameid=%u, head_bottom_nameid=%u,"
 		" armor_nameid=%u, shoes_nameid=%u, acc_l_nameid=%u, acc_r_nameid=%u,"
@@ -6594,7 +6731,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		" shadow_shoes_nameid=%u, shadow_acc_l_nameid=%u, shadow_acc_r_nameid=%u,"
 		" base_level=%d, job_level=%d, job_id=%d, str_=%d, agi_=%d, vit_=%d, intl_=%d,"
 		" dex_=%d, luk_=%d, pow_=%d, sta_=%d, wis_=%d, spl_=%d, con_=%d, crt_=%d,"
-		" mode=%d, duty=%d, heal_at=%d, emergency_at=%d, given_mask=%u%s"
+		" mode=%d, duty=%d, heal_at=%d, emergency_at=%d, given_mask=%u, gear_detail='%s'%s"
 		" WHERE owner_account_id=%u AND owner_char_id=%u AND shell_index=%u",
 		weapon, shield, sd->status.head_top, sd->status.head_mid, sd->status.head_bottom,
 		armor, shoes, acc_l, acc_r,
@@ -6606,9 +6743,14 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		(int)sd->pop.companion_mode, (int)sd->pop.role,
 		(int)sd->pop.companion_heal_at, (int)sd->pop.companion_emergency_at,
 		pop_companion_given_worn(sd),
-		hom_frag,
+		detail.c_str(), hom_frag,
 		owner, sd->pop.companion_owner_char, index_);
-	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) {
+	if (written <= 0 || static_cast<size_t>(written) >= q.size()) {
+		ShowError("population_engine: gear re-snapshot for companion %u does not fit\n", index_);
+		return;
+	}
+	// Through "%s": the statement is data here, never a format.
+	if (Sql_Query(mmysql_handle, "%s", q.data()) != SQL_SUCCESS) {
 		Sql_ShowDebug(mmysql_handle);
 		ShowError("population_engine: gear re-snapshot for companion %u FAILED\n", index_);
 		return;
@@ -7322,7 +7464,7 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 	uint32_t sh_acc_l, uint32_t sh_acc_r,
 	int pow_, int sta_, int wis_, int spl_, int con_, int crt_,
 	int mode_, int duty_, int heal_at_, int emergency_at_,
-	const char* skill_preset)
+	const char* skill_preset, const char* gear_detail)
 {
 	// Deterministic spawn cell next to the owner (small ring for an open spot).
 	int16_t x = 0, y = 0; bool placed = false;
@@ -7453,6 +7595,8 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 	if (sh_shoes)   population_engine_shell_equip_item(shell, sh_shoes, index_, "shadow_shoes", EQP_SHADOW_SHOES);
 	if (sh_acc_l)   population_engine_shell_equip_item(shell, sh_acc_l, index_, "shadow_acc_l", EQP_SHADOW_ACC_L);
 	if (sh_acc_r)   population_engine_shell_equip_item(shell, sh_acc_r, index_, "shadow_acc_r", EQP_SHADOW_ACC_R);
+	// Refine, cards, options and the right headgear, before the stats are worked out from them.
+	pop_companion_restore_gear_detail(shell, gear_detail);
 	status_calc_pc(shell, SCO_NONE);
 
 	// Mark as the owner's companion and align membership with the owner.
@@ -7607,8 +7751,8 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 		" pow_, sta_, wis_, spl_, con_, crt_, mode, duty, heal_at, emergency_at,"
 		" costume_top_nameid, costume_mid_nameid, costume_low_nameid, costume_garment_nameid,"
 		" shadow_armor_nameid, shadow_weapon_nameid, shadow_shield_nameid,"
-		" shadow_shoes_nameid, shadow_acc_l_nameid, shadow_acc_r_nameid, skill_preset, given_mask"
-		" FROM `cp_companion_persistence` WHERE owner_account_id=%u AND owner_char_id=%u AND active=1%s",
+		" shadow_shoes_nameid, shadow_acc_l_nameid, shadow_acc_r_nameid, skill_preset, given_mask,"
+		" gear_detail FROM `cp_companion_persistence` WHERE owner_account_id=%u AND owner_char_id=%u AND active=1%s",
 		owner->status.account_id, owner->status.char_id, only_index != 0 ? " AND shell_index=" : "");
 	// The index is a number, so append it rather than parameterising the format.
 	if (only_index != 0) {
@@ -7701,6 +7845,8 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 			safestrncpy(presetbuf, data, sizeof(presetbuf));
 		const char* skill_preset = (data != nullptr) ? presetbuf : nullptr;
 		data = next(); const uint32_t given_mask = data != nullptr ? static_cast<uint32_t>(strtoul(data, nullptr, 10)) : 0;
+		// v11: every worn piece in full; NULL for a row saved before it existed.
+		data = next(); const std::string gear_detail = data != nullptr ? data : "";
 		if (index_ == 0 || job_id == 0) continue;
 		// The column holds rAthena's e_sex, written from status.sex: 0 = SEX_FEMALE, 1 = SEX_MALE.
 		// Read the other way round, every companion came back as the other sex at its first
@@ -7713,7 +7859,7 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 			head_mid, head_bottom, armor, shoes, acc_l, acc_r, base_level, job_level, str, agi, vit, intl, dex, luk,
 			namebuf, c_top, c_mid, c_low, c_garment, sh_armor, sh_weapon, sh_shield, sh_shoes, sh_acc_l, sh_acc_r,
 			pow_, sta_, wis_, spl_, con_, crt_, mode_, duty_, heal_at_, emergency_at_,
-			skill_preset);
+			skill_preset, gear_detail.empty() ? nullptr : gear_detail.c_str());
 		// Which of the re-equipped pieces the player gave: restored here rather than threaded
 		// through recall_one_companion, and narrowed to what the shell actually wears.
 		for (map_session_data *shell : g_population_engine_pcs) {
