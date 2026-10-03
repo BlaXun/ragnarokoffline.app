@@ -213,6 +213,19 @@ function create({ BrowserWindow, session, preload, log }) {
 		contents.ipc.on('mod-host:response', (event, id, response) => { if (own(event)) settle(id, call => call.resolve(response)); });
 		contents.ipc.on('mod-host:fail', (event, id, message) => { if (own(event)) settle(id, call => call.reject(new Error(String(message).slice(0, 2000)))); });
 		contents.ipc.on('mod-host:log', (event, text) => { if (own(event)) note(String(text)); });
+		// The page's CSP refuses an undeclared address before the session filter
+		// ever sees it, and says so only on the page's console. Carried to the
+		// log, so the host can see what a handler tried to reach.
+		// Chromium words each refusal twice; one line is enough.
+		let lastRefused = '';
+		contents.on('console-message', (event, _level, message) => {
+			const text = String(typeof message === 'string' ? message : event?.message || '');
+			const refused = /^Refused to (?:connect to|load) '([^']{1,300})'.*Content Security Policy/.exec(text);
+			if (!refused || refused[1] === lastRefused) return;
+			lastRefused = refused[1];
+			setTimeout(() => { if (lastRefused === refused[1]) lastRefused = ''; }, 1000);
+			note(`blocked ${refused[1]} (Content-Security-Policy)`);
+		});
 		contents.on('render-process-gone', (_e, details) => { note(`renderer stopped (${details.reason}); it restarts on the next request`); end('the renderer stopped'); });
 		contents.on('unresponsive', () => { note('renderer stopped responding; it restarts on the next request'); end('the renderer stopped responding'); });
 		win.on('closed', () => end('closed'));
