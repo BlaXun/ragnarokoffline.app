@@ -211,3 +211,27 @@ test('the picker CSS is scoped, dense and backed by the real bitmaps', () => {
 	assert.ok(!/font-size:\s*1[4-9]px|font-size:\s*2\dpx/.test(block), 'keep RO type metrics');
 	assert.ok(!/box-shadow:\s*0\s+\d+px\s+\d+px\s+rgba/.test(block), 'no soft web shadows');
 });
+
+// #290 item 10: the picker listed bare Aegis names (AL_HEAL) with no way to read what a skill
+// does. It now shows the in-game name and opens the client's own description window on a
+// right-click, as the skill window does.
+test('skills show their in-game name and a description on right-click', () => {
+	assert.match(js, /import DB from 'DB\/DBManager\.js';/);
+	assert.match(js, /import SkillDescription from 'UI\/Components\/SkillDescription\/SkillDescription\.js';/);
+	const overlay = js.slice(js.indexOf('function _skillPickerOverlay('));
+	const body = overlay.slice(0, overlay.indexOf('\n}\n'));
+	assert.match(body, /nm\.textContent = DB\.getSkillName\(s\.id\) \|\| s\.name;/,
+		'the in-game name, with the Aegis name as the fallback');
+	assert.match(body, /nm\.title = s\.name;/, 'the Aegis name stays as the hover title');
+	assert.match(body, /row\.addEventListener\('contextmenu', e => \{\s*e\.preventDefault\(\);[\s\S]{0,80}_toggleSkillDescription\(s\.id\)/);
+
+	const toggle = js.slice(js.indexOf('function _toggleSkillDescription('));
+	const tbody = toggle.slice(0, toggle.indexOf('\n}\n'));
+	assert.match(tbody, /if \(SkillDescription\.uid === id\) \{\s*SkillDescription\.remove\(\);/,
+		'the same skill again closes it, as in the skill window');
+	assert.match(tbody, /SkillDescription\.append\(\);\s*SkillDescription\.setSkill\(id\);/);
+
+	const close = js.slice(js.indexOf('function closeSkillPicker('));
+	assert.match(close.slice(0, close.indexOf('\n}\n')), /_skills\.some\(s => s\.id === SkillDescription\.uid\)/,
+		'closing the picker closes a description it opened, and only that');
+});

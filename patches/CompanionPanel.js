@@ -21,6 +21,8 @@ import GUIComponent from 'UI/GUIComponent.js';
 import Preferences from 'Core/Preferences.js';
 import Renderer from 'Renderer/Renderer.js';
 import ChatBox from 'UI/Components/ChatBox/ChatBox.js';
+import DB from 'DB/DBManager.js';
+import SkillDescription from 'UI/Components/SkillDescription/SkillDescription.js';
 import htmlText from './CompanionPanel.html?raw';
 import cssText from './CompanionPanel.css?raw';
 import 'UI/Elements/Elements.js';
@@ -663,6 +665,10 @@ function openSkillPicker(name) {
 }
 
 function closeSkillPicker() {
+	// A description the picker opened goes with it; one the skill window opened stays.
+	if (_skills.some(s => s.id === SkillDescription.uid)) {
+		SkillDescription.remove();
+	}
 	_skillTarget = '';
 	_skillPending = [];
 	_skills = [];
@@ -721,7 +727,8 @@ function _skillPickerOverlay() {
 	} else {
 		// The count is the one thing that tells the player whether their tick landed.
 		state.textContent = `${_skills.filter(s => s.selected).length} of ${_skills.length} selected`
-			+ (_skillMeta.chosen ? '' : ' — using the full class list');
+			+ (_skillMeta.chosen ? '' : ' — using the full class list')
+			+ '. Right-click a skill for its description.';
 		box.append(state);
 
 		const list = document.createElement('div');
@@ -754,9 +761,21 @@ function _skillPickerOverlay() {
 				window.setTimeout(() => askSkills(_skillTarget), 250);
 			});
 
+			// The in-game name, as the skill window shows it; the server sends the Aegis
+			// name, kept as the hover title and as the fallback for a skill the client's
+			// tables do not name.
 			const nm = document.createElement('span');
 			nm.className = 'skill-name';
-			nm.textContent = s.name;
+			nm.textContent = DB.getSkillName(s.id) || s.name;
+			nm.title = s.name;
+
+			// Right-click shows the description, as in the skill window; right-clicking
+			// the same skill again closes it.
+			row.addEventListener('contextmenu', e => {
+				e.preventDefault();
+				e.stopPropagation();
+				_toggleSkillDescription(s.id);
+			});
 
 			const lv = document.createElement('span');
 			lv.className = 'skill-lv';
@@ -786,6 +805,17 @@ function _skillPickerOverlay() {
 	overlay.addEventListener('mousedown', e => e.stopImmediatePropagation());
 	overlay.addEventListener('click', e => e.stopPropagation());
 	return overlay;
+}
+
+/// The client's own skill description window, the one the skill window opens on a
+/// right-click. Toggles like it: the same skill again closes it.
+function _toggleSkillDescription(id) {
+	if (SkillDescription.uid === id) {
+		SkillDescription.remove();
+		return;
+	}
+	SkillDescription.append();
+	SkillDescription.setSkill(id);
 }
 
 /// Display bucket for a skill, from its Aegis name prefix. Presentation only.
