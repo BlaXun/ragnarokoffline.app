@@ -203,7 +203,7 @@ static bool population_shell_pick_sphere_chain_skill(map_session_data *sd, uint1
 	auto pick = [&](uint16 id, uint16 lv) {
 		if (!population_shell_skill_selected(sd, id))
 			return false;
-		if (!skill_isNotOk(id, *sd) && sd->status.sp >= static_cast<uint32>(skill_get_sp(id, lv))) {
+		if (!skill_isNotOk(id, *sd) && sd->battle_status.sp >= static_cast<uint32>(skill_get_sp(id, lv))) {
 			out_id = id; out_lv = lv; return true;
 		}
 		return false;
@@ -859,8 +859,8 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 	//    robin cursor advances past skills that are still on per-skill cooldown.
 	const t_tick now_tick = gettick();
 	const int min_sp_pct = battle_config.population_engine_shell_skill_min_sp_pct;
-	const uint32 sp_floor = (min_sp_pct > 0 && sd->status.max_sp > 0)
-		? static_cast<uint32>(sd->status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
+	const uint32 sp_floor = (min_sp_pct > 0 && sd->battle_status.max_sp > 0)
+		? static_cast<uint32>(sd->battle_status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
 		: 0u;
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 	const bool los_check   = battle_config.population_engine_shell_skill_los_check != 0;
@@ -975,11 +975,11 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 			continue;
 		}
 		const int sp_cost = skill_get_sp(sk.skill_id, sk.skill_lv);
-		if (sp_cost > sd->status.sp) {
+		if (sp_cost > sd->battle_status.sp) {
 			continue;
 		}
 		// SP-reserve floor: don't pick a skill that drops us below the configured floor.
-		if (sp_floor > 0 && static_cast<uint32>(sd->status.sp) - static_cast<uint32>(sp_cost) < sp_floor) {
+		if (sp_floor > 0 && static_cast<uint32>(sd->battle_status.sp) - static_cast<uint32>(sp_cost) < sp_floor) {
 			continue;
 		}
 		// LOS already validated once above for the whole rotation — no per-skill A* here.
@@ -1067,8 +1067,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 	// SP-reserve floor (same rationale as in the attack picker — buffs shouldn't strand
 	// the shell with no SP for offensive skills).
 	const int min_sp_pct = battle_config.population_engine_shell_skill_min_sp_pct;
-	const uint32 sp_floor = (min_sp_pct > 0 && sd->status.max_sp > 0)
-		? static_cast<uint32>(sd->status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
+	const uint32 sp_floor = (min_sp_pct > 0 && sd->battle_status.max_sp > 0)
+		? static_cast<uint32>(sd->battle_status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
 		: 0u;
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 
@@ -1225,7 +1225,7 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		if (plv > 0 && plv < sk.skill_lv)
 			continue;
 		const int sp_cost = skill_get_sp(sk.skill_id, sk.skill_lv);
-		if (sp_cost > sd->status.sp)
+		if (sp_cost > sd->battle_status.sp)
 			continue;
 
 		// Per-skill cooldown gate.
