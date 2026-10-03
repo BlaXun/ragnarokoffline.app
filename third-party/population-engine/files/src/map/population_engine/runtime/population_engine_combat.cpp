@@ -203,7 +203,7 @@ static bool population_shell_pick_sphere_chain_skill(map_session_data *sd, uint1
 	auto pick = [&](uint16 id, uint16 lv) {
 		if (!population_shell_skill_selected(sd, id))
 			return false;
-		if (!skill_isNotOk(id, *sd) && sd->status.sp >= static_cast<uint32>(skill_get_sp(id, lv))) {
+		if (!skill_isNotOk(id, *sd) && sd->battle_status.sp >= static_cast<uint32>(skill_get_sp(id, lv))) {
 			out_id = id; out_lv = lv; return true;
 		}
 		return false;
@@ -825,6 +825,32 @@ static void population_shell_seed_attack_skills_if_empty(map_session_data *sd);
 
 namespace { // reopen anon namespace for the rest of the file
 
+/// Skills that restore an ally's HP. rAthena marks no such flag, so they are named.
+static bool pop_skill_heals_ally(uint16 skill_id)
+{
+	switch (skill_id) {
+	case AL_HEAL: case AB_CHEAL: case AB_HIGHNESSHEAL: case AB_EPICLESIS:
+	case AM_POTIONPITCHER: case CD_DILECTIO_HEAL: case CD_REPARATIO:
+		return true;
+	default:
+		return false;
+	}
+}
+
+/// The HP% an ally_hp_below heal waits for. A companion's player sets two thresholds in the
+/// panel (cp_companion_persistence.heal_at / emergency_at); the skill database's own value
+/// only says which of the two a heal is - below 50 is an emergency heal (Epiclesis 30,
+/// Reparatio 40), anything else a routine one. Everything else keeps the database's value:
+/// an ambient shell, a skill that is not a heal, a condition that is not about ally HP.
+static uint8_t pop_ally_hp_threshold(const map_session_data* sd, uint16 skill_id, uint8_t condition, uint8_t cond_value)
+{
+	if (static_cast<PopSkillCondition>(condition) != PopSkillCondition::AllyHpBelow
+	    || sd->pop.companion_owner_account == 0 || !pop_skill_heals_ally(skill_id))
+		return cond_value;
+	const int16_t chosen = cond_value < 50 ? sd->pop.companion_emergency_at : sd->pop.companion_heal_at;
+	return static_cast<uint8_t>(cap_value(chosen, 1, 100));
+}
+
 /// Unified condition gate that picks between the flat-enum legacy path and the
 /// expanded boolean tree based on whether the entry has a tree attached.
 /// Templated over the skill struct type so it works for both attack and buff entries.
@@ -869,7 +895,8 @@ static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& 
 		bag.enemy = target_bl;
 		return (*sk.expanded)(bag);
 	}
-	return population_shell_skill_condition_ok(sd, sk.condition, sk.cond_value_num, sk.cond_sc_resolved, target_bl);
+	return population_shell_skill_condition_ok(sd, sk.condition,
+		pop_ally_hp_threshold(sd, sk.skill_id, sk.condition, sk.cond_value_num), sk.cond_sc_resolved, target_bl);
 }
 
 static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &skill_id, uint16 &skill_lv, block_list* target_bl = nullptr, bool ignore_rate = false, bool ally_only = false)
@@ -892,8 +919,8 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 	//    robin cursor advances past skills that are still on per-skill cooldown.
 	const t_tick now_tick = gettick();
 	const int min_sp_pct = battle_config.population_engine_shell_skill_min_sp_pct;
-	const uint32 sp_floor = (min_sp_pct > 0 && sd->status.max_sp > 0)
-		? static_cast<uint32>(sd->status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
+	const uint32 sp_floor = (min_sp_pct > 0 && sd->battle_status.max_sp > 0)
+		? static_cast<uint32>(sd->battle_status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
 		: 0u;
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 	const bool los_check   = battle_config.population_engine_shell_skill_los_check != 0;
@@ -1032,11 +1059,11 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 			continue;
 		}
 		const int sp_cost = skill_get_sp(sk.skill_id, sk.skill_lv);
-		if (sp_cost > sd->status.sp) {
+		if (sp_cost > sd->battle_status.sp) {
 			continue;
 		}
 		// SP-reserve floor: don't pick a skill that drops us below the configured floor.
-		if (sp_floor > 0 && static_cast<uint32>(sd->status.sp) - static_cast<uint32>(sp_cost) < sp_floor) {
+		if (sp_floor > 0 && static_cast<uint32>(sd->battle_status.sp) - static_cast<uint32>(sp_cost) < sp_floor) {
 			continue;
 		}
 		// LOS already validated once above for the whole rotation — no per-skill A* here.
@@ -1124,8 +1151,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 	// SP-reserve floor (same rationale as in the attack picker — buffs shouldn't strand
 	// the shell with no SP for offensive skills).
 	const int min_sp_pct = battle_config.population_engine_shell_skill_min_sp_pct;
-	const uint32 sp_floor = (min_sp_pct > 0 && sd->status.max_sp > 0)
-		? static_cast<uint32>(sd->status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
+	const uint32 sp_floor = (min_sp_pct > 0 && sd->battle_status.max_sp > 0)
+		? static_cast<uint32>(sd->battle_status.max_sp) * static_cast<uint32>(min_sp_pct) / 100u
 		: 0u;
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 
@@ -1163,7 +1190,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 			const int16_t skill_range = static_cast<int16_t>(
 				std::max(1, skill_get_range2(sd, bs.skill_id, use_lv, true)));
 			map_session_data *ally = population_shell_find_ally_target(
-				sd, bs.condition, bs.cond_value_num, bs.cond_sc_resolved, skill_range);
+				sd, bs.condition, pop_ally_hp_threshold(sd, bs.skill_id, bs.condition, bs.cond_value_num),
+				bs.cond_sc_resolved, skill_range);
 			if (!ally)
 				continue;
 			// Party-only skills (e.g. Devotion) are rejected server-side when party_id == 0.
@@ -1282,7 +1310,7 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		if (plv > 0 && plv < sk.skill_lv)
 			continue;
 		const int sp_cost = skill_get_sp(sk.skill_id, sk.skill_lv);
-		if (sp_cost > sd->status.sp)
+		if (sp_cost > sd->battle_status.sp)
 			continue;
 
 		// Per-skill cooldown gate.
@@ -1296,7 +1324,8 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		const int16_t skill_range = static_cast<int16_t>(
 			std::max(1, skill_get_range2(sd, sk.skill_id, sk.skill_lv, true)));
 		map_session_data *ally = population_shell_find_ally_target(
-			sd, sk.condition, sk.cond_value_num, sk.cond_sc_resolved, skill_range);
+			sd, sk.condition, pop_ally_hp_threshold(sd, sk.skill_id, sk.condition, sk.cond_value_num),
+			sk.cond_sc_resolved, skill_range);
 		if (!ally)
 			continue;
 		// Skip if the ally already carries the SC this skill would apply — without
