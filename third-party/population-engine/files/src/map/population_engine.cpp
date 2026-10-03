@@ -6494,12 +6494,76 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 // clears the equip bit, then pc_delitem removes the slot) and handed to the
 // owner via pc_additem. On inventory-full the piece is dropped at the
 // owner's feet instead of being lost.
+/// Every position something is worn in, given or own.
+static uint32_t pop_companion_worn_positions(const map_session_data *shell)
+{
+	uint32_t worn = 0;
+	for (int16 i = 0; i < MAX_INVENTORY; ++i) {
+		const struct item &slot = shell->inventory.u.items_inventory[i];
+		if (slot.nameid && slot.equip)
+			worn |= slot.equip;
+	}
+	return worn;
+}
+
+/// RAGNAROKMAC: after given gear comes back, put the companion's own gear back on in the
+/// positions it left empty. Gear a player trades in pushes the companion's own piece off into
+/// its bag (a Minstrel's Ballista, for an instrument), and nothing put it back, so the
+/// companion fought on with the slot empty. The pushed-off piece goes back on first. The bag is
+/// not persisted, so after a restart it may be gone: a position still empty then gets a piece
+/// from the job's gear set, the same picks spawn and job advance use.
+static void pop_companion_reequip_own(map_session_data *shell, uint32_t freed)
+{
+	for (int16 i = 0; i < MAX_INVENTORY && freed != 0; ++i) {
+		const struct item &slot = shell->inventory.u.items_inventory[i];
+		if (!slot.nameid || slot.equip || slot.amount <= 0)
+			continue;
+		const std::shared_ptr<item_data> id = itemdb_exists(slot.nameid);
+		if (id == nullptr || !(id->equip & freed))
+			continue;
+		uint32 pos = id->equip;
+		if (pos == EQP_ACC)
+			pos = (freed & EQP_ACC_L) ? EQP_ACC_L : EQP_ACC_R;
+		if ((pos & pop_companion_worn_positions(shell)) || pc_isequip(shell, i) != ITEM_EQUIP_ACK_OK)
+			continue;
+		if (pc_equipitem(shell, i, pos, false))
+			freed &= ~shell->inventory.u.items_inventory[i].equip;
+	}
+	if (freed == 0)
+		return;
+	std::shared_ptr<PopulationEngine> equipment = population_engine_db_for_shell(shell).find(shell->status.class_);
+	if (!equipment)
+		return;
+	auto refill = [shell, &freed](const std::vector<uint16_t> &pool, uint32 slot_pos, const char *label, uint32 force_pos) {
+		if (!(freed & slot_pos) || pool.empty())
+			return;
+		const uint16_t nameid = pool[rnd() % pool.size()];
+		const std::shared_ptr<item_data> id = itemdb_exists(nameid);
+		const uint32 pos = force_pos != 0 ? force_pos : (id != nullptr ? id->equip : 0);
+		if (pos == 0 || (pos & pop_companion_worn_positions(shell)))
+			return;
+		population_engine_shell_equip_item(shell, nameid, shell->status.char_id, label, force_pos);
+		freed &= ~pop_companion_worn_positions(shell);
+	};
+	refill(equipment->weapon_pool,      EQP_HAND_R,   "weapon",   0);
+	refill(equipment->shield_pool,      EQP_HAND_L,   "shield",   0);
+	refill(equipment->armor_pool,       EQP_ARMOR,    "armor",    0);
+	refill(equipment->shoes_pool,       EQP_SHOES,    "shoes",    0);
+	refill(equipment->garment_pool,     EQP_GARMENT,  "garment",  0);
+	refill(equipment->head_top_pool,    EQP_HEAD_TOP, "head_top", 0);
+	refill(equipment->head_mid_pool,    EQP_HEAD_MID, "head_mid", 0);
+	refill(equipment->head_bottom_pool, EQP_HEAD_LOW, "head_low", 0);
+	refill(equipment->acc_l_pool,       EQP_ACC_L,    "acc_l",    EQP_ACC_L);
+	refill(equipment->acc_r_pool,       EQP_ACC_R,    "acc_r",    EQP_ACC_R);
+}
+
 int population_engine_companion_return_gear(map_session_data *owner, map_session_data *shell, uint32_t slot_mask)
 {
 	if (!owner || !shell) return -1;
 	if (!population_engine_is_population_pc(shell->id)) return -1;
 
 	int returned = 0, kept_own = 0;
+	uint32_t freed = 0;
 	for (int16 i = 0; i < MAX_INVENTORY; ++i) {
 		struct item &slot = shell->inventory.u.items_inventory[i];
 		if (!slot.nameid || !slot.equip) continue; // equipped only
@@ -6514,10 +6578,14 @@ int population_engine_companion_return_gear(map_session_data *owner, map_session
 		}
 		// Unequip (flag 2 = ignore status-change blocks), then into the owner's bag or at
 		// their feet - see pop_companion_hand_back.
-		if (pop_companion_hand_back(owner, shell, i, LOG_TYPE_NPC))
+		const uint32_t worn = slot.equip;
+		if (pop_companion_hand_back(owner, shell, i, LOG_TYPE_NPC)) {
 			++returned;
+			freed |= worn;
+		}
 	}
 	if (returned > 0) {
+		pop_companion_reequip_own(shell, freed);
 		ShowInfo("population_engine: returned %d worn item(s) from companion %u to owner %u\n",
 			returned, shell->status.char_id, owner->status.account_id);
 		// Save both halves now. Left to the owner's autosave and the gear poll, a crash in
