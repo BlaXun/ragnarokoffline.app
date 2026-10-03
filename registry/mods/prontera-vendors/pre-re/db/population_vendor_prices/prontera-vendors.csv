@@ -1,6 +1,6 @@
 # prontera-vendors price table: what each item sells for, as a range each
 # stall rolls inside. Edit freely; the server reads it at startup, and
-# tools/build_vendors.py keeps existing rows. Id decides, Name is for you.
+# registry/tools/prontera-vendors/build_vendors.py keeps existing rows; Id decides.
 # 0,0 = no price yet: fill one in and re-run the generator, and the item
 # can then show up in the themes it fits.
 # Source: kro (RagMAYA, kRO vending), ragnastats (iRO, converted),
