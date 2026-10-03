@@ -1263,6 +1263,9 @@ const COMPANION_COLUMNS: &[(&str, &str)] = &[
     // v10: companions belong to a character, not an account. 0 on an existing row means
     // "saved before this"; the first character of that account to log in claims it.
     ("owner_char_id", "INT UNSIGNED NOT NULL DEFAULT 0"),
+    // v11: every worn piece in full -- refine, cards, options -- where the *_nameid
+    // columns keep only an id. NULL on an existing row, which recalls as it always did.
+    ("gear_detail", "TEXT NULL DEFAULT NULL"),
 ];
 
 /// Indexes added after the table first shipped, as (name, columns).
