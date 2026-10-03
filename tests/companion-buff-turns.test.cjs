@@ -43,3 +43,14 @@ test('an ally buff goes to the owner first, then players, then companions', () =
 		assert.doesNotMatch(body, /ctx->result = ally;/, `${cb} must not take the first ally`);
 	}
 });
+
+// A GM's @hide (OPTION_INVISIBLE) makes the owner untargetable: every buff aimed at them was refused,
+// and with the owner first in line nobody else got one either.
+test('an ally nobody can target is passed over', () => {
+	const body = fn('static bool pop_ally_untargetable(');
+	assert.match(body, /pc_isinvisible\(ally\)/);
+	assert.match(body, /OPTION_HIDE \| OPTION_CLOAK \| OPTION_CHASEWALK/);
+	for (const cb of ['static int32 pop_ally_hp_scan_cb(', 'static int32 pop_ally_status_scan_cb(',
+		'static int32 pop_ally_any_scan_cb('])
+		assert.match(fn(cb), /if \(pop_ally_untargetable\(ally\)\) return 0;/, cb);
+});

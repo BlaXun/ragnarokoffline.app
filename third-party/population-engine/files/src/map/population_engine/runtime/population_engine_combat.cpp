@@ -277,6 +277,14 @@ struct PopAllySearchCtx {
 	int               result_rank = 3;   ///< pop_ally_rank() of `result`; lower goes first
 };
 
+/// An ally no skill can be aimed at: a GM's @hide (OPTION_INVISIBLE), or hiding, cloaking or
+/// chase walk. rAthena refuses the cast (status_check_skilluse) with no message, so picking one
+/// spent every turn on a refusal; with the owner first in line, a hidden owner got all of them.
+static bool pop_ally_untargetable(const map_session_data *ally)
+{
+	return pc_isinvisible(ally) || (ally->sc.option & (OPTION_HIDE | OPTION_CLOAK | OPTION_CHASEWALK)) != 0;
+}
+
 /// Who a buff goes to first when several allies lack it: the companion's owner (0), then other
 /// players (1), then companions and AI players (2). The scan used to take whoever the map listed
 /// first, so in a party of companions the player was often buffed last, or not at all.
@@ -418,6 +426,7 @@ static int32 pop_ally_hp_scan_cb(block_list *bl, va_list ap)
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
 	if (ally->battle_status.max_hp == 0) return 0;
 	const int pct = static_cast<int>(ally->battle_status.hp * 100 / ally->battle_status.max_hp);
@@ -507,6 +516,7 @@ static int32 pop_ally_status_scan_cb(block_list *bl, va_list ap)
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
 	if (ctx->sc_resolved < 0) return 0;
 	const status_change *sca = status_get_sc(ally);
@@ -528,6 +538,7 @@ static int32 pop_ally_any_scan_cb(block_list *bl, va_list ap)
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
 	return pop_ally_offer(ctx, ally);
 }
