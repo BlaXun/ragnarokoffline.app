@@ -825,6 +825,32 @@ static void population_shell_seed_attack_skills_if_empty(map_session_data *sd);
 
 namespace { // reopen anon namespace for the rest of the file
 
+/// Skills that restore an ally's HP. rAthena marks no such flag, so they are named.
+static bool pop_skill_heals_ally(uint16 skill_id)
+{
+	switch (skill_id) {
+	case AL_HEAL: case AB_CHEAL: case AB_HIGHNESSHEAL: case AB_EPICLESIS:
+	case AM_POTIONPITCHER: case CD_DILECTIO_HEAL: case CD_REPARATIO:
+		return true;
+	default:
+		return false;
+	}
+}
+
+/// The HP% an ally_hp_below heal waits for. A companion's player sets two thresholds in the
+/// panel (cp_companion_persistence.heal_at / emergency_at); the skill database's own value
+/// only says which of the two a heal is - below 50 is an emergency heal (Epiclesis 30,
+/// Reparatio 40), anything else a routine one. Everything else keeps the database's value:
+/// an ambient shell, a skill that is not a heal, a condition that is not about ally HP.
+static uint8_t pop_ally_hp_threshold(const map_session_data* sd, uint16 skill_id, uint8_t condition, uint8_t cond_value)
+{
+	if (static_cast<PopSkillCondition>(condition) != PopSkillCondition::AllyHpBelow
+	    || sd->pop.companion_owner_account == 0 || !pop_skill_heals_ally(skill_id))
+		return cond_value;
+	const int16_t chosen = cond_value < 50 ? sd->pop.companion_emergency_at : sd->pop.companion_heal_at;
+	return static_cast<uint8_t>(cap_value(chosen, 1, 100));
+}
+
 /// Unified condition gate that picks between the flat-enum legacy path and the
 /// expanded boolean tree based on whether the entry has a tree attached.
 /// Templated over the skill struct type so it works for both attack and buff entries.
@@ -836,7 +862,8 @@ static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& 
 		bag.enemy = target_bl;
 		return (*sk.expanded)(bag);
 	}
-	return population_shell_skill_condition_ok(sd, sk.condition, sk.cond_value_num, sk.cond_sc_resolved, target_bl);
+	return population_shell_skill_condition_ok(sd, sk.condition,
+		pop_ally_hp_threshold(sd, sk.skill_id, sk.condition, sk.cond_value_num), sk.cond_sc_resolved, target_bl);
 }
 
 static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &skill_id, uint16 &skill_lv, block_list* target_bl = nullptr, bool ignore_rate = false, bool ally_only = false)
@@ -1106,7 +1133,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 			const int16_t skill_range = static_cast<int16_t>(
 				std::max(1, skill_get_range2(sd, bs.skill_id, use_lv, true)));
 			map_session_data *ally = population_shell_find_ally_target(
-				sd, bs.condition, bs.cond_value_num, bs.cond_sc_resolved, skill_range);
+				sd, bs.condition, pop_ally_hp_threshold(sd, bs.skill_id, bs.condition, bs.cond_value_num),
+				bs.cond_sc_resolved, skill_range);
 			if (!ally)
 				continue;
 			// Party-only skills (e.g. Devotion) are rejected server-side when party_id == 0.
@@ -1239,7 +1267,8 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		const int16_t skill_range = static_cast<int16_t>(
 			std::max(1, skill_get_range2(sd, sk.skill_id, sk.skill_lv, true)));
 		map_session_data *ally = population_shell_find_ally_target(
-			sd, sk.condition, sk.cond_value_num, sk.cond_sc_resolved, skill_range);
+			sd, sk.condition, pop_ally_hp_threshold(sd, sk.skill_id, sk.condition, sk.cond_value_num),
+			sk.cond_sc_resolved, skill_range);
 		if (!ally)
 			continue;
 		// Skip if the ally already carries the SC this skill would apply — without
