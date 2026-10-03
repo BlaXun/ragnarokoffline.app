@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { lines, companionLimit, areaShare, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX } = require('../electron/population-conf');
+const { lines, companionLimit, areaShare, companionHire, companionFee, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX } = require('../electron/population-conf');
 
 // The bounds the Settings slider exposes: 4 (the historic cap) to 11, because
 // rAthena's MAX_PARTY in our fork is 12 and a slot must stay free for real
@@ -63,4 +63,24 @@ test('each area share is written, clamped, and a save without them means 100', (
 	assert.equal(areaShare({ population_town_pct: -5 }, 'town'), 0);
 	assert.equal(areaShare({ population_town_pct: 'x' }, 'town'), 100);
 	assert.equal(areaShare({ population_town_pct: 33.4 }, 'town'), 33);
+});
+
+// Companions: free choice (0), hired from the panel (1) or from a recruiter (2),
+// and the fee. A save from before has none of these: free, 1000 zeny/level, no item.
+test('the hiring mode and fee are written, clamped, and default to free choice', () => {
+	const base = { population_enable: true, population_max: 1500, population_density: 100 };
+	const old = lines(base);
+	assert.match(old, /^population_engine_companion_hire: 0$/m);
+	assert.match(old, /^population_engine_companion_hire_zeny_per_level: 1000$/m);
+	assert.match(old, /^population_engine_companion_hire_item: 0$/m);
+	assert.match(old, /^population_engine_companion_hire_item_amount: 0$/m);
+	const npc = lines({ ...base, population_companion_hire: 'npc', population_companion_fee_zeny: 2500000,
+		population_companion_fee_item: 607, population_companion_fee_item_amount: 3 });
+	assert.match(npc, /^population_engine_companion_hire: 2$/m);
+	assert.match(npc, /^population_engine_companion_hire_zeny_per_level: 1000000$/m, 'clamped to the server maximum');
+	assert.match(npc, /^population_engine_companion_hire_item: 607$/m);
+	assert.match(npc, /^population_engine_companion_hire_item_amount: 3$/m);
+	assert.equal(companionHire({ population_companion_hire: 'panel' }), 1);
+	assert.equal(companionHire({ population_companion_hire: 'nonsense' }), 0);
+	assert.deepEqual(companionFee({ population_companion_fee_zeny: 0 }), { zenyPerLevel: 0, item: 0, amount: 0 });
 });

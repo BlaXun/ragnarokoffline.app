@@ -940,7 +940,18 @@ async function linkClientOwned(paths) {
 				env: { ...process.env, PATH: toolPath(), RAGNAROKMAC_STATE: stateDir() },
 				maxBuffer: 8 * 1024 * 1024,
 			},
-			(err, stdout, stderr) => (err ? reject(new Error(stderr || String(err))) : resolve(stdout))
+			(err, stdout, stderr) => {
+				if (err) return reject(new Error(stderr || String(err)));
+				// A link that succeeds can still have something to say about a
+				// mod: a table where the client never reads it, a name table with
+				// no ids. That goes to stderr, and was dropped here, so a mod that
+				// did nothing on screen gave no reason anywhere. The log viewer
+				// files these under App, as warnings.
+				for (const line of String(stderr).split(/\r?\n/)) {
+					if (line.trim()) appLog(`link-assets warning: ${line}`);
+				}
+				resolve(stdout);
+			}
 		);
 	});
 }
@@ -1007,6 +1018,14 @@ const SETTINGS_DEFAULTS = {
 	population_town_pct: 100,
 	population_field_pct: 100,
 	population_dungeon_pct: 100,
+	// Companions: 'free' (draft any job from the panel, as before), 'panel'
+	// (hired from the panel: your class tier, your level, for a fee) or 'npc'
+	// (the same, from a Companion Recruiter in town). The fee is zeny per level
+	// of the companion and/or an item (id, amount; 0 = none).
+	population_companion_hire: 'free',
+	population_companion_fee_zeny: 1000,
+	population_companion_fee_item: 0,
+	population_companion_fee_item_amount: 0,
 	// How many shells one player may recruit into their party at once. The
 	// server enforces this per recruiter (not per map), and rAthena's MAX_PARTY
 	// of 12 leaves a slot for real players, which is why the UI tops out at 11.

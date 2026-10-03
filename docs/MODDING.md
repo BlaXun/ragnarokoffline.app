@@ -562,7 +562,7 @@ through a table, and a mod adds rows to those tables the same way:
 |---|---|---|
 | Headgear | `accname.lub` (+ `accessoryid.lub` for named ids) | `data/sprite/accessory/남/남_<name>.spr`, `여/여_<name>.spr` |
 | Garments | `spriterobename.lub` (+ `spriterobeid.lub`) | `data/sprite/robe/…` |
-| Weapons | `weapontable.lub` | `data/sprite/human/…` |
+| Weapons | `weapontable.lub` | one per class: see [A new weapon look](#a-new-weapon-look) |
 
 ```lua
 AccNameTable = {
@@ -575,6 +575,211 @@ Korean. They name the client's own sprite files byte for byte; a UTF-8 copy
 names a file that isn't there and the item is invisible on you. An ASCII
 name for your own art has no such problem. The sex folders and file prefix
 (`남`, `여`) have no ASCII alias yet.
+
+### Which id to use
+
+Every NPC and monster has a number, its **view id**, and the server and the
+client each check it against fixed ranges. An id outside them still loads, but
+the thing is invisible or drawn as something else:
+
+| What | Server accepts (rAthena) | Client draws it as | Use for your own |
+|---|---|---|---|
+| NPC | 46–~129, 401–999, 10001–19999 (`npcdb_checkid`, `src/map/npc.hpp`) | an NPC, from `data/sprite/npc/`, for 46–129, 401–999 and 10001–**19998** (`DB.isNPC`) | **19000–19998**: official NPCs stop around 13000 |
+| Monster | 1001–3999 and 20020–31999 (`mobdb_checkid`, `src/map/mob.cpp`) | a monster, from `data/sprite/몬스터/` (any id that is not a player, NPC, homunculus or mercenary) | **25000–31999**: official monsters stop around 22300 |
+| Player jobs | 0–44, 4001–4361 | a player | — |
+| Homunculus / mercenary | 6001–6052 | from `data/sprite/homun/`, the human folder | — |
+
+Two consequences worth knowing:
+
+- An NPC's sprite comes from `data/sprite/npc/` only if its id is an NPC id.
+  Give an NPC script a monster id (`25001,{`) and the server accepts it as a
+  monster's look, and the client draws it from the **monster** folder.
+- Ids 4000–20019 that aren't NPCs are rAthena's clone range; don't use them for
+  monsters.
+
+### A new NPC with its own sprite
+
+Three files in your mod, plus the art. The worked example is
+[`examples/mods/custom-npc-sprite`](../examples/mods/custom-npc-sprite): an NPC
+in Prontera drawn from a PNG.
+
+```
+my-mod/
+├── mod.json
+├── npc/guide.txt                    the NPC: where it stands, what it says
+├── System/jobname.lub               id 19500 → sprite name RO_GUIDE
+└── data/sprite/npc/ro_guide.spr     the pictures
+    data/sprite/npc/ro_guide.act     how to show them
+```
+
+**1. Pick an id** from the NPC column above: say `19500`.
+
+**2. Name its sprite** in `System/jobname.lub`, with only your rows:
+
+```lua
+JobNameTable = {
+	[19500] = "RO_GUIDE",
+}
+```
+
+The app adds your rows to the client's own table, so nothing else changes. The
+client lower-cases the name and loads `data/sprite/npc/ro_guide.spr` and
+`.act`. A numeric key is enough; you don't need `npcidentity.lub` for an NPC.
+To reuse a stock NPC's look under a new id instead, put its name here
+(`"4_F_KAFRA1"`) and skip the art.
+
+**3. Make the art**: `data/sprite/npc/ro_guide.spr` and `.act`. See the next
+section.
+
+**4. Place the NPC** in `npc/guide.txt`, with the id as its sprite:
+
+```
+prontera,156,197,4	script	Ro the Guide	19500,{
+	mes "[Ro the Guide]";
+	mes "Hello! I am drawn with a sprite of my own.";
+	close;
+}
+```
+
+Fields are separated by **tabs**. `4` is the direction it faces, in
+rAthena's numbering: 0 north, 2 west, 4 south (towards the player), 6 east.
+
+**5. Install and look.** Install the mod (Settings → Mods), restart the
+server, and walk there. If the name floats with no body, see "When it doesn't
+show" below.
+
+### Making the .spr and .act
+
+A Ragnarok sprite is two files with the same name:
+
+- **`.spr`**: the pictures. Each frame is a palette-indexed image of up to 256
+  colours. Colour 0 is the transparent background, magenta in the stock files.
+- **`.act`**: the animation. A list of actions, each one an animation for one
+  facing direction. NPCs use the first eight actions: standing, one per
+  direction (0 south, 1 south-west, … 7 south-east). Monsters also use walk,
+  attack, hurt and die, eight directions each.
+
+**From a PNG**, with no other tools, use `scripts/mksprite.py` in this
+repository (Python 3, no packages):
+
+```
+python3 scripts/mksprite.py guide.png --out my-mod/data/sprite/npc/ro_guide
+python3 scripts/mksprite.py frame1.png frame2.png frame3.png --delay 200 --out my-mod/data/sprite/npc/ro_guide
+python3 scripts/mksprite.py my_monster.png --monster --out my-mod/data/sprite/monster/my_monster
+```
+
+- Use a transparent background. Pixels under half opacity become the
+  background.
+- The bottom edge of the picture is where the NPC stands, and it is centred
+  on its cell.
+- Every direction shows the same picture; that suits most NPCs.
+- Several PNGs play as an animation, `--delay` milliseconds per frame, 150 by
+  default.
+- Up to 255 colours. Pixel art comes through exactly; a picture with more
+  colours is reduced, so flat colours look best.
+- The stock NPCs are about 40–60 px wide and 70–110 px tall. The example is
+  40×76.
+
+**With an editor**, for different art per direction or per action, use the
+community's **Act Editor** (Tokeiburu's, "ActEditor" on GitHub). It opens a
+`.spr` and `.act` pair, imports PNGs as frames, and edits each action and
+direction. The easy start is a file from `mksprite.py`, or a stock NPC's pair.
+Get a stock pair from your client's `data.grf` with **GRF Editor** (also by
+Tokeiburu): they're under `data/sprite/npc/`. Save under your own name; don't
+overwrite the stock file unless you mean to replace that NPC everywhere.
+
+### When it doesn't show
+
+| What you see | Why |
+|---|---|
+| The name, no body | The client didn't find the sprite. **Settings → Tools → Log viewer** names the file it asked for. Check the folder (`data/sprite/npc/`), and the name in lower case, matching `jobname.lub`. |
+| A different NPC or a Poring | The id isn't in the client's NPC range, so it was drawn as a monster, or the `jobname.lub` row is missing. |
+| Nothing at all, and `npc_parseview: Invalid NPC constant` in the map log | The sprite field isn't a number or a known constant. |
+| The old picture after you changed the art | The client caches sprites by file name. Restart the app; changing mods clears the cache, editing a file inside an installed mod may not. |
+
+### A new weapon look
+
+A weapon is not one picture. It is drawn as a layer over the character, frame
+for frame with the body's own attack, walk and sit animations. So each weapon
+look is **a sprite per class line and sex**, in that class's own folder:
+
+```
+data/sprite/인간족/로그/로그_여_단검.spr     Rogue, female, dagger
+data/sprite/인간족/기사/기사_남_검.spr       Knight, male, sword
+```
+
+Each class's sprite is shaped to that class's own motions. Three ways to give
+an item a look, from least work to most:
+
+**1. Look like a stock weapon.** No art: in the item's `System/itemInfo.lua`
+entry, set `ClassNum` to that weapon type's look. 1 is a dagger, 2 a sword, 4 a
+spear, 6 an axe, 8 a mace, 10 a rod, 11 a bow, and so on (the list is
+`WeaponType.js` in roBrowserLegacy). An official look's id works too: 31–102 in
+the client's `weapontable.lub`, e.g. Main Gauche, Lacma.
+
+**2. A recoloured stock weapon, for every class at once.** `scripts/mkweapon.py`
+takes one stock weapon type's sprites for every class from your running game,
+recolours them, and writes them into your mod with a new name. Only the
+colours change, so every class's animation stays right:
+
+```
+python3 scripts/mkweapon.py --type shortsword --name jade --look 5001 \
+    --hue 150 --saturation 1.3 --mod my-mod
+```
+
+- `--type`: the stock type to start from: `shortsword` (dagger), `sword`,
+  `twohandsword`, `spear`, `axe`, `mace`, `rod`, `bow`, `knukle`, `instrument`,
+  `whip`, `book`, `katar`, `gun_handgun`, … (`--help` lists them).
+- `--name`: your look's name, in ASCII. Files are `<class>_<sex>_<name>.spr`.
+- `--look`: the new look id, which items use as `ClassNum`. **Use 103 or
+  more**; 0–102 are official. This guide uses 5000–5999. It needs app 1.4.7 or
+  later, whose client draws a mod's looks above 102 (roBrowserLegacy#61).
+- `--hue` turns the colour wheel by that many degrees. `--saturation` and
+  `--lightness` scale those (1.0 = unchanged).
+
+It writes the sprites under `data/sprite/human/`, the app's ASCII name for
+`인간족`. One pair goes in per class and sex that has that weapon type: 52 for a
+dagger with the iRO data. It also writes `System/weapontable.lub`:
+
+```lua
+WeaponNameTable = {
+	[5001] = "_jade",          -- the sprite name: <class>_<sex>_jade.spr
+}
+Expansion_Weapon_IDs = {
+	[5001] = 1,                -- attacks like a dagger (WeaponType 1)
+}
+```
+
+Then the item. In `db/item_db.yml` leave **`View:` out**. Without it the
+server sends the item's own id, and the client reads `ClassNum` from
+`itemInfo`. With `View: 5001` the server sends 5001 itself, which the client
+reads as item 5001, a stock headgear:
+
+```lua
+-- System/itemInfo.lua
+[50101] = {
+	identifiedDisplayName = "Jade Dagger",
+	identifiedResourceName = "나이프",   -- icon and dropped picture: the Knife's
+	-- ...
+	ClassNum = 5001
+}
+```
+
+The sprites are recoloured copies of your client's own, so don't put them in a
+public mod repository. A mod for others can ship `weapontable.lub`, the item
+and the command line, and let each player run it. The worked example does
+this: [`examples/mods/custom-weapon-look`](../examples/mods/custom-weapon-look).
+
+**3. New art.** Same `weapontable.lub` and item as in 2, but you draw each
+class's sprite yourself. Start from the stock `.act` for that class and weapon
+type, so the frames line up. Open it in Act Editor and redraw the frames, one
+class at a time. A class you don't make a sprite for holds nothing: the weapon
+is invisible on that class.
+
+**Checking it:** `@item 50101`, equip it, and attack something. A dagger is
+small and only clearly visible mid-swing. If the character holds nothing, the
+Log viewer names the sprite the client asked for. Check the class folder, the
+sex (`남` male, `여` female) and `_<name>` against your `weapontable.lub`.
 
 ### Checking your work
 
@@ -1121,6 +1326,44 @@ with colour 0 transparent. Start from one of the job's existing colours.
 rebuilt from nothing every time the app starts — which is why files put there
 keep disappearing. A mod's `data/` is the place that lasts.
 
+### Signboards: icons over NPCs
+
+The backpack over a Kafra and the red potion over a tool dealer are rows of one
+table, `data/luafiles514/lua files/SignBoardList.lub`. A mod's copy of that file
+is **added to the stock one, not laid over it**: ship one holding only your
+signs, and every Kafra keeps its icon.
+
+```lua
+-- my-mod/data/luafiles514/lua files/SignBoardList.lub, plain text
+SignBoardList = {
+	{ "prontera", 160, 185, 0, 1, "information\\over_nmtrade.bmp" },
+	{ "geffen", 120, 66, 10, 3, "information\\over_nmtrade.bmp", "Buying Drops", "#0x00FFFFFF" },
+}
+```
+
+Each row is map, x, y, height, type, icon, and for a board a caption and a
+colour. Type 1 is an icon on its own, as over a Kafra; any other type (the
+stock table uses 3) is a board with the icon and the caption. The client
+ignores the colour. The icon is a path under `data/texture/유저인터페이스/`
+and can be any image there — the stock ones are `information\over_kafra.bmp`,
+`over_store.bmp` (the potion), `over_nmtrade.bmp` (a bag of zeny),
+`over_weaponshop.bmp`, `over_armorshops.bmp`, `over_inn.bmp`, `over_guide.bmp`
+and so on. Or ship your own image there and name it.
+
+- **A sign belongs to a cell, not to an NPC.** Use your NPC's own map and
+  coordinates. A sign on a cell the stock table already has replaces that one,
+  which is also how a mod changes a stock icon. The client ignores the height
+  as well, and puts every sign at the same distance above the ground.
+- **Mods load in order**, after the stock table, and the last sign on a cell
+  wins. The app copies each mod's table aside as
+  `SignBoardList-<mod>.lub` and lists them in the client's
+  `customSignBoardList`.
+- **Write it in ASCII.** The client reads captions in its own codepage, as it
+  does quest text.
+- **Only that one path is read.** A `SignBoardList.lub` in `System/`, or
+  anywhere else under `data/`, is copied like any other file and changes
+  nothing on screen, and the log says so.
+
 ### The client caches, hard
 
 There are two caches between your file and the screen, and they fail
@@ -1401,7 +1644,9 @@ it, so a mod's entry wins over the stock one — which is how a mod renames an
 existing item — and a later mod wins over an earlier one, as in `db/`.
 
 A table anywhere else — `System/LuaFiles514/`, `data/luafiles514/` — is not
-read by the client, and the log says so. Editing the copy under
+read by the client, and the log says so: **Settings → Tools → Log viewer**,
+under *App*, as a `link-assets warning` each time the app starts or a mod is
+switched on or off. Editing the copy under
 `state/assets/System/` does not last: that folder is rebuilt on every start.
 
 See [`examples/mods/custom-item`](../examples/mods/custom-item).

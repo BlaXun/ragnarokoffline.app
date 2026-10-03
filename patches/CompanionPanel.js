@@ -135,6 +135,9 @@ function refreshRoster() {
 	_forceRedraw = true;
 	_renderStatus('asking the server…');
 	talk('@companion list raw', false);
+	// The hiring rules decide what the Summon tab offers; asked with the roster
+	// so a change in Settings shows the next time the panel is opened.
+	talk('@companion terms', false);
 }
 
 /// Put a one-line status under the Party tab heading, so pressing Refresh always
@@ -227,6 +230,45 @@ function parseSkillLine(text) {
 		level: parseInt(p[4], 10) || 0
 	});
 	return true;
+}
+
+/**
+ * The hiring rules (Settings -> Population -> Companions), from @companion terms:
+ *   @CPTERMS|mode|tier|zeny|item id|item amount|item name|jobs (':'-joined)
+ * mode 0 = free choice (any job, as before), 1 = hired from this panel, 2 = hired
+ * from a Companion Recruiter in town. null until the server has answered.
+ */
+let _terms = null;
+
+function parseTermsLine(text) {
+	const body = rosterBody(text);
+	if (body === null || !body.startsWith('@CPTERMS')) {
+		return false;
+	}
+	const p = body.split('|');
+	_terms = {
+		mode: parseInt(p[1], 10) || 0,
+		tier: parseInt(p[2], 10) || 0,
+		zeny: parseInt(p[3], 10) || 0,
+		item: parseInt(p[4], 10) || 0,
+		amount: parseInt(p[5], 10) || 0,
+		itemName: p[6] || '',
+		jobs: (p[7] || '').split(':').filter(Boolean)
+	};
+	_render();
+	return true;
+}
+
+/** What hiring costs, as words: "12,000 zeny and 1 Yggdrasil Berry", or ''. */
+function _feeText(t) {
+	const parts = [];
+	if (t.zeny > 0) {
+		parts.push(`${t.zeny.toLocaleString()} zeny`);
+	}
+	if (t.item > 0 && t.amount > 0) {
+		parts.push(`${t.amount} ${t.itemName || 'item #' + t.item}`);
+	}
+	return parts.join(' and ');
 }
 
 function parseRosterLine(text) {
@@ -477,10 +519,32 @@ function _drawSummon() {
 
 	const hint = document.createElement('div');
 	hint.className = 'hint';
-	hint.textContent = 'Draft a new companion of any job. It joins your party at once.';
 	page.append(hint);
 
-	JOB_TIERS.forEach(([tier, jobs]) => {
+	// Hired companions (Settings -> Population -> Companions): your own class
+	// tier, at your level, for a fee -- here, or from a recruiter in town.
+	const t = _terms;
+	if (t && t.mode === 2) {
+		const fee = _feeText(t);
+		hint.textContent = 'Companions are hired from a Companion Recruiter, beside the healer in each town.'
+			+ (fee ? ` The fee for you is ${fee}.` : '')
+			+ ' Your saved companions can still be called back from the Party tab.';
+		return;
+	}
+	let tiers = JOB_TIERS;
+	if (t && t.mode === 1) {
+		const fee = _feeText(t);
+		hint.textContent = 'Hire a companion of your own class tier, at your level. It joins your party at once.'
+			+ (fee ? ` Fee: ${fee}.` : '');
+		tiers = t.jobs.length ? [['Your tier', t.jobs]] : [];
+		if (!t.jobs.length) {
+			hint.textContent += ' There is nobody to hire for your tier right now.';
+		}
+	} else {
+		hint.textContent = 'Draft a new companion of any job. It joins your party at once.';
+	}
+
+	tiers.forEach(([tier, jobs]) => {
 		const h = document.createElement('h4');
 		h.textContent = tier;
 		page.append(h);
@@ -859,7 +923,7 @@ function installChatHook() {
 	}
 	const original = ChatBox.addText;
 	ChatBox.addText = function addText(text, ...rest) {
-		if (parseSkillLine(text) || parseRosterLine(text)) {
+		if (parseSkillLine(text) || parseTermsLine(text) || parseRosterLine(text)) {
 			return;
 		}
 		return original.call(this, text, ...rest);

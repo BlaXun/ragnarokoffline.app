@@ -28,47 +28,6 @@
       "files": []
     },
     {
-      "name": "autoloot",
-      "version": "1.0.0",
-      "author": "BlaXun",
-      "description": "An Autoloot window in game: loot every drop at or below a rarity you choose, whole item types such as cards, and a list of exact items -- with a monster check that shows what you would pick up. Works even where @autoloot is kept for GMs, and your item list is kept across logins.",
-      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/autoloot",
-      "tags": [
-        "drops",
-        "loot",
-        "quality-of-life"
-      ],
-      "icon": "",
-      "screenshots": [],
-      "requires": {
-        "mods": [],
-        "era": "any",
-        "app": ">=1.4.5"
-      },
-      "files": [
-        {
-          "path": "README.md",
-          "sha256": "464089afc91056b178445a8a5c487a5d63cbc616e29005f9d5fdd366a7b02975"
-        },
-        {
-          "path": "client/index.js",
-          "sha256": "21d44500d5fc281c643d903f1980805859fa558438b576c9463eb6753d4ceda1"
-        },
-        {
-          "path": "db/when/longer_list/extension_db.yml",
-          "sha256": "fa4570127528d396a894d6e3e9ef3fc84330a005ad33f7c670bc31840fa020b4"
-        },
-        {
-          "path": "mod.json",
-          "sha256": "7a2935f241aa85c571c29c9f3cb4ab002bed181685665ce7e78f0cb02b3f2b7e"
-        },
-        {
-          "path": "npc/autoloot.txt",
-          "sha256": "5f6f0cba34be281738b65560c0374e79aa135092c58c9802395a457da0148b8b"
-        }
-      ]
-    },
-    {
       "name": "blaze-shield",
       "version": "1.0.0",
       "author": "BlaXun, Ragnarok Offline",
@@ -181,9 +140,9 @@
     },
     {
       "name": "exp-card",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "BlaXun",
-      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. A level 10 card grants roughly 5% of the exp a level-98 character needs for the next level, and each lower level is about half the one above it. Streamlines offline levelling without touching per-mob drop tables.",
+      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. At 1x, a level 10 card grants roughly 5% of the exp a level-98 character needs for the next level, and each lower level is about half the one above it; card exp scales with the server's Base/Job EXP rates. Streamlines offline levelling without touching per-mob drop tables.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/exp-card",
       "tags": [
         "drops",
@@ -203,15 +162,15 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "41bf812d670f32ad1641f1e1b171a20ed33fb5bd94e2f9604f42e2667a1fc008"
+          "sha256": "8a92b7ab55ec3b76f42385c2ecaa6a6c737f7b1620f0605e7ad56524111e05e9"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "65998dffa84ae55470b28231d7f1d990ffbc50b72196e263ecb4fc712feb133e"
+          "sha256": "b105f6a21ab7f12bb67c16b87b928275bac605850b39707f827c73eec8a8fa8a"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "20b3d15e771766dfe8ad32d2277c4eb358f8456997760d7f3f34783868a14d9f"
+          "sha256": "fb5d7eb528238a877dac9be5d5c0125efb6478c378cfc6b83cc8e70e44b2026d"
         },
         {
           "path": "images/exp-card.png",
@@ -223,7 +182,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "4e7d04f78ecc9dc979f8966abb31e24f828131a01d7c55a3a99d9d7b26eb58e7"
+          "sha256": "952e56168647401194448832c4ffbdb464ee959d0d87ec88acfc1800bc93cdca"
         },
         {
           "path": "npc/exp_card.txt",
@@ -249,7 +208,7 @@
       "requires": {
         "mods": [],
         "era": "any",
-        "app": ">=1.4.5"
+        "app": ">=1.4.6"
       },
       "files": [
         {
@@ -261,16 +220,16 @@
           "sha256": "da89ad3549cec30290569a052ba0c746410b8f2f3564b2ab27511e5ae2ecaf6d"
         },
         {
-          "path": "icon.png",
+          "path": "images/icon.png",
           "sha256": "bc7d761785830ca1dfa14f0581be8dfa41a145ff0b8cf1209e382343fbba5cb1"
         },
         {
-          "path": "map-spawn-rate.png",
+          "path": "images/map-spawn-rate.png",
           "sha256": "1c2fed692d5e087cf9306c2d336b0c6268ce27f7b6f3b0958058aaa93703e725"
         },
         {
           "path": "mod.json",
-          "sha256": "e5be571af55281d650b2df86b1e14a071c2e792babc544c669b50e81aac83dbf"
+          "sha256": "5a0822a0c4e7761e7a7c012799c6f8d56a3a0c8dbe31d7d22b47b550638adea4"
         },
         {
           "path": "npc/map_spawn_rate.txt",
@@ -282,7 +241,7 @@
         },
         {
           "path": "settings/maps.json",
-          "sha256": "77defbaba392a76d5f9a5d49df25fdba19bdcf4483ce685e0587ddb46fd1b5de"
+          "sha256": "59a8c09cdbcf23e8f870a484f010087644384cb0fc5be73438cb9969dd9071fc"
         }
       ]
     },
@@ -327,7 +286,7 @@
     },
     {
       "name": "prontera-vendors",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "BlaXun",
       "description": "A living player market on Prontera's main road. Fake players run real vending stalls on the inner sidewalks (cards, weapons and armor by class, refined gear, potions, gems, pet eggs, loot from every dungeon and more) and real buying stores on the outer sidewalks that buy your ores, cards, boxes and loot. Prices follow a real server's market (kRO), stalls undercut each other and change as their owners come and go, and everything is tunable in Settings. Needs the population engine switched on.",
       "homepage": "",
@@ -351,19 +310,19 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "ee09bced2a86795edb1c9890317287a7e2bb739f07ae2d6208c26277f324a51b"
+          "sha256": "48c2f76a22e749d49d56d199d1b478a5d6d8b9b6c2002f9c0fc3308305f354e8"
         },
         {
           "path": "db/population_vendor_pop.yml",
-          "sha256": "7acd8f4e1070c803ebc6f3bce1d6a6ee68ec9255b433b86f5e7fab531fee66b2"
+          "sha256": "19a85098e167ef933a637a81a04b20250b9dca791e2e42c666ebfa259cf7e031"
         },
         {
           "path": "db/population_vendor_prices/prontera-vendors.csv",
-          "sha256": "193b3b5de0150d3f53f9b8698cbe293c9e87e1c734e36aa20bd9c3a5c4f368e8"
+          "sha256": "0f0ebc588f375a94f5847c817c3d4086f7f5c9e4d115c85390dc1a80cbc340c3"
         },
         {
           "path": "db/population_vendors.yml",
-          "sha256": "a8d712e72a8eb60b6388e85cc4bdf4a5750d2ac8ce11a1dca361c264e3e6c129"
+          "sha256": "02421e972646a725ed6879bba29b21c71f8a16aa712cda4612b9bf0b435ea308"
         },
         {
           "path": "images/icon.png",
@@ -375,7 +334,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "47a038e1b81d5452fa35139ba3d18be7eafc5e84d4ea6eb60bda27a25682ed0b"
+          "sha256": "dccaeb32fab5c841accfb5f3d6c64051eb5a513f3c0c6dde92e00212512b4978"
         },
         {
           "path": "npc/prontera-vendors-newer.txt",
@@ -387,15 +346,15 @@
         },
         {
           "path": "pre-re/db/population_vendor_pop.yml",
-          "sha256": "cb25efb97078a344bc17530aa297564a41d73498326ab265148ffc3c4cedec27"
+          "sha256": "94d4d4374a5f3003cf517fe0797ea445871a66894e32455c7c5e411db5bf0800"
         },
         {
           "path": "pre-re/db/population_vendor_prices/prontera-vendors.csv",
-          "sha256": "aec97a8bab5e0ee5cacdf9493539d2e0f62a833ff91ce2884f306d3d30a9140f"
+          "sha256": "655f3b987f44ddf2fc0d87312ccc2dbcd2c05a17b0477a21b33aed3112b39501"
         },
         {
           "path": "pre-re/db/population_vendors.yml",
-          "sha256": "0a250ec29a4a1262c6a0ebcac356c8a291b83ce4420ef882459a5bb13fe791b8"
+          "sha256": "efa841259ae38a63d34531ee4e44b8648009777427e68eab60b5eb5ca3e1eb0c"
         }
       ]
     },
