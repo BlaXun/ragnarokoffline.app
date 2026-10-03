@@ -125,7 +125,7 @@ window with four tabs.
 | Tab | What it does |
 | --- | --- |
 | Party | The saved companion list, with each one's job, level and state. Set duty, summon, bench, favorite, or refresh. |
-| Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th. When companions are hired (below), only your own tier's jobs, with the fee. |
+| Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th, as Male, Female or Random. When companions are hired (below), only your own tier's jobs, with the fee. |
 | Battle | Stance (Free / Standard / Hold), Taunt and Recall, and the healer thresholds. |
 | Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it. Gear you gave that a new job cannot wear is handed back when it advances. |
 
@@ -194,8 +194,16 @@ and then `@CPEND|count`, which is how the Companions window draws its rows:
 ## Current scope
 
 - Companions can be recruited from the existing Population Engine population, or
-  **drafted directly** (`@companion draft <job>`, or the Summon tab) without
-  hunting the world for a matching character.
+  **drafted directly** (`@companion draft <job> [name] [m|f]`, or the Summon tab)
+  without hunting the world for a matching character.
+- A drafted companion's sex is yours to choose: `m`, `f`, `male` or `female`, as
+  the first or the last word after the job (`@companion draft Knight f Aria` or
+  `@companion draft Knight Aria f`). Leave it out and it is either, at random. A
+  job that is only ever one sex keeps it: Bard, Clown, Minstrel, Troubadour and
+  Kagerou are male; Dancer, Gypsy, Wanderer, Trouvere and Oboro are female. The
+  Summon tab marks those jobs ♂ or ♀. The sex is saved with the companion, so it
+  stays the same when you call it back. A Companion Recruiter does not ask; its
+  hires are either sex.
 - Classes, equipment, skills, looks, names, and ambient chat come from the
   editable YAML files in `third-party/population-engine/files/db/`.
 - Combat mode, duty and the healer thresholds are stored per companion and
