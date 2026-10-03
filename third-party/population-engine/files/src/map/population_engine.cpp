@@ -3983,7 +3983,8 @@ void population_engine_companion_skill_list(uint32_t owner_account, const char* 
 /// name-clash check. Nothing in the table enforces it - the only unique key is
 /// shell_index - so a duplicate would leave two rows that every by-name command
 /// (summon, favorite, gear...) resolves to whichever MariaDB returns first.
-uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job_id, int quality, const char *name_hint)
+uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job_id, int quality, const char *name_hint,
+	char chosen_sex)
 {
 	if (!owner || !owner->state.active) return 0;
 	if (!job_db.exists(job_id)) return 0;
@@ -4008,7 +4009,11 @@ uint32_t population_engine_companion_draft(map_session_data *owner, uint16_t job
 	// spawn_shell takes the sex as 'M' or 'F'. This was rnd() % 2 - 0 or 1, never 'M' - so
 	// every hired companion came out female, a Bard drawn as a Dancer. Chosen the way an
 	// ambient spawn chooses: the job's own sex, then the profile's, else either.
+	// RAGNAROKMAC: a sex the player chose (@companion draft <job> m|f) comes after the
+	// job's own and before the profile's - a Bard is still male, whatever was asked.
 	char sex = get_job_required_sex(job_id);
+	if (sex == '\0' && (chosen_sex == 'M' || chosen_sex == 'F'))
+		sex = chosen_sex;
 	if (sex == '\0')
 		sex = prof->sex_override >= 0 ? (prof->sex_override ? 'M' : 'F') : ((rnd() % 2) ? 'M' : 'F');
 	const uint8_t hair = static_cast<uint8_t>(MIN_HAIR_STYLE + rnd() % (MAX_HAIR_STYLE - MIN_HAIR_STYLE + 1));
@@ -4204,13 +4209,13 @@ static bool pop_hire_allowed(map_session_data *owner, uint16_t job_id, std::stri
 /// when a recruiter asks. Returns the new shell's index, or 0 with `msg` saying
 /// why. On success `msg` says what was paid.
 uint32_t population_engine_companion_hire(map_session_data *owner, uint16_t job_id,
-	const char *name_hint, bool from_npc, std::string &msg)
+	const char *name_hint, bool from_npc, std::string &msg, char sex)
 {
 	if (!owner)
 		return 0;
 	const int mode = population_engine_companion_hire_mode();
 	if (mode == 0) {
-		const uint32_t made = population_engine_companion_draft(owner, job_id, 1, name_hint);
+		const uint32_t made = population_engine_companion_draft(owner, job_id, 1, name_hint, sex);
 		if (made == 0)
 			msg = "Could not draft that companion (see map-server console).";
 		return made;
@@ -4223,7 +4228,7 @@ uint32_t population_engine_companion_hire(map_session_data *owner, uint16_t job_
 		return 0;
 
 	g_pop_draft_level = static_cast<int16_t>(owner->status.base_level);
-	const uint32_t made = population_engine_companion_draft(owner, job_id, 1, name_hint);
+	const uint32_t made = population_engine_companion_draft(owner, job_id, 1, name_hint, sex);
 	g_pop_draft_level = 0;
 	if (made == 0) {
 		msg = "Could not draft that companion (see map-server console).";
@@ -8100,6 +8105,10 @@ static char get_job_required_sex(uint16_t job_id) {
     
     // Gender-neutral jobs
     return '\0';
+}
+
+char population_engine_job_required_sex(uint16_t job_id) {
+    return get_job_required_sex(job_id);
 }
 
 /// Derive weapon/shield sprites from inventory (status.weapon is weapon_type, not a sprite id).
