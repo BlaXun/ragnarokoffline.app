@@ -1209,6 +1209,10 @@ static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
 			continue;
 		if (std::find(required.begin(), required.end(), own_sc) != required.end())
 			continue;
+		// A stance has no duration (a Star Emperor's), so its cast is never recorded below; it
+		// lasts until another ends it, and only its caster can take it up, so holding it is enough.
+		if (skill_get_time(own.skill_id, skill_get_max(own.skill_id)) <= 0)
+			return true;
 		for (const s_pe_active_buff &ab : sd->pop.active_buffs)
 			if (ab.skill_id == own.skill_id && ab.expires_at > now)
 				return true;
