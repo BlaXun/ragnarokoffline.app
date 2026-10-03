@@ -1216,7 +1216,17 @@ static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
 	return false;
 }
 
-static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tick current_tick)
+/// A row that answers someone's HP: a heal or shield for a hurt ally (ally_hp_below) or for the
+/// caster itself (hp_below). These are the rescue rows, tried before anything else each tick.
+static bool pop_row_is_rescue(uint8_t condition)
+{
+	const PopSkillCondition c = static_cast<PopSkillCondition>(condition);
+	return c == PopSkillCondition::AllyHpBelow || c == PopSkillCondition::HpBelow;
+}
+
+/// `rescue_only`: just the rows gated on someone's HP (pop_row_is_rescue).
+static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tick current_tick,
+	bool rescue_only = false)
 {
 	if (!sd || sd->pop.buff_skills.empty())
 		return false;
@@ -1232,6 +1242,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 
 	for (const PopulationShellBuffSkill &bs : sd->pop.buff_skills) {
+		if (rescue_only && !pop_row_is_rescue(bs.condition))
+			continue;
 		// YAML-authoritative: when the class doesn't have the skill learned
 		// (e.g. Monk/Champion using TF_HIDING), use the YAML level directly.
 		const uint16_t plv = pc_checkskill(sd, bs.skill_id);
@@ -1383,7 +1395,10 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 /// Picks the skill with the highest priority that passes conditions, finds the best
 /// matching ally using population_shell_find_ally_target, and casts on them.
 /// Returns true if a skill was dispatched (caller should set skill_cd and return).
-static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick current_tick)
+/// `rescue_only`: just the rows gated on an ally's HP, and without the Rate roll - a heal for a
+/// party member about to die is not left to chance.
+static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick current_tick,
+	bool rescue_only = false)
 {
 	if (!sd || sd->pop.attack_skills.empty())
 		return false;
@@ -1394,7 +1409,9 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		const PopulationShellCombatSkill &sk = sd->pop.attack_skills[idx];
 		if (!sk.active || sk.skill_id == 0 || sk.target != 2)
 			continue;
-		if (sk.rate < 10000 && static_cast<uint16_t>(rnd() % 10000) >= sk.rate)
+		if (rescue_only && !pop_row_is_rescue(sk.condition))
+			continue;
+		if (!rescue_only && sk.rate < 10000 && static_cast<uint16_t>(rnd() % 10000) >= sk.rate)
 			continue;
 		// Condition check (no enemy target_bl for ally skills).
 		if (!pop_skill_cond_satisfied(sd, sk, nullptr))
@@ -1696,6 +1713,21 @@ static void population_shell_combat_process_tick(map_session_data *sd, t_tick cu
 					unit_walktobl(sd, hctx.result, 3, 1);
 				return;
 			}
+		}
+	}
+
+	// Rescue first, whatever the duty: a heal or shield for a party member (or this companion)
+	// whose HP is below its threshold comes before any buff kept up, ally buff or attack. The
+	// buff loop ran first and the ally rows went in list order, so a Priest kept Blessing and
+	// Increase AGI up while the player died, and an Attacker never healed anyone at all.
+	if (!flag_attack_only && do_skills && current_tick >= pe.skill_cd &&
+		battle_config.population_engine_shell_attackskill) {
+		if (population_shell_cast_ally_attack_skill(sd, current_tick, true))
+			return; // skill_cd set inside, from the cast's real timing
+		if (current_tick >= sd->pop.reactive_buff_cd && !sd->pop.buff_skills.empty() &&
+			population_shell_cast_expired_self_buffs(sd, current_tick, true)) {
+			sd->pop.reactive_buff_cd = current_tick + std::max(1, battle_config.population_engine_shell_skill_interval_ms);
+			return;
 		}
 	}
 
