@@ -889,6 +889,7 @@ Body:
       - { SkillId: PR_KYRIE,        Level: 10, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_KYRIE }
       - { SkillId: PR_ASPERSIO,     Level: 5,  Rate: 7000, Target: ally, Condition: not_ally_status, CondValue: SC_ASPERSIO }
       - { SkillId: PR_IMPOSITIO,    Level: 5,  Rate: 7000, Target: self, Condition: not_self_status, CondValue: SC_IMPOSITIO }
+      - { SkillId: HP_ASSUMPTIO,    Level: 5,  Rate: 10000, Target: ally, Condition: not_ally_status, CondValue: SC_ASSUMPTIO }
       - { SkillId: HP_ASSUMPTIO,    Level: 5,  Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_ASSUMPTIO }
       - { SkillId: PR_MAGNIFICAT,   Level: 5,  Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_MAGNIFICAT }
       - { SkillId: PR_GLORIA,       Level: 5,  Rate: 8000,  Target: self, Condition: not_self_status, CondValue: SC_GLORIA }
@@ -1728,6 +1729,7 @@ Body:
       - { SkillId: AB_EXPIATIO,        Level: 5,  Rate: 7000, Target: ally, Condition: not_ally_status, CondValue: SC_EXPIATIO }
       - { SkillId: AB_SECRAMENT,       Level: 5,  Rate: 7000, Target: ally, Condition: not_ally_status, CondValue: SC_SECRAMENT }
       - { SkillId: PR_ASPERSIO,        Level: 5,  Rate: 6000, Target: ally, Condition: not_ally_status, CondValue: SC_ASPERSIO }
+      - { SkillId: HP_ASSUMPTIO,       Level: 5,  Rate: 10000, Target: ally, Condition: not_ally_status, CondValue: SC_ASSUMPTIO }
       - { SkillId: HP_ASSUMPTIO,       Level: 5,  Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_ASSUMPTIO }
       - { SkillId: PR_MAGNIFICAT,      Level: 5,  Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_MAGNIFICAT }
       - { SkillId: PR_GLORIA,          Level: 5,  Rate: 8000,  Target: self, Condition: not_self_status, CondValue: SC_GLORIA }

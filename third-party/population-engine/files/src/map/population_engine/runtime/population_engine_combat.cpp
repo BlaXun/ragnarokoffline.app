@@ -273,7 +273,33 @@ struct PopAllySearchCtx {
 	bool              want_has_status; ///< true=find ally WITH status, false=WITHOUT
 	int               best_hp_pct;     ///< Tracks lowest HP% seen (100=no winner yet)
 	map_session_data *result;          ///< Best ally found (nullptr if none)
+	sc_type           gives_sc = SC_NONE; ///< Status the skill gives the ally, if any
 };
+
+/// True if giving `ally` the status `sc_id` would end a buff it holds that in turn ends `sc_id`.
+/// Two such buffs cancel each other (pre-renewal Kyrie Eleison and Assumptio), so two rows
+/// that each check only their own status would recast them over each other on the same ally,
+/// tick after tick, until the caster ran out of SP. The buff already there holds. A debuff the
+/// new status ends (Increase AGI over Decrease AGI) is still cleared.
+static bool pop_ally_buff_clashes(map_session_data *ally, sc_type sc_id)
+{
+	if (sc_id == SC_NONE)
+		return false;
+	const status_change *sca = status_get_sc(ally);
+	if (!sca)
+		return false;
+	for (const sc_type held : status_db.getEndOnStart(sc_id)) {
+		if (held == sc_id || !sca->hasSCE(held))
+			continue;
+		const std::shared_ptr<s_status_change_db> held_db = status_db.find(held);
+		if (!held_db || held_db->flag[SCF_DEBUFF])
+			continue;
+		const std::vector<sc_type> back = status_db.getEndOnStart(held);
+		if (std::find(back.begin(), back.end(), sc_id) != back.end())
+			return true;
+	}
+	return false;
+}
 
 static bool pop_is_party_ally(const map_session_data *shell, const map_session_data *ally)
 {
@@ -370,6 +396,7 @@ static int32 pop_ally_hp_scan_cb(block_list *bl, va_list ap)
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
 	if (ally->battle_status.max_hp == 0) return 0;
 	const int pct = static_cast<int>(ally->battle_status.hp * 100 / ally->battle_status.max_hp);
 	if (pct < ctx->hp_threshold && pct < ctx->best_hp_pct) {
@@ -458,6 +485,7 @@ static int32 pop_ally_status_scan_cb(block_list *bl, va_list ap)
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
 	if (ctx->sc_resolved < 0) return 0;
 	const status_change *sca = status_get_sc(ally);
 	const bool has_it = sca && sca->hasSCE(static_cast<sc_type>(ctx->sc_resolved));
@@ -480,6 +508,7 @@ static int32 pop_ally_any_scan_cb(block_list *bl, va_list ap)
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
 	ctx->result = ally;
 	return 1; // take the first one
 }
@@ -509,11 +538,12 @@ static int32 pop_tank_intercept_cb(block_list *bl, va_list ap)
 }
 
 /// Find the best ally target within scan_range cells satisfying the given condition.
+/// An ally holding a buff that `gives_sc` would cancel, and that cancels it back, is passed over.
 /// Returns nullptr if no suitable ally exists.
 static map_session_data* population_shell_find_ally_target(
 	map_session_data *sd,
 	uint8_t condition, uint8_t threshold, int16_t sc_resolved,
-	int16_t scan_range = 9)
+	int16_t scan_range = 9, sc_type gives_sc = SC_NONE)
 {
 	using C = PopSkillCondition;
 	const C cond = static_cast<C>(condition);
@@ -524,6 +554,7 @@ static map_session_data* population_shell_find_ally_target(
 	ctx.want_has_status = false;
 	ctx.best_hp_pct     = 101;
 	ctx.result          = nullptr;
+	ctx.gives_sc        = gives_sc;
 
 	switch (cond) {
 	case C::AllyHpBelow:
@@ -1235,7 +1266,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 				std::max(1, skill_get_range2(sd, bs.skill_id, use_lv, true)));
 			map_session_data *ally = population_shell_find_ally_target(
 				sd, bs.condition, pop_ally_hp_threshold(sd, bs.skill_id, bs.condition, bs.cond_value_num),
-				bs.cond_sc_resolved, skill_range);
+				bs.cond_sc_resolved, skill_range,
+				skill_get_sc(bs.skill_id));
 			if (!ally)
 				continue;
 			// Party-only skills (e.g. Devotion) are rejected server-side when party_id == 0.
@@ -1389,7 +1421,8 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 			std::max(1, skill_get_range2(sd, sk.skill_id, sk.skill_lv, true)));
 		map_session_data *ally = population_shell_find_ally_target(
 			sd, sk.condition, pop_ally_hp_threshold(sd, sk.skill_id, sk.condition, sk.cond_value_num),
-			sk.cond_sc_resolved, skill_range);
+			sk.cond_sc_resolved, skill_range,
+			skill_get_sc(sk.skill_id));
 		if (!ally)
 			continue;
 		// Skip if the ally already carries the SC this skill would apply — without
