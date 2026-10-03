@@ -191,6 +191,61 @@
       ]
     },
     {
+      "name": "map-spawn-rate",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Change how many monsters spawn on any map you choose. Search maps by name or by the monsters on them in the Settings\u2026 window, give each one a rate (200% doubles it, 50% halves it), and apply. Bosses and other single-monster spawns are left alone.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/map-spawn-rate",
+      "tags": [
+        "maps",
+        "monsters",
+        "quality-of-life",
+        "rates",
+        "spawns"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.4.6"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "d7836c415a366ef0a71dc688ba1c81eac1acdcd1ce6b24ffc333671de86ed8b9"
+        },
+        {
+          "path": "db/extension_db.yml",
+          "sha256": "da89ad3549cec30290569a052ba0c746410b8f2f3564b2ab27511e5ae2ecaf6d"
+        },
+        {
+          "path": "images/icon.png",
+          "sha256": "bc7d761785830ca1dfa14f0581be8dfa41a145ff0b8cf1209e382343fbba5cb1"
+        },
+        {
+          "path": "images/map-spawn-rate.png",
+          "sha256": "1c2fed692d5e087cf9306c2d336b0c6268ce27f7b6f3b0958058aaa93703e725"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "5a0822a0c4e7761e7a7c012799c6f8d56a3a0c8dbe31d7d22b47b550638adea4"
+        },
+        {
+          "path": "npc/map_spawn_rate.txt",
+          "sha256": "cbb80265735b670ff60c2826aa34beb4b609a309dd37812e48c2fa9fcb4044fa"
+        },
+        {
+          "path": "settings/index.html",
+          "sha256": "b47b9da014106cdc9685bf2d2fe758c541159518609729aa3ff119cbb36e0a2f"
+        },
+        {
+          "path": "settings/maps.json",
+          "sha256": "59a8c09cdbcf23e8f870a484f010087644384cb0fc5be73438cb9969dd9071fc"
+        }
+      ]
+    },
+    {
       "name": "no-seed-cost",
       "version": "1.0.1",
       "author": "Ragnarok Offline",

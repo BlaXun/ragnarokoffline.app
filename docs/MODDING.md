@@ -649,6 +649,14 @@ from the stock spawn scripts and nothing unloads them, which is why the
 [randomizer](../examples/mods/randomizer) shuffles what each monster *is*
 rather than where it stands.
 
+How *many* monsters a map's stock spawns put out can be changed, though, from a
+script: the fork's `map_mob_count_rate` extension adds
+`setmapmobcountrate "<map>",<percent>`, which scales every spawn line on that
+map (lines of a single monster stay single). Switch the extension on in the
+mod's `db/extension_db.yml` and call it from `OnInit`. The
+[map-spawn-rate](../registry/mods/map-spawn-rate) mod does this for any map,
+picked in its settings window.
+
 See [`examples/mods/quest-npc`](../examples/mods/quest-npc).
 
 ## lua/ — changing how a skill or item works
