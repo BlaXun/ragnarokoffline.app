@@ -11,7 +11,8 @@ const path = require('node:path');
 const { test } = require('node:test');
 
 const ROOT = path.join(__dirname, '..');
-const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+// Windows checks out CRLF; the patterns below are written against LF.
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');
 const patch = read('third-party/population-engine/patches/0023-skill-weapon-check.patch');
 const combat = read('third-party/population-engine/files/src/map/population_engine/runtime/population_engine_combat.cpp');
 const settings = read('src/settings.html');
