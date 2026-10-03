@@ -207,6 +207,7 @@ SKIP = re.compile(
     r"|HP_MANARECHARGE|HP_MEDITATIO|HP_BASILICA|HP_ASSUMPTIO"
     r"|BD_ENCORE"  # renewal: recasts the last song, which Dissonance resets; the song rows recast instead
     r"|WM_DEADHILLHERE"  # revives a dead party member only; the engine casts it, like ALL_RESURRECTION
+    r"|AL_WARP"  # opens a destination menu on the caster's own client; a companion has none, so no portal
     r"|HT_MAKINGARROW|AC_MAKINGARROW|HT_TALKIEBOX|HT_REMOVETRAP|HT_SPRINGTRAP|HT_PHANTASMIC"
     r"|TF_STEAL|TF_PICKSTONE|TF_THROWSTONE|TF_SPRINKLESAND"
     r"|WS_CARTBOOST|BS_ADRENALINE2|NC_|GN_|KO_|OB_|RL_|NJ_|TK_|SG_|SO_EL_|SO_SPELLFISH|SO_ELEMENTAL_SHIELD)"

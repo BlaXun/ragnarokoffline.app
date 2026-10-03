@@ -1587,6 +1587,12 @@ async function refreshMods() {
   let mods = [];
   let answered = false;
   try { mods = await invoke('list_mods'); answered = true; } catch (e) { /* stack may be down */ }
+  // Mods that declare a host route (docs/MODDING.md, "Host routes"), and
+  // whether the host has switched each on. Absent from an older shell.
+  const hostRoutes = {};
+  if (answered) {
+    try { for (const h of await invoke('mod_host_list')) hostRoutes[h.name] = h; } catch (e) { /* none, or none readable */ }
+  }
   // Only a real answer moves what Apply is compared against: an empty list
   // from a supervisor that did not answer is not every mod being removed.
   if (answered) {
@@ -1684,6 +1690,43 @@ async function refreshMods() {
       row.append(remove);
     }
     box.append(row);
+    // A host route runs the mod's own code on this machine, reachable by
+    // invited friends, and may connect to the listed addresses. Said in the
+    // app's words, from the validated mod.json, and off until switched on
+    // here; it takes effect at once, without Apply. Outside the row's <label>
+    // so a click here does not toggle the mod itself.
+    const hostRoute = hostRoutes[m.name];
+    if (hostRoute && !m.refused) {
+      const line = document.createElement('div');
+      line.style.cssText = 'margin:0 0 8px 28px; font-size:12px; display:flex; flex-direction:column; gap:2px';
+      if (hostRoute.error) {
+        const why = document.createElement('span');
+        why.style.color = 'var(--warn, #d98)';
+        why.textContent = 'Its host service cannot run — ' + hostRoute.error;
+        line.append(why);
+      } else {
+        const label = document.createElement('label');
+        label.style.cssText = 'display:flex; align-items:flex-start; gap:8px; min-height:0';
+        const allow = document.createElement('input');
+        allow.type = 'checkbox'; allow.checked = !!hostRoute.allowed;
+        allow.style.cssText = 'accent-color: var(--accent); flex:none; margin-top:2px';
+        const caption = document.createElement('span');
+        caption.textContent = 'Runs a host service on this computer that friends you invite can use'
+          + (hostRoute.connect.length ? ', and that may connect to: ' + hostRoute.connect.join(', ') : '. It cannot connect anywhere.')
+          + (m.enabled ? '' : ' (only while the mod is on)');
+        label.append(allow, caption);
+        allow.onchange = async () => {
+          allow.disabled = true;
+          try {
+            await invoke('mod_host_set', { name: m.name, enabled: allow.checked });
+            log(`${m.name}: host service ${allow.checked ? 'allowed' : 'switched off'}.`);
+          } catch (e) { allow.checked = !allow.checked; log('error: ' + e); }
+          allow.disabled = false;
+        };
+        line.append(label);
+      }
+      box.append(line);
+    }
     // Options the mod declared for itself. Built with DOM calls and
     // textContent: a label and a description come out of somebody's mod.json,
     // and nothing about a mod folder is trusted markup.
