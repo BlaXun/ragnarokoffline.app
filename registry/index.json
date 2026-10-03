@@ -28,6 +28,47 @@
       "files": []
     },
     {
+      "name": "autoloot",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "An Autoloot window in game: loot every drop at or below a rarity you choose, whole item types such as cards, and a list of exact items -- with a monster check that shows what you would pick up. Works even where @autoloot is kept for GMs, and your item list is kept across logins.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/autoloot",
+      "tags": [
+        "drops",
+        "loot",
+        "quality-of-life"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.4.5"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "464089afc91056b178445a8a5c487a5d63cbc616e29005f9d5fdd366a7b02975"
+        },
+        {
+          "path": "client/index.js",
+          "sha256": "21d44500d5fc281c643d903f1980805859fa558438b576c9463eb6753d4ceda1"
+        },
+        {
+          "path": "db/when/longer_list/extension_db.yml",
+          "sha256": "fa4570127528d396a894d6e3e9ef3fc84330a005ad33f7c670bc31840fa020b4"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "7a2935f241aa85c571c29c9f3cb4ab002bed181685665ce7e78f0cb02b3f2b7e"
+        },
+        {
+          "path": "npc/autoloot.txt",
+          "sha256": "5f6f0cba34be281738b65560c0374e79aa135092c58c9802395a457da0148b8b"
+        }
+      ]
+    },
+    {
       "name": "blaze-shield",
       "version": "1.0.0",
       "author": "BlaXun, Ragnarok Offline",
@@ -218,6 +259,14 @@
         {
           "path": "db/extension_db.yml",
           "sha256": "da89ad3549cec30290569a052ba0c746410b8f2f3564b2ab27511e5ae2ecaf6d"
+        },
+        {
+          "path": "icon.png",
+          "sha256": "bc7d761785830ca1dfa14f0581be8dfa41a145ff0b8cf1209e382343fbba5cb1"
+        },
+        {
+          "path": "map-spawn-rate.png",
+          "sha256": "1c2fed692d5e087cf9306c2d336b0c6268ce27f7b6f3b0958058aaa93703e725"
         },
         {
           "path": "mod.json",
