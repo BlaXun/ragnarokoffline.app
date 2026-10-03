@@ -36,6 +36,7 @@ button { font: inherit; padding: 2px 8px; cursor: pointer; }
 .confirm { display: flex; align-items: center; gap: 6px; margin-top: 4px; padding: 4px 6px; border: 1px solid #d9b26a;
   border-radius: 3px; background: #fff7e6; }
 .confirm span { flex: 1; }
+.confirm[hidden] { display: none; }
 `;
 
 const escape = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
