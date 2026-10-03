@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `cp_companion_persistence` (
   `con_`             SMALLINT      NOT NULL DEFAULT 0,
   `crt_`             SMALLINT      NOT NULL DEFAULT 0,
   `mode`             TINYINT       NOT NULL DEFAULT 1, -- companion stance: 0 passive, 1 defensive, 2 attack (v6)
-  `duty`             TINYINT       NOT NULL DEFAULT 0, -- role: 0 attacker, 1 tank, 2 support (v6)
+  `duty`             TINYINT       NOT NULL DEFAULT 0, -- role (PopulationRoleType): 0 none, 1 tank, 2 support, 3 attacker (v6)
   `heal_at`          TINYINT       NOT NULL DEFAULT 75, -- support heal threshold HP% (v6)
   `emergency_at`     TINYINT       NOT NULL DEFAULT 35, -- support emergency heal HP% (v6)
   `skill_preset`     TEXT          NULL DEFAULT NULL,   -- chosen skill ids, comma separated (v7); NULL = the class preset list, '' = none chosen
