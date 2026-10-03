@@ -9,10 +9,10 @@
 # what scripts/vendor-bump.sh resolves -- builds fetch the commit.
 #
 #   name              url                                                commit                                    branch
-# roBrowserLegacy   https://github.com/Flux159/roBrowserLegacy.git   d580daf84affe48ce2ed439eefcd3f62e54a3fdd  ragnarokoffline
-roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   2696016b9278162847307d7639425f8103e9672e  fix/buyingstore-trade-itemid
+roBrowserLegacy   https://github.com/Flux159/roBrowserLegacy.git   38bb41ba974e34ea5eb3cba20f876e065a7233c1  ragnarokoffline
 ROenglishRE       https://github.com/llchrisll/ROenglishRE.git     66cdfec631603fda6a90ba4bbe26ab07b5204c84
-rathena           https://github.com/Flux159/rathena.git           7b526e61b42054ef1a2d580def083bc145a88726  ragnarokoffline
+# rathena           https://github.com/Flux159/rathena.git           7b526e61b42054ef1a2d580def083bc145a88726  ragnarokoffline
+rathena           https://github.com/BlaXun/rathena.git           f90ffc0a1677d05e23a14316058268412cd93d22  map-mob-count-rate
 #
 # The upstream commit our rAthena fork is based on, without our fixes. Only the
 # diagnostics in test.yml fetch it, to show each bug a fix commit addresses is
