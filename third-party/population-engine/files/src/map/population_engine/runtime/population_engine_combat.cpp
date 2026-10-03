@@ -1063,6 +1063,8 @@ static void population_shell_check_unhide(map_session_data *sd, t_tick current_t
 /// priority: a row may replace a later row's buff (the preferred song taking over again once it
 /// is off cooldown), never an earlier one. Only buffs in active_buffs - this shell's own casts,
 /// still running - count, so a status a monster inflicted never blocks anything.
+/// A status the new skill requires is a step in a chain, not a rival: the Inquisitor's Judge
+/// needs First Faith Power and ends it, Third Exor Flame needs Judge and ends it.
 static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
 	const PopulationShellBuffSkill &bs, t_tick now)
 {
@@ -1072,6 +1074,9 @@ static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
 	const std::vector<sc_type> ends = status_db.getEndOnStart(sc_id);
 	if (ends.empty())
 		return false;
+	const std::shared_ptr<s_skill_db> skill = skill_db.find(bs.skill_id);
+	const std::vector<sc_type> none;
+	const std::vector<sc_type> &required = skill ? skill->require.status : none;
 	for (const PopulationShellBuffSkill &own : sd->pop.buff_skills) {
 		if (&own == &bs)
 			break; // only rows listed before this one outrank it
@@ -1081,6 +1086,8 @@ static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
 		if (own_sc == SC_NONE || own_sc == sc_id || !scc->hasSCE(own_sc))
 			continue;
 		if (std::find(ends.begin(), ends.end(), own_sc) == ends.end())
+			continue;
+		if (std::find(required.begin(), required.end(), own_sc) != required.end())
 			continue;
 		for (const s_pe_active_buff &ab : sd->pop.active_buffs)
 			if (ab.skill_id == own.skill_id && ab.expires_at > now)

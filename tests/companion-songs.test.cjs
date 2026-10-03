@@ -32,6 +32,33 @@ test('a buff that would end an earlier row\'s own running buff is not cast', () 
 	assert.match(body, /ab\.expires_at > now/);
 });
 
+// A status the new skill requires is a step in a chain, not a rival. The Inquisitor's Second
+// Judge ends First Faith Power and requires it (renewal status.yml, skill_db.yml), and Third Exor
+// Flame does the same with Second Judge. Without the exemption the gate refused Judge every time
+// it could be cast, and the faith chain stopped at its first step.
+test('a buff may end a running buff that its own skill requires', () => {
+	const body = fn('static bool pop_buff_would_end_own(');
+	assert.match(body, /skill_db\.find\(bs\.skill_id\)/);
+	assert.match(body, /skill->require\.status/);
+	const exempt = body.search(/std::find\(required\.begin\(\), required\.end\(\), own_sc\) != required\.end\(\)\)\s*continue;/);
+	assert.ok(exempt >= 0, 'a required status must not count as one the buff would end');
+	assert.ok(exempt < body.indexOf('sd->pop.active_buffs'), 'the exemption runs before the active_buffs check');
+});
+
+test('the Inquisitor keeps its faith chain in order', () => {
+	const block = yaml.split(/\n(?=  - JobId: )/).find((b) => /^\s*- JobId: 4262\n/.test(b));
+	assert.ok(block, 'the 4262 block must exist');
+	const row = (id) => {
+		const m = new RegExp(`\\{ SkillId: ${id},[^}]*Target: self[^}]*\\}`).exec(block);
+		assert.ok(m, `${id} must be a self row in the 4262 block`);
+		return m.index;
+	};
+	const faith = row('IQ_FIRST_FAITH_POWER');
+	const judge = row('IQ_JUDGE');
+	const exor = row('IQ_THIRD_EXOR_FLAME');
+	assert.ok(faith < judge && judge < exor, 'each step must come after the one it requires');
+});
+
 test('the self-buff loop consults the gate before it casts', () => {
 	const loop = fn('static bool population_shell_cast_expired_self_buffs(');
 	const self = loop.indexOf('// --- Self-targeted (target == 1) ---');
@@ -43,7 +70,8 @@ test('the self-buff loop consults the gate before it casts', () => {
 
 // Pre-renewal songs are performances on the ground: the singer holds SC_DANCING while one plays
 // and never gets the song's own status, so the EndOnStart gate cannot see it, and a new song would
-// stop the one playing. Renewal songs never set SC_DANCING, so this gate is pre-renewal only.
+// stop the one playing. Renewal solo songs never set SC_DANCING, but ensembles are performances in
+// both eras, so in renewal this holds Ring of Nibelungen against Siegfried and the like.
 test('a song is not started while the companion is performing one', () => {
 	const loop = fn('static bool population_shell_cast_expired_self_buffs(');
 	const self = loop.indexOf('// --- Self-targeted (target == 1) ---');
