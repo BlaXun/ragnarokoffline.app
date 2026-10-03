@@ -1,4 +1,4 @@
-From 0000000000000000000000000000000000000024
+From 0000000000000000000000000000000000000025
 Subject: [PATCH] Companion trades: snapshot the companion's inventory before items move
 
 population_engine_companion_equip_traded runs after the trade and equipped

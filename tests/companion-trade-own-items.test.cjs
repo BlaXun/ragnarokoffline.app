@@ -14,7 +14,7 @@ const { test } = require('node:test');
 const ROOT = path.join(__dirname, '..');
 // Windows checks out CRLF; the patterns below are written against LF.
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');
-const patch = read('third-party/population-engine/patches/0024-companion-trade-snapshot.patch');
+const patch = read('third-party/population-engine/patches/0025-companion-trade-snapshot.patch');
 const engine = read('third-party/population-engine/files/src/map/population_engine.cpp');
 
 test('trade_tradecommit snapshots both sides before the items move', () => {
