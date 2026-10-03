@@ -352,33 +352,56 @@ static bool pop_is_resurrection_job(uint16 job_id)
 /// already bypass skill item requirements in skill_get_requirement(), so the
 /// Blue Gemstone catalyst is intentionally unlimited and never enters their
 /// inaccessible inventory.
+///
+/// Minstrels and Wanderers revive with Death Valley (WM_DEADHILLHERE), which does
+/// nothing to a living target. Curated as a heal, it was cast at every hurt ally for
+/// nothing; it belongs here, on a dead party member only. It needs an instrument or a
+/// whip, so with Weapon rules on it waits until the companion holds one.
+static bool pop_skill_weapon_ok(map_session_data *sd, uint16 skill_id);
+
+static bool pop_party_revive_skill(map_session_data *sd, uint16 &skill_id, uint16 &skill_lv)
+{
+	if (pop_is_resurrection_job(sd->status.class_)) {
+		skill_id = ALL_RESURRECTION;
+		skill_lv = 3;
+		return true;
+	}
+	const uint16 death_valley = pc_checkskill(sd, WM_DEADHILLHERE);
+	if (death_valley > 0 && pop_skill_weapon_ok(sd, WM_DEADHILLHERE)) {
+		skill_id = WM_DEADHILLHERE;
+		skill_lv = death_valley;
+		return true;
+	}
+	return false;
+}
+
 static bool population_shell_try_party_resurrection(map_session_data *sd, t_tick current_tick)
 {
-	constexpr uint16 resurrection_level = 3;
-	if (!sd || !pop_is_resurrection_job(sd->status.class_) ||
+	uint16 skill_id = 0, skill_lv = 0;
+	if (!sd || !pop_party_revive_skill(sd, skill_id, skill_lv) ||
 		sd->status.party_id <= 0 || sd->status.party_id >= 0x70000000 ||
-		current_tick < sd->pop.skill_cd || skill_isNotOk(ALL_RESURRECTION, *sd))
+		current_tick < sd->pop.skill_cd || skill_isNotOk(skill_id, *sd))
 		return false;
 
 	const int16 range = static_cast<int16>(
-		std::max(1, skill_get_range2(sd, ALL_RESURRECTION, resurrection_level, true)));
+		std::max(1, skill_get_range2(sd, skill_id, skill_lv, true)));
 	PopDeadAllySearchCtx ctx{ sd, nullptr, range + 1 };
 	map_foreachinrange(pop_dead_party_ally_scan_cb, sd, range, BL_PC, &ctx);
 	if (!ctx.result)
 		return false;
 
-	const int sp_cost = skill_get_sp(ALL_RESURRECTION, resurrection_level);
+	const int sp_cost = skill_get_sp(skill_id, skill_lv);
 	if (sp_cost > sd->battle_status.sp)
 		return false;
-	if (!unit_skilluse_id(sd, ctx.result->id, ALL_RESURRECTION, resurrection_level))
+	if (!unit_skilluse_id(sd, ctx.result->id, skill_id, skill_lv))
 		return false;
 
-	const t_tick cast_time = skill_get_cast(ALL_RESURRECTION, resurrection_level);
-	const t_tick delay = skill_get_delay(ALL_RESURRECTION, resurrection_level);
+	const t_tick cast_time = skill_get_cast(skill_id, skill_lv);
+	const t_tick delay = skill_get_delay(skill_id, skill_lv);
 	sd->pop.skill_cd = current_tick + cast_time + std::max<t_tick>(delay,
 		static_cast<t_tick>(std::max(1, battle_config.population_engine_shell_attack_skill_delay_ms)));
-	ShowInfo("Population engine: companion %s casts Resurrection level 3 on %s.\n",
-		sd->status.name, ctx.result->status.name);
+	ShowInfo("Population engine: companion %s casts %s level %u on %s.\n",
+		sd->status.name, skill_get_desc(skill_id), static_cast<unsigned>(skill_lv), ctx.result->status.name);
 	return true;
 }
 
@@ -908,11 +931,25 @@ static int pop_enemies_within(map_session_data* sd, int radius)
 	return count;
 }
 
+/// RAGNAROKMAC: with Settings -> Population -> Weapon rules on (population_engine_skill_weapon_check),
+/// skill_get_requirement holds population PCs to a skill's weapon requirement, as it does players.
+/// A skill the held weapon can't use would then be refused on every try, so it is passed over here
+/// and the companion moves on to one it can use.
+static bool pop_skill_weapon_ok(map_session_data *sd, uint16 skill_id)
+{
+	if (!battle_config.population_engine_skill_weapon_check)
+		return true;
+	const int32 weapon = skill_get_weapontype(skill_id);
+	return weapon == 0 || pc_check_weapontype(sd, weapon);
+}
+
 /// Unified condition gate that picks between the flat-enum legacy path and the
 /// expanded boolean tree based on whether the entry has a tree attached.
 /// Templated over the skill struct type so it works for both attack and buff entries.
 template <typename SkillT>
 static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& sk, block_list* target_bl) {
+	if (!pop_skill_weapon_ok(sd, sk.skill_id))
+		return false;
 	// RAGNAROKMAC: enemy_count_nearby counts the whole detection range (30 cells), so a blast
 	// around the caster fired at a crowd it could not reach. Count only what the blast hits.
 	if (!sk.expanded && static_cast<PopSkillCondition>(sk.condition) == PopSkillCondition::EnemyCountNearby) {

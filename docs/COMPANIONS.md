@@ -105,6 +105,8 @@ the same map. It can be revived in either of two ways:
   members, including real players and other companions. Their virtual Blue
   Gemstone supply is unlimited because shells have no player-accessible
   inventory.
+- Minstrel, Wanderer, Troubadour and Trouvere companions revive dead party
+  members with Death Valley, at the level they have learned.
 - A real player can use a Yggdrasil Leaf on the dead companion.
 
 Level 3 Resurrection restores 50% HP. Resurrection remains available in every
@@ -143,6 +145,18 @@ remembers its position, and clicks aimed at it do not reach the game. Each
 control sends the same packet that typing the command sends, so the server
 cannot tell a button press from a keystroke — the buttons and the commands below
 are two ways to say the same thing.
+
+### Weapon rules
+
+By default a companion uses every skill it has, whatever it is holding: a
+Minstrel sings with a bow in hand. **Settings → Population → Weapon rules**
+holds companions, and every other fake player, to the weapon requirements a
+player has. With it on, a skill the companion's weapon can't use is skipped
+until you trade it a weapon that can. Some jobs start with gear that doesn't fit
+all their skills: Clowns, Minstrels and Troubadours start with a bow and need an
+instrument to sing, and Gypsies, Wanderers and Trouveres need a whip to dance.
+Arrows, gemstones and other item costs are never needed either way, since a
+companion has no inventory to manage.
 
 ## Free or hired
 
