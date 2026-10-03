@@ -6,6 +6,9 @@
 # `wsl bash` (the .vscode "Patch webclient" task).
 *.sh text eol=lf
 *.py text eol=lf
+# Read by scripts/vendor-fetch.sh with `read -r _ URL SHA _`. On rows without
+# a branch column, a CR ends up in the commit hash and the fetch fails.
+config/VENDOR_PINS text eol=lf
 
 # How GitHub counts this repository.
 #
