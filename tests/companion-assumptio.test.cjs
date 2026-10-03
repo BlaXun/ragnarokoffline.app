@@ -43,3 +43,42 @@ test('High Priest and transcendent Arch Bishop cast Assumptio on party members b
 test('a non-transcendent Arch Bishop gets no ally Assumptio row it could never learn', () => {
 	assert.ok(!ALLY.test(block(4057)));
 });
+
+// In pre-renewal (db/pre-re/status.yml) Assumptio ends Kyrie Eleison and Kyrie ends Assumptio, and
+// the population skill db is shared by both eras. The High Priest's ally Kyrie row and ally
+// Assumptio row each check only their own status, so each cast ended the other on the same party
+// member, tick after tick, until the companion ran out of SP. The ally search now passes over an
+// ally holding a buff the new one would end and that would end it back, so the buff already there
+// holds; renewal, where the two don't cancel, is unchanged. Debuffs are still cleared.
+const combat = fs.readFileSync(path.join(ROOT, 'third-party', 'population-engine', 'files', 'src', 'map',
+	'population_engine', 'runtime', 'population_engine_combat.cpp'), 'utf8').replace(/\r\n/g, '\n');
+
+function fn(name) {
+	const start = combat.indexOf(name);
+	assert.ok(start >= 0, `${name} must exist`);
+	return combat.slice(start, combat.indexOf('\n}\n', start));
+}
+
+test('two ally buffs that cancel each other are not cast over each other', () => {
+	const clash = fn('static bool pop_ally_buff_clashes(');
+	assert.match(clash, /status_db\.getEndOnStart\(sc_id\)/);
+	assert.match(clash, /sca->hasSCE\(held\)/);
+	assert.match(clash, /held_db->flag\[SCF_DEBUFF\]\)\s*continue;/, 'a debuff the new status ends is still cleared');
+	assert.match(clash, /status_db\.getEndOnStart\(held\)/, 'only a buff that ends the new one back holds');
+	assert.match(combat, /sc_type\s+gives_sc = SC_NONE;/, 'SC_NONE is -1, so a zeroed context must not mean SC_STONE');
+	for (const cb of ['pop_ally_hp_scan_cb', 'pop_ally_status_scan_cb', 'pop_ally_any_scan_cb'])
+		assert.match(fn(`static int32 ${cb}(`), /if \(pop_ally_buff_clashes\(ally, ctx->gives_sc\)\) return 0;/,
+			`${cb} must pass over a clashing ally`);
+	const find = fn('static map_session_data* population_shell_find_ally_target(');
+	assert.match(find, /ctx\.gives_sc\s+= gives_sc;/);
+	const calls = combat.match(/population_shell_find_ally_target\(\s*sd,[^;]*;/g) || [];
+	assert.equal(calls.length, 2, 'both ally searches are covered');
+	for (const call of calls)
+		assert.match(call, /skill_get_sc\((bs|sk)\.skill_id\)\)/, 'each caller passes the status its skill gives');
+});
+
+test('the High Priest still carries both ally rows the clash gate keeps apart', () => {
+	const body = block(4009);
+	assert.ok(ALLY.test(body));
+	assert.match(body, /\{ SkillId: PR_KYRIE,\s+Level: 10, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_KYRIE \}/);
+});
