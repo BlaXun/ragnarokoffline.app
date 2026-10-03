@@ -14,6 +14,13 @@
 // dispbottom lines reach the chat box with no "Name :" in front, so nobody can
 // forge one by talking. The lines are gathered here, joined, and handed to the
 // waiting request; they never show in chat.
+//
+// A script can also speak first, without being asked -- an NPC opening a
+// mod's window, say:
+//
+//     @@event <command> <text>
+//
+// That goes to every plugin as the client event 'server:event'.
 
 import ChatBox from 'UI/Components/ChatBox/ChatBox.js';
 import Client from 'Core/Client.js';
@@ -191,15 +198,22 @@ export function itemIcon(id) {
 // ---------------------------------------------------------------------------
 
 const REPLY = /^@@reply (\d+) (\d+)\/(\d+) ?([\s\S]*)$/;
+const EVENT = /^@@event ([a-z][a-z0-9_]{1,23})(?: ([\s\S]*))?$/;
 const pending = new Map();  // id -> { parts: [], resolve, reject, timer }
 let nextId = 1;
 let installed = false;
+let onServerEvent = null;
 
 function install() {
 	if (installed) return;
 	installed = true;
 	const addText = ChatBox.addText;
 	ChatBox.addText = function (text, ...rest) {
+		const event = typeof text === 'string' ? EVENT.exec(text) : null;
+		if (event) {
+			onServerEvent?.(event[1], event[2] || '');
+			return undefined;
+		}
 		const match = typeof text === 'string' ? REPLY.exec(text) : null;
 		if (!match) return addText.call(this, text, ...rest);
 		const request = pending.get(Number(match[1]));
@@ -213,6 +227,14 @@ function install() {
 		}
 		return undefined;
 	};
+}
+
+/**
+ * Hand every @@event line to `listener(command, text)` from now on.
+ */
+export function listen(listener) {
+	install();
+	onServerEvent = listener;
 }
 
 /**
