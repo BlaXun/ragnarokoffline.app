@@ -1859,6 +1859,27 @@ older host, and any other server.
 
 See [`mods/autologin`](../mods/autologin), which uses all three.
 
+### How GMs are drawn — `api.players.gmLook`
+
+The client draws every account on its GM list (`adminList` in its config,
+which holds the built-in `ragnarok` account) in the GM suit, whatever its job,
+and styles its name and chat as a GM's. These are only looks; GM commands come
+from the server. A mod can turn each part off:
+
+```js
+if (api.players?.gmLookSupported?.()) {
+    api.players.gmLook({ sprite: false });              // drawn as their class
+    api.players.gmLook({ name: false, chat: false });   // and named and heard like anyone
+}
+```
+
+Leave a key out to keep it as it is. `gmLook` returns the look now in force
+(`{ sprite, name, chat }`). It applies to characters drawn from then on, so
+call it from `init`, and it is put back when the mod is turned off. An app
+before 1.4.5 has no `api.players`, and a client without the switches answers
+`gmLookSupported()` with `false` (`gmLook` then returns `null`). It reads `Session.AdminLook` in the
+roBrowser fork. See [`mods/gm-class-look`](../mods/gm-class-look).
+
 ---
 
 ## Applying changes

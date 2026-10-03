@@ -14,6 +14,20 @@
 const COMPANION_LIMIT_MIN = 4;
 const COMPANION_LIMIT_MAX = 11;
 
+/**
+ * How busy towns, fields and dungeons are, each 0-100: a share of what "How
+ * busy" makes the area. 0 leaves it empty; a save from before these existed
+ * (no key) means 100, which is how the world was.
+ */
+const AREAS = ['town', 'field', 'dungeon'];
+function areaShare(s, area) {
+	const raw = s[`population_${area}_pct`];
+	if (raw === undefined || raw === null || raw === '') return 100;
+	const v = Number(raw);
+	if (!Number.isFinite(v)) return 100;
+	return Math.min(100, Math.max(0, Math.round(v)));
+}
+
 function companionLimit(s) {
 	const v = Number(s.population_companion_limit);
 	if (!Number.isFinite(v)) return COMPANION_LIMIT_MIN;
@@ -35,6 +49,7 @@ function lines(settings) {
 		`population_engine_density_pct: ${density}\n` +
 		// Written even while the engine is off, so a raise sticks if it is turned on later.
 		`population_engine_companion_limit: ${companionLimit(settings)}\n` +
+		AREAS.map(area => `population_engine_${area}_pct: ${areaShare(settings, area)}\n`).join('') +
 		// Off in the compiled defaults. Upstream turns it on in a conf file we
 		// deliberately do not import, so without this line no shell ever opens
 		// a stall -- and a town of people with nothing to sell is most of what
@@ -43,4 +58,4 @@ function lines(settings) {
 	);
 }
 
-module.exports = { lines, companionLimit, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX };
+module.exports = { lines, companionLimit, areaShare, AREAS, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX };

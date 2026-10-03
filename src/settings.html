@@ -141,6 +141,13 @@
   .tab:hover { color: var(--text); }
   .tab[aria-selected="true"] { background: var(--accent); color: #0d0f15; }
   .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* How many mods have an update waiting: a small red number on the corner of
+     Mods, and of Mods / Find Mods inside it. Hidden at 0. */
+  .tab { position: relative; }
+  .tab .tabcount { position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px;
+    padding: 0 4px; border-radius: 8px; background: var(--bad, #e5534b); color: #fff;
+    font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; pointer-events: none; }
+  .tab .tabcount[hidden] { display: none; }
   /* The first heading in a panel would otherwise sit oddly far from the tabs. */
   .tabpanel > h2:first-child { margin-top: 10px; }
   h2.section { margin-top: 22px; }
@@ -250,7 +257,7 @@
     <button role="tab" class="tab" id="tab-multiplayer" aria-controls="panel-multiplayer" aria-selected="false" tabindex="-1">Multiplayer</button>
     <button role="tab" class="tab" id="tab-accounts" aria-controls="panel-accounts" aria-selected="false" tabindex="-1">Accounts</button>
     <button role="tab" class="tab" id="tab-savedata" aria-controls="panel-savedata" aria-selected="false" tabindex="-1">Save data</button>
-    <button role="tab" class="tab" id="tab-mods" aria-controls="panel-mods" aria-selected="false" tabindex="-1">Mods</button>
+    <button role="tab" class="tab" id="tab-mods" aria-controls="panel-mods" aria-selected="false" tabindex="-1">Mods<span class="tabcount" aria-hidden="true" hidden></span></button>
     <button role="tab" class="tab" id="tab-tools" aria-controls="panel-tools" aria-selected="false" tabindex="-1">Tools</button>
     <button role="tab" class="tab" id="tab-population" aria-controls="panel-population" aria-selected="false" tabindex="-1">Population</button>
     <button role="tab" class="tab" id="tab-rates" aria-controls="panel-rates" aria-selected="false" tabindex="-1">Rates</button>
@@ -631,8 +638,8 @@
        width. -->
   <div class="subbar">
     <div class="subtabs" role="tablist" aria-label="Mods">
-      <button role="tab" class="tab" id="modstab-installed" aria-controls="mods-installed" aria-selected="true" tabindex="0">Mods</button>
-      <button role="tab" class="tab" id="modstab-find" aria-controls="mods-registry" aria-selected="false" tabindex="-1">Find Mods</button>
+      <button role="tab" class="tab" id="modstab-installed" aria-controls="mods-installed" aria-selected="true" tabindex="0">Mods<span class="tabcount" aria-hidden="true" hidden></span></button>
+      <button role="tab" class="tab" id="modstab-find" aria-controls="mods-registry" aria-selected="false" tabindex="-1">Find Mods<span class="tabcount" aria-hidden="true" hidden></span></button>
     </div>
     <div class="subactions">
       <button id="mods-install" class="ghost">Install from a folder…</button>
@@ -700,6 +707,21 @@
       <span class="val" id="v-population_density"></span>
     </label>
     <label style="margin-top:6px">
+      <span>In towns</span>
+      <input type="range" id="population_town_pct" min="0" max="100" step="5">
+      <span class="val" id="v-population_town_pct"></span>
+    </label>
+    <label style="margin-top:6px">
+      <span>In fields</span>
+      <input type="range" id="population_field_pct" min="0" max="100" step="5">
+      <span class="val" id="v-population_field_pct"></span>
+    </label>
+    <label style="margin-top:6px">
+      <span>In dungeons</span>
+      <input type="range" id="population_dungeon_pct" min="0" max="100" step="5">
+      <span class="val" id="v-population_dungeon_pct"></span>
+    </label>
+    <label style="margin-top:6px">
       <span>Limit</span>
       <input type="range" id="population_max" min="50" max="2000" step="50">
       <span class="val" id="v-population_max"></span>
@@ -721,8 +743,10 @@
     <p class="note">They walk, fight, sit and open vending stalls, and they never touch your
        characters or your save. They appear only on the maps you and your friends are
        actually standing on. <b>How busy</b> scales the server's own spawn tables, so
-       the world keeps the shape it was authored with and only its crowding changes;
-       <b>Limit</b> is a safety ceiling across every map at once, and in a solo game
+       the world keeps the shape it was authored with and only its crowding changes.
+       <b>In towns</b>, <b>In fields</b> and <b>In dungeons</b> each take a share of
+       that for one kind of map: 100% is all of it, 0% leaves those maps empty
+       (towns at 0% have none of the fake players' own vending stalls either; a mod's market, such as prontera-vendors, follows that mod's settings). <b>Limit</b> is a safety ceiling across every map at once, and in a solo game
        it never comes into play. <b>How busy</b> above 50 can make the server sluggish
        on a computer with less than 8&nbsp;GB of RAM.</p>
     <p class="note" id="ram-note"></p>
@@ -1356,6 +1380,7 @@ const STACK_BASE_MIB = 700;
 // Measured on prt_fild08: 30 from the combat_pve spawn table plus 9 knights.
 // Towns land in the same range.
 const TYPICAL_PER_MAP = 40;
+const POPULATION_AREAS = ['town', 'field', 'dungeon'];
 
 // The host's own RAM, filled in by host_facts below. Zero until it answers,
 // which reads as "not known" rather than "small".
@@ -1370,6 +1395,10 @@ function refreshPopulation() {
   $('population_max').disabled = !on;
   $('population_density').disabled = !on;
   $('population_companion_limit').disabled = !on;
+  for (const area of POPULATION_AREAS) {
+    $(`population_${area}_pct`).disabled = !on;
+    $(`v-population_${area}_pct`).textContent = on ? `${$(`population_${area}_pct`).value}%` : '—';
+  }
   $('v-population_max').textContent = on ? String(n) : '—';
   $('v-population_density').textContent = on ? `~${perMap} per map` : '—';
   $('v-population_companion_limit').textContent = on ? $('population_companion_limit').value : '—';
@@ -1415,6 +1444,7 @@ $('population_enable').addEventListener('change', refreshPopulation);
 $('population_max').addEventListener('input', refreshPopulation);
 $('population_density').addEventListener('input', refreshPopulation);
 $('population_companion_limit').addEventListener('input', refreshPopulation);
+for (const area of POPULATION_AREAS) $(`population_${area}_pct`).addEventListener('input', refreshPopulation);
 $('vm_ram_mib').addEventListener('input', refreshPopulation);
 
 $('save-population').onclick = async () => {
@@ -1423,6 +1453,7 @@ $('save-population').onclick = async () => {
   settings.population_max = Number($('population_max').value);
   settings.population_density = Number($('population_density').value);
   settings.population_companion_limit = Number($('population_companion_limit').value);
+  for (const area of POPULATION_AREAS) settings[`population_${area}_pct`] = Number($(`population_${area}_pct`).value);
   // Machine-level, so it lives in client.json beside the client paths and the
   // LAN switch rather than in settings.json. Written first: save_settings
   // restarts the stack, which is what makes the new ceiling take effect.
@@ -1462,6 +1493,7 @@ let modSettings = {}, modSettingsBaseline = {};
 // drawn, and the game's launch count when Apply last finished (null when
 // there is no "reopen the game" to say). See mods-state.js for the rules.
 let modsBaseline = null, modsListed = [], modsAppliedAt = null, gameNow = null;
+let modsAnswered = false;   // a list_mods answer has arrived at least once
 
 function modsPending() {
   return ModsState.pending({
@@ -1520,6 +1552,7 @@ async function refreshMods() {
   // Only a real answer moves what Apply is compared against: an empty list
   // from a supervisor that did not answer is not every mod being removed.
   if (answered) {
+    modsAnswered = true;
     modsListed = mods;
     modsBaseline = ModsState.adopt(modsBaseline, mods);
   }
@@ -1527,6 +1560,7 @@ async function refreshMods() {
   if (!mods.length) {
     box.textContent = 'No mods installed. Open the mods folder to add one.';
     paintModsStatus();
+    paintUpdateCount();
     return;
   }
   modState = {};
@@ -1680,13 +1714,32 @@ async function refreshMods() {
 }
 
 // Updates for mods installed from their author's own repository. Looked up
-// when the Mods tab opens and when asked, never in the background, and only
-// ever offered: the player clicks Update, sees the release, and confirms.
+// when this window opens (for the number on the Mods tab), when the Mods tab
+// opens and when asked -- never in the background -- and only ever offered:
+// the player clicks Update, sees the release, and confirms.
 let updateSlots = {};
 let modUpdates = {};
 let checkingUpdates = null;
 
+// The red number on Mods, Mods and Find Mods. Repainted with the update
+// lines, so an Update that went through takes it down without a new lookup.
+function paintUpdateCount() {
+  const n = ModsState.updateCount(modUpdates, modsAnswered ? modsListed.map(m => m.name) : null);
+  const label = ModsState.updateCountLabel(n);
+  for (const id of ['tab-mods', 'modstab-installed', 'modstab-find']) {
+    const tab = $(id);
+    const count = tab.querySelector('.tabcount');
+    count.textContent = n > 9 ? '9+' : String(n);
+    count.hidden = n === 0;
+    // The number itself is aria-hidden; the tab's name says it in words.
+    const name = id === 'modstab-find' ? 'Find Mods' : 'Mods';
+    if (n) tab.setAttribute('aria-label', `${name}, ${label}`);
+    else tab.removeAttribute('aria-label');
+  }
+}
+
 function paintUpdates() {
+  paintUpdateCount();
   for (const [name, slot] of Object.entries(updateSlots)) {
     slot.innerHTML = '';
     const u = modUpdates[name];
@@ -1798,6 +1851,10 @@ for (const [index, key] of TAB_KEYS.entries()) {
   };
 }
 try { showTab(localStorage.getItem('settings-tab') || 'general'); } catch { showTab('general'); }
+// Once on open, whichever tab that is, so the Mods tab can show how many mods
+// have an update. The same cached lookup the Mods tab makes (and shares, if
+// the window opened on Mods), not a background check.
+checkModUpdates().catch(e => log('error: ' + e));
 
 // 0 is a real answer here -- "until you stop sharing" -- so it cannot go
 // through the usual `|| default` clamp, which would silently turn it into 7.
@@ -2559,6 +2616,8 @@ invoke('get_settings').then(s => {
   $('population_enable').checked = !!s.population_enable;
   $('population_max').value = s.population_max;
   $('population_density').value = s.population_density;
+  // A save from before the area sliders has no key: 100, as the world was.
+  for (const area of POPULATION_AREAS) $(`population_${area}_pct`).value = s[`population_${area}_pct`] ?? 100;
   $('population_companion_limit').value = s.population_companion_limit ?? 4;
   refreshPopulation();
 });

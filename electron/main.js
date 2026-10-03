@@ -1002,6 +1002,11 @@ const SETTINGS_DEFAULTS = {
 	// spawn tables ask for. This is the dial players actually want; the limit
 	// above is only a safety net.
 	population_density: 100,
+	// Each area's share of that, 0-100 (Settings -> Population): towns,
+	// fields and dungeons. 100 everywhere is the world as authored.
+	population_town_pct: 100,
+	population_field_pct: 100,
+	population_dungeon_pct: 100,
 	// How many shells one player may recruit into their party at once. The
 	// server enforces this per recruiter (not per map), and rAthena's MAX_PARTY
 	// of 12 leaves a slot for real players, which is why the UI tops out at 11.
