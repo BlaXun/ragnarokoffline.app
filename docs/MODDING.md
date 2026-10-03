@@ -1732,7 +1732,7 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 
 | API | Contract |
 | --- | --- |
-| `api.on(event, listener, { replay: true })` | Returns an unsubscribe function; subscriptions also end at disposal. Events: `map:enter`, `map:leave`, `connection`, `ui:append`, `ui:remove`, `movement:clear`, `preferences:change`, `item:use` (`{ itemId }`, the item's id, sent when the client asks to use it -- before the server says whether it worked), and `exit` (`{ to, from }`, the player chose to leave -- [below](#leaving-the-game-and-remembered-logins--exit-and-apiaccount)). |
+| `api.on(event, listener, { replay: true })` | Returns an unsubscribe function; subscriptions also end at disposal. Events: `map:enter`, `map:leave`, `connection`, `ui:append`, `ui:remove`, `movement:clear`, `preferences:change`, `item:use` (`{ itemId }`, the item's id, sent when the client asks to use it -- before the server says whether it worked), `server:event` (`{ command, text }`, a mod's server script speaking first -- [below](#windows-and-server-requests)), and `exit` (`{ to, from }`, the player chose to leave -- [below](#leaving-the-game-and-remembered-logins--exit-and-apiaccount)). |
 | `api.snapshot()` | Frozen copy of map, connection, player position/HP/SP/name/`characterId`, selected target identity/name/HP, camera, packet version and movement counters. Server movement acknowledgements are read-only evidence. |
 | `api.components.current()` | Mounted `{ name, root, host }` descriptors. DOM references support styling; do not retain detached components after `ui:remove`. |
 | `api.preferences.get(key, fallback)` / `.set(key, value)` | JSON values isolated by plugin, browser and server origin. Storage failure is reported by `set`. Do not store secrets. |
@@ -1907,6 +1907,28 @@ A long answer can be split: `@@reply <n> 1/3 …`, `2/3 …`, `3/3 …`, and the
 parts are joined in order. A request that gets no answer rejects after its
 timeout (5 seconds by default). Only the server can send these lines, because
 anything a player says arrives with their name in front of it.
+
+The script can also speak first, without being asked — an NPC opening the
+mod's window when the player picks a menu option, for instance. It sends
+`@@event <command> <text>`; every plugin gets it as the client event
+`server:event`, and the line never shows in chat:
+
+```c
+	// in the NPC's dialogue
+	close2;
+	dispbottom "@@event mymod open";
+	end;
+```
+
+```js
+api.on('server:event', ({ command, text }) => {
+    if (command === 'mymod' && text === 'open') win.show();
+});
+```
+
+`<command>` takes the same form as a request's: lowercase letters, digits and
+`_`, starting with a letter. Use your mod's own, and check it, since every
+plugin hears every event.
 [`mods/ingame-database`](../mods/ingame-database) is a complete one: an item
 and monster lookup window.
 

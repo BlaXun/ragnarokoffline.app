@@ -261,6 +261,9 @@ export function init() {
     // The player choosing to leave (Escape menu, character select's Cancel),
     // as the plugin event 'exit'.
     ExitHooks.on(event => Runtime.exit(event));
+    // A mod's NPC script telling its plugin something unasked, as the plugin
+    // event 'server:event'.
+    Windows.listen((command, text) => Runtime.serverEvent(command, text));
     // Any other set() is the client targeting for itself. Hand it back its own
     // callbacks first, or the pending plugin pick would swallow the click and
     // the skill would never be cast.
