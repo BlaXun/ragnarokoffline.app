@@ -138,6 +138,12 @@ holds until it ends, whatever its place in the list. A skill that requires the
 buff it ends, such as an Inquisitor's Judge after First Faith Power, still takes
 over, so a chain runs in order.
 
+The window is a real client component, not an overlay: it is draggable, it
+remembers its position, and clicks aimed at it do not reach the game. Each
+control sends the same packet that typing the command sends, so the server
+cannot tell a button press from a keystroke — the buttons and the commands below
+are two ways to say the same thing.
+
 ### Weapon rules
 
 By default a companion uses every skill it has, whatever it is holding: a
@@ -149,12 +155,6 @@ all their skills: Clowns, Minstrels and Troubadours start with a bow and need an
 instrument to sing, and Gypsies, Wanderers and Trouveres need a whip to dance.
 Arrows, gemstones and other item costs are never needed either way, since a
 companion has no inventory to manage.
-
-The window is a real client component, not an overlay: it is draggable, it
-remembers its position, and clicks aimed at it do not reach the game. Each
-control sends the same packet that typing the command sends, so the server
-cannot tell a button press from a keystroke — the buttons and the commands below
-are two ways to say the same thing.
 
 ## Free or hired
 
