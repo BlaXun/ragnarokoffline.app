@@ -421,6 +421,14 @@ adds walking, `Q`/`E` camera turning and a spacebar attack on the nearest
 monster. Those two share some keys, and you choose which wins:
 **[docs/KEYBOARD_CONTROLS.md](docs/KEYBOARD_CONTROLS.md)**.
 
+## Playing with a gamepad
+
+Xbox, PlayStation and other standard controllers work out of the box: walk with
+the left stick, step through nearby monsters or ground items with the D-pad,
+attack with `X`, pick up with `Y`, and hold a shoulder button to use the
+shortcut bar. Every button can be remapped in game:
+**[docs/GAMEPAD_CONTROLS.md](docs/GAMEPAD_CONTROLS.md)**.
+
 ## Advanced features
 
 Backing up and restoring your characters, where the app keeps its data on each
