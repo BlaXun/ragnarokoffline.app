@@ -105,6 +105,8 @@ the same map. It can be revived in either of two ways:
   members, including real players and other companions. Their virtual Blue
   Gemstone supply is unlimited because shells have no player-accessible
   inventory.
+- Minstrel, Wanderer, Troubadour and Trouvere companions revive dead party
+  members with Death Valley, at the level they have learned.
 - A real player can use a Yggdrasil Leaf on the dead companion.
 
 Level 3 Resurrection restores 50% HP. Resurrection remains available in every
