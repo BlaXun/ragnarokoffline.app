@@ -206,6 +206,7 @@ SKIP = re.compile(
     r"|RG_PLAGIARISM|RG_COMPULSION|SC_|PF_|SA_ABRACADABRA|SA_COMA|SA_ELEMENTWATER|SA_CREATECON"
     r"|HP_MANARECHARGE|HP_MEDITATIO|HP_BASILICA|HP_ASSUMPTIO"
     r"|BD_ENCORE"  # renewal: recasts the last song, which Dissonance resets; the song rows recast instead
+    r"|AL_WARP"  # opens a destination menu on the caster's own client; a companion has none, so no portal
     r"|HT_MAKINGARROW|AC_MAKINGARROW|HT_TALKIEBOX|HT_REMOVETRAP|HT_SPRINGTRAP|HT_PHANTASMIC"
     r"|TF_STEAL|TF_PICKSTONE|TF_THROWSTONE|TF_SPRINKLESAND"
     r"|WS_CARTBOOST|BS_ADRENALINE2|NC_|GN_|KO_|OB_|RL_|NJ_|TK_|SG_|SO_EL_|SO_SPELLFISH|SO_ELEMENTAL_SHIELD)"
