@@ -10,7 +10,7 @@
 #
 #   name              url                                                commit                                    branch
 # roBrowserLegacy   https://github.com/Flux159/roBrowserLegacy.git   28f2a701f5754b69fb6bb0d89591cb85464aaf37  ragnarokoffline
-roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   0f74138f323523db59dc845a4879479cde0f392d  gamepad-dpad-target-cycle
+roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   2f8d9c4068b411fc153adc6c4dc78e5c18c67504  gamepad-dpad-target-cycle
 ROenglishRE       https://github.com/llchrisll/ROenglishRE.git     66cdfec631603fda6a90ba4bbe26ab07b5204c84
 rathena           https://github.com/Flux159/rathena.git           510dc4ab8ff8441be0c7c14e4362058db737c436  ragnarokoffline
 #
