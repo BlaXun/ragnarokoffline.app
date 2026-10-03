@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { lines, companionLimit, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX } = require('../electron/population-conf');
+const { lines, companionLimit, areaShare, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX } = require('../electron/population-conf');
 
 // The bounds the Settings slider exposes: 4 (the historic cap) to 11, because
 // rAthena's MAX_PARTY in our fork is 12 and a slot must stay free for real
@@ -50,4 +50,17 @@ test('neighbouring keys keep their own clamps', () => {
 	assert.match(text, /^population_engine_max_count: 1$/m);   // rAthena refuses 0; the flag alone means off
 	assert.match(text, /^population_engine_density_pct: 500$/m);
 	assert.match(text, /^population_engine_companion_limit: 11$/m);
+});
+
+// Towns, fields and dungeons each get a share of "How busy", 0-100.
+test('each area share is written, clamped, and a save without them means 100', () => {
+	const text = lines({ population_enable: true, population_max: 1500, population_density: 100, population_town_pct: 40, population_field_pct: 0, population_dungeon_pct: 250 });
+	assert.match(text, /^population_engine_town_pct: 40$/m);
+	assert.match(text, /^population_engine_field_pct: 0$/m, '0 is a real choice: none in fields');
+	assert.match(text, /^population_engine_dungeon_pct: 100$/m);
+	const old = lines({ population_enable: true, population_max: 1500, population_density: 100 });
+	for (const area of ['town', 'field', 'dungeon']) assert.match(old, new RegExp(`^population_engine_${area}_pct: 100$`, 'm'));
+	assert.equal(areaShare({ population_town_pct: -5 }, 'town'), 0);
+	assert.equal(areaShare({ population_town_pct: 'x' }, 'town'), 100);
+	assert.equal(areaShare({ population_town_pct: 33.4 }, 'town'), 33);
 });

@@ -707,6 +707,21 @@
       <span class="val" id="v-population_density"></span>
     </label>
     <label style="margin-top:6px">
+      <span>In towns</span>
+      <input type="range" id="population_town_pct" min="0" max="100" step="5">
+      <span class="val" id="v-population_town_pct"></span>
+    </label>
+    <label style="margin-top:6px">
+      <span>In fields</span>
+      <input type="range" id="population_field_pct" min="0" max="100" step="5">
+      <span class="val" id="v-population_field_pct"></span>
+    </label>
+    <label style="margin-top:6px">
+      <span>In dungeons</span>
+      <input type="range" id="population_dungeon_pct" min="0" max="100" step="5">
+      <span class="val" id="v-population_dungeon_pct"></span>
+    </label>
+    <label style="margin-top:6px">
       <span>Limit</span>
       <input type="range" id="population_max" min="50" max="2000" step="50">
       <span class="val" id="v-population_max"></span>
@@ -728,8 +743,10 @@
     <p class="note">They walk, fight, sit and open vending stalls, and they never touch your
        characters or your save. They appear only on the maps you and your friends are
        actually standing on. <b>How busy</b> scales the server's own spawn tables, so
-       the world keeps the shape it was authored with and only its crowding changes;
-       <b>Limit</b> is a safety ceiling across every map at once, and in a solo game
+       the world keeps the shape it was authored with and only its crowding changes.
+       <b>In towns</b>, <b>In fields</b> and <b>In dungeons</b> each take a share of
+       that for one kind of map: 100% is all of it, 0% leaves those maps empty
+       (towns at 0% have no vending stalls either). <b>Limit</b> is a safety ceiling across every map at once, and in a solo game
        it never comes into play. <b>How busy</b> above 50 can make the server sluggish
        on a computer with less than 8&nbsp;GB of RAM.</p>
     <p class="note" id="ram-note"></p>
@@ -1363,6 +1380,7 @@ const STACK_BASE_MIB = 700;
 // Measured on prt_fild08: 30 from the combat_pve spawn table plus 9 knights.
 // Towns land in the same range.
 const TYPICAL_PER_MAP = 40;
+const POPULATION_AREAS = ['town', 'field', 'dungeon'];
 
 // The host's own RAM, filled in by host_facts below. Zero until it answers,
 // which reads as "not known" rather than "small".
@@ -1377,6 +1395,10 @@ function refreshPopulation() {
   $('population_max').disabled = !on;
   $('population_density').disabled = !on;
   $('population_companion_limit').disabled = !on;
+  for (const area of POPULATION_AREAS) {
+    $(`population_${area}_pct`).disabled = !on;
+    $(`v-population_${area}_pct`).textContent = on ? `${$(`population_${area}_pct`).value}%` : '—';
+  }
   $('v-population_max').textContent = on ? String(n) : '—';
   $('v-population_density').textContent = on ? `~${perMap} per map` : '—';
   $('v-population_companion_limit').textContent = on ? $('population_companion_limit').value : '—';
@@ -1422,6 +1444,7 @@ $('population_enable').addEventListener('change', refreshPopulation);
 $('population_max').addEventListener('input', refreshPopulation);
 $('population_density').addEventListener('input', refreshPopulation);
 $('population_companion_limit').addEventListener('input', refreshPopulation);
+for (const area of POPULATION_AREAS) $(`population_${area}_pct`).addEventListener('input', refreshPopulation);
 $('vm_ram_mib').addEventListener('input', refreshPopulation);
 
 $('save-population').onclick = async () => {
@@ -1430,6 +1453,7 @@ $('save-population').onclick = async () => {
   settings.population_max = Number($('population_max').value);
   settings.population_density = Number($('population_density').value);
   settings.population_companion_limit = Number($('population_companion_limit').value);
+  for (const area of POPULATION_AREAS) settings[`population_${area}_pct`] = Number($(`population_${area}_pct`).value);
   // Machine-level, so it lives in client.json beside the client paths and the
   // LAN switch rather than in settings.json. Written first: save_settings
   // restarts the stack, which is what makes the new ceiling take effect.
@@ -2592,6 +2616,8 @@ invoke('get_settings').then(s => {
   $('population_enable').checked = !!s.population_enable;
   $('population_max').value = s.population_max;
   $('population_density').value = s.population_density;
+  // A save from before the area sliders has no key: 100, as the world was.
+  for (const area of POPULATION_AREAS) $(`population_${area}_pct`).value = s[`population_${area}_pct`] ?? 100;
   $('population_companion_limit').value = s.population_companion_limit ?? 4;
   refreshPopulation();
 });
