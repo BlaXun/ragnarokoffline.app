@@ -1147,6 +1147,9 @@ and so on. Or ship your own image there and name it.
   `customSignBoardList`.
 - **Write it in ASCII.** The client reads captions in its own codepage, as it
   does quest text.
+- **Only that one path is read.** A `SignBoardList.lub` in `System/`, or
+  anywhere else under `data/`, is copied like any other file and changes
+  nothing on screen, and the log says so.
 
 ### The client caches, hard
 
