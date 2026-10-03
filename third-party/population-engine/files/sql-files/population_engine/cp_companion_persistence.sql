@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `cp_companion_persistence` (
   `shell_index`      INT UNSIGNED  NOT NULL,          -- spawn index_ (char/account id - BASE) -> identity survives restart
   `name`             VARCHAR(24)   NOT NULL DEFAULT '',-- persistent display name (v2)
   `job_id`           SMALLINT      NOT NULL DEFAULT 0,
-  `sex`              TINYINT       NOT NULL DEFAULT 0, -- SEX_MALE/SEX_FEMALE
+  `sex`              TINYINT       NOT NULL DEFAULT 0, -- rAthena e_sex: 0 SEX_FEMALE, 1 SEX_MALE
   `hair_style`       TINYINT       NOT NULL DEFAULT 1,
   `hair_color`       SMALLINT      NOT NULL DEFAULT 0,
   `cloth_color`      SMALLINT      NOT NULL DEFAULT 0,
