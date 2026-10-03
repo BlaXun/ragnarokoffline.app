@@ -2,7 +2,7 @@ import { createMovement } from './MovementCore.mjs';
 
 import { SCREENS } from './PregameViews.mjs';
 
-const EVENTS = new Set(['map:enter', 'map:leave', 'connection', 'ui:append', 'ui:remove', 'movement:clear', 'preferences:change', 'item:use', 'exit']);
+const EVENTS = new Set(['map:enter', 'map:leave', 'connection', 'ui:append', 'ui:remove', 'movement:clear', 'preferences:change', 'item:use', 'exit', 'server:event']);
 const copy = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 function freeze(value) {
     if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); }
@@ -387,6 +387,11 @@ export function createRuntime({ storage, report = (...args) => console.error(...
         // sends, so it carries the item's type id (ITID), resolved from the live
         // inventory before the server consumes the stack.
         useItem(itemId) { if (Number.isInteger(itemId)) emit('item:use', Object.freeze({ itemId })); },
+        // A mod's server script spoke first: `@@event <command> <text>`
+        // (PluginWindows.mjs).
+        serverEvent(command, text) {
+            if (typeof command === 'string' && typeof text === 'string') emit('server:event', Object.freeze({ command, text }));
+        },
         // The player chose to leave: { to: 'charSelect' | 'login', from:
         // 'escape' | 'charSelect' } (the fork's UI/ExitHooks.js). Not sent
         // for a disconnect.
