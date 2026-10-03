@@ -336,6 +336,17 @@ export function createRuntime({ storage, report = (...args) => console.error(...
                     return freeze(copy(now));
                 },
             }),
+            // The mod's own host route (HostRoutes.mjs): its handler on the
+            // host's machine, reached from the host's window and from a
+            // friend's alike. Only this plugin's own: the name is bound here.
+            host: Object.freeze({
+                request(path, options = {}) {
+                    if (disposed) return Promise.reject(new Error(`Plugin ${name} is disposed`));
+                    if (typeof bridge.hostRequest !== 'function') return Promise.reject(new Error('this client cannot reach host routes'));
+                    return Promise.resolve().then(() => bridge.hostRequest(name, path, copy(options)))
+                        .then(value => freeze(copy(value)));
+                },
+            }),
             server: Object.freeze({
                 // Ask the mod's server script for something: it answers an
                 // @command (bindatcmd) with @@reply lines (dispbottom).

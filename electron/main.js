@@ -14,8 +14,9 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard, screen, ses
 // Mods' own settings pages are served from a private scheme, which Chromium
 // only accepts if it is declared before the app is ready.
 // Every privileged scheme in one call (Electron keeps only the last): the mod
-// settings pages' and Settings -> Tools' ro-tool://.
-require('./mod-settings-window').registerScheme(protocol, [require('./tools').schemePrivileges]);
+// settings pages', Settings -> Tools' ro-tool:// and mods' host routes'
+// mod-host:// (mod-host/sandbox.js).
+require('./mod-settings-window').registerScheme(protocol, [require('./tools').schemePrivileges, require('./mod-host/sandbox').schemePrivileges]);
 // Quiet launches mute every window for this run, without persisting a setting.
 if (process.argv.includes('--quiet')) {
     app.on('web-contents-created', (_event, contents) => contents.setAudioMuted(true));
@@ -100,6 +101,8 @@ function getSharing() {
         // Remembered logins for a friend (the autologin mod): kept in an
         // HttpOnly cookie by the gateway, exchanged here like the host's own.
         remember: () => rememberLogin(),
+        // Mods' host routes (mod-host/), for /_friend/mod/<mod>/...
+        modHost: (name, request, meta) => modHosts().request(name, request, meta),
     });
 }
 // Sign in with Google or Apple (sharing/oidc.js, docs/FRIENDS_SHARING.md):
@@ -2074,10 +2077,15 @@ const handlers = {
 		const entry = mods.find(mod => mod.name === name);
 		// Install and update are the same thing for a mod published from its
 		// own repository: fetch the latest release, show it, swap it in.
-		if (entry && entry.source) return installFromSource(entry);
+		if (entry && entry.source) {
+			const installed = await installFromSource(entry);
+			modHostsChanged();
+			return installed;
+		}
 		const present = fs.existsSync(path.join(stateDir(), 'mods', name));
 		const result = await registry.install(name, { url, mods, modsDir: path.join(stateDir(), 'mods') });
 		appLog(`installed mod ${result.name} ${result.version} (${result.files} files)`);
+		modHostsChanged();
 		const on = present ? '' : await switchOnInstalled(result.name);
 		return on ? { ...result, message: `Installed ${result.name} ${result.version}.${on} Apply to restart the server.` } : result;
 	},
@@ -2178,8 +2186,42 @@ const handlers = {
 			};
 		});
 	},
-	set_mod_enabled: ({ name, enabled }) =>
-		runStack([enabled ? 'mod-enable' : 'mod-disable', name]),
+	set_mod_enabled: async ({ name, enabled }) => {
+		const out = await runStack([enabled ? 'mod-enable' : 'mod-disable', name]);
+		modHostsChanged();
+		return out;
+	},
+	// Settings -> Mods: the mods that declare a host route, what each may
+	// connect to, and whether the host has switched it on for that list.
+	mod_host_list: async () => {
+		const consent = modHostConsent();
+		return (await hostMods({ fresh: true })).map(m => m.host instanceof Error
+			? { name: m.name, error: m.host.message, connect: [], allowed: false }
+			: { name: m.name, connect: m.host.connect, allowed: consent.allowed(m.name, m.host.connect) });
+	},
+	// Consent is to the list shown: it is stored with it, and a mod update
+	// that changes the list reads as off again (mod-host/consent.js).
+	mod_host_set: async ({ name, enabled }) => {
+		const mod = (await hostMods({ fresh: true })).find(m => m.name === name);
+		if (!mod) throw new Error(`${name} has no host route.`);
+		if (mod.host instanceof Error) throw new Error(`${name}'s host route cannot run: ${mod.host.message}`);
+		modHostConsent().set(name, !!enabled, mod.host.connect);
+		if (!enabled) modHostsInstance?.stop(name);
+		appLog(`mod-host ${name}: ${enabled ? 'switched on; may connect to ' + (mod.host.connect.join(', ') || 'nothing') : 'switched off'}`);
+		return { allowed: !!enabled };
+	},
+	// api.host.request from the host's own game page (patches/client/
+	// HostRoutes.mjs). Friends reach the same manager through the gateway.
+	mod_host_request: async (args, event) => {
+		if (!callerIsLocalGame(event)) return { status: 404, type: 'application/json; charset=utf-8', body: '{"error":"Not found"}' };
+		const name = String(args.mod || '');
+		if (!require('./mod-host/manifest').NAME.test(name)) return { status: 404, type: 'application/json; charset=utf-8', body: '{"error":"Not found"}' };
+		const result = await modHosts().request(name, {
+			method: args.method, path: args.path, query: args.query,
+			headers: { 'content-type': args.type, accept: args.accept }, body: args.body ?? null,
+		}, { client: 'host', from: 'host' });
+		return { status: result.status, type: result.type, body: result.body.toString('utf8') };
+	},
 	// Values reach the supervisor as one JSON argument; it validates them
 	// against what the mod actually declares before writing anything. The
 	// client only reads them when its config is regenerated, so rebuild the
@@ -2204,7 +2246,9 @@ const handlers = {
 		// offer files only, so a mod folder could not be picked at all.
 		const src = await pickFolderOrArchive('Install a mod from…', 'Mod folder, .zip or .rar');
 		if (!src) return 'Cancelled.';
-		return installModFrom(src);
+		const installed = await installModFrom(src);
+		modHostsChanged();
+		return installed;
 	},
 	// A UI skin (official client format: a folder of .bmp files, or a zip
 	// of one) or a cursor pack (cursors.spr + cursors.act), made into a mod.
@@ -2246,6 +2290,8 @@ const handlers = {
 			throw new Error(`${name} could not be moved to the trash (${(e && e.message) || e}). Nothing was removed; you can delete the folder from Open mods folder.`);
 		}
 		appLog(`removed mod ${name} to the trash`);
+		modHostsChanged();
+		try { modHostConsent().forget(name); } catch { /* nothing was stored */ }
 		// The folder is already gone, so a failure past this point is reported
 		// but does not undo anything.
 		try {
@@ -3100,12 +3146,16 @@ function appLog(line) {
 // Adding a name here is a decision about what a page served by a stranger may
 // do to this machine — not a convenience.
 //
-// The one name on it, `remember_login`, checks for itself that the page is
-// this app's own game window on its own world (callerIsLocalGame) and answers
-// no to anything else, so a joined host's page gets nothing from it. Even on
-// our own page it can only remember the account that page is already logged
-// in to, and hand back a one-time login token for it.
-const GAME_PAGE_HANDLERS = new Set(['remember_login']);
+// `remember_login` checks for itself that the page is this app's own game
+// window on its own world (callerIsLocalGame) and answers no to anything else,
+// so a joined host's page gets nothing from it. Even on our own page it can
+// only remember the account that page is already logged in to, and hand back a
+// one-time login token for it.
+//
+// `mod_host_request` makes the same check, and then reaches only what a
+// friend could reach through the gateway: a mod's host route, if the host has
+// switched it on (mod-host/), with the same limits.
+const GAME_PAGE_HANDLERS = new Set(['remember_login', 'mod_host_request']);
 
 // The host's own game window, on the host's own world: the main frame of the
 // game window, at the asset server's origin, while not joined to anyone.
@@ -3194,6 +3244,64 @@ function modSettingsWindows() {
 	}
 	return modSettingsController;
 }
+
+// Mods' host routes (mod-host/, docs/MODDING.md "Host routes"): a mod's own
+// JavaScript that answers requests from invited friends and from the host's
+// own game page, in a hidden sandboxed window that can reach only what its
+// mod.json declares -- and nothing at all until the host switches it on.
+let modHostsInstance = null;
+let modHostTransport = null;
+let hostModsCache = null;
+function modHostConsent() {
+	return require('./mod-host/consent').createConsentStore(path.join(stateDir(), 'mod-host.json'));
+}
+// Every installed mod with a "host" section: { name, enabled, host }, where
+// host is the validated declaration or an Error saying what is wrong with it.
+// Cached briefly, since each listing asks the supervisor.
+async function hostMods({ fresh = false } = {}) {
+	if (!fresh && hostModsCache && Date.now() - hostModsCache.at < 10000) return hostModsCache.mods;
+	const { readHost } = require('./mod-host/manifest');
+	const mods = (await handlers.list_mods())
+		.filter(m => m.dir)
+		.map(m => ({ name: m.name, enabled: m.enabled && !m.refused, host: readHost(m.dir, m.name, { ports: gamePorts() }) }))
+		.filter(m => m.host);
+	hostModsCache = { at: Date.now(), mods };
+	return mods;
+}
+// A mod was installed, removed, updated or switched: running handlers are
+// stopped, and the next request starts whatever is current.
+function modHostsChanged() {
+	hostModsCache = null;
+	modHostsInstance?.stopAll();
+}
+function modHosts() {
+	return modHostsInstance ||= new (require('./mod-host/manager').ModHostManager)({
+		resolve: async name => {
+			if (tearingDown) return null;
+			const mod = (await hostMods()).find(m => m.name === name);
+			if (!mod || !mod.enabled || mod.host instanceof Error) return null;
+			return modHostConsent().allowed(name, mod.host.connect) ? mod.host : null;
+		},
+		transport: decl => {
+			modHostTransport ||= require('./mod-host/sandbox').create({
+				BrowserWindow, session,
+				preload: path.join(__dirname, 'mod-host', 'preload.js'),
+				log: (name, text) => modHosts().hostLog(name, text),
+			});
+			return modHostTransport(decl);
+		},
+		log: appLog,
+	});
+}
+// The hidden handler windows count as windows, so without this closing the
+// last real one would leave the app running with nothing on screen.
+app.on('browser-window-created', (_event, win) => {
+	win.once('closed', () => {
+		if (!modHostsInstance) return;
+		const { isHostWindow } = require('./mod-host/sandbox');
+		if (!BrowserWindow.getAllWindows().some(other => !other.isDestroyed() && !isHostWindow(other))) modHostsInstance.stopAll();
+	});
+});
 
 // Only our exact bundled top-level pages own the host controls. A generic
 // file:// check would also grant them to any other local document.
@@ -3318,6 +3426,7 @@ function stackEnv() {
 // responding until the containers finished stopping. Quitting must stay
 // responsive even though the work behind it is slow.
 async function teardownAsync() {
+	modHostsInstance?.stopAll();
 	// The account stays as it is: the server is going down with it.
 	if (agentPlayInstance?.running()) await agentPlayInstance.stop({ disableAccount: false }).catch(() => {});
     ++sharingStartRequest;
@@ -3403,7 +3512,7 @@ if (!app.requestSingleInstanceLock()) {
 			return;
 		}
 		// Otherwise it is "show me the game", and the window already exists.
-		const win = windows.game || BrowserWindow.getAllWindows()[0];
+		const win = windows.game || BrowserWindow.getAllWindows().find(w => !require('./mod-host/sandbox').isHostWindow(w));
 		if (win && !win.isDestroyed()) {
 			if (win.isMinimized()) win.restore();
 			win.focus();

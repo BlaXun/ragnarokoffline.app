@@ -8,6 +8,7 @@ import * as Windows from './PluginWindows.mjs';
 import { install as installSignIn } from './SignIn.mjs';
 import * as Pregame from './PregameScreens.mjs';
 import { createAccount } from './RememberLogin.mjs';
+import { createHostRoutes } from './HostRoutes.mjs';
 import ExitHooks from 'UI/ExitHooks.js';
 import Session from 'Engine/SessionStorage.js';
 import Camera from 'Renderer/Camera.js';
@@ -391,6 +392,9 @@ export function init() {
         } : undefined,
         // api.account (RememberLogin.mjs). The proof of login goes to the app
         // or the gateway, never to a plugin.
+        // api.host.request (HostRoutes.mjs): the app over IPC on the host's
+        // own window, /_friend/mod/ on a friend's.
+        hostRequest: createHostRoutes({ invoke: window.__ELECTRON__?.core?.invoke }),
         account: createAccount({
             session: () => Session.AID ? { accountId: Session.AID, webToken: String(Session.WebToken || '').replace(/\0[\s\S]*$/, '') } : null,
             invoke: window.__ELECTRON__?.core?.invoke,
