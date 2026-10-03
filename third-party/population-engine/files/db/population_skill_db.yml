@@ -2105,8 +2105,6 @@ Body:
       - { SkillId: WM_GLOOMYDAY, Level: 5, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_GLOOMYDAY }
       - { SkillId: WM_MELODYOFSINK, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_MELODYOFSINK }
       - { SkillId: WM_SATURDAY_NIGHT_FEVER, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SATURDAYNIGHTFEVER }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
 
   - JobId: 4075
     Skills:
@@ -2182,8 +2180,6 @@ Body:
       - { SkillId: WM_GLOOMYDAY, Level: 5, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_GLOOMYDAY }
       - { SkillId: WM_MELODYOFSINK, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_MELODYOFSINK }
       - { SkillId: WM_SATURDAY_NIGHT_FEVER, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SATURDAYNIGHTFEVER }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
 
   - JobId: 4076
     Skills:
@@ -3008,8 +3004,6 @@ Body:
       - { SkillId: TR_RHYTHMICAL_WAVE, Level: 5, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_BEYONDOFWARCRY }
       - { SkillId: WM_DANCE_WITH_WUG, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCEWITHWUG }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
       - { SkillId: WM_FRIGG_SONG, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_GLOOMYDAY, Level: 5, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_GLOOMYDAY }
       - { SkillId: WM_GREAT_ECHO, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
@@ -3066,8 +3060,6 @@ Body:
       - { SkillId: WA_SYMPHONY_OF_LOVER, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SYMPHONYOFLOVER }
       - { SkillId: WM_BEYOND_OF_WARCRY, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_BEYONDOFWARCRY }
       - { SkillId: WM_DANCE_WITH_WUG, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_DANCEWITHWUG }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: WM_DEADHILLHERE, Level: 5, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
       - { SkillId: WM_FRIGG_SONG, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_FRIGG_SONG }
       - { SkillId: WM_GLOOMYDAY, Level: 5, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_GLOOMYDAY }
       - { SkillId: WM_GREAT_ECHO, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
