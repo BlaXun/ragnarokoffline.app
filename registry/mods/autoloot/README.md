@@ -8,8 +8,7 @@ An **Autoloot** window in game. Open it with **Alt+O**.
 - **By item type**: loot every card, every weapon, and so on, whatever its
   rarity.
 - **These items**: a list of exact items to always loot. Search by name or id
-  and click one to add it. The list holds as many items as the server allows
-  (100 on the Ragnarok Offline fork, 10 on stock rAthena).
+  and click one to add it. The list holds up to 100 items.
 - **Check a monster**: type a monster's name to see its drops with the base
   rate, your own chance, and a ✓ on the ones your settings would pick up.
 
@@ -50,9 +49,9 @@ says that. **Check a monster** shows both numbers either way.
 
 ## Needs
 
-The rAthena fork's `getautolootrate`, `getautoloottype`, `getautolootitems`,
-`getautolootitemlimit` and `getmobdroprate` script commands, which come with
-the app version in `mod.json`.
+The rAthena fork's `getautolootitems`, `setautolootitems` and `getmobdroprate`
+script commands and its 100-item autoloot list, which come with the app version
+in `mod.json`.
 
 Not supported: a minimum rarity ("only loot common items") and a list of items
 never to loot. rAthena's autoloot has neither.

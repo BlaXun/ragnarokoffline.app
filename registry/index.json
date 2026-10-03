@@ -43,24 +43,24 @@
       "requires": {
         "mods": [],
         "era": "any",
-        "app": ">=1.4.5"
+        "app": ">=1.4.8"
       },
       "files": [
         {
           "path": "README.md",
-          "sha256": "36be04097bee727844ffd90abe8da7774af06a516733089b934192ff78f3b965"
+          "sha256": "f64b046033070073fb4d9ef8e12fe8a4e76e7fdb27834518f4f9e413c7d3fffa"
         },
         {
           "path": "client/index.js",
-          "sha256": "9d97653b8a8e063aecc64908f9aee4d1a7d74079988bcd97ed9590ae3b03a3ec"
+          "sha256": "0b824bfde3bd66d0472f50f0715e6226b020f025593bb31d13d7e914893fc9b4"
         },
         {
           "path": "mod.json",
-          "sha256": "9125dac4bcfc1eb266a4ab1d405fdd1d72c47e5bc14efc01431a4eb137c9ed78"
+          "sha256": "99d831b471098d1e110120d4698589960c9be8b2d46d7e0731a056103589cad5"
         },
         {
           "path": "npc/autoloot.txt",
-          "sha256": "234218052360c9f2094a59adb0939f31880fefaf9400a4765eb6c65d3bbb1f2d"
+          "sha256": "ca6a6ec16475f0a6410b997078179e3c859fbdd704af3ca873176f108d1e1603"
         }
       ]
     },

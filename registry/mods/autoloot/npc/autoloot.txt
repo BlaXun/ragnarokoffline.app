@@ -29,8 +29,9 @@
 //= ModAutolootRate[slot], ModAutolootType[slot], and the items in
 //= ModAutolootP<slot>[]. A slot with no name is empty.
 //=
-//= getautolootrate, getautoloottype, getautolootitems,
-//= getautolootitemlimit and getmobdroprate are from the rAthena fork.
+//= getautolootitems, setautolootitems and getmobdroprate are from the
+//= rAthena fork, which also keeps @autoloot / @autoloottype in AUTOLOOT_RATE /
+//= AUTOLOOT_TYPE and lets the @autolootid list hold 100 items.
 //============================================================
 
 -	script	autoloot#mod	-1,{
@@ -84,8 +85,8 @@ OnQuery:
 				ModAutolootName$[.@slot] = .@name$;
 			}
 			if (.@action$ == "save") {
-				ModAutolootRate[.@slot] = getautolootrate();
-				ModAutolootType[.@slot] = getautoloottype();
+				ModAutolootRate[.@slot] = AUTOLOOT_RATE;
+				ModAutolootType[.@slot] = AUTOLOOT_TYPE;
 				deletearray getd("ModAutolootP" + .@slot);
 				.@n = getautolootitems(.@items);
 				if (.@n > 0)
@@ -96,10 +97,8 @@ OnQuery:
 				for (.@i = 0; .@i < getarraysize(.types); .@i++)
 					if (ModAutolootType[.@slot] & (1 << .types[.@i]))
 						atcommand "@autoloottype +" + .types[.@i];
-				atcommand "@autolootitem reset";
-				.@n = getarraysize(getd("ModAutolootP" + .@slot));
-				for (.@i = 0; .@i < .@n; .@i++)
-					atcommand "@autolootitem +" + getd("ModAutolootP" + .@slot + "[" + .@i + "]");
+				// One quiet step: @autolootitem would print a line per item.
+				setautolootitems(getd("ModAutolootP" + .@slot));
 				callsub S_Save;
 			} else if (.@action$ == "delete") {
 				ModAutolootName$[.@slot] = "";
@@ -130,7 +129,9 @@ OnQuery:
 	}
 
 	.@n = getautolootitems(.@items);
-	.@line$ = getautolootrate() + "|" + getautoloottype() + "|" + getautolootitemlimit() + "|" + getbattleflag("autoloot_adjust") + "|";
+	// AUTOLOOT_RATE / AUTOLOOT_TYPE: the fork keeps @autoloot and @autoloottype in them.
+	// 100: the fork's AUTOLOOTITEM_SIZE.
+	.@line$ = AUTOLOOT_RATE + "|" + AUTOLOOT_TYPE + "|100|" + getbattleflag("autoloot_adjust") + "|";
 	for (.@i = 0; .@i < .@n; .@i++)
 		.@line$ += (.@i ? "," : "") + .@items[.@i];
 	.@line$ += "|";
@@ -139,10 +140,11 @@ OnQuery:
 	callsub S_Reply, .@request$, .@line$;
 	end;
 
+// The rate and types last across logins on their own; the item list is restored
+// here, quietly (@autolootitem would print a line per item).
 OnPCLoginEvent:
-	.@n = getarraysize(ModAutolootItem);
-	for (.@i = 0; .@i < .@n; .@i++)
-		atcommand "@autolootitem +" + ModAutolootItem[.@i];
+	if (getarraysize(ModAutolootItem) > 0)
+		setautolootitems(ModAutolootItem);
 	end;
 
 // Also catches a list changed by typing @alootid rather than in the window.
