@@ -176,6 +176,52 @@
       ]
     },
     {
+      "name": "card-remover",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "A Card Remover in Prontera, Geffen, Alberta, Morroc, Payon, Izlude and Al De Baran takes one card out of the equipment you are wearing -- the item and the card both survive. He is paid in cards, not zeny: every card is worth points by its tier, and the cost depends on the tier of the card you free. Pick the card and your payment in his window.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/card-remover",
+      "tags": [
+        "cards",
+        "equipment",
+        "npc",
+        "quality-of-life"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.4.8"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "6752389d02d5f8cefb6dd99262339fd7b7e829652351576dfd0386fa048f9c5b"
+        },
+        {
+          "path": "System/jobname.lub",
+          "sha256": "69bc24fecf683920b3cd7dc47e66e541aaac1a31ff0b7687c13fecabacff7043"
+        },
+        {
+          "path": "client/index.js",
+          "sha256": "e954f09cf861826021c51eae98d2a70b623c3d341456d713948d8429fa3c7c44"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "24a7d37523fbc598ea4f27d54916d7ae248a8390a745be7710491e7c81cadee2"
+        },
+        {
+          "path": "npc/card_remover.txt",
+          "sha256": "2af3527d53fcd60a3b8195a22b3e352450f2d2c544911054952b4945718f6062"
+        },
+        {
+          "path": "npc/card_tiers.txt",
+          "sha256": "0c28dedaef78ca51c35fd173fa8b2fd8864bccf2fdc9082f25186b96a20e883d"
+        }
+      ]
+    },
+    {
       "name": "exp-card",
       "version": "1.1.0",
       "author": "BlaXun",
