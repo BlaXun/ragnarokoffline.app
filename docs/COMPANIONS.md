@@ -123,7 +123,7 @@ window with four tabs.
 | Tab | What it does |
 | --- | --- |
 | Party | The saved companion list, with each one's job, level and state. Set duty, summon, bench, favorite, or refresh. |
-| Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th. |
+| Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th. When companions are hired (below), only your own tier's jobs, with the fee. |
 | Battle | Stance (Free / Standard / Hold), Taunt and Recall, and the healer thresholds. |
 | Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it. Gear you gave that a new job cannot wear is handed back when it advances. |
 
@@ -132,6 +132,25 @@ remembers its position, and clicks aimed at it do not reach the game. Each
 control sends the same packet that typing the command sends, so the server
 cannot tell a button press from a keystroke — the buttons and the commands below
 are two ways to say the same thing.
+
+## Free or hired
+
+**Settings → Population → Companions** decides what a new companion costs:
+
+| Setting | What it means |
+| --- | --- |
+| Free choice (the default) | The Summon tab drafts any job, at any time, as before. |
+| Hired from the Companions panel | The Summon tab offers only jobs of your own class tier (1st, 2nd including transcendent, 3rd or 4th), and the companion comes at your base level, within the range its job's profile allows. Each hire costs the fee below. |
+| Hired from a Companion Recruiter | The same rules, from a Companion Recruiter who stands two cells east of the healer in each main town. The Summon tab points you there. |
+
+The fee is **Fee per level** zeny times the companion's level, and/or the
+**Fee item** (an item id and an amount; 0 for none). It is taken only once the
+companion exists, so a draft that fails costs nothing. Calling back a companion
+you already have, from the Party tab or `@companion summon`, is always free.
+
+`@companion terms` prints the rules for your character as one line,
+`@CPTERMS|mode|tier|zeny|item|amount|item name|jobs`, which is what the
+Companions window reads.
 
 ## Current scope
 

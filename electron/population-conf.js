@@ -35,6 +35,30 @@ function companionLimit(s) {
 }
 
 /**
+ * Companions: free choice (0, as before), hired from the Companions panel (1)
+ * or hired from a Companion Recruiter NPC (2). A hired companion is of the
+ * player's own class tier, at their level, for the fee below.
+ */
+const HIRE_MODES = ['free', 'panel', 'npc'];
+function companionHire(s) {
+	const i = HIRE_MODES.indexOf(s.population_companion_hire);
+	return i < 0 ? 0 : i;
+}
+const clampInt = (v, lo, hi, fallback) => {
+	const n = Number(v);
+	if (v === undefined || v === null || v === '' || !Number.isFinite(n)) return fallback;
+	return Math.min(hi, Math.max(lo, Math.round(n)));
+};
+/** The fee: zeny per level of the companion, and an item id and amount (0 = none). */
+function companionFee(s) {
+	return {
+		zenyPerLevel: clampInt(s.population_companion_fee_zeny, 0, 1000000, 1000),
+		item: clampInt(s.population_companion_fee_item, 0, 2147483647, 0),
+		amount: clampInt(s.population_companion_fee_item_amount, 0, 30000, 0),
+	};
+}
+
+/**
  * Every population key the server reads, in order. The count is always
  * written, even when the engine is off: rAthena refuses a 0 for it and "none"
  * is expressed by the enable flag alone (see main.js toBattleConf).
@@ -50,6 +74,10 @@ function lines(settings) {
 		// Written even while the engine is off, so a raise sticks if it is turned on later.
 		`population_engine_companion_limit: ${companionLimit(settings)}\n` +
 		AREAS.map(area => `population_engine_${area}_pct: ${areaShare(settings, area)}\n`).join('') +
+		`population_engine_companion_hire: ${companionHire(settings)}\n` +
+		`population_engine_companion_hire_zeny_per_level: ${companionFee(settings).zenyPerLevel}\n` +
+		`population_engine_companion_hire_item: ${companionFee(settings).item}\n` +
+		`population_engine_companion_hire_item_amount: ${companionFee(settings).amount}\n` +
 		// Off in the compiled defaults. Upstream turns it on in a conf file we
 		// deliberately do not import, so without this line no shell ever opens
 		// a stall -- and a town of people with nothing to sell is most of what
@@ -58,4 +86,4 @@ function lines(settings) {
 	);
 }
 
-module.exports = { lines, companionLimit, areaShare, AREAS, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX };
+module.exports = { lines, companionLimit, areaShare, companionHire, companionFee, HIRE_MODES, AREAS, COMPANION_LIMIT_MIN, COMPANION_LIMIT_MAX };

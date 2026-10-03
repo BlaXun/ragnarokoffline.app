@@ -732,6 +732,27 @@
       <span class="val" id="v-population_companion_limit"></span>
     </label>
     <label style="margin-top:6px">
+      <span>Companions</span>
+      <select id="population_companion_hire">
+        <option value="free">Free choice: any job, from the Companions panel</option>
+        <option value="panel">Hired from the Companions panel</option>
+        <option value="npc">Hired from a Companion Recruiter in town</option>
+      </select>
+    </label>
+    <div id="companion-fee" hidden>
+      <label style="margin-top:6px">
+        <span>Fee per level</span>
+        <input type="number" id="population_companion_fee_zeny" min="0" max="1000000" step="100" style="width:110px">
+        <span class="val" id="v-population_companion_fee_zeny"></span>
+      </label>
+      <label style="margin-top:6px">
+        <span>Fee item</span>
+        <input type="number" id="population_companion_fee_item" min="0" step="1" style="width:110px" placeholder="item id">
+        <input type="number" id="population_companion_fee_item_amount" min="0" max="30000" step="1" style="width:70px" placeholder="amount">
+        <span class="val">item id and amount; 0 for none</span>
+      </label>
+    </div>
+    <label style="margin-top:6px">
       <span>Server memory</span>
       <input type="range" id="vm_ram_mib" min="2048" max="16384" step="1024">
       <span class="val" id="v-vm_ram_mib"></span>
@@ -748,7 +769,12 @@
        that for one kind of map: 100% is all of it, 0% leaves those maps empty
        (towns at 0% have none of the fake players' own vending stalls either; a mod's market, such as prontera-vendors, follows that mod's settings). <b>Limit</b> is a safety ceiling across every map at once, and in a solo game
        it never comes into play. <b>How busy</b> above 50 can make the server sluggish
-       on a computer with less than 8&nbsp;GB of RAM.</p>
+       on a computer with less than 8&nbsp;GB of RAM.
+       <b>Companions</b>: with <i>Free choice</i> the Companions panel drafts any job at
+       any time. <i>Hired</i> makes a companion something you pay for: only jobs of your
+       own class tier, at your level, for the fee per level and/or the item set here,
+       either from the panel or from a Companion Recruiter standing beside each town's
+       healer. Calling back a companion you already have is always free.</p>
     <p class="note" id="ram-note"></p>
   </div>
 
@@ -1395,6 +1421,12 @@ function refreshPopulation() {
   $('population_max').disabled = !on;
   $('population_density').disabled = !on;
   $('population_companion_limit').disabled = !on;
+  const hired = $('population_companion_hire').value !== 'free';
+  $('population_companion_hire').disabled = !on;
+  $('companion-fee').hidden = !hired;
+  const perLevel = Number($('population_companion_fee_zeny').value) || 0;
+  $('v-population_companion_fee_zeny').textContent = perLevel
+    ? `zeny; a level 50 companion costs ${(perLevel * 50).toLocaleString()}` : 'no zeny';
   for (const area of POPULATION_AREAS) {
     $(`population_${area}_pct`).disabled = !on;
     $(`v-population_${area}_pct`).textContent = on ? `${$(`population_${area}_pct`).value}%` : '—';
@@ -1445,6 +1477,8 @@ $('population_max').addEventListener('input', refreshPopulation);
 $('population_density').addEventListener('input', refreshPopulation);
 $('population_companion_limit').addEventListener('input', refreshPopulation);
 for (const area of POPULATION_AREAS) $(`population_${area}_pct`).addEventListener('input', refreshPopulation);
+$('population_companion_hire').addEventListener('change', refreshPopulation);
+$('population_companion_fee_zeny').addEventListener('input', refreshPopulation);
 $('vm_ram_mib').addEventListener('input', refreshPopulation);
 
 $('save-population').onclick = async () => {
@@ -1454,6 +1488,10 @@ $('save-population').onclick = async () => {
   settings.population_density = Number($('population_density').value);
   settings.population_companion_limit = Number($('population_companion_limit').value);
   for (const area of POPULATION_AREAS) settings[`population_${area}_pct`] = Number($(`population_${area}_pct`).value);
+  settings.population_companion_hire = $('population_companion_hire').value;
+  settings.population_companion_fee_zeny = Number($('population_companion_fee_zeny').value) || 0;
+  settings.population_companion_fee_item = Number($('population_companion_fee_item').value) || 0;
+  settings.population_companion_fee_item_amount = Number($('population_companion_fee_item_amount').value) || 0;
   // Machine-level, so it lives in client.json beside the client paths and the
   // LAN switch rather than in settings.json. Written first: save_settings
   // restarts the stack, which is what makes the new ceiling take effect.
@@ -2618,6 +2656,10 @@ invoke('get_settings').then(s => {
   $('population_density').value = s.population_density;
   // A save from before the area sliders has no key: 100, as the world was.
   for (const area of POPULATION_AREAS) $(`population_${area}_pct`).value = s[`population_${area}_pct`] ?? 100;
+  $('population_companion_hire').value = ['free', 'panel', 'npc'].includes(s.population_companion_hire) ? s.population_companion_hire : 'free';
+  $('population_companion_fee_zeny').value = s.population_companion_fee_zeny ?? 1000;
+  $('population_companion_fee_item').value = s.population_companion_fee_item ?? 0;
+  $('population_companion_fee_item_amount').value = s.population_companion_fee_item_amount ?? 0;
   $('population_companion_limit').value = s.population_companion_limit ?? 4;
   refreshPopulation();
 });
