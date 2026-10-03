@@ -2291,6 +2291,19 @@ static bool pop_mod_vendor_cell_free(int16_t m, int16_t x, int16_t y) {
 	return map_count_oncell(m, x, y, BL_PC, 0) == 0;
 }
 
+/// RAGNAROKMAC: true when an NPC stands within min_npc_vendchat_distance of
+/// (x, y) -- the rule that keeps a player's own shop away from NPCs, which a
+/// shell never goes through. Hidden NPCs (disablenpc) do not count, as for a
+/// player. Used for Count + Areas only: a fixed seat is where its mod put it.
+static bool pop_mod_vendor_near_npc(int16_t m, int16_t x, int16_t y) {
+	const int16_t d = static_cast<int16_t>(battle_config.min_npc_vendchat_distance);
+	if (d <= 0)
+		return false;
+	return map_foreachinallarea(npc_isnear_sub, m,
+		static_cast<int16_t>(x - d), static_cast<int16_t>(y - d),
+		static_cast<int16_t>(x + d), static_cast<int16_t>(y + d), BL_NPC, 0) > 0;
+}
+
 /// Spawn one shell for a mod vendor block at (x, y). Mirrors the look-building in
 /// autosummon_fill_map, but with the vendor's own profile handed in directly.
 static bool pop_mod_vendor_spawn_one(int16_t m, const PopulationVendorEntry& entry,
@@ -2838,7 +2851,7 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 					}
 					const int16_t x = static_cast<int16_t>(a->x1 + rnd() % (a->x2 - a->x1 + 1));
 					const int16_t y = static_cast<int16_t>(a->y1 + rnd() % (a->y2 - a->y1 + 1));
-					if (!pop_mod_vendor_cell_free(m, x, y))
+					if (!pop_mod_vendor_cell_free(m, x, y) || pop_mod_vendor_near_npc(m, x, y))
 						continue;
 					bool too_close = false;
 					for (const auto& p : mine)
