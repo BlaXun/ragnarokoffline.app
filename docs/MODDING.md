@@ -1393,7 +1393,9 @@ it, so a mod's entry wins over the stock one — which is how a mod renames an
 existing item — and a later mod wins over an earlier one, as in `db/`.
 
 A table anywhere else — `System/LuaFiles514/`, `data/luafiles514/` — is not
-read by the client, and the log says so. Editing the copy under
+read by the client, and the log says so: **Settings → Tools → Log viewer**,
+under *App*, as a `link-assets warning` each time the app starts or a mod is
+switched on or off. Editing the copy under
 `state/assets/System/` does not last: that folder is rebuilt on every start.
 
 See [`examples/mods/custom-item`](../examples/mods/custom-item).
