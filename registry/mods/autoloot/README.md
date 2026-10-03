@@ -16,6 +16,14 @@ An **Autoloot** window in game. Open it with **Alt+O**.
 A drop is looted if any of the three says so. **Turn everything off** clears
 all three.
 
+## Presets
+
+Five named slots at the top of the window. Type a name and press **Save** to
+keep the current rarity, item types and item list; **Load** puts them back,
+**Rename** changes only the name, **×** empties the slot. Presets are kept on
+the character, so they survive logging out and follow it to another computer.
+Loading runs the commands again, so it prints their chat lines too.
+
 ## Works where @autoloot is for GMs only
 
 The window doesn't need the player to be allowed `@autoloot`, `@autoloottype`

@@ -30,6 +30,9 @@ button { font: inherit; padding: 2px 8px; cursor: pointer; }
 .empty { color: #889; padding: 4px; }
 .error { color: #a33; }
 .results { max-height: 140px; overflow: auto; }
+.preset { display: flex; align-items: center; gap: 4px; padding: 2px 0; }
+.preset input { flex: 1; min-width: 0; font: inherit; padding: 2px 4px; border: 1px solid #aab4cf; border-radius: 3px; }
+.preset button { padding: 1px 6px; }
 `;
 
 const escape = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -39,10 +42,12 @@ const percent = rate => `${(rate / 100).toFixed(2)}%`;
 export function parseState(line) {
     const fields = String(line || '').split('|');
     if (fields.length < 5 || fields[0] === '') return null;
-    const [rate, types, limit, adjust, items] = fields;
+    const [rate, types, limit, adjust, items, presets = ''] = fields;
     return {
         rate: Number(rate), types: Number(types), limit: Number(limit), adjust: Number(adjust) !== 0,
         items: items.split(',').filter(Boolean).map(Number),
+        // One name per slot; '' is an empty slot.
+        presets: presets.split(';'),
     };
 }
 
@@ -72,6 +77,11 @@ export default function init(parameters, api) {
     const win = api.ui.window({ id: 'autoloot', title: 'Autoloot', width: 380, height: 520 });
     const body = win.body;
     body.innerHTML = `<style>${STYLE}</style><div class="wrap">
+        <section>
+            <h4>Presets</h4>
+            <div data-presets></div>
+            <div class="note">Type a name and Save to keep the settings below; Load puts them back.</div>
+        </section>
         <section>
             <h4>By rarity</h4>
             <div class="line">
@@ -149,7 +159,31 @@ export default function init(parameters, api) {
             : '<div class="empty">No items yet.</div>';
         icons(list);
         list.querySelectorAll('[data-remove]').forEach(button => button.addEventListener('click', () => ask(`remove ${button.dataset.remove}`)));
+        renderPresets();
         if (monster) renderMonster();
+    }
+
+    function renderPresets() {
+        const box = $('[data-presets]');
+        // Keep what the player is typing when an answer redraws the window.
+        const typing = box.contains(document.activeElement) || body.getRootNode().activeElement?.closest?.('[data-presets]');
+        if (typing) return;
+        box.innerHTML = state.presets.map((name, slot) => `<div class="preset">
+            <input type="text" maxlength="24" data-name="${slot}" value="${escape(name)}" placeholder="Empty slot ${slot + 1}">
+            <button data-preset="save" data-slot="${slot}" title="Save the current settings here">Save</button>
+            <button data-preset="load" data-slot="${slot}" ${name ? '' : 'disabled'} title="Use these settings">Load</button>
+            <button data-preset="rename" data-slot="${slot}" ${name ? '' : 'disabled'} title="Keep the settings, change the name">Rename</button>
+            <button data-preset="delete" data-slot="${slot}" ${name ? '' : 'disabled'} title="Empty this slot">×</button>
+        </div>`).join('');
+        box.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', () => {
+            const slot = Number(button.dataset.slot);
+            const action = button.dataset.preset;
+            const name = box.querySelector(`[data-name="${slot}"]`).value.replace(/[|;]/g, '').trim().slice(0, 24);
+            if (action === 'save' && state.presets[slot] && !confirm(`Replace "${state.presets[slot]}" with the current settings?`)) return;
+            if (action === 'delete' && !confirm(`Delete "${state.presets[slot]}"?`)) return;
+            button.blur();
+            ask(['save', 'rename'].includes(action) ? `${action} ${slot} ${name}` : `${action} ${slot}`);
+        }));
     }
 
     function renderMonster() {

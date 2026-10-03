@@ -48,11 +48,11 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "464089afc91056b178445a8a5c487a5d63cbc616e29005f9d5fdd366a7b02975"
+          "sha256": "a12e46aa358bf63abfe0ea173d9ad92d815f576fdba33493bf658bbf5efefa42"
         },
         {
           "path": "client/index.js",
-          "sha256": "21d44500d5fc281c643d903f1980805859fa558438b576c9463eb6753d4ceda1"
+          "sha256": "7bdb7f9dd37193fafe230e18ec225fbad347b36f91c2b241de3c9ab890f15450"
         },
         {
           "path": "db/when/longer_list/extension_db.yml",
@@ -64,7 +64,7 @@
         },
         {
           "path": "npc/autoloot.txt",
-          "sha256": "5f6f0cba34be281738b65560c0374e79aa135092c58c9802395a457da0148b8b"
+          "sha256": "234218052360c9f2094a59adb0939f31880fefaf9400a4765eb6c65d3bbb1f2d"
         }
       ]
     },
