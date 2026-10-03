@@ -826,7 +826,15 @@ static void population_engine_shell_equip_item(map_session_data* sd, t_itemid na
 			struct item_data* id = itemdb_search(nameid);
 			if (id && id->equip) {
 				const uint32 pos = (force_pos != 0) ? force_pos : id->equip;
-				(void)pc_equipitem(sd, i, pos, false);
+				// A refused piece stays unworn in the bag, and only what is worn is saved, so the
+				// companion lost it at the next save without a word. Say what was refused and why
+				// (pc_isequip's ITEM_EQUIP_ACK code, which names "level too low" apart from other refusals).
+				const uint8 why = pc_isequip(sd, i);
+				if (!pc_equipitem(sd, i, pos, false))
+					ShowWarning("Population engine: population shell %u (%s, job %d, level %d) could not wear %s %u: equip check %u%s\n",
+						index, sd->status.name, (int)sd->status.class_, (int)sd->status.base_level,
+						slot_label ? slot_label : "?", (unsigned)nameid, (unsigned)why,
+						sd->sc.cant.equip ? ", equipping blocked by a status" : "");
 			} else {
 				if (!id)
 					ShowWarning("Population engine: %s %u not found in itemdb for population shell %u\n",
