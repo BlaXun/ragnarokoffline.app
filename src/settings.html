@@ -779,8 +779,8 @@
   </div>
   </div>
   <!-- What Apply is waiting for, or what it left to do. -->
-  <div class="applybar" id="mods-status" role="status" aria-live="polite">
-    <div class="what"><b id="mods-status-text">Everything is applied.</b><small id="mods-status-detail"></small></div>
+  <div class="applybar" id="mods-status">
+    <div class="what" role="status" aria-live="polite"><b id="mods-status-text">Everything is applied.</b><small id="mods-status-detail"></small></div>
     <button id="mods-discard" class="ghost" hidden title="Puts switches and options back as they were applied">Discard</button>
     <button id="mods-reopen" hidden>Reopen game</button>
     <button id="mods-apply" class="ghost">Apply &amp; restart server</button>
@@ -1672,11 +1672,11 @@ function paintModsStatus() {
     detail = ModsState.pendingDetail(changes) + ' — '
       + (ModsState.needsReopen(changes, modsClient)
         ? 'restarts the server; the game will need reopening too.'
-        : 'restarts the server; the game keeps running.');
+        : 'restarts the server, so log in again; the game does not need reopening.');
   } else if (notice) {
     text = notice.text;
   } else if (modsAppliedQuietly) {
-    text = 'Mods applied. The server restarted; the game does not need reopening.';
+    text = 'Mods applied. The server restarted: log in again; the game does not need reopening.';
   } else {
     text = 'Everything is applied.';
   }
@@ -1684,7 +1684,13 @@ function paintModsStatus() {
   $('mods-status-detail').textContent = detail;
   // Discard puts back what only lives in this window: switches and options.
   // An install, a removal or an update has already changed the files.
-  $('mods-discard').hidden = !changes.some(c => c.change === 'on' || c.change === 'off' || c.change === 'settings');
+  // Only when a switch or an option on screen differs from what is saved: an
+  // install switches its mod on in the files itself, and after a failed Apply
+  // the switches are already written, and Discard could put back neither.
+  const saved = name => modsListed.find(m => m.name === name);
+  const undoable = Object.entries(modState).some(([name, on]) => saved(name) && saved(name).enabled !== on)
+    || Object.entries(modSettings).some(([name, values]) => JSON.stringify(values) !== modSettingsBaseline[name]);
+  $('mods-discard').hidden = !undoable;
   const reopen = $('mods-reopen');
   reopen.hidden = !!changes.length || !notice;
   if (notice && !reopening) { reopen.textContent = notice.button; reopen.disabled = false; }
@@ -1723,7 +1729,7 @@ $('mods-discard').onclick = () => {
   modState = {};
   modSettings = {};
   renderModList();
-  log('Switches and options put back.');
+  log('');
 };
 
 async function refreshMods() {
@@ -2682,6 +2688,10 @@ if (!$('panel-mods').hidden && modsSub === 'find') loadCatalogue();
 
 $('mods-install').onclick = () => withButton('mods-install', 'Installing…', 'Add mod from folder…', async () => {
   const msg = await invoke('install_mod');
+  // A reinstall over a mod already here replaces files the running server
+  // still has the old copy of, as an update from Find Mods does.
+  const name = /^Installed ([A-Za-z0-9_.-]+)\./.exec(String(msg || ''))?.[1];
+  if (name && isInstalled(name)) modsUpdated.add(name);
   await refreshMods();
   return msg;
 });
@@ -2724,7 +2734,8 @@ $('mods-apply').onclick = () => withButton('mods-apply', 'Applying…', 'Apply &
     try { gameNow = await invoke('game_status'); modsAppliedAt = gameNow.launches; } catch { /* older shell */ }
   }
   paintModsStatus();
-  return reopen ? 'Mods applied. Reopen the game to load them.' : 'Mods applied. The game does not need reopening.';
+  // The bar says what happened; the log line under it would only repeat it.
+  return '';
 });
 
 // The second half of "Your link": the internet one, beside the LAN one, so
