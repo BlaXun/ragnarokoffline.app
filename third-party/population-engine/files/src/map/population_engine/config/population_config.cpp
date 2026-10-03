@@ -1677,16 +1677,37 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 		if (!this->asString(node, "GearSetName", name) || name.empty())
 			return 0;
 		PopulationGearSet gs;
-		this->parseEquipSlotPool(node, {"Weapon",     "weapon"     }, EQP_HAND_R,                        gs.weapon_pool,      0);
-		this->parseEquipSlotPool(node, {"Shield",     "shield"     }, EQP_HAND_L,                        gs.shield_pool,      0);
-		this->parseEquipSlotPool(node, {"HeadTop",    "head_top"   }, EQP_HEAD_TOP|EQP_COSTUME_HEAD_TOP, gs.head_top_pool,    0);
-		this->parseEquipSlotPool(node, {"HeadMid",    "head_mid"   }, EQP_HEAD_MID|EQP_COSTUME_HEAD_MID, gs.head_mid_pool,    0);
-		this->parseEquipSlotPool(node, {"HeadBottom", "head_bottom"}, EQP_HEAD_LOW|EQP_COSTUME_HEAD_LOW, gs.head_bottom_pool, 0);
-		this->parseEquipSlotPool(node, {"Armor",      "armor"      }, EQP_ARMOR,                         gs.armor_pool,       0);
-		this->parseEquipSlotPool(node, {"Garment",    "garment"    }, EQP_GARMENT|EQP_COSTUME_GARMENT,   gs.garment_pool,     0);
-		this->parseEquipSlotPool(node, {"Shoes",      "shoes"      }, EQP_SHOES,                         gs.shoes_pool,       0);
-		this->parseEquipSlotPool(node, {"AccL",       "acc_l"      }, EQP_ACC_L,                         gs.acc_l_pool,       0);
-		this->parseEquipSlotPool(node, {"AccR",       "acc_r"      }, EQP_ACC_R,                         gs.acc_r_pool,       0);
+		// RAGNAROKMAC: a pre-renewal server takes a slot from the set's PreRenewal block when the
+		// block has it. Most sets are built from renewal-only items (the Paradise/Eden gear), which
+		// the pre-renewal item db lacks; every one was skipped there, and a slot with nothing left
+		// spawned empty (#325). Renewal ignores the block.
+#ifndef RENEWAL
+		const bool has_pre = this->nodeExists(node, "PreRenewal");
+		const ryml::NodeRef pre_node = has_pre ? node[c4::to_csubstr("PreRenewal")] : node;
+#endif
+		auto slot = [&](std::initializer_list<const char*> keys, uint32_t flag, std::vector<uint16_t>& pool) {
+#ifndef RENEWAL
+			if (has_pre) {
+				for (const char* k : keys) {
+					if (this->nodeExists(pre_node, std::string(k))) {
+						this->parseEquipSlotPool(pre_node, keys, flag, pool, 0);
+						return;
+					}
+				}
+			}
+#endif
+			this->parseEquipSlotPool(node, keys, flag, pool, 0);
+		};
+		slot({"Weapon",     "weapon"     }, EQP_HAND_R,                        gs.weapon_pool);
+		slot({"Shield",     "shield"     }, EQP_HAND_L,                        gs.shield_pool);
+		slot({"HeadTop",    "head_top"   }, EQP_HEAD_TOP|EQP_COSTUME_HEAD_TOP, gs.head_top_pool);
+		slot({"HeadMid",    "head_mid"   }, EQP_HEAD_MID|EQP_COSTUME_HEAD_MID, gs.head_mid_pool);
+		slot({"HeadBottom", "head_bottom"}, EQP_HEAD_LOW|EQP_COSTUME_HEAD_LOW, gs.head_bottom_pool);
+		slot({"Armor",      "armor"      }, EQP_ARMOR,                         gs.armor_pool);
+		slot({"Garment",    "garment"    }, EQP_GARMENT|EQP_COSTUME_GARMENT,   gs.garment_pool);
+		slot({"Shoes",      "shoes"      }, EQP_SHOES,                         gs.shoes_pool);
+		slot({"AccL",       "acc_l"      }, EQP_ACC_L,                         gs.acc_l_pool);
+		slot({"AccR",       "acc_r"      }, EQP_ACC_R,                         gs.acc_r_pool);
 		if (this->nodeExists(node, "Arrow")) {
 			bool arrow = true;
 			if (this->asBool(node, "Arrow", arrow))
