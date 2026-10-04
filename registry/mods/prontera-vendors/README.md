@@ -59,7 +59,7 @@ defaults. On an app without settings pages they show in the Mods tab.
 | Price level (%) | 100 | Every price × this / 100, for sell stalls and buyers alike. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count toward it). |
 | Vendors shout their wares | on | Stalls call out a real item and price now and then ("S> Elunium 13K", "B> Oridecon 9500"). |
-| Seconds between a stall's shouts | 180 | Average per stall (each waits ½× to 1½×); no two stalls shout within 6 seconds of each other. |
+| Seconds between a stall's shouts | 360 | Average per stall (each waits ½× to 1½×); no two stalls shout within 6 seconds of each other. |
 | Customers buy from your stalls | off | Customers for the stalls you open (see below). |
 | Customers' pace (%) | 100 | How often they come. |
 | Sellers fill your buying stores | off | Sellers for the buying stores you open. |

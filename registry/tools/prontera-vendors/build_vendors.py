@@ -2180,14 +2180,14 @@ def main():
         if buying:
             out += ["    Buying: true", f"    PickCount: [{lo}, {min(hi, 5)}]", "    MaxSlots: 5",
                     "    RotationHours: 4", "    RotationJitterMinutes: 30",
-                    "    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }",
+                    "    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }",
                     "    Pool:"]
         else:
             out += [f"    PickCount: [{lo}, {hi}]", f"    MaxSlots: {max_slots}",
                     "    RotationHours: 4", "    RotationJitterMinutes: 30",
                     "    PriceMistakeOneIn: 5000",
                     "    Undercut: { Chance: 50, StepPct: [1, 5] }",
-                    "    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }",
+                    "    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }",
                     "    Pool:"]
         for e, spec, p in lines:
             if buying:

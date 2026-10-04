@@ -267,7 +267,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Red_Potion, Amount: 100, Price: [8, 12] }
       - { Item: Orange_Potion, Amount: 300, Price: [42, 58] }
@@ -315,7 +315,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Phracon, Amount: 200, Price: [170, 230] }
       - { Item: Emveretarcon, Amount: 30, Price: [920, 1050] }
@@ -359,7 +359,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Red_Potion, Amount: 100, Price: [8, 12] }
       - { Item: Orange_Potion, Amount: 200, Price: [42, 58] }
@@ -407,7 +407,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Archer_Skeleton_Card, Amount: 1, Price: [460000, 540000] }
       - { Item: Soldier_Skeleton_Card, Amount: 1, Price: [1380000, 1620000] }
@@ -460,7 +460,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Daydric_Card, Amount: 1, Price: [1748000, 2052000] }
       - { Item: Knight_Of_Abyss_Card, Amount: 1, Price: [20424000, 23976000] }
@@ -514,7 +514,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Morrigane's_Helm, Amount: 1, Price: [184000, 216000] }
       - { Item: CD_In_Mouth, Amount: 1, Price: [1748000, 2052000] }
@@ -567,7 +567,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Pike_, Amount: 1, Price: [2850, 3350] }
       - { Item: Battle_Axe_, Amount: 1, Price: [18000, 21500] }
@@ -621,7 +621,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Elven_Bow, Amount: 1, Price: [92000, 108000] }
       - { Item: Electric_Fist, Amount: 1, Price: [73500, 86000] }
@@ -675,7 +675,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Main_Gauche, Amount: 1, Price: [20000, 23500], Element: Fire }
       - { Item: Main_Gauche, Amount: 1, Price: [20000, 23500], Element: Water }
@@ -725,7 +725,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Katar, Amount: 1, Price: [82500, 97000], Element: Fire }
       - { Item: Katar, Amount: 1, Price: [82500, 97000], Element: Water }
@@ -791,7 +791,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: C_Jack_Castle_Bat, Amount: 1, Price: [41400000, 48600000] }
       - { Item: C_Baphomet_Hat, Amount: 1, Price: [29900000, 35100000] }
@@ -844,7 +844,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: House_Auger, Amount: 1, Price: [920000, 1080000] }
 
@@ -868,7 +868,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: White_Wing_Brooch, Amount: 1, Price: [731000, 858500] }
       - { Item: Light_Of_Cure, Amount: 1, Price: [2441000, 2865500] }
@@ -921,7 +921,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Elemental_Fire, Amount: 50, Price: [6200, 7300] }
       - { Item: Elemental_Water, Amount: 20, Price: [6200, 7300] }
@@ -954,7 +954,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Knife_, Amount: 1, Price: [92000, 108000] }
       - { Item: Cutter_, Amount: 1, Price: [1000, 1200] }
@@ -1000,7 +1000,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Knife_, Amount: 1, Price: [107000, 125500], Refine: 7 }
       - { Item: Knife_, Amount: 1, Price: [179000, 210000], Refine: 8 }
@@ -1084,7 +1084,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Chain_Mail_, Amount: 1, Price: [117500, 138000], Refine: 4 }
       - { Item: Chain_Mail_, Amount: 1, Price: [219500, 257500], Refine: 5 }
@@ -1152,7 +1152,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blue_Gemstone, Amount: 50, Price: [305, 410] }
       - { Item: Yellow_Gemstone, Amount: 200, Price: [380, 515] }
@@ -1193,7 +1193,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Red_Herb, Amount: 10, Price: [1350, 1600] }
       - { Item: Yellow_Herb, Amount: 50, Price: [920, 1050] }
@@ -1237,7 +1237,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Undershirt, Amount: 1, Price: [276000, 324000] }
       - { Item: Undershirt_, Amount: 1, Price: [276000, 324000] }
@@ -1266,7 +1266,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blue_Gemstone, Amount: 100, Price: [305, 410] }
       - { Item: Yellow_Gemstone, Amount: 100, Price: [380, 515] }
@@ -1308,7 +1308,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Pet_Food, Amount: 150, Price: [245, 335] }
       - { Item: Unripe_Apple, Amount: 5, Price: [85500, 100000] }
@@ -1350,7 +1350,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Twin_Edge_B, Amount: 1, Price: [323000, 379500] }
       - { Item: Twin_Edge_R, Amount: 1, Price: [314500, 369000] }
@@ -1404,7 +1404,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Old_Card_Album, Amount: 1, Price: [900000, 1100000] }
       - { Item: Elunium, Amount: 30, Price: [12000, 14000] }
@@ -1458,7 +1458,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Bloody_Dead_Branch, Amount: 3, Price: [920000, 1080000] }
       - { Item: Branch_Of_Dead_Tree, Amount: 50, Price: [13500, 16000] }
@@ -1484,7 +1484,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Old_Blue_Box, Amount: 20, Price: [9150, 10500] }
       - { Item: Old_Violet_Box, Amount: 10, Price: [18000, 21000] }
@@ -1511,7 +1511,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Old_Card_Album, Amount: 3, Price: [900000, 1100000] }
       - { Item: Magic_Card_Album, Amount: 3, Price: [2700000, 3300000] }
@@ -1537,7 +1537,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Scarlet_Katar, Amount: 1, Price: [1018500, 1195500], Refine: 7 }
       - { Item: Scarlet_Katar, Amount: 1, Price: [12988500, 15247500], Refine: 9 }
@@ -1591,7 +1591,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: S_Malicious_Shoes, Amount: 2, Price: [6394000, 7506000] }
       - { Item: S_Breezy_Armor, Amount: 200, Price: [1, 2] }
@@ -1649,7 +1649,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: White_Wing_Suits, Amount: 1, Price: [138000, 162000] }
       - { Item: Clip, Amount: 1, Price: [1564000, 1836000] }
@@ -1702,7 +1702,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Yggdrasilberry, Amount: 10, Price: [16000, 19000] }
       - { Item: Seed_Of_Yggdrasil, Amount: 5, Price: [46000, 54000] }
@@ -1733,7 +1733,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Red_Slim_Potion, Amount: 200, Price: [125, 170] }
       - { Item: Yellow_Slim_Potion, Amount: 300, Price: [510, 690] }
@@ -1760,7 +1760,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Pike_, Amount: 1, Price: [1890500, 2219000], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Skel_Worker_Card, Vadon_Card] }
       - { Item: Plate_Armor_, Amount: 1, Price: [988500, 1160500], Refine: 4, Cards: [Pecopeco_Card] }
@@ -1831,7 +1831,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Shield_, Amount: 1, Price: [501500, 589000], Refine: 4, Cards: [Thara_Frog_Card] }
       - { Item: Glittering_Clothes, Amount: 1, Price: [1642000, 1928000], Refine: 4, Cards: [Angeling_Card] }
@@ -1898,7 +1898,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Vitata_Card] }
       - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Phen_Card] }
@@ -1968,7 +1968,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Phen_Card] }
       - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Vitata_Card] }
@@ -2036,7 +2036,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Composite_Bow_, Amount: 1, Price: [1951000, 2290500], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Vadon_Card, Vadon_Card] }
       - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
@@ -2105,7 +2105,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Cap_, Amount: 1, Price: [697000, 818000], Refine: 4, Cards: [Wilow_Card] }
       - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
@@ -2170,7 +2170,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Saint_Robe_, Amount: 1, Price: [2053500, 2410500], Refine: 7, Cards: [Pupa_Card] }
       - { Item: Silk_Robe_, Amount: 1, Price: [145500, 171000], Refine: 4, Cards: [Desert_Wolf_Babe_Card] }
@@ -2241,7 +2241,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Chain_, Amount: 1, Price: [1471500, 1727500], Refine: 7, Cards: [Minorous_Card, Minorous_Card, Minorous_Card] }
       - { Item: Mace_, Amount: 1, Price: [1917500, 2251000], Refine: 4, Cards: [Minorous_Card, Minorous_Card, Minorous_Card, Minorous_Card] }
@@ -2309,7 +2309,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Jur_, Amount: 1, Price: [4367500, 5127000], Refine: 7, Cards: [Soldier_Skeleton_Card, Soldier_Skeleton_Card, Soldier_Skeleton_Card] }
       - { Item: Jur_, Amount: 1, Price: [911500, 1070000], Refine: 4, Cards: [Hydra_Card, Hydra_Card, Hydra_Card] }
@@ -2382,7 +2382,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Gladius_, Amount: 1, Price: [1461500, 1715500], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Hydra_Card] }
       - { Item: Composite_Bow_, Amount: 1, Price: [1193000, 1400500], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Hydra_Card, Hydra_Card] }
@@ -2448,7 +2448,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Battle_Axe_, Amount: 1, Price: [1917500, 2251000], Refine: 4, Cards: [Minorous_Card, Minorous_Card, Minorous_Card, Minorous_Card] }
       - { Item: Battle_Axe_, Amount: 1, Price: [1159500, 1361000], Refine: 4, Cards: [Hydra_Card, Hydra_Card, Hydra_Card, Hydra_Card] }
@@ -2518,7 +2518,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Chain_Mail_, Amount: 1, Price: [2016000, 2367000], Refine: 4, Cards: [Marc_Card] }
       - { Item: Buckler_, Amount: 1, Price: [817500, 960000], Refine: 4, Cards: [Thara_Frog_Card] }
@@ -2581,7 +2581,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Death_Note, Amount: 1, Price: [1610500, 1891000], Cards: [Thief_Bug_Female_Card, Thief_Bug_Female_Card] }
       - { Item: Magic_Study_Vol1, Amount: 1, Price: [937500, 1100500], Refine: 4, Cards: [Flame_Skull_Card] }
@@ -2643,7 +2643,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Thief_Clothes_, Amount: 1, Price: [1669500, 1960000], Refine: 4, Cards: [Porcellio_Card] }
       - { Item: Thief_Clothes_, Amount: 1, Price: [982500, 1153500], Refine: 4, Cards: [Pecopeco_Card] }
@@ -2705,7 +2705,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Lever_Action_Rifle, Amount: 1, Price: [1774500, 2083500], Refine: 8, Cards: [Drosera_Card] }
       - { Item: Lever_Action_Rifle, Amount: 1, Price: [485000, 569500], Refine: 5, Cards: [Drosera_Card] }
@@ -2767,7 +2767,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Angel's_Safeguard, Amount: 1, Price: [691500, 812000], Cards: [Thief_Bug_Egg_Card] }
       - { Item: Angel's_Safeguard, Amount: 1, Price: [407000, 478000], Cards: [Andre_Egg_Card] }
@@ -2829,7 +2829,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Pretty_G_Necklace, Amount: 1, Price: [184000, 216000] }
       - { Item: Detail_Model_Foxtail, Amount: 1, Price: [87000, 102500] }
@@ -2885,7 +2885,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Darkgreen_Dyestuffs, Amount: 1, Price: [252500, 296000] }
       - { Item: Violet_Dyestuffs, Amount: 1, Price: [204000, 239500] }
@@ -2916,7 +2916,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Stiletto_, Amount: 1, Price: [16000, 18500] }
       - { Item: Ancient_Dagger, Amount: 1, Price: [276000, 324000] }
@@ -2969,7 +2969,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Twin_Edge_B, Amount: 1, Price: [323000, 379500] }
       - { Item: Twin_Edge_R, Amount: 1, Price: [314500, 369000] }
@@ -3022,7 +3022,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Tae_Goo_Lyeon, Amount: 1, Price: [514500, 604000] }
       - { Item: Brood_Axe, Amount: 1, Price: [46000, 54000] }
@@ -3075,7 +3075,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Battle_Hook, Amount: 1, Price: [22500, 26500] }
       - { Item: Hell_Fire, Amount: 1, Price: [919500, 1079500] }
@@ -3128,7 +3128,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Brood_Axe, Amount: 1, Price: [46000, 54000] }
       - { Item: Hurricane_Fury, Amount: 1, Price: [266500, 313000] }
@@ -3181,7 +3181,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Lunakaligo, Amount: 1, Price: [276000, 324000] }
       - { Item: Flail, Amount: 1, Price: [13000, 15500] }
@@ -3234,7 +3234,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Thorn_Staff, Amount: 1, Price: [460000, 540000] }
       - { Item: Destruction_Rod, Amount: 1, Price: [460000, 540000] }
@@ -3287,7 +3287,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Elven_Bow, Amount: 1, Price: [92000, 108000] }
       - { Item: Big_CrossBow, Amount: 1, Price: [115000, 135000] }
@@ -3340,7 +3340,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Book_Of_The_Apocalypse, Amount: 1, Price: [10000, 12000] }
       - { Item: Bible, Amount: 1, Price: [49500, 58000] }
@@ -3393,7 +3393,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Electric_Fist, Amount: 1, Price: [73500, 86000] }
       - { Item: Combo_Battle_Glove, Amount: 1, Price: [46000, 54000] }
@@ -3446,7 +3446,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Whip_Of_Red_Flame, Amount: 1, Price: [7350, 8650] }
       - { Item: Sea_Witch_Foot, Amount: 1, Price: [3950, 4650] }
@@ -3499,7 +3499,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Lever_Action_Rifle, Amount: 1, Price: [26000, 30500] }
       - { Item: Long_Barrel_, Amount: 1, Price: [34000, 40000] }
@@ -3552,7 +3552,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Huuma_Calm_Mind, Amount: 1, Price: [690000, 810000] }
       - { Item: Huuma_Blaze, Amount: 1, Price: [186500, 219000] }
@@ -3599,7 +3599,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Undershirt, Amount: 1, Price: [276000, 324000] }
       - { Item: Valkyrie_Manteau, Amount: 1, Price: [920000, 1080000] }
@@ -3652,7 +3652,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Variant_Shoes, Amount: 1, Price: [184000, 216000] }
       - { Item: Temporal_Dex_Boots, Amount: 1, Price: [920000, 1080000] }
@@ -3705,7 +3705,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Stone_Buckler, Amount: 1, Price: [27500, 32000] }
       - { Item: Round_Buckler, Amount: 1, Price: [598000, 702000] }
@@ -3758,7 +3758,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: White_Wing_Suits, Amount: 1, Price: [138000, 162000] }
       - { Item: Nab_Cloth, Amount: 1, Price: [1387000, 1628500] }
@@ -3811,7 +3811,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: White_Wing_Suits, Amount: 1, Price: [994500, 1168000], Cards: [Pecopeco_Card] }
       - { Item: White_Wing_Suits, Amount: 1, Price: [931500, 1093500], Refine: 4, Cards: [Pasana_Card] }
@@ -3876,7 +3876,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Banana_Bomb, Amount: 100, Price: [85, 115] }
       - { Item: Stun_Arrow, Amount: 300, Price: [8, 12] }
@@ -3929,7 +3929,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Recall_MaleGM, Amount: 150, Price: [1, 2] }
       - { Item: G_M_DEFScroll, Amount: 2, Price: [467000, 548500] }
@@ -3972,7 +3972,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Anger_Seagod, Amount: 1, Price: [4968000, 5832000] }
       - { Item: Gold, Amount: 5, Price: [174500, 205000] }
@@ -4030,7 +4030,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Anolian_Skin, Amount: 50, Price: [3400, 3950] }
       - { Item: Tiger's_Skin, Amount: 3, Price: [82500, 97000] }
@@ -4118,7 +4118,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Vend_Arbeit3_2Lv, Amount: 3, Price: [1150000, 1350000] }
       - { Item: Golden_Hammer, Amount: 30, Price: [3100, 3600] }
@@ -4206,7 +4206,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: HR_S55_OS, Amount: 1, Price: [110000, 129500] }
       - { Item: Lance__, Amount: 1, Price: [26000, 31000] }
@@ -4295,7 +4295,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Grilled_Sausage, Amount: 100, Price: [255, 345] }
       - { Item: Siege_Arrow_A, Amount: 150, Price: [42, 58] }
@@ -4383,7 +4383,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Electric_Fist, Amount: 1, Price: [73500, 86000] }
       - { Item: C_Sweet_Candy, Amount: 1, Price: [5520000, 6480000] }
@@ -4467,7 +4467,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Poison_Spore, Amount: 20, Price: [920, 1050] }
       - { Item: Pike_, Amount: 1, Price: [2850, 3350] }
@@ -4521,7 +4521,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Silk_Robe_, Amount: 1, Price: [6600, 7750] }
       - { Item: Poison_Spore, Amount: 20, Price: [920, 1050] }
@@ -4575,7 +4575,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blossom_Of_Maneater, Amount: 20, Price: [1200, 1450] }
       - { Item: Round_Buckler, Amount: 1, Price: [598000, 702000] }
@@ -4629,7 +4629,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blossom_Of_Maneater, Amount: 50, Price: [1200, 1450] }
       - { Item: Undershirt, Amount: 1, Price: [276000, 324000] }
@@ -4683,7 +4683,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clip, Amount: 1, Price: [1564000, 1836000] }
       - { Item: Blossom_Of_Maneater, Amount: 50, Price: [1200, 1450] }
@@ -4737,7 +4737,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Archer_Skeleton_Card, Amount: 1, Price: [460000, 540000] }
       - { Item: Soldier_Skeleton_Card, Amount: 1, Price: [1380000, 1620000] }
@@ -4790,7 +4790,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Marc_Card, Amount: 1, Price: [1840000, 2160000] }
       - { Item: Evil_Druid_Card, Amount: 1, Price: [2300000, 2700000] }
@@ -4843,7 +4843,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Grand_Peco_Card, Amount: 1, Price: [91500, 107000] }
       - { Item: Elder_Wilow_Card, Amount: 1, Price: [92000, 108000] }
@@ -4896,7 +4896,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Daydric_Card, Amount: 1, Price: [1748000, 2052000] }
       - { Item: Antique_Firelock_Card, Amount: 1, Price: [1748000, 2052000] }
@@ -4949,7 +4949,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Hodremlin_Card, Amount: 1, Price: [1380000, 1620000] }
       - { Item: Thara_Frog_Card, Amount: 1, Price: [368000, 432000] }
@@ -5002,7 +5002,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Phen_Card, Amount: 1, Price: [460000, 540000] }
       - { Item: Creamy_Card, Amount: 1, Price: [547000, 642500] }
@@ -5056,7 +5056,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Flora_Card, Amount: 1, Price: [46000, 54000] }
       - { Item: Stalactic_Golem_Card, Amount: 1, Price: [38500, 45000] }
@@ -5100,7 +5100,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Pet_Incubator, Amount: 50, Price: [2550, 3000] }
       - { Item: Pet_Food, Amount: 300, Price: [245, 335] }
@@ -5156,7 +5156,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Pacifier, Amount: 1, Price: [82500, 97000] }
       - { Item: Sword_Of_Grave_Keeper, Amount: 1, Price: [644000, 756000] }
@@ -5205,7 +5205,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Morrigane's_Helm, Amount: 1, Price: [184000, 216000] }
       - { Item: Poison_Spore, Amount: 10, Price: [920, 1050] }
@@ -5259,7 +5259,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Battle_Hook, Amount: 1, Price: [22500, 26500] }
       - { Item: Light_Of_Cure, Amount: 1, Price: [2441000, 2865500] }
@@ -5313,7 +5313,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Rosary_, Amount: 1, Price: [27500, 32000] }
       - { Item: Vali's_Manteau, Amount: 1, Price: [24500, 29000] }
@@ -5355,7 +5355,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Poison_Spore, Amount: 30, Price: [920, 1050] }
       - { Item: Stiletto_, Amount: 1, Price: [16000, 18500] }
@@ -5409,7 +5409,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Poison_Spore, Amount: 30, Price: [920, 1050] }
       - { Item: Steel_Arrow_Container, Amount: 300, Price: [1, 3] }
@@ -5458,7 +5458,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Thorn_Staff, Amount: 1, Price: [460000, 540000] }
       - { Item: Ancient_Dagger, Amount: 1, Price: [276000, 324000] }
@@ -5509,7 +5509,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: White_Wing_Suits, Amount: 1, Price: [138000, 162000] }
       - { Item: Undershirt, Amount: 1, Price: [276000, 324000] }
@@ -5563,7 +5563,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Rosary_, Amount: 1, Price: [27500, 32000] }
       - { Item: Beef_Head_Meat, Amount: 5, Price: [24500, 29000] }
@@ -5617,7 +5617,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Poison_Spore, Amount: 10, Price: [920, 1050] }
       - { Item: Rosary_, Amount: 1, Price: [27500, 32000] }
@@ -5671,7 +5671,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clip, Amount: 1, Price: [1564000, 1836000] }
       - { Item: Rosary_, Amount: 1, Price: [27500, 32000] }
@@ -5725,7 +5725,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Elven_Bow, Amount: 1, Price: [92000, 108000] }
       - { Item: Battle_Hook, Amount: 1, Price: [22500, 26500] }
@@ -5779,7 +5779,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Ice_Fragment, Amount: 20, Price: [9650, 11000] }
       - { Item: Sticky_Webfoot, Amount: 30, Price: [920, 1050] }
@@ -5833,7 +5833,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Ragamuffin_Cape, Amount: 1, Price: [51500, 60000] }
       - { Item: Angel's_Safeguard, Amount: 1, Price: [27500, 32000] }
@@ -5883,7 +5883,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Nab_Cloth, Amount: 1, Price: [1387000, 1628500] }
       - { Item: Sabah_Cloth, Amount: 1, Price: [4600000, 5400000] }
@@ -5937,7 +5937,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Stone_Buckler, Amount: 1, Price: [27500, 32000] }
       - { Item: Rosary_, Amount: 1, Price: [27500, 32000] }
@@ -5991,7 +5991,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blossom_Of_Maneater, Amount: 50, Price: [1200, 1450] }
       - { Item: Mandragora_Flowerpot, Amount: 30, Price: [5050, 5900] }
@@ -6039,7 +6039,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: White_Wing_Brooch, Amount: 1, Price: [731000, 858500] }
       - { Item: Stone_Buckler, Amount: 1, Price: [27500, 32000] }
@@ -6093,7 +6093,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Rosary_, Amount: 1, Price: [27500, 32000] }
       - { Item: Stone_Of_Intelligence_, Amount: 5, Price: [119500, 140000] }
@@ -6147,7 +6147,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Silk_Robe_, Amount: 1, Price: [6600, 7750] }
       - { Item: Four_Leaf_Clover, Amount: 3, Price: [81500, 96000] }
@@ -6197,7 +6197,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Hyper_Changer, Amount: 1, Price: [92000, 108000] }
       - { Item: Long_Barrel_, Amount: 1, Price: [34000, 40000] }
@@ -6241,7 +6241,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clip, Amount: 1, Price: [1564000, 1836000] }
       - { Item: Big_CrossBow, Amount: 1, Price: [115000, 135000] }
@@ -6295,7 +6295,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Round_Buckler, Amount: 1, Price: [598000, 702000] }
       - { Item: Whip_Of_Red_Flame, Amount: 1, Price: [7350, 8650] }
@@ -6337,7 +6337,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Shinobi's_Sash, Amount: 1, Price: [13500, 16000] }
       - { Item: Rosary_, Amount: 1, Price: [27500, 32000] }
@@ -6391,7 +6391,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Poison_Spore, Amount: 50, Price: [920, 1050] }
       - { Item: Mushroom_Spore, Amount: 50, Price: [765, 1000] }
@@ -6442,7 +6442,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Bone_Wand, Amount: 1, Price: [184000, 216000] }
       - { Item: Wool_Scarf, Amount: 1, Price: [78000, 91500] }
@@ -6497,7 +6497,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Twin_Edge_B, Amount: 1, Price: [1864500, 2188500], Refine: 4, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card, Archer_Skeleton_Card] }
       - { Item: Twin_Edge_R, Amount: 1, Price: [1854000, 2176500], Refine: 4, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card, Archer_Skeleton_Card] }
@@ -6592,7 +6592,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: White_Wing_Suits, Amount: 1, Price: [994500, 1168000], Cards: [Pecopeco_Card] }
       - { Item: White_Wing_Suits, Amount: 1, Price: [931500, 1093500], Refine: 4, Cards: [Pasana_Card] }
@@ -6686,7 +6686,7 @@ Body:
     RotationJitterMinutes: 30
     PriceMistakeOneIn: 5000
     Undercut: { Chance: 50, StepPct: [1, 5] }
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Phen_Card] }
       - { Item: Clip, Amount: 1, Price: [1727500, 2028000], Cards: [Kukre_Card] }
@@ -6781,7 +6781,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Elunium, Amount: 50, Price: [7200, 10000] }
       - { Item: Oridecon, Amount: 50, Price: [7500, 10500] }
@@ -6809,7 +6809,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Steel, Amount: 30, Price: [3100, 4400] }
       - { Item: Iron, Amount: 100, Price: [2250, 3200] }
@@ -6836,7 +6836,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Elemental_Water, Amount: 30, Price: [3700, 5250] }
       - { Item: Elemental_Fire, Amount: 50, Price: [3700, 5250] }
@@ -6871,7 +6871,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blue_Herb, Amount: 100, Price: [3000, 3800] }
       - { Item: White_Herb, Amount: 300, Price: [315, 400] }
@@ -6900,7 +6900,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blossom_Of_Maneater, Amount: 50, Price: [900, 1100] }
       - { Item: Stem, Amount: 100, Price: [285, 360] }
@@ -6937,7 +6937,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Strawberry, Amount: 100, Price: [2050, 2600] }
       - { Item: Honey, Amount: 20, Price: [750, 950] }
@@ -6968,7 +6968,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Sticky_Mucus, Amount: 300, Price: [255, 320] }
       - { Item: Zargon, Amount: 300, Price: [225, 285] }
@@ -7026,7 +7026,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blossom_Of_Maneater, Amount: 100, Price: [900, 1100] }
       - { Item: Skel_Bone, Amount: 200, Price: [380, 480] }
@@ -7078,7 +7078,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Steel, Amount: 50, Price: [3900, 4900] }
       - { Item: Empty_Bottle, Amount: 500, Price: [195, 245] }
@@ -7180,7 +7180,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Darkgreen_Dyestuffs, Amount: 3, Price: [151500, 214500] }
       - { Item: Violet_Dyestuffs, Amount: 2, Price: [122000, 173000] }
@@ -7210,7 +7210,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Daydric_Card, Amount: 3, Price: [1048500, 1485500] }
       - { Item: Knight_Of_Abyss_Card, Amount: 1, Price: [12254000, 17360000] }
@@ -7264,7 +7264,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Old_Card_Album, Amount: 1, Price: [540000, 765000] }
       - { Item: Old_Violet_Box, Amount: 50, Price: [10500, 15000] }
@@ -7292,7 +7292,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Seed_Of_Yggdrasil, Amount: 20, Price: [27500, 39000] }
       - { Item: Yggdrasilberry, Amount: 50, Price: [9600, 13500] }
@@ -7319,7 +7319,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blue_Herb, Amount: 20, Price: [2400, 3400] }
       - { Item: Leaflet_Of_Aloe, Amount: 200, Price: [180, 255] }
@@ -7371,7 +7371,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Poison_Bottle, Amount: 30, Price: [2750, 3900] }
       - { Item: Speed_Up_Potion, Amount: 100, Price: [380, 535] }
@@ -7423,7 +7423,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blue_Gemstone, Amount: 300, Price: [180, 255] }
       - { Item: Red_Gemstone, Amount: 300, Price: [225, 320] }
@@ -7476,7 +7476,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: ClockTower_Lead, Amount: 30, Price: [2500, 3550] }
       - { Item: EP19_D_P_Crystal, Amount: 1, Price: [112500, 159500] }
@@ -7559,7 +7559,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Strawberry, Amount: 30, Price: [2050, 2600] }
       - { Item: Stem, Amount: 200, Price: [285, 360] }
@@ -7662,7 +7662,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Strawberry, Amount: 20, Price: [2050, 2600] }
       - { Item: Elder_Branch, Amount: 100, Price: [4250, 5400] }
@@ -7756,7 +7756,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Strawberry, Amount: 20, Price: [2050, 2600] }
       - { Item: Blossom_Of_Maneater, Amount: 20, Price: [900, 1100] }
@@ -7859,7 +7859,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Blossom_Of_Maneater, Amount: 50, Price: [900, 1100] }
       - { Item: Stem, Amount: 500, Price: [285, 360] }
@@ -7962,7 +7962,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Strawberry, Amount: 50, Price: [2050, 2600] }
       - { Item: Blossom_Of_Maneater, Amount: 100, Price: [900, 1100] }
@@ -8065,7 +8065,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Strawberry, Amount: 50, Price: [2050, 2600] }
       - { Item: Blossom_Of_Maneater, Amount: 30, Price: [900, 1100] }
@@ -8170,7 +8170,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Tentacle, Amount: 200, Price: [145, 185] }
       - { Item: Single_Cell, Amount: 300, Price: [29, 37] }
@@ -8234,7 +8234,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Golden_Hair, Amount: 50, Price: [6150, 7800] }
       - { Item: Petite_DiablOfs_Horn, Amount: 100, Price: [4550, 5750] }
@@ -8273,7 +8273,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Sturdy_Iron_Piece, Amount: 20, Price: [6650, 8450] }
       - { Item: Burnt_Parts, Amount: 5, Price: [33000, 41500] }
@@ -8303,7 +8303,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Skel_Bone, Amount: 200, Price: [380, 480] }
       - { Item: Decayed_Nail, Amount: 200, Price: [510, 645] }
@@ -8368,7 +8368,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Nail_Of_Orc, Amount: 300, Price: [255, 320] }
       - { Item: Orcish_Cuspid, Amount: 20, Price: [1000, 1250] }
@@ -8414,7 +8414,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Worm_Peelings, Amount: 300, Price: [570, 725] }
       - { Item: Tooth_Of_Bat, Amount: 30, Price: [935, 1150] }
@@ -8457,7 +8457,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Wing_Of_Red_Bat, Amount: 200, Price: [570, 725] }
       - { Item: Sacred_Masque, Amount: 30, Price: [720, 910] }
@@ -8503,7 +8503,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Immortal_Heart, Amount: 20, Price: [1350, 1700] }
       - { Item: Rotten_Bandage, Amount: 20, Price: [1000, 1250] }
@@ -8547,7 +8547,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Mushroom_Spore, Amount: 500, Price: [570, 725] }
       - { Item: Poison_Spore, Amount: 100, Price: [690, 870] }
@@ -8612,7 +8612,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Needle_Of_Alarm, Amount: 50, Price: [750, 950] }
       - { Item: Mould_Powder, Amount: 200, Price: [415, 525] }
@@ -8674,7 +8674,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Transparent_Cloth, Amount: 50, Price: [690, 870] }
       - { Item: Skel_Bone, Amount: 100, Price: [380, 480] }
@@ -8739,7 +8739,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Turtle_Shell, Amount: 20, Price: [6150, 7800] }
       - { Item: Rotten_Meat, Amount: 500, Price: [445, 565] }
@@ -8793,7 +8793,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Jellopy, Amount: 300, Price: [3, 4] }
       - { Item: Manacles, Amount: 20, Price: [3250, 4100] }
@@ -8827,7 +8827,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Red_Scarf, Amount: 100, Price: [1600, 2000] }
       - { Item: Ectoplasm, Amount: 100, Price: [785, 995] }
@@ -8881,7 +8881,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Burning_Heart, Amount: 200, Price: [445, 565] }
       - { Item: Dragon_Canine, Amount: 500, Price: [255, 320] }
@@ -8926,7 +8926,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Ice_Heart, Amount: 300, Price: [445, 565] }
       - { Item: Ice_Piece, Amount: 50, Price: [1350, 1700] }
@@ -8970,7 +8970,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Dragon_Canine, Amount: 200, Price: [255, 320] }
       - { Item: Dragon_Scale, Amount: 20, Price: [1200, 1550] }
@@ -9028,7 +9028,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Worn_Out_Page, Amount: 100, Price: [860, 1050] }
       - { Item: Tatters_Clothes, Amount: 100, Price: [8600, 10500] }
@@ -9088,7 +9088,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Rune_Of_Darkness, Amount: 50, Price: [3300, 4150] }
       - { Item: Flower, Amount: 500, Price: [1, 1] }
@@ -9137,7 +9137,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Screw, Amount: 30, Price: [1000, 1250] }
       - { Item: Mystery_Piece, Amount: 30, Price: [1200, 1550] }
@@ -9176,7 +9176,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Armlet_Of_Prisoner, Amount: 50, Price: [5650, 7150] }
       - { Item: Lab_Staff_Record, Amount: 100, Price: [1350, 1700] }
@@ -9220,7 +9220,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Slender_Snake, Amount: 20, Price: [6900, 8700] }
       - { Item: Spawn, Amount: 50, Price: [690, 870] }
@@ -9265,7 +9265,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Glossy_Hair, Amount: 20, Price: [4100, 5200] }
       - { Item: Broken_Shuriken, Amount: 50, Price: [6300, 8000] }
@@ -9308,7 +9308,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Worm_Peelings, Amount: 300, Price: [570, 725] }
       - { Item: Chrysalis, Amount: 100, Price: [785, 995] }
@@ -9357,7 +9357,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Cobold_Hair, Amount: 30, Price: [1650, 2050] }
       - { Item: Piece_Of_Black_Cloth, Amount: 5, Price: [33000, 41500] }
@@ -9422,7 +9422,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Burning_Heart, Amount: 100, Price: [445, 565] }
       - { Item: Hot_Hair, Amount: 100, Price: [590, 750] }
@@ -9456,7 +9456,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Limb_Of_Mantis, Amount: 200, Price: [445, 565] }
       - { Item: Mushroom_Spore, Amount: 500, Price: [570, 725] }
@@ -9521,7 +9521,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Horseshoe, Amount: 20, Price: [1550, 1950] }
       - { Item: Decayed_Nail, Amount: 500, Price: [510, 645] }
@@ -9586,7 +9586,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Moustache_Of_Mole, Amount: 200, Price: [555, 700] }
       - { Item: Rat_Tail, Amount: 20, Price: [2400, 3000] }
@@ -9628,7 +9628,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Powder_Of_Butterfly, Amount: 500, Price: [295, 375] }
       - { Item: Sharp_Feeler, Amount: 20, Price: [6900, 8700] }
@@ -9677,7 +9677,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Danggie, Amount: 200, Price: [345, 440] }
       - { Item: Tiger_Skin_Panties, Amount: 20, Price: [785, 995] }
@@ -9732,7 +9732,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Sword_Accessory, Amount: 50, Price: [1000, 1250] }
       - { Item: Leaf_Clothes, Amount: 20, Price: [2800, 3550] }
@@ -9768,7 +9768,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Fragment_Of_Crystal, Amount: 30, Price: [1700, 2150] }
       - { Item: Jubilee, Amount: 30, Price: [690, 870] }
@@ -9833,7 +9833,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Yaga_Pestle, Amount: 30, Price: [2700, 3450] }
       - { Item: Solid_Twig, Amount: 20, Price: [26000, 33000] }
@@ -9881,7 +9881,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Sharp_Scale, Amount: 100, Price: [785, 995] }
       - { Item: Heart_Of_Mermaid, Amount: 30, Price: [1350, 1700] }
@@ -9926,7 +9926,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Dragon's_Mane, Amount: 50, Price: [1500, 1900] }
       - { Item: Fluorescent_Liquid, Amount: 100, Price: [1350, 1700] }
@@ -9969,7 +9969,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clattering_Skull, Amount: 5, Price: [40500, 51500] }
       - { Item: Skel_Bone, Amount: 300, Price: [380, 480] }
@@ -10003,7 +10003,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Bloody_Rune, Amount: 30, Price: [1500, 1900] }
       - { Item: Starsand_Of_Witch, Amount: 500, Price: [450, 570] }
@@ -10035,7 +10035,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Mushroom_Spore, Amount: 500, Price: [570, 725] }
       - { Item: Poison_Spore, Amount: 20, Price: [690, 870] }
@@ -10089,7 +10089,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Horn, Amount: 30, Price: [2050, 2600] }
       - { Item: Shell, Amount: 300, Price: [315, 400] }
@@ -10141,7 +10141,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Talon, Amount: 500, Price: [12, 16] }
       - { Item: Earthworm_Peeling, Amount: 100, Price: [145, 185] }
@@ -10191,7 +10191,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Orcish_Voucher, Amount: 300, Price: [315, 400] }
       - { Item: Large_Jellopy, Amount: 50, Price: [1600, 2000] }
@@ -10228,7 +10228,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Clam_Shell, Amount: 300, Price: [35, 44] }
       - { Item: Sea_Otter_Leather, Amount: 100, Price: [6800, 8600] }
@@ -10285,7 +10285,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Dragon_Scale, Amount: 100, Price: [1200, 1550] }
       - { Item: Limb_Of_Mantis, Amount: 500, Price: [445, 565] }
@@ -10323,7 +10323,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Goat's_Horn, Amount: 100, Price: [425, 540] }
       - { Item: Grit, Amount: 50, Price: [2700, 3450] }
@@ -10372,7 +10372,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Root_Of_Maneater, Amount: 50, Price: [1150, 1450] }
       - { Item: Air_Pollutant, Amount: 30, Price: [2700, 3400] }
@@ -10434,7 +10434,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Cobold_Hair, Amount: 100, Price: [1650, 2050] }
       - { Item: Animal's_Skin, Amount: 100, Price: [16, 20] }
@@ -10474,7 +10474,7 @@ Body:
     MaxSlots: 5
     RotationHours: 4
     RotationJitterMinutes: 30
-    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Callouts: { EverySeconds: [180, 540], MapGapSeconds: 6 }
     Pool:
       - { Item: Porcupine_Spike, Amount: 300, Price: [350, 445] }
       - { Item: Animal's_Skin, Amount: 100, Price: [16, 20] }
