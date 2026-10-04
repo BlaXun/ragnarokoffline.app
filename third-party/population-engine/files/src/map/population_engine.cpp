@@ -2076,6 +2076,9 @@ static uint32 pop_companion_party_threat(map_session_data *sd)
 	return 0;
 }
 
+/// RAGNAROKMAC: how far from its owner a companion takes on a monster by itself (Attack mode).
+static constexpr int kCompanionCombatRadius = 12;
+
 /// A companion only joins combat chosen by its owner or forced on the party.
 /// This intentionally replaces the shell's town/field origin behavior.
 static uint32 pop_companion_combat_target(map_session_data *sd, map_session_data *owner, t_tick now)
@@ -2125,14 +2128,14 @@ static uint32 pop_companion_combat_target(map_session_data *sd, map_session_data
 	// do not spread out or chase ambient targets across the map.
 	if (sd->pop.companion_mode == PopulationCompanionMode::Attack) {
 		uint32 best_id = 0;
-		int best_distance = 13;
+		int best_distance = kCompanionCombatRadius + 1;
 		for (const auto &entry : sd->pop.mob_tracker.tracked_mobs) {
 			const s_pe_tracked_mob &mob = entry.second;
 			block_list *mob_bl = map_id2bl(static_cast<int>(mob.mob_id));
 			if (!mob_bl || mob_bl->m != owner->m)
 				continue;
 			const int owner_distance = distance_bl(owner, mob_bl);
-			if (owner_distance > 12 || owner_distance >= best_distance)
+			if (owner_distance > kCompanionCombatRadius || owner_distance >= best_distance)
 				continue;
 			if (!population_shell_check_target(sd, mob.mob_id) &&
 				!population_shell_check_target_for_movement(sd, mob.mob_id))
@@ -2212,8 +2215,24 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		return false;
 	}
 
+	// RAGNAROKMAC: how far the companion may stray from its owner. Combat takes monsters some way
+	// from the owner (Attack mode up to 12 cells; the owner's target, a party threat or the last
+	// attacker with no limit), but the follow walked the companion back as soon as it was 5 cells
+	// away: it set off for a monster 8 cells out, turned back at the fifth cell, took the monster
+	// again on arrival, and paced back and forth until the owner came closer. While it fights a
+	// monster within the owner's sight it may go as far as the fight takes it, up to where it
+	// would be warped back anyway; once the owner moves on and leaves the monster out of sight,
+	// the leash is 4.
+	int leash = 4;
+	if (sd->pop.target_id != 0) {
+		block_list *target = map_id2bl(static_cast<int>(sd->pop.target_id));
+		if (target && target->m == owner->m && !status_isdead(*target)
+		    && check_distance_bl(owner, target, AREA_SIZE))
+			leash = AREA_SIZE + 2;
+	}
+
 	if (now < sd->pop.companion_follow_next)
-		return sd->m == owner->m && check_distance_bl(sd, owner, 4);
+		return sd->m == owner->m && check_distance_bl(sd, owner, leash);
 	sd->pop.companion_follow_next = now + 400;
 
 	if (sd->m != owner->m) {
@@ -2228,7 +2247,7 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		warp_near_owner();
 		return false;
 	}
-	if (owner_distance > 4) {
+	if (owner_distance > leash) {
 		population_shell_target_change(sd, 0);
 		unit_stop_attack(sd);
 		// RAGNAROKMAC: full path search (flag 0). The easy path (flag 1) never walks round an
@@ -4048,6 +4067,63 @@ int population_engine_companion_toggle_skill(uint32_t owner_account, const char*
 	return static_cast<int>(picked.size());
 }
 
+/// True if `a`'s status ends `b`'s (status EndOnStart), unless `a` needs `b` up to be cast: that
+/// is a chain (the Inquisitor's Judge needs First Faith Power and ends it), not a choice.
+static bool pop_skill_ends_skill(uint16_t a, uint16_t b)
+{
+#ifndef RENEWAL
+	// Pre-renewal songs and ensembles are performances on the ground: the performer holds
+	// SC_DANCING, and a new one stops the one playing, with no status naming the other.
+	const std::vector<e_skill_inf2> perf = { INF2_ISSONG, INF2_ISENSEMBLE };
+	if (a != b && skill_get_inf2_(a, perf) && skill_get_inf2_(b, perf))
+		return true;
+#endif
+	const sc_type sa = skill_get_sc(a), sb = skill_get_sc(b);
+	if (sa == SC_NONE || sb == SC_NONE || sa == sb)
+		return false;
+	// A common ailment is a side effect, not a buff to choose: Grand Cross blinds its caster,
+	// and King's Grace, which cures Blind, is not its rival.
+	if ((sa >= SC_COMMON_MIN && sa <= SC_COMMON_MAX) || (sb >= SC_COMMON_MIN && sb <= SC_COMMON_MAX))
+		return false;
+	const std::vector<sc_type> ends = status_db.getEndOnStart(sa);
+	if (std::find(ends.begin(), ends.end(), sb) == ends.end())
+		return false;
+	const std::shared_ptr<s_skill_db> skill = skill_db.find(a);
+	return !skill || std::find(skill->require.status.begin(), skill->require.status.end(), sb)
+		== skill->require.status.end();
+}
+
+/// The class's skills it keeps up on itself (a Target: self row), in row order. Only these
+/// compete: the self-buff loop skips every other row (pop_buff_would_end_own), and a debuff
+/// cast on an enemy ending another (Decrease AGI ends Increase AGI) is no choice for the player.
+static std::vector<uint16_t> pop_companion_self_buff_ids(uint16_t class_)
+{
+	std::vector<uint16_t> ids;
+	const std::vector<s_pop_skill_entry>* rows = population_skill_db().find(class_);
+	if (rows == nullptr || rows->empty())
+		rows = population_skill_db().find(population_engine_job_base_class(class_));
+	if (rows == nullptr)
+		return ids;
+	for (const s_pop_skill_entry& e : *rows)
+		if (e.target == 1 && e.skill_id != 0
+			&& std::find(ids.begin(), ids.end(), e.skill_id) == ids.end())
+			ids.push_back(e.skill_id);
+	return ids;
+}
+
+/// True if `sid` and another of the class's self buffs end each other's status, so only one of
+/// them can run at a time: a Bard's songs, a Dancer's dances, the 3rd-job songs, some stances.
+/// The panel groups these, since ticking several means the one listed first plays.
+static bool pop_skill_is_exclusive(uint16_t sid, const std::vector<uint16_t> &self_buffs)
+{
+	if (std::find(self_buffs.begin(), self_buffs.end(), sid) == self_buffs.end())
+		return false;
+	for (uint16_t other : self_buffs)
+		if (other != sid && (pop_skill_ends_skill(sid, other) || pop_skill_ends_skill(other, sid)))
+			return true;
+	return false;
+}
+
 void population_engine_companion_skill_list(uint32_t owner_account, const char* name_, int fd)
 {
 	if (mmysql_handle == nullptr || name_ == nullptr || !name_[0])
@@ -4116,6 +4192,10 @@ void population_engine_companion_skill_list(uint32_t owner_account, const char* 
 	}
 
 	const std::vector<uint16_t> legal = pop_companion_legal_skill_ids(class_, job_name(class_));
+	std::vector<uint16_t> self_buffs;
+	for (uint16_t sid : pop_companion_self_buff_ids(class_))
+		if (std::find(legal.begin(), legal.end(), sid) != legal.end())
+			self_buffs.push_back(sid);
 	int emitted = 0;
 	for (uint16_t sid : legal) {
 		// On auto every legal skill is in effect, so every box is ticked.
@@ -4123,10 +4203,10 @@ void population_engine_companion_skill_list(uint32_t owner_account, const char* 
 			? true
 			: (std::find(picked.begin(), picked.end(), sid) != picked.end());
 		char msg[128];
-		// id | name | selected | level the preset casts it at
-		snprintf(msg, sizeof(msg), "@CPSK|%u|%s|%d|%u",
+		// id | name | selected | level the preset casts it at | ends another listed skill (0/1)
+		snprintf(msg, sizeof(msg), "@CPSK|%u|%s|%d|%u|%d",
 			static_cast<unsigned>(sid), skill_get_name(sid), selected ? 1 : 0,
-			static_cast<unsigned>(skill_get_max(sid)));
+			static_cast<unsigned>(skill_get_max(sid)), pop_skill_is_exclusive(sid, self_buffs) ? 1 : 0);
 		clif_displaymessage(fd, msg);
 		++emitted;
 	}
@@ -6523,6 +6603,10 @@ bool population_engine_persist_companion_row(map_session_data *sd, const map_ses
 	const uint32_t index_ = sd->status.char_id - POPULATION_ENGINE_CHAR_ID_BASE;
 
 	uint32_t weapon = 0, shield = 0, armor = 0, shoes = 0, acc_l = 0, acc_r = 0;
+	// The headgear and garment columns were written from status.head_* and status.robe, which
+	// hold each piece's LOOK: Elven Ears saved as 73, a cape without a look as 0. Recall rebuilt
+	// those slots from the numbers, so they came back as nothing. The worn items go in instead.
+	uint32_t head_top = 0, head_mid = 0, head_low = 0, garment = 0;
 	for (int16_t i = 0; i < MAX_INVENTORY; ++i) {
 		const struct item &slot = sd->inventory.u.items_inventory[i];
 		if (!slot.nameid || !slot.equip) continue; // equipped only
@@ -6532,13 +6616,17 @@ bool population_engine_persist_companion_row(map_session_data *sd, const map_ses
 		else if (slot.equip & EQP_SHOES)                                          shoes  = slot.nameid;
 		else if (slot.equip & EQP_ACC_L)                                          acc_l  = slot.nameid;
 		else if (slot.equip & EQP_ACC_R)                                          acc_r  = slot.nameid;
+		else if (slot.equip & EQP_GARMENT)                                        garment = slot.nameid;
+		else if (slot.equip & EQP_HEAD_TOP)                                       head_top = slot.nameid; // a hat over top and mid too
+		else if (slot.equip & EQP_HEAD_MID)                                       head_mid = slot.nameid;
+		else if (slot.equip & EQP_HEAD_LOW)                                       head_low = slot.nameid;
 	}
 
 	population_engine_persist_companion_sql(
 		owner->status.account_id, owner->status.char_id, index_, sd->status.name, (int16_t)sd->status.class_, (int)sd->status.sex,
 		(int)sd->status.hair, (int)sd->status.hair_color, (int)sd->status.clothes_color,
-		(uint32_t)sd->status.robe, sd->status.option, weapon, shield,
-		(uint32_t)sd->status.head_top, (uint32_t)sd->status.head_mid, (uint32_t)sd->status.head_bottom,
+		garment, sd->status.option, weapon, shield,
+		head_top, head_mid, head_low,
 		armor, shoes, acc_l, acc_r, (int)sd->status.base_level, (int)sd->status.job_level, (int)sd->status.str,
 		(int)sd->status.agi, (int)sd->status.vit, (int)sd->status.int_, (int)sd->status.dex, (int)sd->status.luk,
 		(int)sd->status.pow, (int)sd->status.sta, (int)sd->status.wis, (int)sd->status.spl, (int)sd->status.con, (int)sd->status.crt,
@@ -6938,6 +7026,8 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 	// and shadow gear survive restarts instead of vanishing on the next login.
 	uint32_t c_top=0, c_mid=0, c_low=0, c_garment=0, garment=0;
 	uint32_t sh_armor=0, sh_weapon=0, sh_shield=0, sh_shoes=0, sh_acc_l=0, sh_acc_r=0;
+	// The worn headgear, not status.head_*: that is each piece's look, not its item.
+	uint32_t head_top=0, head_mid=0, head_low=0;
 	for (int16_t i = 0; i < MAX_INVENTORY; ++i) {
 		const struct item &slot = sd->inventory.u.items_inventory[i];
 		if (!slot.nameid || !slot.equip) continue; // equipped only
@@ -6958,6 +7048,9 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		else if (slot.equip & EQP_SHOES)          shoes    = slot.nameid;
 		else if (slot.equip & EQP_ACC_L)          acc_l    = slot.nameid;
 		else if (slot.equip & EQP_ACC_R)          acc_r    = slot.nameid;
+		else if (slot.equip & EQP_HEAD_TOP)       head_top = slot.nameid; // a hat over top and mid too
+		else if (slot.equip & EQP_HEAD_MID)       head_mid = slot.nameid;
+		else if (slot.equip & EQP_HEAD_LOW)       head_low = slot.nameid;
 	}
 
 	// UPDATE only the mutable columns — identity (owner, index, name, job, sex,
@@ -6991,7 +7084,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		" dex_=%d, luk_=%d, pow_=%d, sta_=%d, wis_=%d, spl_=%d, con_=%d, crt_=%d,"
 		" mode=%d, duty=%d, heal_at=%d, emergency_at=%d, given_mask=%u, gear_detail='%s'%s"
 		" WHERE owner_account_id=%u AND owner_char_id=%u AND shell_index=%u",
-		weapon, shield, sd->status.head_top, sd->status.head_mid, sd->status.head_bottom,
+		weapon, shield, head_top, head_mid, head_low,
 		armor, shoes, acc_l, acc_r,
 		garment, c_top, c_mid, c_low, c_garment,
 		sh_armor, sh_weapon, sh_shield, sh_shoes, sh_acc_l, sh_acc_r,
@@ -7855,6 +7948,14 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 	if (sh_acc_r)   population_engine_shell_equip_item(shell, sh_acc_r, index_, "shadow_acc_r", EQP_SHADOW_ACC_R);
 	// Refine, cards, options and the right headgear, before the stats are worked out from them.
 	pop_companion_restore_gear_detail(shell, gear_detail);
+	// Fill what is still empty. The spawn above put the weapon, shield, garment and headgear on
+	// before the saved level was restored (a recall spawns at 99), so a piece above 99 - a Sky
+	// Emperor's level-130 book - was refused and left in the bag; and a row saved before the
+	// headgear columns held items brought those slots back as nothing. The refused piece goes on
+	// now, from the bag, and a slot with nothing to wear gets one from the job's gear set.
+	pop_companion_reequip_own(shell, (EQP_HAND_R | EQP_HAND_L | EQP_ARMOR | EQP_SHOES | EQP_GARMENT
+		| EQP_HEAD_TOP | EQP_HEAD_MID | EQP_HEAD_LOW | EQP_ACC_L | EQP_ACC_R)
+		& ~pop_companion_worn_positions(shell));
 	status_calc_pc(shell, SCO_NONE);
 
 	// Mark as the owner's companion and align membership with the owner.

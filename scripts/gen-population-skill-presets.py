@@ -24,6 +24,10 @@ i.e. what population_engine_spawn_shell actually grants):
   Support     -         yes      ->  ally buff  { Target: ally, not_ally_status, SC_<status> }
   Support     -         no       ->  ally + self restorative { ally_hp_below, hp_below }
   Self        -         yes      ->  self buff  { Target: self, not_self_status, SC_<status> }
+  Self        hits      yes      ->  attack around the caster, only with enemies near
+                                     { Target: self, enemy_count_nearby 2 }. Its Status is
+                                     what it inflicts (Full Moon Kick blinds), so a
+                                     not_self_status row fired it with no enemy in sight.
   Self        -         no       ->  SKIPPED. The buff loop's recast gate resolves a
                                      skill's SC through skill_get_sc() - a C++ table,
                                      independent of this YAML - so a Status-less self
@@ -110,6 +114,7 @@ def load_skill_db():
             "tt": fld("TargetType", "Passive"),
             "max": num("MaxLevel", 1),
             "nodmg": "NoDamage: true" in b,
+            "hits": bool(re.search(r"^    DamageFlags:", b, re.M)) and "NoDamage: true" not in b,
             "status": fld("Status", "") or "",
             "dur": bool(re.search(r"^    Duration1:", b, re.M)),
             "splash": bool(re.search(r"^    SplashArea:", b, re.M)),
@@ -263,6 +268,8 @@ def rows_for(skill, meta, sc_ok, deep):
         ], "ally-heal"
 
     if tt == "Self":
+        if meta["hits"] and status:
+            return [q(skill, f"Level: {lv}, Rate: 8000, Target: self, Condition: enemy_count_nearby, CondValue: 2")], "self-attack"
         if not status:
             return None, "self skill with no Status (recast cannot be gated from YAML)"
         sc = "SC_" + status.upper()
