@@ -6584,6 +6584,10 @@ bool population_engine_persist_companion_row(map_session_data *sd, const map_ses
 	const uint32_t index_ = sd->status.char_id - POPULATION_ENGINE_CHAR_ID_BASE;
 
 	uint32_t weapon = 0, shield = 0, armor = 0, shoes = 0, acc_l = 0, acc_r = 0;
+	// The headgear and garment columns were written from status.head_* and status.robe, which
+	// hold each piece's LOOK: Elven Ears saved as 73, a cape without a look as 0. Recall rebuilt
+	// those slots from the numbers, so they came back as nothing. The worn items go in instead.
+	uint32_t head_top = 0, head_mid = 0, head_low = 0, garment = 0;
 	for (int16_t i = 0; i < MAX_INVENTORY; ++i) {
 		const struct item &slot = sd->inventory.u.items_inventory[i];
 		if (!slot.nameid || !slot.equip) continue; // equipped only
@@ -6593,13 +6597,17 @@ bool population_engine_persist_companion_row(map_session_data *sd, const map_ses
 		else if (slot.equip & EQP_SHOES)                                          shoes  = slot.nameid;
 		else if (slot.equip & EQP_ACC_L)                                          acc_l  = slot.nameid;
 		else if (slot.equip & EQP_ACC_R)                                          acc_r  = slot.nameid;
+		else if (slot.equip & EQP_GARMENT)                                        garment = slot.nameid;
+		else if (slot.equip & EQP_HEAD_TOP)                                       head_top = slot.nameid; // a hat over top and mid too
+		else if (slot.equip & EQP_HEAD_MID)                                       head_mid = slot.nameid;
+		else if (slot.equip & EQP_HEAD_LOW)                                       head_low = slot.nameid;
 	}
 
 	population_engine_persist_companion_sql(
 		owner->status.account_id, owner->status.char_id, index_, sd->status.name, (int16_t)sd->status.class_, (int)sd->status.sex,
 		(int)sd->status.hair, (int)sd->status.hair_color, (int)sd->status.clothes_color,
-		(uint32_t)sd->status.robe, sd->status.option, weapon, shield,
-		(uint32_t)sd->status.head_top, (uint32_t)sd->status.head_mid, (uint32_t)sd->status.head_bottom,
+		garment, sd->status.option, weapon, shield,
+		head_top, head_mid, head_low,
 		armor, shoes, acc_l, acc_r, (int)sd->status.base_level, (int)sd->status.job_level, (int)sd->status.str,
 		(int)sd->status.agi, (int)sd->status.vit, (int)sd->status.int_, (int)sd->status.dex, (int)sd->status.luk,
 		(int)sd->status.pow, (int)sd->status.sta, (int)sd->status.wis, (int)sd->status.spl, (int)sd->status.con, (int)sd->status.crt,
@@ -6999,6 +7007,8 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 	// and shadow gear survive restarts instead of vanishing on the next login.
 	uint32_t c_top=0, c_mid=0, c_low=0, c_garment=0, garment=0;
 	uint32_t sh_armor=0, sh_weapon=0, sh_shield=0, sh_shoes=0, sh_acc_l=0, sh_acc_r=0;
+	// The worn headgear, not status.head_*: that is each piece's look, not its item.
+	uint32_t head_top=0, head_mid=0, head_low=0;
 	for (int16_t i = 0; i < MAX_INVENTORY; ++i) {
 		const struct item &slot = sd->inventory.u.items_inventory[i];
 		if (!slot.nameid || !slot.equip) continue; // equipped only
@@ -7019,6 +7029,9 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		else if (slot.equip & EQP_SHOES)          shoes    = slot.nameid;
 		else if (slot.equip & EQP_ACC_L)          acc_l    = slot.nameid;
 		else if (slot.equip & EQP_ACC_R)          acc_r    = slot.nameid;
+		else if (slot.equip & EQP_HEAD_TOP)       head_top = slot.nameid; // a hat over top and mid too
+		else if (slot.equip & EQP_HEAD_MID)       head_mid = slot.nameid;
+		else if (slot.equip & EQP_HEAD_LOW)       head_low = slot.nameid;
 	}
 
 	// UPDATE only the mutable columns — identity (owner, index, name, job, sex,
@@ -7052,7 +7065,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		" dex_=%d, luk_=%d, pow_=%d, sta_=%d, wis_=%d, spl_=%d, con_=%d, crt_=%d,"
 		" mode=%d, duty=%d, heal_at=%d, emergency_at=%d, given_mask=%u, gear_detail='%s'%s"
 		" WHERE owner_account_id=%u AND owner_char_id=%u AND shell_index=%u",
-		weapon, shield, sd->status.head_top, sd->status.head_mid, sd->status.head_bottom,
+		weapon, shield, head_top, head_mid, head_low,
 		armor, shoes, acc_l, acc_r,
 		garment, c_top, c_mid, c_low, c_garment,
 		sh_armor, sh_weapon, sh_shield, sh_shoes, sh_acc_l, sh_acc_r,
@@ -7916,6 +7929,14 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 	if (sh_acc_r)   population_engine_shell_equip_item(shell, sh_acc_r, index_, "shadow_acc_r", EQP_SHADOW_ACC_R);
 	// Refine, cards, options and the right headgear, before the stats are worked out from them.
 	pop_companion_restore_gear_detail(shell, gear_detail);
+	// Fill what is still empty. The spawn above put the weapon, shield, garment and headgear on
+	// before the saved level was restored (a recall spawns at 99), so a piece above 99 - a Sky
+	// Emperor's level-130 book - was refused and left in the bag; and a row saved before the
+	// headgear columns held items brought those slots back as nothing. The refused piece goes on
+	// now, from the bag, and a slot with nothing to wear gets one from the job's gear set.
+	pop_companion_reequip_own(shell, (EQP_HAND_R | EQP_HAND_L | EQP_ARMOR | EQP_SHOES | EQP_GARMENT
+		| EQP_HEAD_TOP | EQP_HEAD_MID | EQP_HEAD_LOW | EQP_ACC_L | EQP_ACC_R)
+		& ~pop_companion_worn_positions(shell));
 	status_calc_pc(shell, SCO_NONE);
 
 	// Mark as the owner's companion and align membership with the owner.
