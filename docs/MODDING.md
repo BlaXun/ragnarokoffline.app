@@ -1669,6 +1669,12 @@ last mod first**. The client takes each item from the first table that defines
 it, so a mod's entry wins over the stock one — which is how a mod renames an
 existing item — and a later mod wins over an earlier one, as in `db/`.
 
+With the English translation on, the base table is the translation's, and the
+player's client's own item table comes **after** it, as
+`System/itemInfo_client.lub` (or `.lua`): it names only what the translation
+does not, such as iRO's own costumes. An item in neither shows as
+"Unknown Item"; ship it in your mod's table.
+
 A table anywhere else — `System/LuaFiles514/`, `data/luafiles514/` — is not
 read by the client, and the log says so: **Settings → Tools → Log viewer**,
 under *App*, as a `link-assets warning` each time the app starts or a mod is

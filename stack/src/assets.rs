@@ -9,7 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 mod client_tables;
-use client_tables::{copy_data_layer, copy_system_layer, warn_misplaced, ModTables};
+use client_tables::{copy_data_layer, copy_system_layer, stage_client_item_table, warn_misplaced, ModTables};
 
 /// Where the client's text comes from.
 ///
@@ -278,6 +278,11 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     // asks for achievement_list.lub, and got the Korean one (#164).
     let has_achievements = text.translated() && en.join("SystemEN/achievements.lub").is_file();
     if let Some(sys) = first_dir(&[client_dir.join("System"), client_dir.join("dll_exe/System")]) {
+        // Behind the English item table rather than gone: it still names
+        // what the translation does not (client_tables).
+        if text.translated() {
+            stage_client_item_table(&sys, &merged)?;
+        }
         for e in entries(&sys)? {
             let name = e.file_name();
             let n = name.to_string_lossy().to_ascii_lowercase();
@@ -329,9 +334,10 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     let (plugins, tables) = overlay_mods(cfg, &server_root, &merged)?;
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
     // Bumped when how the tree is staged changes without its inputs changing
-    // (v3: the signboard table's name), so a client holding the old staging in
-    // its cache drops it.
-    fnv(&mut fingerprint, b"owned-assets-v3");
+    // (v3: the signboard table's name; v4: the client's item table staged
+    // behind the English one), so a client holding the old staging in its
+    // cache drops it.
+    fnv(&mut fingerprint, b"owned-assets-v4");
     fnv(&mut fingerprint, text.as_str().as_bytes());
     // Config.local.js carries it, and that file is an ordinary HTTP request
     // the shell only re-fetches when this fingerprint moves. Left out at the
@@ -1135,7 +1141,9 @@ mod tests {
     /// same while the translation is in front: the client asks for
     /// `System/itemInfo.lub` before `itemInfo.lua`, and on Windows and macOS
     /// that request finds `iteminfo.lub`, so the English table, and every item
-    /// only it names, was never read (standart-npc#55).
+    /// only it names, was never read (standart-npc#55). The item table is
+    /// kept, though, under a name the client never tries on its own, and
+    /// listed after the English one: iRO names items the translation does not.
     #[test]
     fn the_clients_own_tables_are_skipped_in_any_case() {
         let cfg = fixture_config("gametext-case");
@@ -1179,14 +1187,29 @@ mod tests {
             fs::read_to_string(cfg.state.join("assets/System/itemInfo.lua")).unwrap(),
             "English items"
         );
+        // The client's item table, behind the English one; not its test
+        // server's.
+        assert_eq!(
+            fs::read_to_string(cfg.state.join("assets/System/itemInfo_client.lub")).unwrap(),
+            "iRO items"
+        );
+        let config = fs::read_to_string(cfg.state.join("assets/Config.local.js")).unwrap();
+        assert!(
+            config.contains("\tcustomItemInfo: ['System/itemInfo.lua', 'System/itemInfo_client.lub'],\n"),
+            "{config}"
+        );
 
-        // Without the translation they are the only tables there are.
+        // Without the translation they are the only tables there are, under
+        // their own names and in the client's own default order.
         write(&cfg.state.join("settings.json"), "{\"game_text\":\"client_western\"}");
         link(&cfg, &args).unwrap();
         assert_eq!(
             fs::read_to_string(cfg.state.join("assets/System/iteminfo.lub")).unwrap(),
             "iRO items"
         );
+        assert!(!cfg.state.join("assets/System/itemInfo_client.lub").exists());
+        let config = fs::read_to_string(cfg.state.join("assets/Config.local.js")).unwrap();
+        assert!(!config.contains("customItemInfo"), "{config}");
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
     }
 
