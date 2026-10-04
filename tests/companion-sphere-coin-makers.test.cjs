@@ -42,3 +42,9 @@ test('classes whose skills cost coins or spheres make them', () => {
 	assert.ok(block(4306).indexOf('GS_GLITTERING') < block(4306).indexOf('GS_ADJUSTMENT'), 'coins first');
 	assert.match(block(4262), /- SkillId: MO_CALLSPIRITS\n(?: {8,}.*\n)*? {12}- self_spheres_lt5/);
 });
+
+test('sphere makers wait until spheres run short', () => {
+	for (const skill of ['MO_CALLSPIRITS', 'CH_SOULCOLLECT'])
+		for (const r of rows(skill))
+			assert.match(r, /self_spheres_lt\d+/, r);
+});

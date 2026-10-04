@@ -633,7 +633,12 @@ Body:
             - self_sp_pct_lt30
             - enemy_distance_lt10
       # -- sphere-chain seeds (state machine priority) --
-      - { SkillId: MO_CALLSPIRITS,      Level: 5,  Target: self }
+      - SkillId: MO_CALLSPIRITS
+        Level: 5
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt5
       - { SkillId: MO_EXPLOSIONSPIRITS, Level: 5,  Target: self }
       - { SkillId: MO_STEELBODY,        Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 30 }
       - { SkillId: MO_BLADESTOP,        Level: 5,  Rate: 6000, Target: self, Condition: melee_attacked }
@@ -1154,7 +1159,13 @@ Body:
             - self_sp_pct_lt60
             - enemy_distance_lt10
       #- { SkillId: MO_CALLSPIRITS,      Level: 5,  Rate: 10000, Target: self }
-      - { SkillId: CH_SOULCOLLECT,      Level: 1,  Rate: 10000, Target: self }
+      - SkillId: CH_SOULCOLLECT
+        Level: 1
+        Rate: 10000
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt5
       - { SkillId: MO_EXPLOSIONSPIRITS, Level: 5,  Rate: 10000, Target: self }
       - { SkillId: MO_STEELBODY,        Level: 5,  Rate: 5000, Target: self, Condition: hp_below, CondValue: 25 }
       - { SkillId: MO_BLADESTOP,        Level: 5,  Rate: 6000, Target: self, Condition: melee_attacked }
@@ -2223,8 +2234,20 @@ Body:
       - { SkillId: SR_FLASHCOMBO,       Level: 5,  Rate: 7000  }
       - { SkillId: SR_HOWLINGOFLION,    Level: 5,  Rate: 5000  }
       - { SkillId: SR_CRESCENTELBOW,    Level: 5,  Rate: 5000, Target: self, Condition: melee_attacked }
-      - { SkillId: MO_CALLSPIRITS,      Level: 5,  Rate: 10000, Target: self }
-      - { SkillId: CH_SOULCOLLECT,      Level: 1,  Rate: 10000, Target: self }
+      - SkillId: MO_CALLSPIRITS
+        Level: 5
+        Rate: 10000
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt5
+      - SkillId: CH_SOULCOLLECT
+        Level: 1
+        Rate: 10000
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt5
       - { SkillId: MO_EXPLOSIONSPIRITS, Level: 5,  Rate: 10000, Target: self }
       - { SkillId: MO_EXTREMITYFIST,    Level: 10, Rate: 10000, Condition: sp_above, CondValue: 80 }
       - { SkillId: SR_RAISINGDRAGON,    Level: 10, Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_RAISINGDRAGON }
@@ -2277,8 +2300,20 @@ Body:
       - { SkillId: SR_FLASHCOMBO,       Level: 5,  Rate: 7000  }
       - { SkillId: SR_HOWLINGOFLION,    Level: 5,  Rate: 5000  }
       - { SkillId: SR_CRESCENTELBOW,    Level: 5,  Rate: 5000, Target: self, Condition: melee_attacked }
-      - { SkillId: MO_CALLSPIRITS,      Level: 5,  Rate: 10000, Target: self }
-      - { SkillId: CH_SOULCOLLECT,      Level: 1,  Rate: 10000, Target: self }
+      - SkillId: MO_CALLSPIRITS
+        Level: 5
+        Rate: 10000
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt5
+      - SkillId: CH_SOULCOLLECT
+        Level: 1
+        Rate: 10000
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt5
       - { SkillId: MO_EXPLOSIONSPIRITS, Level: 5,  Rate: 10000, Target: self }
       - { SkillId: MO_EXTREMITYFIST,    Level: 10, Rate: 10000, Condition: sp_above, CondValue: 80 }
       - { SkillId: SR_RAISINGDRAGON,    Level: 10, Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_RAISINGDRAGON }
