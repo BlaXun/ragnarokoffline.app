@@ -381,6 +381,12 @@ static PopCustomerDeal pop_customers_sell_to(map_session_data* bsd, int listidx,
 	s_buyingstore_item& bi = bsd->buyingstore.items[listidx];
 	if (bi.amount == 0 || bi.price <= 0)
 		return deal;
+	// The owner may have less zeny than the store's limit by now (spent while
+	// it was open): buyingstore_trade lowers the limit to it before a trade,
+	// and so does this. Otherwise pc_payzeny below refuses after the item is
+	// already in the inventory, and the item is free.
+	if (bsd->status.zeny < bsd->buyingstore.zenylimit)
+		bsd->buyingstore.zenylimit = bsd->status.zeny;
 	amount = std::min<int>(amount, bi.amount);
 	amount = std::min<int>(amount, bsd->buyingstore.zenylimit / bi.price);
 	const int32 w = itemdb_weight(bi.nameid);
@@ -389,6 +395,9 @@ static PopCustomerDeal pop_customers_sell_to(map_session_data* bsd, int listidx,
 	if (amount <= 0 || pc_checkadditem(bsd, bi.nameid, amount) == CHKADDITEM_OVERAMOUNT)
 		return deal;
 	if (pc_checkadditem(bsd, bi.nameid, amount) == CHKADDITEM_NEW && pc_inventoryblank(bsd) == 0)
+		return deal;
+
+	if (static_cast<int64>(amount) * bi.price > bsd->status.zeny)
 		return deal;
 
 	struct item it = {};
