@@ -104,6 +104,13 @@ same sign (a repeat gets a number: "ores n more 2"). A sign that offers goods
 ("SALE", "cheap stuff") only ever hangs over a stall that sells; buyers get
 their own ("WTB", "B> paying well").
 
+A sign that names items ("S> OBB OPB", "B> ori elu", "B> Soldier Skeleton
+loot") only goes up over a stall that really has them, and some signs name
+an item and price straight from the stall's stock: "S> Elunium 13k", "B>
+Sticky Mucus 450z". These need an app build with the matching population
+engine (`StockTitles`); on an older one, stalls show only the signs that
+name no item, so a sign never lies either way.
+
 A stall that sells out packs up within a minute, as a player would, and
 another takes the spot.
 

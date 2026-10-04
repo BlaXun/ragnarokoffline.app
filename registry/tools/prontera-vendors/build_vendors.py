@@ -670,7 +670,7 @@ THEMES = [
                 "Crystal_Arrow", "Arrow_Of_Wind", "Stone_Arrow", "Immatrial_Arrow", "Sleep_Arrow", "Oridecon_Arrow",
                 "Acid_Bottle", "Fire_Bottle", "Empty_Bottle", "Medicine_Bowl", "Detrimindexta", "Karvodailnirol"]),
     dict(key="pets", job="Merchant", pick=[4, 8], weight=1,
-         titles=["taming items", "S> pet stuff", "pet food n eggs", "{name}'s Pet Shop", "tame a poring"],
+         titles=["taming items", "S> pet stuff", "pet food n taming items", "{name}'s Pet Shop", "tame a poring"],
          items=["Pet_Food", "Unripe_Apple", "Orange_Juice", "Earthworm_The_Dude", "Rotten_Fish", "Bitter_Herb",
                 "Monster_Juice", "Book_Of_Devil", "Fatty_Chubby_Earthworm", "Silver_Knife_Of_Chaste",
                 "Monster_Oxygen_Mask", "Bark_Shorts", "Pet_Incubator", "Stuffed_Doll", "Green_Lace", "Sweet_Milk",
@@ -839,6 +839,76 @@ GENERIC_TITLES = ["Happy hunting!", "...", "zzz", "Things.", "etc", "AFK-----AFK
 SELL_TITLES = ["Stuff", "SALE", "sale", "Sell", "cheap stuff", "cheap stuff 2", "junk shop", "Goodies",
                "This looks good", "Stuff you might want", "Bringing Simples You Need Cheap", "random"]
 BUY_TITLES = ["Buying", "B>", "WTB", "buying stuff", "B> paying well", "B> > npc price", "WTB, fair prices"]
+
+# Signs that name what is for sale go out as StockTitles: the engine only
+# hangs one over a stall whose own pick bears it out, and fills {item} and
+# {price} from a line it really has ("S> Elunium 13k"). A server too old to
+# know StockTitles shows the other signs only, never one that lies.
+# Each theme gets two of these.
+SELL_STOCK_SIGNS = ["S> {item} {price}", "{item} {price}", "S> {item} cheap", "{item} n more", "wts {item}"]
+BUY_STOCK_SIGNS = ["B> {item} {price}", "B> {item}", "WTB {item} {price}", "buying {item}", "B> {item} n more"]
+# Signs that name items, and what a stall must carry to show them: (all of,
+# any of). A theme without the items in its pool simply never shows the sign.
+TITLE_NEEDS = {
+    "ores n elu fs": (["Elunium"], []),
+    "oridecon elunium cheap": (["Oridecon", "Elunium"], []),
+    "wts whites n blues": (["White_Potion", "Blue_Potion"], []),
+    "blue gems cheap": (["Blue_Gemstone"], []),
+    "diamonds fs": ([], ["Crystal_Jewel", "Crystal_Jewel_", "Crystal_Jewel__", "Crystal_Jewel___"]),
+    "S> blue gems": (["Blue_Gemstone"], []),
+    "undershirt + pantie": ([], ["Undershirt", "Undershirt_"]),
+    "Undershirt n Pantie fs": ([], ["Undershirt", "Undershirt_"]),
+    "tame a poring": (["Unripe_Apple"], []),
+    "fire/water/wind/earth conv": ([], ["Elemental_Fire", "Elemental_Water", "Elemental_Earth", "Elemental_Wind"]),
+    "S> BB": (["Bloody_Dead_Branch"], []),
+    "BBs cheap": (["Bloody_Dead_Branch"], []),
+    "bloody branch fs": (["Bloody_Dead_Branch"], []),
+    "S>Bloody Branch": (["Bloody_Dead_Branch"], []),
+    "BB / DB": (["Bloody_Dead_Branch", "Branch_Of_Dead_Tree"], []),
+    "S> OBB OPB": (["Old_Blue_Box", "Old_Violet_Box"], []),
+    "OBB / OPB": (["Old_Blue_Box", "Old_Violet_Box"], []),
+    "S>OPB": (["Old_Violet_Box"], []),
+    "S> OCA MCA": (["Old_Card_Album", "Magic_Card_Album"], []),
+    "OCA / MCA": (["Old_Card_Album", "Magic_Card_Album"], []),
+    "S>OCA": (["Old_Card_Album"], []),
+    "try your luck: OCA": (["Old_Card_Album"], []),
+    "YGG/ORI/ELU": (["Yggdrasilberry", "Oridecon", "Elunium"], []),
+    "ygg ori elu": (["Yggdrasilberry", "Oridecon", "Elunium"], []),
+    "ori elu ygg fs": (["Yggdrasilberry", "Oridecon", "Elunium"], []),
+    "S> yggs": (["Yggdrasilberry"], []),
+    "S> slim whites": (["White_Slim_Potion"], []),
+    "Black n White Dyestuffs here": (["Black_Dyestuffs", "White_Dyestuffs"], []),
+    "B> ori elu": (["Oridecon", "Elunium"], []),
+    "B> Oridecon / Elunium": (["Oridecon", "Elunium"], []),
+    "WTB elu ori rough": (["Elunium_Stone", "Oridecon_Stone"], []),
+    "B> rough ori / rough elu": (["Oridecon_Stone", "Elunium_Stone"], []),
+    "B> steel iron coal": (["Steel", "Iron", "Coal"], []),
+    "B> star crumbs": (["Star_Crumb"], []),
+    "buying flame hearts etc": (["Flame_Heart"], []),
+    "B> converters": ([], ["Elemental_Fire", "Elemental_Water", "Elemental_Earth", "Elemental_Wind"]),
+    "buying green herbs": (["Green_Herb"], []),
+    "B> red/yellow herbs": ([], ["Red_Herb", "Yellow_Herb"]),
+    "buying bottles n bowls": (["Empty_Bottle", "Medicine_Bowl"], []),
+    "B> witched starsand": (["Starsand_Of_Witch"], []),
+    "B> straws": (["Strawberry"], []),
+    "buying strawberries": (["Strawberry"], []),
+    "B> straws, good price": (["Strawberry"], []),
+    "B> strawberry grape honey": (["Strawberry", "Grape", "Honey"], []),
+    "B> jellopy n fluff": (["Jellopy", "Fluff"], []),
+    "B> shells feathers etc": (["Shell", "Feather"], []),
+    "B> fluff/grit/huge leaf": ([], ["Fluff", "Grit", "Great_Leaf"]),
+    "WTB scarlet/white dyestuffs": ([], ["Scarlet_Dyestuffs", "White_Dyestuffs"]),
+    "B> OCA": (["Old_Card_Album"], []),
+    "WTB albums": ([], ["Old_Card_Album", "Magic_Card_Album"]),
+    "B> OBB OPB": (["Old_Blue_Box", "Old_Violet_Box"], []),
+    "B> BB / DB": ([], ["Bloody_Dead_Branch", "Branch_Of_Dead_Tree"]),
+    "B> yggs": (["Yggdrasilberry"], []),
+    "buying ygg berries": (["Yggdrasilberry"], []),
+    "WTB ygg seed": (["Seed_Of_Yggdrasil"], []),
+    "B> whites": (["White_Potion"], []),
+    "WTB awakening/berserk": ([], ["Awakening_Potion", "Berserk_Potion"]),
+    "B> blue gems": (["Blue_Gemstone"], []),
+}
 
 # Card binders by slot, the way players sort them. Cards are among the most
 # traded things on a real server (about one shop in eight in the iRO sample
@@ -1222,10 +1292,15 @@ def place_buyer(key, place, counts, keep=()):
         return None
     mon = top_monster(counts)
     titles = [f"Buying {place} loot", f"WTB> {place} loot", f"B> {place} drops", f"{{name}} buys {place} loot"]
+    needs = {}
     if mon:
+        # Only over a stall that wants something that monster drops.
+        drops = [item(d["Item"])["AegisName"] for m in counts if MOBS[m]["Name"] == mon
+                 for d in MOBS[m].get("Drops") or [] if item(d["Item"])]
         titles += [f"B> {mon} loot", f"WTB {mon} drops"]
-    return dict(key=key, titles=titles, place=[ITEMS_BY_ID[i] for i in loot], rank=lambda e, w=loot: w[e["Id"]],
-                limit=40, weight=1, max=1, pay=PAY_COMMON, location=True)
+        needs = {f"B> {mon} loot": ([], drops), f"WTB {mon} drops": ([], drops)}
+    return dict(key=key, titles=titles, needs=needs, place=[ITEMS_BY_ID[i] for i in loot],
+                rank=lambda e, w=loot: w[e["Id"]], limit=40, weight=1, max=1, pay=PAY_COMMON, location=True)
 
 
 for _key, _title, _files in AREAS_LOOT:
@@ -1553,11 +1628,34 @@ def main():
             continue
         buying = t.get("buy", False)
         key = (BUY_PREFIX if buying else PREFIX) + t["key"]
-        out = [f"  - VendorKey: {key}", "    Type: Pool", f"    Title: {q(t['titles'][0])}", "    TitleFromPool:"]
         # Generic signs that fit the stall: never a "SALE" over a buyer.
         generic = [x for x in (BUY_TITLES if buying else SELL_TITLES) + GENERIC_TITLES if x not in t["titles"]]
         titles = list(t["titles"]) + random.Random(t["key"]).sample(generic, t.get("generic", 3))
-        out += [f"      - {q(x)}" for x in titles]
+        # Signs that name items go to StockTitles, with what they need; one whose
+        # items this pool lacks is dropped. Every stall also gets two {item} signs.
+        have = {e["AegisName"] for e, _, _ in lines}
+        needs_of = {**TITLE_NEEDS, **t.get("needs", {})}
+        plain, stock_titles = [], []
+        for x in titles:
+            if x not in needs_of:
+                plain.append(x)
+                continue
+            need_all, need_any = needs_of[x]
+            need_any = [n for n in need_any if n in have]
+            if all(n in have for n in need_all) and (need_any or not needs_of[x][1]):
+                stock_titles.append((x, need_all, need_any))
+        for x in random.Random(t["key"] + "#stock").sample(BUY_STOCK_SIGNS if buying else SELL_STOCK_SIGNS, 2):
+            stock_titles.append((x, [], []))
+        out = [f"  - VendorKey: {key}", "    Type: Pool", f"    Title: {q(plain[0])}", "    TitleFromPool:"]
+        out += [f"      - {q(x)}" for x in plain]
+        out.append("    StockTitles:")
+        for x, need_all, need_any in stock_titles:
+            d = {"Title": q(x)}
+            if need_all:
+                d["Needs"] = need_all
+            if need_any:
+                d["Any"] = sorted(set(need_any))
+            out.append(f"      - {flow(d)}")
         lo, hi = t["pick"]
         max_slots = min(12, max(hi, 1))
         if buying:

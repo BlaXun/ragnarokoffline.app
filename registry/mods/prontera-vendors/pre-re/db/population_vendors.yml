@@ -248,6 +248,9 @@ Body:
       - "Come here u"
       - "Stuff you might want"
       - "sale"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -281,11 +284,9 @@ Body:
 
   - VendorKey: prontera-vendors/sell/forge_supplies
     Type: Pool
-    Title: "ores n elu fs"
+    Title: "wts forging mats"
     TitleFromPool:
-      - "ores n elu fs"
       - "wts forging mats"
-      - "oridecon elunium cheap"
       - "upgrade mats here"
       - "smith supplies fs"
       - "stones n ores"
@@ -293,6 +294,11 @@ Body:
       - "Come on"
       - "random"
       - "..."
+    StockTitles:
+      - { Title: "ores n elu fs", Needs: [Elunium] }
+      - { Title: "oridecon elunium cheap", Needs: [Oridecon, Elunium] }
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -327,13 +333,16 @@ Body:
     TitleFromPool:
       - "S> pots"
       - "potion seller"
-      - "wts whites n blues"
       - "pots cheaper than npc"
       - "{name}'s Pharmacy"
       - "fresh pots"
       - "SALE"
       - "This looks good"
       - "..."
+    StockTitles:
+      - { Title: "wts whites n blues", Needs: [White_Potion, Blue_Potion] }
+      - { Title: "S> {item} cheap" }
+      - { Title: "S> {item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -379,6 +388,9 @@ Body:
       - "This looks good"
       - "Stuff"
       - "cheap stuff 2"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -429,6 +441,9 @@ Body:
       - "cheap stuff 2"
       - "sale"
       - "Stuff"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [2, 4]
     MaxSlots: 4
     RotationHours: 4
@@ -480,6 +495,9 @@ Body:
       - "cheap stuff"
       - "zzz"
       - "Stuff"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -530,6 +548,9 @@ Body:
       - "Come on"
       - "Stuff you might want"
       - "SALE"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -581,6 +602,9 @@ Body:
       - "cheap stuff"
       - "cheap stuff 2"
       - "AFK-----AFK"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -632,6 +656,9 @@ Body:
       - "SALE"
       - "See"
       - "Stuff you might want"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -679,6 +706,9 @@ Body:
       - "Happy hunting!"
       - "..."
       - "zzz"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -727,6 +757,9 @@ Body:
       - "Bringing Simples You Need Cheap"
       - "..."
       - "AFK-----AFK"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [1, 1]
     MaxSlots: 1
     RotationHours: 4
@@ -748,6 +781,9 @@ Body:
       - "Things."
       - "sale"
       - "random"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -793,11 +829,14 @@ Body:
     TitleFromPool:
       - "converters"
       - "S> ele converters"
-      - "fire/water/wind/earth conv"
       - "endow stuff fs"
       - "Stuff you might want"
       - "random"
       - "cheap stuff 2"
+    StockTitles:
+      - { Title: "fire/water/wind/earth conv", Any: [Elemental_Earth, Elemental_Fire, Elemental_Water, Elemental_Wind] }
+      - { Title: "S> {item} {price}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [3, 6]
     MaxSlots: 6
     RotationHours: 4
@@ -828,6 +867,9 @@ Body:
       - "AFK-----AFK"
       - "..."
       - "junk shop"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -871,6 +913,9 @@ Body:
       - "Come on"
       - "cheap stuff"
       - "See"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [3, 6]
     MaxSlots: 6
     RotationHours: 4
@@ -940,6 +985,9 @@ Body:
       - "Bringing Simples You Need Cheap"
       - "This looks good"
       - "See"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "wts {item}" }
     PickCount: [3, 6]
     MaxSlots: 6
     RotationHours: 4
@@ -999,12 +1047,15 @@ Body:
     TitleFromPool:
       - "S> gems"
       - "jewels n gemstones"
-      - "blue gems cheap"
       - "{name}'s Jeweler"
-      - "diamonds fs"
       - "etc"
       - "See"
       - "Stuff you might want"
+    StockTitles:
+      - { Title: "blue gems cheap", Needs: [Blue_Gemstone] }
+      - { Title: "diamonds fs", Any: [Crystal_Jewel, Crystal_Jewel_, Crystal_Jewel__, Crystal_Jewel___] }
+      - { Title: "wts {item}" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1043,6 +1094,9 @@ Body:
       - "See"
       - "Stuff"
       - "..."
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -1075,15 +1129,18 @@ Body:
 
   - VendorKey: prontera-vendors/sell/undies
     Type: Pool
-    Title: "undershirt + pantie"
+    Title: "S> undies"
     TitleFromPool:
-      - "undershirt + pantie"
       - "S> undies"
-      - "Undershirt n Pantie fs"
       - "{name}'s Laundry"
       - "AFK-----AFK"
       - "Stuff you might want"
       - "Things."
+    StockTitles:
+      - { Title: "undershirt + pantie", Any: [Undershirt, Undershirt_] }
+      - { Title: "Undershirt n Pantie fs", Any: [Undershirt, Undershirt_] }
+      - { Title: "{item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [2, 4]
     MaxSlots: 4
     RotationHours: 4
@@ -1103,13 +1160,16 @@ Body:
     Title: "gems n arrows"
     TitleFromPool:
       - "gems n arrows"
-      - "S> blue gems"
       - "skill supplies"
       - "arrows cheap"
       - "{name}'s Supplies"
       - "See"
       - "Sell"
       - "SALE"
+    StockTitles:
+      - { Title: "S> blue gems", Needs: [Blue_Gemstone] }
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -1143,12 +1203,15 @@ Body:
     TitleFromPool:
       - "taming items"
       - "S> pet stuff"
-      - "pet food n eggs"
+      - "pet food n taming items"
       - "{name}'s Pet Shop"
-      - "tame a poring"
       - "This looks good"
       - "Happy hunting!"
       - "Things."
+    StockTitles:
+      - { Title: "tame a poring", Needs: [Unripe_Apple] }
+      - { Title: "S> {item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -1188,6 +1251,9 @@ Body:
       - "junk shop"
       - "Come on"
       - "Bringing Simples You Need Cheap"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} cheap" }
     PickCount: [3, 6]
     MaxSlots: 6
     RotationHours: 4
@@ -1239,6 +1305,9 @@ Body:
       - "cheap stuff 2"
       - "SALE"
       - "..."
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [2, 5]
     MaxSlots: 5
     RotationHours: 4
@@ -1280,16 +1349,19 @@ Body:
 
   - VendorKey: prontera-vendors/sell/bloody_branches
     Type: Pool
-    Title: "S> BB"
+    Title: "cheap stuff"
     TitleFromPool:
-      - "S> BB"
-      - "BBs cheap"
-      - "bloody branch fs"
-      - "BB / DB"
-      - "S>Bloody Branch"
       - "cheap stuff"
       - "Happy hunting!"
       - "etc"
+    StockTitles:
+      - { Title: "S> BB", Needs: [Bloody_Dead_Branch] }
+      - { Title: "BBs cheap", Needs: [Bloody_Dead_Branch] }
+      - { Title: "bloody branch fs", Needs: [Bloody_Dead_Branch] }
+      - { Title: "BB / DB", Needs: [Bloody_Dead_Branch, Branch_Of_Dead_Tree] }
+      - { Title: "S>Bloody Branch", Needs: [Bloody_Dead_Branch] }
+      - { Title: "{item} n more" }
+      - { Title: "wts {item}" }
     PickCount: [1, 2]
     MaxSlots: 2
     RotationHours: 4
@@ -1303,16 +1375,19 @@ Body:
 
   - VendorKey: prontera-vendors/sell/old_boxes
     Type: Pool
-    Title: "S> OBB OPB"
+    Title: "old boxes fs"
     TitleFromPool:
-      - "S> OBB OPB"
-      - "OBB / OPB"
       - "old boxes fs"
       - "gamble boxes"
-      - "S>OPB"
       - "cheap stuff 2"
       - "AFK-----AFK"
       - "Come here u"
+    StockTitles:
+      - { Title: "S> OBB OPB", Needs: [Old_Blue_Box, Old_Violet_Box] }
+      - { Title: "OBB / OPB", Needs: [Old_Blue_Box, Old_Violet_Box] }
+      - { Title: "S>OPB", Needs: [Old_Violet_Box] }
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [1, 3]
     MaxSlots: 3
     RotationHours: 4
@@ -1327,16 +1402,19 @@ Body:
 
   - VendorKey: prontera-vendors/sell/card_albums
     Type: Pool
-    Title: "S> OCA MCA"
+    Title: "card albums"
     TitleFromPool:
-      - "S> OCA MCA"
-      - "OCA / MCA"
       - "card albums"
-      - "S>OCA"
-      - "try your luck: OCA"
       - "Goodies"
       - "AFK-----AFK"
       - "Bringing Simples You Need Cheap"
+    StockTitles:
+      - { Title: "S> OCA MCA", Needs: [Old_Card_Album, Magic_Card_Album] }
+      - { Title: "OCA / MCA", Needs: [Old_Card_Album, Magic_Card_Album] }
+      - { Title: "S>OCA", Needs: [Old_Card_Album] }
+      - { Title: "try your luck: OCA", Needs: [Old_Card_Album] }
+      - { Title: "{item} {price}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [1, 2]
     MaxSlots: 2
     RotationHours: 4
@@ -1360,6 +1438,9 @@ Body:
       - "See"
       - "Happy hunting!"
       - "Come here u"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [3, 6]
     MaxSlots: 6
     RotationHours: 4
@@ -1384,6 +1465,9 @@ Body:
       - "Happy hunting!"
       - "See"
       - "sale"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -1425,15 +1509,18 @@ Body:
 
   - VendorKey: prontera-vendors/sell/ygg_ori_elu
     Type: Pool
-    Title: "YGG/ORI/ELU"
+    Title: "..."
     TitleFromPool:
-      - "YGG/ORI/ELU"
-      - "ygg ori elu"
-      - "S> yggs"
-      - "ori elu ygg fs"
       - "..."
       - "SALE"
       - "Come on"
+    StockTitles:
+      - { Title: "YGG/ORI/ELU", Needs: [Yggdrasilberry, Oridecon, Elunium] }
+      - { Title: "ygg ori elu", Needs: [Yggdrasilberry, Oridecon, Elunium] }
+      - { Title: "S> yggs", Needs: [Yggdrasilberry] }
+      - { Title: "ori elu ygg fs", Needs: [Yggdrasilberry, Oridecon, Elunium] }
+      - { Title: "{item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [3, 5]
     MaxSlots: 5
     RotationHours: 4
@@ -1455,13 +1542,16 @@ Body:
     Title: "slims"
     TitleFromPool:
       - "slims"
-      - "S> slim whites"
       - "condensed pots"
       - "{name}'s Slims"
       - "slim potions cheap"
       - "Goodies"
       - "zzz"
       - "junk shop"
+    StockTitles:
+      - { Title: "S> slim whites", Needs: [White_Slim_Potion] }
+      - { Title: "{item} {price}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [2, 3]
     MaxSlots: 3
     RotationHours: 4
@@ -1486,6 +1576,9 @@ Body:
       - "Sell"
       - "See"
       - "Come on"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1537,6 +1630,9 @@ Body:
       - "Come here u"
       - "Stuff you might want"
       - "This looks good"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1588,6 +1684,9 @@ Body:
       - "sale"
       - "cheap stuff"
       - "random"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1636,6 +1735,9 @@ Body:
       - "See"
       - "cheap stuff 2"
       - "..."
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1687,6 +1789,9 @@ Body:
       - "random"
       - "Come here u"
       - "cheap stuff 2"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1738,6 +1843,9 @@ Body:
       - "Come on"
       - "random"
       - "See"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1789,6 +1897,9 @@ Body:
       - "etc"
       - "Come on"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1840,6 +1951,9 @@ Body:
       - "AFK-----AFK"
       - "Stuff you might want"
       - "Goodies"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1891,6 +2005,9 @@ Body:
       - "random"
       - "zzz"
       - "etc"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1942,6 +2059,9 @@ Body:
       - "Come on"
       - "Stuff"
       - "junk shop"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -1983,6 +2103,9 @@ Body:
       - "Goodies"
       - "Things."
       - "Bringing Simples You Need Cheap"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2021,6 +2144,9 @@ Body:
       - "Come here u"
       - "SALE"
       - "junk shop"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2048,6 +2174,9 @@ Body:
       - "This looks good"
       - "See"
       - "Stuff"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2099,6 +2228,9 @@ Body:
       - "Stuff you might want"
       - "This looks good"
       - "cheap stuff 2"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2146,6 +2278,9 @@ Body:
       - "Bringing Simples You Need Cheap"
       - "etc"
       - "SALE"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2195,6 +2330,9 @@ Body:
       - "zzz"
       - "This looks good"
       - "cheap stuff 2"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2234,9 +2372,12 @@ Body:
       - "Dyestuffs n pigments"
       - "Dye ur hats! Dyestuffs"
       - "Paint the town: Dyestuffs"
-      - "Black n White Dyestuffs here"
       - "Dyestuffs for hat quests"
       - "{name}'s Dyestuffs"
+    StockTitles:
+      - { Title: "Black n White Dyestuffs here", Needs: [Black_Dyestuffs, White_Dyestuffs] }
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2265,6 +2406,9 @@ Body:
       - "random"
       - "SALE"
       - "cheap stuff 2"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2315,6 +2459,9 @@ Body:
       - "Bringing Simples You Need Cheap"
       - "Stuff you might want"
       - "Stuff"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2365,6 +2512,9 @@ Body:
       - "cheap stuff 2"
       - "AFK-----AFK"
       - "etc"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2415,6 +2565,9 @@ Body:
       - "random"
       - "sale"
       - "AFK-----AFK"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2465,6 +2618,9 @@ Body:
       - "Things."
       - "cheap stuff 2"
       - "Stuff"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2515,6 +2671,9 @@ Body:
       - "junk shop"
       - "Happy hunting!"
       - "Come on"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2565,6 +2724,9 @@ Body:
       - "..."
       - "random"
       - "Bringing Simples You Need Cheap"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2615,6 +2777,9 @@ Body:
       - "SALE"
       - "Happy hunting!"
       - "Goodies"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2665,6 +2830,9 @@ Body:
       - "cheap stuff"
       - "Sell"
       - "sale"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2705,6 +2873,9 @@ Body:
       - "Come here u"
       - "AFK-----AFK"
       - "This looks good"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2746,6 +2917,9 @@ Body:
       - "junk shop"
       - "Bringing Simples You Need Cheap"
       - "Goodies"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2796,6 +2970,9 @@ Body:
       - "AFK-----AFK"
       - "etc"
       - "sale"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2844,6 +3021,9 @@ Body:
       - "zzz"
       - "Things."
       - "Come on"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2869,6 +3049,9 @@ Body:
       - "SALE"
       - "Things."
       - "This looks good"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2919,6 +3102,9 @@ Body:
       - "etc"
       - "Things."
       - "Sell"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -2966,6 +3152,9 @@ Body:
       - "random"
       - "Things."
       - "See"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -3016,6 +3205,9 @@ Body:
       - "Things."
       - "cheap stuff 2"
       - "Goodies"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -3066,6 +3258,9 @@ Body:
       - "SALE"
       - "sale"
       - "random"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -3117,6 +3312,9 @@ Body:
       - "sale"
       - "cheap stuff"
       - "Bringing Simples You Need Cheap"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -3167,6 +3365,9 @@ Body:
       - "zzz"
       - "Sell"
       - "junk shop"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -3193,6 +3394,9 @@ Body:
       - "etc"
       - "zzz"
       - "This looks good"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -3245,6 +3449,9 @@ Body:
       - "Stuff"
       - "etc"
       - "This looks good"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3327,6 +3534,9 @@ Body:
       - "sale"
       - "See"
       - "Come on"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3409,6 +3619,9 @@ Body:
       - "zzz"
       - "Come here u"
       - "Things."
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3492,6 +3705,9 @@ Body:
       - "This looks good"
       - "cheap stuff 2"
       - "Come on"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "S> {item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3574,6 +3790,9 @@ Body:
       - "etc"
       - "Happy hunting!"
       - "Come on"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3655,6 +3874,9 @@ Body:
       - "..."
       - "Happy hunting!"
       - "Stuff"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3706,6 +3928,9 @@ Body:
       - "cheap stuff"
       - "Happy hunting!"
       - "Goodies"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3757,6 +3982,9 @@ Body:
       - "See"
       - "Stuff"
       - "etc"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3808,6 +4036,9 @@ Body:
       - "Things."
       - "cheap stuff 2"
       - "Come on"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3859,6 +4090,9 @@ Body:
       - "Happy hunting!"
       - "sale"
       - "SALE"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} n more" }
     PickCount: [6, 10]
     MaxSlots: 10
     RotationHours: 4
@@ -3910,6 +4144,9 @@ Body:
       - "random"
       - "AFK-----AFK"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} cheap" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -3960,6 +4197,9 @@ Body:
       - "junk shop"
       - "Things."
       - "This looks good"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -4010,6 +4250,9 @@ Body:
       - "Bringing Simples You Need Cheap"
       - "SALE"
       - "Things."
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} cheap" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -4060,6 +4303,9 @@ Body:
       - "sale"
       - "Come here u"
       - "Sell"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -4110,6 +4356,9 @@ Body:
       - "Happy hunting!"
       - "SALE"
       - "Come on"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -4160,6 +4409,9 @@ Body:
       - "etc"
       - "See"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -4211,6 +4463,9 @@ Body:
       - "Stuff you might want"
       - "zzz"
       - "cheap stuff"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -4251,6 +4506,9 @@ Body:
       - "cheap stuff"
       - "Stuff"
       - "Goodies"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [4, 8]
     MaxSlots: 8
     RotationHours: 4
@@ -4304,6 +4562,9 @@ Body:
       - "Stuff you might want"
       - "..."
       - "random"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [3, 6]
     MaxSlots: 6
     RotationHours: 4
@@ -4347,6 +4608,9 @@ Body:
       - "cheap stuff"
       - "sale"
       - "junk shop"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4398,6 +4662,9 @@ Body:
       - "sale"
       - "AFK-----AFK"
       - "Come here u"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4449,6 +4716,9 @@ Body:
       - "cheap stuff"
       - "AFK-----AFK"
       - "Stuff you might want"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4490,6 +4760,9 @@ Body:
       - "sale"
       - "This looks good"
       - "zzz"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4541,6 +4814,9 @@ Body:
       - "This looks good"
       - "Come here u"
       - "Things."
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4592,6 +4868,9 @@ Body:
       - "cheap stuff"
       - "This looks good"
       - "Stuff you might want"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4630,6 +4909,9 @@ Body:
       - "Goodies"
       - "Come here u"
       - "SALE"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4681,6 +4963,9 @@ Body:
       - "etc"
       - "Goodies"
       - "Stuff"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4732,6 +5017,9 @@ Body:
       - "This looks good"
       - "random"
       - "etc"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4783,6 +5071,9 @@ Body:
       - "Things."
       - "SALE"
       - "etc"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4834,6 +5125,9 @@ Body:
       - "Goodies"
       - "AFK-----AFK"
       - "random"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4885,6 +5179,9 @@ Body:
       - "AFK-----AFK"
       - "zzz"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4935,6 +5232,9 @@ Body:
       - "Bringing Simples You Need Cheap"
       - "random"
       - "This looks good"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -4986,6 +5286,9 @@ Body:
       - "AFK-----AFK"
       - "zzz"
       - "Things."
+    StockTitles:
+      - { Title: "S> {item} cheap" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5037,6 +5340,9 @@ Body:
       - "etc"
       - "cheap stuff 2"
       - "cheap stuff"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5088,6 +5394,9 @@ Body:
       - "Things."
       - "Goodies"
       - "..."
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5123,6 +5432,9 @@ Body:
       - "zzz"
       - "Bringing Simples You Need Cheap"
       - "Come here u"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5174,6 +5486,9 @@ Body:
       - "Goodies"
       - "random"
       - "zzz"
+    StockTitles:
+      - { Title: "{item} n more" }
+      - { Title: "{item} {price}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5225,6 +5540,9 @@ Body:
       - "Come here u"
       - "Things."
       - "cheap stuff"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5276,6 +5594,9 @@ Body:
       - "This looks good"
       - "AFK-----AFK"
       - "Things."
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5321,6 +5642,9 @@ Body:
       - "zzz"
       - "sale"
       - "Goodies"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "wts {item}" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5372,6 +5696,9 @@ Body:
       - "Come here u"
       - "Sell"
       - "random"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5423,6 +5750,9 @@ Body:
       - "Come here u"
       - "sale"
       - "etc"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5474,6 +5804,9 @@ Body:
       - "Happy hunting!"
       - "Come here u"
       - "AFK-----AFK"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "{item} n more" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5525,6 +5858,9 @@ Body:
       - "Sell"
       - "SALE"
       - "etc"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} cheap" }
     PickCount: [5, 9]
     MaxSlots: 9
     RotationHours: 4
@@ -5566,18 +5902,21 @@ Body:
 
   - VendorKey: prontera-vendors/buy/upgrade
     Type: Pool
-    Title: "B> ori elu"
+    Title: "buying ores"
     TitleFromPool:
-      - "B> ori elu"
       - "buying ores"
-      - "B> Oridecon / Elunium"
-      - "WTB elu ori rough"
-      - "B> rough ori / rough elu"
       - "{name} buys ores"
       - "{name} is buying"
       - "Come on"
       - "B>"
       - "B> paying well"
+    StockTitles:
+      - { Title: "B> ori elu", Needs: [Oridecon, Elunium] }
+      - { Title: "B> Oridecon / Elunium", Needs: [Oridecon, Elunium] }
+      - { Title: "WTB elu ori rough", Needs: [Elunium_Stone, Oridecon_Stone] }
+      - { Title: "B> rough ori / rough elu", Needs: [Oridecon_Stone, Elunium_Stone] }
+      - { Title: "B> {item} n more" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5593,16 +5932,19 @@ Body:
 
   - VendorKey: prontera-vendors/buy/crafting
     Type: Pool
-    Title: "B> steel iron coal"
+    Title: "buying crafting mats"
     TitleFromPool:
-      - "B> steel iron coal"
       - "buying crafting mats"
-      - "B> star crumbs"
       - "WTB smith mats"
       - "{name} is buying"
       - "zzz"
       - "B>"
       - "B> paying well"
+    StockTitles:
+      - { Title: "B> steel iron coal", Needs: [Steel, Iron, Coal] }
+      - { Title: "B> star crumbs", Needs: [Star_Crumb] }
+      - { Title: "buying {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5621,12 +5963,15 @@ Body:
     Title: "B> ele stones"
     TitleFromPool:
       - "B> ele stones"
-      - "buying flame hearts etc"
-      - "B> converters"
       - "{name} is buying"
       - "etc"
       - "WTB"
       - "Things."
+    StockTitles:
+      - { Title: "buying flame hearts etc", Needs: [Flame_Heart] }
+      - { Title: "B> converters", Any: [Elemental_Earth, Elemental_Fire, Elemental_Water, Elemental_Wind] }
+      - { Title: "B> {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5652,13 +5997,16 @@ Body:
     Title: "B> herbs"
     TitleFromPool:
       - "B> herbs"
-      - "buying green herbs"
-      - "B> red/yellow herbs"
       - "WTB herbs"
       - "{name} is buying"
       - "Things."
       - "Buying"
       - "zzz"
+    StockTitles:
+      - { Title: "buying green herbs", Needs: [Green_Herb] }
+      - { Title: "B> red/yellow herbs", Any: [Red_Herb, Yellow_Herb] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5677,14 +6025,17 @@ Body:
     Title: "B> alche mats"
     TitleFromPool:
       - "B> alche mats"
-      - "buying bottles n bowls"
       - "WTB alchemy stuff"
-      - "B> witched starsand"
       - "B> brewing mats"
       - "{name} is buying"
       - "Come here u"
       - "See"
       - "buying stuff"
+    StockTitles:
+      - { Title: "buying bottles n bowls", Needs: [Empty_Bottle, Medicine_Bowl] }
+      - { Title: "B> witched starsand", Needs: [Starsand_Of_Witch] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5708,17 +6059,20 @@ Body:
 
   - VendorKey: prontera-vendors/buy/berries
     Type: Pool
-    Title: "B> straws"
+    Title: "WTB SP food"
     TitleFromPool:
-      - "B> straws"
-      - "buying strawberries"
-      - "B> strawberry grape honey"
       - "WTB SP food"
-      - "B> straws, good price"
       - "{name} is buying"
       - "WTB"
       - "..."
       - "WTB, fair prices"
+    StockTitles:
+      - { Title: "B> straws", Needs: [Strawberry] }
+      - { Title: "buying strawberries", Needs: [Strawberry] }
+      - { Title: "B> strawberry grape honey", Needs: [Strawberry, Grape, Honey] }
+      - { Title: "B> straws, good price", Needs: [Strawberry] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5737,18 +6091,19 @@ Body:
 
   - VendorKey: prontera-vendors/buy/junk
     Type: Pool
-    Title: "B> jellopy n fluff"
+    Title: "buying junk loot"
     TitleFromPool:
-      - "B> jellopy n fluff"
       - "buying junk loot"
       - "B> your loot, > npc"
       - "WTB common drops"
-      - "B> shells feathers etc"
       - "dump ur loot here"
       - "{name} is buying"
       - "WTB"
       - "B> > npc price"
       - "B> paying well"
+    StockTitles:
+      - { Title: "B> {item} n more" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5773,13 +6128,16 @@ Body:
     TitleFromPool:
       - "B> turn-in items"
       - "buying quest turn-ins"
-      - "B> fluff/grit/huge leaf"
       - "WTB Eden mission items"
       - "B> exp quest items"
       - "{name} is buying"
       - "etc"
       - "WTB, fair prices"
       - "B>"
+    StockTitles:
+      - { Title: "B> fluff/grit/huge leaf", Any: [Fluff, Great_Leaf, Grit] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5829,6 +6187,9 @@ Body:
       - "Things."
       - "zzz"
       - "..."
+    StockTitles:
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5923,11 +6284,14 @@ Body:
     TitleFromPool:
       - "B> Dyestuffs"
       - "buying dyestuffs"
-      - "WTB scarlet/white dyestuffs"
       - "{name} is buying"
       - "Happy hunting!"
       - "B> paying well"
       - "B>"
+    StockTitles:
+      - { Title: "WTB scarlet/white dyestuffs", Any: [Scarlet_Dyestuffs, White_Dyestuffs] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5955,6 +6319,9 @@ Body:
       - "Buying"
       - "AFK-----AFK"
       - "B> > npc price"
+    StockTitles:
+      - { Title: "buying {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -5995,17 +6362,20 @@ Body:
 
   - VendorKey: prontera-vendors/buy/boxes
     Type: Pool
-    Title: "B> OCA"
+    Title: "buying boxes"
     TitleFromPool:
-      - "B> OCA"
-      - "B> OBB OPB"
       - "buying boxes"
-      - "B> BB / DB"
-      - "WTB albums"
       - "{name} is buying"
       - "B> > npc price"
       - "..."
       - "zzz"
+    StockTitles:
+      - { Title: "B> OCA", Needs: [Old_Card_Album] }
+      - { Title: "B> OBB OPB", Needs: [Old_Blue_Box, Old_Violet_Box] }
+      - { Title: "B> BB / DB", Any: [Bloody_Dead_Branch, Branch_Of_Dead_Tree] }
+      - { Title: "WTB albums", Any: [Magic_Card_Album, Old_Card_Album] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6022,15 +6392,18 @@ Body:
 
   - VendorKey: prontera-vendors/buy/ygg
     Type: Pool
-    Title: "B> yggs"
+    Title: "{name} is buying"
     TitleFromPool:
-      - "B> yggs"
-      - "buying ygg berries"
-      - "WTB ygg seed"
       - "{name} is buying"
       - "B>"
       - "See"
       - "B> > npc price"
+    StockTitles:
+      - { Title: "B> yggs", Needs: [Yggdrasilberry] }
+      - { Title: "buying ygg berries", Needs: [Yggdrasilberry] }
+      - { Title: "WTB ygg seed", Needs: [Seed_Of_Yggdrasil] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6050,12 +6423,14 @@ Body:
     TitleFromPool:
       - "B> pots"
       - "buying potions"
-      - "B> whites"
       - "WTB herbs n pots"
       - "{name} is buying"
       - "B>"
       - "B> paying well"
       - "WTB, fair prices"
+    StockTitles:
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6100,11 +6475,14 @@ Body:
     TitleFromPool:
       - "B> useables"
       - "buying consumables"
-      - "WTB awakening/berserk"
       - "{name} is buying"
       - "B>"
       - "Buying"
       - "..."
+    StockTitles:
+      - { Title: "WTB awakening/berserk", Any: [Awakening_Potion, Berserk_Potion] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6149,11 +6527,14 @@ Body:
     TitleFromPool:
       - "B> gems"
       - "buying jewels"
-      - "B> blue gems"
       - "{name} is buying"
       - "B>"
       - "Buying"
       - "B> > npc price"
+    StockTitles:
+      - { Title: "B> blue gems", Needs: [Blue_Gemstone] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6196,6 +6577,9 @@ Body:
       - "Things."
       - "zzz"
       - "B> > npc price"
+    StockTitles:
+      - { Title: "buying {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6276,6 +6660,9 @@ Body:
       - "Come on"
       - "WTB, fair prices"
       - "Buying"
+    StockTitles:
+      - { Title: "B> {item} n more" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6376,6 +6763,9 @@ Body:
       - "B> paying well"
       - "WTB, fair prices"
       - "buying stuff"
+    StockTitles:
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6476,6 +6866,9 @@ Body:
       - "Buying"
       - "..."
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6576,6 +6969,9 @@ Body:
       - "See"
       - "WTB"
       - "etc"
+    StockTitles:
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6676,6 +7072,9 @@ Body:
       - "AFK-----AFK"
       - "B>"
       - "Buying"
+    StockTitles:
+      - { Title: "B> {item} n more" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6727,6 +7126,9 @@ Body:
       - "Things."
       - "B> paying well"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6768,12 +7170,15 @@ Body:
       - "WTB> Byalan loot"
       - "B> Byalan drops"
       - "{name} buys Byalan loot"
-      - "B> Vadon loot"
-      - "WTB Vadon drops"
       - "{name} is buying"
       - "Buying"
       - "WTB, fair prices"
       - "etc"
+    StockTitles:
+      - { Title: "B> Vadon loot", Any: [Blue_Gemstone, Crystal_Blue, Garlet, Nipper, Solid_Shell] }
+      - { Title: "WTB Vadon drops", Any: [Blue_Gemstone, Crystal_Blue, Garlet, Nipper, Solid_Shell] }
+      - { Title: "B> {item} {price}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6822,12 +7227,15 @@ Body:
       - "WTB> Geffenia loot"
       - "B> Geffenia drops"
       - "{name} buys Geffenia loot"
-      - "B> False Angel loot"
-      - "WTB False Angel drops"
       - "{name} is buying"
       - "B> paying well"
       - "Come here u"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> False Angel loot", Any: [Blue_Gemstone, Red_Gemstone, Yellow_Gemstone] }
+      - { Title: "WTB False Angel drops", Any: [Blue_Gemstone, Red_Gemstone, Yellow_Gemstone] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6861,12 +7269,15 @@ Body:
       - "WTB> Kiel loot"
       - "B> Kiel drops"
       - "{name} buys Kiel loot"
-      - "B> Aliza loot"
-      - "WTB Aliza drops"
       - "{name} is buying"
       - "etc"
       - "Happy hunting!"
       - "WTB"
+    StockTitles:
+      - { Title: "B> Aliza loot", Any: [Alice's_Apron, Brigan, Sturdy_Iron_Piece] }
+      - { Title: "WTB Aliza drops", Any: [Alice's_Apron, Brigan, Sturdy_Iron_Piece] }
+      - { Title: "B> {item} {price}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6890,12 +7301,15 @@ Body:
       - "WTB> Payon Cave loot"
       - "B> Payon Cave drops"
       - "{name} buys Payon Cave loot"
-      - "B> Sohee loot"
-      - "WTB Sohee drops"
       - "{name} is buying"
       - "Things."
       - "..."
       - "Buying"
+    StockTitles:
+      - { Title: "B> Sohee loot", Any: [Long_Hair, Skirt_Of_Virgin] }
+      - { Title: "WTB Sohee drops", Any: [Long_Hair, Skirt_Of_Virgin] }
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -6952,12 +7366,15 @@ Body:
       - "WTB> Orc Dungeon loot"
       - "B> Orc Dungeon drops"
       - "{name} buys Orc Dungeon loot"
-      - "B> Orc Zombie loot"
-      - "WTB Orc Zombie drops"
       - "{name} is buying"
       - "zzz"
       - "..."
       - "Things."
+    StockTitles:
+      - { Title: "B> Orc Zombie loot", Any: [Emperium, Nail_Of_Orc] }
+      - { Title: "WTB Orc Zombie drops", Any: [Emperium, Nail_Of_Orc] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7001,12 +7418,15 @@ Body:
       - "WTB> Ant Hell loot"
       - "B> Ant Hell drops"
       - "{name} buys Ant Hell loot"
-      - "B> Andre loot"
-      - "WTB Andre drops"
       - "{name} is buying"
       - "..."
       - "Come on"
       - "Things."
+    StockTitles:
+      - { Title: "B> Andre loot", Any: [Garlet, Iron_Ore, Sparkling_Dust, Worm_Peelings, Yellow_Live] }
+      - { Title: "WTB Andre drops", Any: [Garlet, Iron_Ore, Sparkling_Dust, Worm_Peelings, Yellow_Live] }
+      - { Title: "B> {item} {price}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7042,12 +7462,15 @@ Body:
       - "WTB> Sphinx loot"
       - "B> Sphinx drops"
       - "{name} buys Sphinx loot"
-      - "B> Pasana loot"
-      - "WTB Pasana drops"
       - "{name} is buying"
       - "B>"
       - "Come on"
       - "See"
+    StockTitles:
+      - { Title: "B> Pasana loot", Any: [Honey_Jar, Vroken_Sword] }
+      - { Title: "WTB Pasana drops", Any: [Honey_Jar, Vroken_Sword] }
+      - { Title: "B> {item} n more" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7086,12 +7509,15 @@ Body:
       - "WTB> Pyramid loot"
       - "B> Pyramid drops"
       - "{name} buys Pyramid loot"
-      - "B> Mummy loot"
-      - "WTB Mummy drops"
       - "{name} is buying"
       - "AFK-----AFK"
       - "etc"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> Mummy loot", Any: [Mementos, Rotten_Bandage] }
+      - { Title: "WTB Mummy drops", Any: [Mementos, Rotten_Bandage] }
+      - { Title: "B> {item} n more" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7131,12 +7557,15 @@ Body:
       - "WTB> Sunken Ship loot"
       - "B> Sunken Ship drops"
       - "{name} buys Sunken Ship loot"
-      - "B> Pirate Skeleton loot"
-      - "WTB Pirate Skeleton drops"
       - "{name} is buying"
       - "B>"
       - "AFK-----AFK"
       - "Things."
+    StockTitles:
+      - { Title: "B> Pirate Skeleton loot", Any: [Cookbook06, Skel_Bone] }
+      - { Title: "WTB Pirate Skeleton drops", Any: [Cookbook06, Skel_Bone] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7174,12 +7603,15 @@ Body:
       - "WTB> Clock Tower loot"
       - "B> Clock Tower drops"
       - "{name} buys Clock Tower loot"
-      - "B> Alarm loot"
-      - "WTB Alarm drops"
       - "{name} is buying"
       - "WTB, fair prices"
       - "B> paying well"
       - "B>"
+    StockTitles:
+      - { Title: "B> Alarm loot", Any: [Key_Of_Clock_Tower, Needle_Of_Alarm, Skull] }
+      - { Title: "WTB Alarm drops", Any: [Key_Of_Clock_Tower, Needle_Of_Alarm, Skull] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7236,12 +7668,15 @@ Body:
       - "WTB> Glast Heim loot"
       - "B> Glast Heim drops"
       - "{name} buys Glast Heim loot"
-      - "B> Gargoyle loot"
-      - "WTB Gargoyle drops"
       - "{name} is buying"
       - "Things."
       - "Come on"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> Gargoyle loot", Any: [Petite_DiablOfs_Wing] }
+      - { Title: "WTB Gargoyle drops", Any: [Petite_DiablOfs_Wing] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7298,12 +7733,15 @@ Body:
       - "WTB> Turtle Island loot"
       - "B> Turtle Island drops"
       - "{name} buys Turtle Island loot"
-      - "B> Freezer loot"
-      - "WTB Freezer drops"
       - "{name} is buying"
       - "B> > npc price"
       - "See"
       - "..."
+    StockTitles:
+      - { Title: "B> Freezer loot", Any: [Broken_Shell, Cyfar, Ice_Piece, Turtle_Shell] }
+      - { Title: "WTB Freezer drops", Any: [Broken_Shell, Cyfar, Ice_Piece, Turtle_Shell] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7343,12 +7781,15 @@ Body:
       - "WTB> Toy Factory loot"
       - "B> Toy Factory drops"
       - "{name} buys Toy Factory loot"
-      - "B> Christmas Cookie loot"
-      - "WTB Christmas Cookie drops"
       - "{name} is buying"
       - "B> paying well"
       - "WTB"
       - "B>"
+    StockTitles:
+      - { Title: "B> Christmas Cookie loot", Any: [Scarlet_Jewel] }
+      - { Title: "WTB Christmas Cookie drops", Any: [Scarlet_Jewel] }
+      - { Title: "buying {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7383,12 +7824,15 @@ Body:
       - "WTB> Niflheim loot"
       - "B> Niflheim drops"
       - "{name} buys Niflheim loot"
-      - "B> Disguise loot"
-      - "WTB Disguise drops"
       - "{name} is buying"
       - "See"
       - "AFK-----AFK"
       - "..."
+    StockTitles:
+      - { Title: "B> Disguise loot", Any: [Red_Scarf, Tangled_Chain] }
+      - { Title: "WTB Disguise drops", Any: [Red_Scarf, Tangled_Chain] }
+      - { Title: "B> {item} n more" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7430,12 +7874,15 @@ Body:
       - "WTB> Magma Dungeon loot"
       - "B> Magma Dungeon drops"
       - "{name} buys Magma Dungeon loot"
-      - "B> Nightmare Terror loot"
-      - "WTB Nightmare Terror drops"
       - "{name} is buying"
       - "WTB, fair prices"
       - "B> paying well"
       - "buying stuff"
+    StockTitles:
+      - { Title: "B> Nightmare Terror loot", Any: [Burning_Horse_Shoe] }
+      - { Title: "WTB Nightmare Terror drops", Any: [Burning_Horse_Shoe] }
+      - { Title: "B> {item} n more" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7472,12 +7919,15 @@ Body:
       - "WTB> Ice Cave loot"
       - "B> Ice Cave drops"
       - "{name} buys Ice Cave loot"
-      - "B> Siroma loot"
-      - "WTB Siroma drops"
       - "{name} is buying"
       - "B>"
       - "B> paying well"
       - "WTB, fair prices"
+    StockTitles:
+      - { Title: "B> Siroma loot", Any: [Crystal_Blue, Ice_Heart, Ice_Piece] }
+      - { Title: "WTB Siroma drops", Any: [Crystal_Blue, Ice_Heart, Ice_Piece] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7506,12 +7956,15 @@ Body:
       - "WTB> Abyss Lake loot"
       - "B> Abyss Lake drops"
       - "{name} buys Abyss Lake loot"
-      - "B> Ferus loot"
-      - "WTB Ferus drops"
       - "{name} is buying"
       - "Buying"
       - "AFK-----AFK"
       - "Things."
+    StockTitles:
+      - { Title: "B> Ferus loot", Any: [Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragonball_Green, Dragonball_Red, Flame_Heart, Great_Nature] }
+      - { Title: "WTB Ferus drops", Any: [Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragonball_Green, Dragonball_Red, Flame_Heart, Great_Nature] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7553,12 +8006,15 @@ Body:
       - "WTB> Thanatos Tower loot"
       - "B> Thanatos Tower drops"
       - "{name} buys Thanatos Tower loot"
-      - "B> Death Word loot"
-      - "WTB Death Word drops"
       - "{name} is buying"
       - "WTB"
       - "See"
       - "AFK-----AFK"
+    StockTitles:
+      - { Title: "B> Death Word loot", Any: [Bloody_Page, Bookclip_In_Memory, Cookbook08, Cookbook09, Worn_Out_Page] }
+      - { Title: "WTB Death Word drops", Any: [Bloody_Page, Bookclip_In_Memory, Cookbook08, Cookbook09, Worn_Out_Page] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7615,12 +8071,15 @@ Body:
       - "WTB> Odin Shrine loot"
       - "B> Odin Shrine drops"
       - "{name} buys Odin Shrine loot"
-      - "B> Plasma loot"
-      - "WTB Plasma drops"
       - "{name} is buying"
       - "zzz"
       - "..."
       - "Come on"
+    StockTitles:
+      - { Title: "B> Plasma loot", Any: [Blue_Gemstone, Boody_Red, Cardinal_Jewel_, Crystal_Blue, Crystal_Jewel_, Gold, Red_Gemstone, Scell, Yellow_Gemstone, Yellow_Live] }
+      - { Title: "WTB Plasma drops", Any: [Blue_Gemstone, Boody_Red, Cardinal_Jewel_, Crystal_Blue, Crystal_Jewel_, Gold, Red_Gemstone, Scell, Yellow_Gemstone, Yellow_Live] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7664,12 +8123,15 @@ Body:
       - "WTB> Juperos loot"
       - "B> Juperos drops"
       - "{name} buys Juperos loot"
-      - "B> Venatu loot"
-      - "WTB Venatu drops"
       - "{name} is buying"
       - "AFK-----AFK"
       - "B> > npc price"
       - "B>"
+    StockTitles:
+      - { Title: "B> Venatu loot", Any: [Mystery_Piece, Piece_Of_Crest1, Piece_Of_Crest2, Piece_Of_Crest3, Piece_Of_Crest4, Screw] }
+      - { Title: "WTB Venatu drops", Any: [Mystery_Piece, Piece_Of_Crest1, Piece_Of_Crest2, Piece_Of_Crest3, Piece_Of_Crest4, Screw] }
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7699,12 +8161,15 @@ Body:
       - "WTB> Bio Lab loot"
       - "B> Bio Lab drops"
       - "{name} buys Bio Lab loot"
-      - "B> Remover loot"
-      - "WTB Remover drops"
       - "{name} is buying"
       - "Buying"
       - "Happy hunting!"
       - "Come on"
+    StockTitles:
+      - { Title: "B> Remover loot", Any: [Detrimindexta, Empty_Bottle, Karvodailnirol, Old_Steel_Plate] }
+      - { Title: "WTB Remover drops", Any: [Detrimindexta, Empty_Bottle, Karvodailnirol, Old_Steel_Plate] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7737,12 +8202,15 @@ Body:
       - "WTB> Comodo Cave loot"
       - "B> Comodo Cave drops"
       - "{name} buys Comodo Cave loot"
-      - "B> Stalactic Golem loot"
-      - "WTB Stalactic Golem drops"
       - "{name} is buying"
       - "Come here u"
       - "Come on"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> Stalactic Golem loot", Any: [Brigan, Great_Nature, Mud_Lump, Star_Crumb] }
+      - { Title: "WTB Stalactic Golem drops", Any: [Brigan, Great_Nature, Mud_Lump, Star_Crumb] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7789,12 +8257,15 @@ Body:
       - "WTB> Amatsu Dungeon loot"
       - "B> Amatsu Dungeon drops"
       - "{name} buys Amatsu Dungeon loot"
-      - "B> Firelock Soldier loot"
-      - "WTB Firelock Soldier drops"
       - "{name} is buying"
       - "etc"
       - "buying stuff"
       - "Come on"
+    StockTitles:
+      - { Title: "B> Firelock Soldier loot", Any: [Iron, Large_Jellopy] }
+      - { Title: "WTB Firelock Soldier drops", Any: [Iron, Large_Jellopy] }
+      - { Title: "B> {item} {price}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7830,12 +8301,15 @@ Body:
       - "WTB> Culvert loot"
       - "B> Culvert drops"
       - "{name} buys Culvert loot"
-      - "B> Thief Bug loot"
-      - "WTB Thief Bug drops"
       - "{name} is buying"
       - "AFK-----AFK"
       - "Come here u"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> Thief Bug loot", Any: [Iron_Ore, Jellopy, Worm_Peelings] }
+      - { Title: "WTB Thief Bug drops", Any: [Iron_Ore, Jellopy, Worm_Peelings] }
+      - { Title: "B> {item} {price}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7880,12 +8354,15 @@ Body:
       - "WTB> Guild Dungeon loot"
       - "B> Guild Dungeon drops"
       - "{name} buys Guild Dungeon loot"
-      - "B> Banshee Master loot"
-      - "WTB Banshee Master drops"
       - "{name} is buying"
       - "etc"
       - "Come on"
       - "Things."
+    StockTitles:
+      - { Title: "B> Banshee Master loot", Any: [Brigan, Mementos, Old_White_Cloth] }
+      - { Title: "WTB Banshee Master drops", Any: [Brigan, Mementos, Old_White_Cloth] }
+      - { Title: "B> {item} n more" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7927,12 +8404,15 @@ Body:
       - "WTB> Thor's Volcano loot"
       - "B> Thor's Volcano drops"
       - "{name} buys Thor's Volcano loot"
-      - "B> Kasa loot"
-      - "WTB Kasa drops"
       - "{name} is buying"
       - "buying stuff"
       - "B>"
       - "AFK-----AFK"
+    StockTitles:
+      - { Title: "B> Kasa loot", Any: [Burning_Heart, Flame_Heart, Hot_Hair] }
+      - { Title: "WTB Kasa drops", Any: [Burning_Heart, Flame_Heart, Hot_Hair] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -7960,12 +8440,15 @@ Body:
       - "WTB> Labyrinth Forest loot"
       - "B> Labyrinth Forest drops"
       - "{name} buys Labyrinth Forest loot"
-      - "B> Hunter Fly loot"
-      - "WTB Hunter Fly drops"
       - "{name} is buying"
       - "WTB, fair prices"
       - "Things."
       - "WTB"
+    StockTitles:
+      - { Title: "B> Hunter Fly loot", Any: [Solid_Shell] }
+      - { Title: "WTB Hunter Fly drops", Any: [Solid_Shell] }
+      - { Title: "B> {item} n more" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8022,12 +8505,15 @@ Body:
       - "WTB> Geffen Dungeon loot"
       - "B> Geffen Dungeon drops"
       - "{name} buys Geffen Dungeon loot"
-      - "B> Nightmare loot"
-      - "WTB Nightmare drops"
       - "{name} is buying"
       - "B>"
       - "Happy hunting!"
       - "WTB"
+    StockTitles:
+      - { Title: "B> Nightmare loot", Any: [Horseshoe] }
+      - { Title: "WTB Nightmare drops", Any: [Horseshoe] }
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8084,12 +8570,15 @@ Body:
       - "WTB> Mjolnir Mine loot"
       - "B> Mjolnir Mine drops"
       - "{name} buys Mjolnir Mine loot"
-      - "B> Skeleton Worker loot"
-      - "WTB Skeleton Worker drops"
       - "{name} is buying"
       - "..."
       - "WTB"
       - "zzz"
+    StockTitles:
+      - { Title: "B> Skeleton Worker loot", Any: [Coal, Iron, Iron_Ore, Lantern] }
+      - { Title: "WTB Skeleton Worker drops", Any: [Coal, Iron, Iron_Ore, Lantern] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8127,12 +8616,15 @@ Body:
       - "WTB> Gonryun loot"
       - "B> Gonryun drops"
       - "{name} buys Gonryun loot"
-      - "B> Bloody Butterfly loot"
-      - "WTB Bloody Butterfly drops"
       - "{name} is buying"
       - "..."
       - "WTB"
       - "etc"
+    StockTitles:
+      - { Title: "B> Bloody Butterfly loot", Any: [Great_Wing, Powder_Of_Butterfly, Sharp_Feeler] }
+      - { Title: "WTB Bloody Butterfly drops", Any: [Great_Wing, Powder_Of_Butterfly, Sharp_Feeler] }
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8170,12 +8662,15 @@ Body:
       - "WTB> Louyang loot"
       - "B> Louyang drops"
       - "{name} buys Louyang loot"
-      - "B> Yao Jun loot"
-      - "WTB Yao Jun drops"
       - "{name} is buying"
       - "B> > npc price"
       - "WTB, fair prices"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> Yao Jun loot", Any: [Brigan, Munak_Doll] }
+      - { Title: "WTB Yao Jun drops", Any: [Brigan, Munak_Doll] }
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8225,12 +8720,15 @@ Body:
       - "WTB> Ayothaya loot"
       - "B> Ayothaya drops"
       - "{name} buys Ayothaya loot"
-      - "B> Tamruan loot"
-      - "WTB Tamruan drops"
       - "{name} is buying"
       - "Come on"
       - "WTB, fair prices"
       - "Come here u"
+    StockTitles:
+      - { Title: "B> Tamruan loot", Any: [Broken_Armor_Piece, Sword_Accessory] }
+      - { Title: "WTB Tamruan drops", Any: [Broken_Armor_Piece, Sword_Accessory] }
+      - { Title: "B> {item} {price}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8258,12 +8756,15 @@ Body:
       - "WTB> Einbroch Mine loot"
       - "B> Einbroch Mine drops"
       - "{name} buys Einbroch Mine loot"
-      - "B> Pitman loot"
-      - "WTB Pitman drops"
       - "{name} is buying"
       - "WTB"
       - "See"
       - "B> paying well"
+    StockTitles:
+      - { Title: "B> Pitman loot", Any: [Coal, Headlamp, Iron, Lantern, Old_Pick, Old_Steel_Plate] }
+      - { Title: "WTB Pitman drops", Any: [Coal, Headlamp, Iron, Lantern, Old_Pick, Old_Steel_Plate] }
+      - { Title: "B> {item} n more" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8312,12 +8813,15 @@ Body:
       - "WTB> Moscovia loot"
       - "B> Moscovia drops"
       - "{name} buys Moscovia loot"
-      - "B> Baba Yaga loot"
-      - "WTB Baba Yaga drops"
       - "{name} is buying"
       - "etc"
       - "WTB"
       - "buying stuff"
+    StockTitles:
+      - { Title: "B> Baba Yaga loot", Any: [Old_Magic_Circle, Pill, Yaga_Pestle] }
+      - { Title: "WTB Baba Yaga drops", Any: [Old_Magic_Circle, Pill, Yaga_Pestle] }
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8361,12 +8865,15 @@ Body:
       - "WTB> Brasilis loot"
       - "B> Brasilis drops"
       - "{name} buys Brasilis loot"
-      - "B> Iara loot"
-      - "WTB Iara drops"
       - "{name} is buying"
       - "buying stuff"
       - "zzz"
       - "Come here u"
+    StockTitles:
+      - { Title: "B> Iara loot", Any: [Crystal_Mirror, Fin, Heart_Of_Mermaid, Illusion_Flower, Mistic_Frozen, Witherless_Rose] }
+      - { Title: "WTB Iara drops", Any: [Crystal_Mirror, Fin, Heart_Of_Mermaid, Illusion_Flower, Mistic_Frozen, Witherless_Rose] }
+      - { Title: "B> {item} n more" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8405,12 +8912,15 @@ Body:
       - "WTB> Nidhoggur's Nest loot"
       - "B> Nidhoggur's Nest drops"
       - "{name} buys Nidhoggur's Nest loot"
-      - "B> Draco loot"
-      - "WTB Draco drops"
       - "{name} is buying"
       - "B> paying well"
       - "See"
       - "buying stuff"
+    StockTitles:
+      - { Title: "B> Draco loot", Any: [Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragon_Train] }
+      - { Title: "WTB Draco drops", Any: [Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragon_Train] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8441,12 +8951,15 @@ Body:
       - "WTB> Cursed Abbey loot"
       - "B> Cursed Abbey drops"
       - "{name} buys Cursed Abbey loot"
-      - "B> Zombie Slaughter loot"
-      - "WTB Zombie Slaughter drops"
       - "{name} is buying"
       - "Things."
       - "Happy hunting!"
       - "buying stuff"
+    StockTitles:
+      - { Title: "B> Zombie Slaughter loot", Any: [Broken_Farming_Utensil, Clattering_Skull, Mementos] }
+      - { Title: "WTB Zombie Slaughter drops", Any: [Broken_Farming_Utensil, Clattering_Skull, Mementos] }
+      - { Title: "B> {item}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8474,12 +8987,15 @@ Body:
       - "WTB> Rachel Sanctuary loot"
       - "B> Rachel Sanctuary drops"
       - "{name} buys Rachel Sanctuary loot"
-      - "B> Isilla loot"
-      - "WTB Isilla drops"
       - "{name} is buying"
       - "WTB"
       - "Happy hunting!"
       - "AFK-----AFK"
+    StockTitles:
+      - { Title: "B> Isilla loot", Any: [Bloody_Rune, White_Mask] }
+      - { Title: "WTB Isilla drops", Any: [Bloody_Rune, White_Mask] }
+      - { Title: "B> {item} n more" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8503,12 +9019,15 @@ Body:
       - "WTB> Umbala loot"
       - "B> Umbala drops"
       - "{name} buys Umbala loot"
-      - "B> Wootan Shooter loot"
-      - "WTB Wootan Shooter drops"
       - "{name} is buying"
       - "WTB"
       - "Happy hunting!"
       - "Things."
+    StockTitles:
+      - { Title: "B> Wootan Shooter loot", Any: [Air_Rifle, Cacao, Flexible_String, Stone] }
+      - { Title: "WTB Wootan Shooter drops", Any: [Air_Rifle, Cacao, Flexible_String, Stone] }
+      - { Title: "B> {item} n more" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8552,12 +9071,15 @@ Body:
       - "WTB> Spore field loot"
       - "B> Spore field drops"
       - "{name} buys Spore field loot"
-      - "B> Stainer loot"
-      - "WTB Stainer drops"
       - "{name} is buying"
       - "Buying"
       - "etc"
       - "zzz"
+    StockTitles:
+      - { Title: "B> Stainer loot", Any: [Colorful_Shell, Emveretarcon, Garlet, Iron_Ore, Solid_Shell, Wind_Of_Verdure] }
+      - { Title: "WTB Stainer drops", Any: [Colorful_Shell, Emveretarcon, Garlet, Iron_Ore, Solid_Shell, Wind_Of_Verdure] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8614,12 +9136,15 @@ Body:
       - "WTB> Payon Forest loot"
       - "B> Payon Forest drops"
       - "{name} buys Payon Forest loot"
-      - "B> Smokie loot"
-      - "WTB Smokie drops"
       - "{name} is buying"
       - "WTB"
       - "WTB, fair prices"
       - "See"
+    StockTitles:
+      - { Title: "B> Smokie loot", Any: [Animal's_Skin, Bluish_Green_Jewel, Raccoon_Leaf, Raccoondog_Doll] }
+      - { Title: "WTB Smokie drops", Any: [Animal's_Skin, Bluish_Green_Jewel, Raccoon_Leaf, Raccoondog_Doll] }
+      - { Title: "B> {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8661,12 +9186,15 @@ Body:
       - "WTB> Sograt Desert loot"
       - "B> Sograt Desert drops"
       - "{name} buys Sograt Desert loot"
-      - "B> Hode loot"
-      - "WTB Hode drops"
       - "{name} is buying"
       - "See"
       - "zzz"
       - "buying stuff"
+    StockTitles:
+      - { Title: "B> Hode loot", Any: [Earthworm_Peeling, Foolishness_Of_Blind, Yellow_Live] }
+      - { Title: "WTB Hode drops", Any: [Earthworm_Peeling, Foolishness_Of_Blind, Yellow_Live] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8723,12 +9251,15 @@ Body:
       - "WTB> Orc field loot"
       - "B> Orc field drops"
       - "{name} buys Orc field loot"
-      - "B> Orc Lady loot"
-      - "WTB Orc Lady drops"
       - "{name} is buying"
       - "Come here u"
       - "B> paying well"
       - "Come on"
+    StockTitles:
+      - { Title: "B> Orc Lady loot", Any: [Cookbook06, Cyfar, Iron] }
+      - { Title: "WTB Orc Lady drops", Any: [Cookbook06, Cyfar, Iron] }
+      - { Title: "B> {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8760,12 +9291,15 @@ Body:
       - "WTB> Kokomo Beach loot"
       - "B> Kokomo Beach drops"
       - "{name} buys Kokomo Beach loot"
-      - "B> Anolian loot"
-      - "WTB Anolian drops"
       - "{name} is buying"
       - "AFK-----AFK"
       - "etc"
       - "Happy hunting!"
+    StockTitles:
+      - { Title: "B> Anolian loot", Any: [Anolian_Skin, Solid_Shell] }
+      - { Title: "WTB Anolian drops", Any: [Anolian_Skin, Solid_Shell] }
+      - { Title: "B> {item}" }
+      - { Title: "buying {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8820,12 +9354,15 @@ Body:
       - "WTB> Geffen field loot"
       - "B> Geffen field drops"
       - "{name} buys Geffen field loot"
-      - "B> Golem loot"
-      - "WTB Golem drops"
       - "{name} is buying"
       - "..."
       - "AFK-----AFK"
       - "zzz"
+    StockTitles:
+      - { Title: "B> Golem loot", Any: [Coal, Iron, Stone_Heart, Yellow_Gemstone] }
+      - { Title: "WTB Golem drops", Any: [Coal, Iron, Stone_Heart, Yellow_Gemstone] }
+      - { Title: "buying {item}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8860,12 +9397,15 @@ Body:
       - "WTB> Juno field loot"
       - "B> Juno field drops"
       - "{name} buys Juno field loot"
-      - "B> Sleeper loot"
-      - "WTB Sleeper drops"
       - "{name} is buying"
       - "See"
       - "..."
       - "buying stuff"
+    StockTitles:
+      - { Title: "B> Sleeper loot", Any: [Fine_Sand, Great_Nature, Grit, Sand_Lump] }
+      - { Title: "WTB Sleeper drops", Any: [Fine_Sand, Great_Nature, Grit, Sand_Lump] }
+      - { Title: "B> {item} {price}" }
+      - { Title: "B> {item} n more" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8908,12 +9448,15 @@ Body:
       - "WTB> Einbroch field loot"
       - "B> Einbroch field drops"
       - "{name} buys Einbroch field loot"
-      - "B> Metaling loot"
-      - "WTB Metaling drops"
       - "{name} is buying"
       - "WTB"
       - "..."
       - "B>"
+    StockTitles:
+      - { Title: "B> Metaling loot", Any: [Iron, Iron_Ore, Jubilee, Large_Jellopy, Screw, Tube] }
+      - { Title: "WTB Metaling drops", Any: [Iron, Iron_Ore, Jubilee, Large_Jellopy, Screw, Tube] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -8970,12 +9513,15 @@ Body:
       - "WTB> Rachel field loot"
       - "B> Rachel field drops"
       - "{name} buys Rachel field loot"
-      - "B> Hill Wind loot"
-      - "WTB Hill Wind drops"
       - "{name} is buying"
       - "Happy hunting!"
       - "WTB, fair prices"
       - "B>"
+    StockTitles:
+      - { Title: "B> Hill Wind loot", Any: [Harpy's_Claw, Harpy's_Feather] }
+      - { Title: "WTB Hill Wind drops", Any: [Harpy's_Claw, Harpy's_Feather] }
+      - { Title: "buying {item}" }
+      - { Title: "WTB {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
@@ -9010,12 +9556,15 @@ Body:
       - "WTB> Ayothaya/Umbala loot"
       - "B> Ayothaya/Umbala drops"
       - "{name} buys Ayothaya/Umbala loot"
-      - "B> Coco loot"
-      - "WTB Coco drops"
       - "{name} is buying"
       - "WTB"
       - "buying stuff"
       - "Come here u"
+    StockTitles:
+      - { Title: "B> Coco loot", Any: [Acorn, Animal's_Skin, Fluff] }
+      - { Title: "WTB Coco drops", Any: [Acorn, Animal's_Skin, Fluff] }
+      - { Title: "WTB {item} {price}" }
+      - { Title: "B> {item} {price}" }
     Buying: true
     PickCount: [2, 5]
     MaxSlots: 5
