@@ -83,7 +83,10 @@ public:
 
 	bool operator()(const TargetBag& bag) const override {
 		if (!bag.shell) return false;
-		const bool r = ::population_shell_skill_condition_ok(bag.shell, cond_, v_, sc_, bag.enemy);
+		// RAGNAROKMAC: 12 = EnemyCountNearby; a blast around the caster counts only what it hits.
+		const bool r = (cond_ == 12 && bag.enemies_in_blast >= 0)
+			? bag.enemies_in_blast >= static_cast<int>(v_)
+			: ::population_shell_skill_condition_ok(bag.shell, cond_, v_, sc_, bag.enemy);
 		return inv_ ? !r : r;
 	}
 
