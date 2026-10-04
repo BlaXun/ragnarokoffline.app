@@ -27,6 +27,7 @@ Body:
       - Map: prontera
         Count: 30
         Fill: Lanes
+        LaneFillPct: [70, 80]
         Areas:
           - { X1: 147, Y1: 136, X2: 147, Y2: 170 }
           - { X1: 164, Y1: 135, X2: 164, Y2: 173 }
@@ -156,6 +157,7 @@ Body:
       - Map: prontera
         Count: 30
         Fill: Lanes
+        LaneFillPct: [70, 80]
         Areas:
           - { X1: 140, Y1: 136, X2: 140, Y2: 172 }
           - { X1: 171, Y1: 136, X2: 171, Y2: 172 }
@@ -250,6 +252,9 @@ Body:
       - "Come here u"
       - "Stuff you might want"
       - "sale"
+      - "S> don't ask"
+      - "S> my sanity, cheap"
+      - "S> ex's stuff"
     StockTitles:
       - { Title: "S> {item} {price}" }
       - { Title: "{item} n more" }
@@ -1617,6 +1622,9 @@ Body:
       - "Happy hunting!"
       - "See"
       - "sale"
+      - "S> stuff I found"
+      - "S> things. maybe."
+      - "S> life advice, free"
     StockTitles:
       - { Title: "S> {item} {price}" }
       - { Title: "wts {item}" }
@@ -3776,6 +3784,9 @@ Body:
       - "Stuff"
       - "etc"
       - "This looks good"
+      - "S> bad decisions"
+      - "S> stuff I found"
+      - "S> life advice, free"
     StockTitles:
       - { Title: "S> {item} cheap" }
       - { Title: "{item} {price}" }
@@ -3861,6 +3872,9 @@ Body:
       - "sale"
       - "See"
       - "Come on"
+      - "S> regrets, 1z ea"
+      - "S> mom's cart"
+      - "S> stuff I found"
     StockTitles:
       - { Title: "S> {item} {price}" }
       - { Title: "{item} {price}" }
@@ -3946,6 +3960,9 @@ Body:
       - "zzz"
       - "Come here u"
       - "Things."
+      - "S> mom's cart"
+      - "S> bad decisions"
+      - "S> definitely not stolen"
     StockTitles:
       - { Title: "wts {item}" }
       - { Title: "S> {item} cheap" }
@@ -4032,6 +4049,9 @@ Body:
       - "This looks good"
       - "cheap stuff 2"
       - "Come on"
+      - "S> definitely not stolen"
+      - "S> cart too heavy pls"
+      - "S> stuff I found"
     StockTitles:
       - { Title: "S> {item} cheap" }
       - { Title: "S> {item} {price}" }
@@ -4117,6 +4137,9 @@ Body:
       - "etc"
       - "Happy hunting!"
       - "Come on"
+      - "S> cart too heavy pls"
+      - "S> things. maybe."
+      - "S> definitely not stolen"
     StockTitles:
       - { Title: "S> {item} {price}" }
       - { Title: "wts {item}" }

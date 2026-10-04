@@ -30,10 +30,12 @@ browse and trade exactly as you would with a player.
 | Outer sidewalks, x=140 and x=171 (y=136–172) | Buying stores, filled first |
 | West of the fountain, rows y=125 and y=110 (x=104–135) | Buying stores, then these |
 
-Stalls fill one lane at a time, in the order above, each opening beside a
-stall already there, the way players crowd into a street that is already
-busy. A lane that is full (or whose stalls are boxed in by an NPC) sends the
-next stall to the following lane. No stall stands within 3 cells of an NPC,
+Stalls fill one lane at a time, in the order above, each opening near a
+stall already there (sometimes leaving a cell free), the way players crowd
+into a street that is already busy. Once a lane holds 70–80 % of the stalls
+it has room for, the next stall goes to the following lane, so a busy lane
+keeps a few natural gaps; when every lane has its share, the rest fill in
+the same order. No stall stands within 3 cells of an NPC,
 the same rule a player's own shop follows. On an app build older than the
 one with lane filling, stalls spread at random over all their lanes instead.
 
@@ -102,7 +104,11 @@ with the vague titles real stalls use ("Stuff", "SALE", "Happy hunting!",
 "..."), taken from a sample of 500 iRO shops, and two stalls never show the
 same sign (a repeat gets a number: "ores n more 2"). A sign that offers goods
 ("SALE", "cheap stuff") only ever hangs over a stall that sells; buyers get
-their own ("WTB", "B> paying well").
+their own ("WTB", "B> paying well"), and now and then a cheeky one ("B> your
+mom", "WTB> a happy life"). Stalls of mixed goods (general goods, the
+hunter's haul and the random stalls) get cheeky sell signs too ("S> my
+sanity, cheap", "S> definitely not stolen"); a stall of one kind of thing
+always says what it sells.
 
 A sign that names items ("S> OBB OPB", "B> ori elu", "B> Soldier Skeleton
 loot") only goes up over a stall that really has them, and some signs name

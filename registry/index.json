@@ -418,7 +418,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "c8169b2365cd03a4d214b154e5103d0529f3073c59535b79aa3e09754ed21ea8"
+          "sha256": "a60f66086b4cf215514d60941585fefd094af75432e3615999c96df6b8d5fe90"
         },
         {
           "path": "db/population_vendor_pop.yml",
@@ -430,7 +430,7 @@
         },
         {
           "path": "db/population_vendors.yml",
-          "sha256": "9177de7a1a2d09a7aa32e2c978b6c3487129211fabbaebc610c64a505db2791f"
+          "sha256": "6aed07040e9c8f98c6e0fcace67d58da76470ae2ca8dfe3e72b8f19ad0740c15"
         },
         {
           "path": "images/icon.png",
@@ -462,7 +462,7 @@
         },
         {
           "path": "pre-re/db/population_vendors.yml",
-          "sha256": "62ac3468c51c0a27c57314fb20cd55f015ae1f9deed47c9da0cd5bc779bcf636"
+          "sha256": "d67472b519537d7e8a6a7c4b26cb8a2f1eb9b819d4bea681ceda5f010696d79e"
         }
       ]
     },

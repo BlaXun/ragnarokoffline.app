@@ -71,6 +71,9 @@ Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 # Stalls per market by default, and the most the settings allow.
 STALLS = 30
 STALLS_MAX = 100
+# How full a lane gets (% of its usable cells, rolled per lane) before stalls
+# open on the next one: the gaps a real street has.
+LANE_FILL = "[70, 80]"
 
 # Prontera's sidewalks: west (x=147) and east (x=164) of the main road, and
 # the two rows east of the fountain (y=110 and y=125). The market fills them
@@ -838,6 +841,13 @@ for _key, _title, _lo, _hi in [("loot_lv1_20", "lvl 1-20 mob loot", 1, 20), ("lo
 GENERIC_TITLES = ["Happy hunting!", "...", "zzz", "Things.", "etc", "AFK-----AFK", "Come on", "Come here u", "See"]
 SELL_TITLES = ["Stuff", "SALE", "sale", "Sell", "cheap stuff", "cheap stuff 2", "junk shop", "Goodies",
                "This looks good", "Stuff you might want", "Bringing Simples You Need Cheap", "random"]
+# Only over stalls of mixed goods, where the sign was never going to say what
+# is for sale anyway; a stall of one kind of thing keeps signs that say so.
+SELL_CHEEKY = ["S> my sanity, cheap", "S> regrets, 1z ea", "S> life advice, free", "S> ex's stuff", "S> mom's cart",
+               "S> stuff I found", "S> don't ask", "S> definitely not stolen", "S> moving out sale",
+               "S> bad decisions", "S> cart too heavy pls", "S> things. maybe."]
+CHEEKY_SELL_THEMES = {"general_gear", "hunters_haul", "random_loot", "random_consumables", "random_equipment",
+                      "random_cheap", "random_mixed"}
 BUY_TITLES = ["Buying", "B>", "WTB", "buying stuff", "B> paying well", "B> > npc price", "WTB, fair prices",
               # The cheeky ones every street has. None names a real item, so
               # none can promise what the store does not want.
@@ -1637,6 +1647,8 @@ def main():
         # Generic signs that fit the stall: never a "SALE" over a buyer.
         generic = [x for x in (BUY_TITLES if buying else SELL_TITLES) + GENERIC_TITLES if x not in t["titles"]]
         titles = list(t["titles"]) + random.Random(t["key"]).sample(generic, t.get("generic", 3))
+        if not buying and t["key"] in CHEEKY_SELL_THEMES:
+            titles += random.Random(t["key"] + "#cheeky").sample(SELL_CHEEKY, 3)
         # Signs that name items go to StockTitles, with what they need; one whose
         # items this pool lacks is dropped. Every stall also gets two {item} signs.
         have = {e["AegisName"] for e, _, _ in lines}
@@ -1722,7 +1734,7 @@ def main():
     # is put there, so the street changes as stalls rotate. Its Count is what
     # the "Sell stalls" setting replaces.
     m = [f"  - Market: {MARKET}", "    Spawns:", "      - Map: prontera", f"        Count: {STALLS}",
-         "        Fill: Lanes", "        Areas:"]
+         "        Fill: Lanes", f"        LaneFillPct: {LANE_FILL}", "        Areas:"]
     m += [f"          - {flow(a)}" for a in AREAS]
     m.append("    Themes:")
     for key in market:
@@ -1739,7 +1751,7 @@ def main():
     # The buy market: the same, on its own sidewalks, replaced by "Buy stalls".
     if buy_market:
         bm = [f"  - Market: {BUY_MARKET}", "    Spawns:", "      - Map: prontera", f"        Count: {STALLS}",
-              "        Fill: Lanes", "        Areas:"]
+              "        Fill: Lanes", f"        LaneFillPct: {LANE_FILL}", "        Areas:"]
         bm += [f"          - {flow(a)}" for a in BUY_AREAS]
         bm.append("    Themes:")
         spec = {BUY_PREFIX + t["key"]: t for t in BUY_THEMES}
