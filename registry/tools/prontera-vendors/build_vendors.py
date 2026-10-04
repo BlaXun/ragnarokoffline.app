@@ -1889,6 +1889,12 @@ def fill_table():
         TABLE[e["Id"]] = (*band(p), src) if p is not None else (0, 0, "")
 
 
+# How busy the customers of players' stalls are: every BuyersPerDay and
+# SellersPerDay below times this. 3 puts a customer every 20-40 minutes on an
+# item fake buyers want, at a fair price; the mod's pace settings scale it
+# further for a server.
+DEMAND_SCALE = 3
+
 # Items some fake buying store wants, filled in as the buy themes resolve: a
 # customer for a player's stall is likelier to want those.
 BUY_WANTED = set()
@@ -1941,7 +1947,7 @@ def demand(e, lo, hi, busy_cut):
         elif p >= 100_000:
             sellers *= 0.5
         sellers = max(1, round(sellers))
-    return max(1, round(buyers)), sellers
+    return max(1, round(buyers * DEMAND_SCALE)), round(sellers * DEMAND_SCALE)
 
 
 def write_table():

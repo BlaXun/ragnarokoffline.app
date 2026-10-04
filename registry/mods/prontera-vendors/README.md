@@ -200,20 +200,21 @@ is checked once a minute; under market more often, over it far less):
 
 | Your stall sells | Customers a day | About one every |
 |---|---|---|
-| Items fake buyers want (Elunium, Strawberry, their loot) | 12-25 | 1-2 hours |
-| Other everyday items | about 4 | 6 hours |
-| Equipment, cards | 2-3 | 8-12 hours |
+| Items fake buyers want (Elunium, Strawberry, their loot) | 36-75 | 20-40 minutes |
+| Other everyday items | about 12 | 2 hours |
+| Equipment, cards | 6-9 | 3-4 hours |
 | Dear items (100k+, 1M+) | x0.6, x0.3 | slower still |
 
 | Your buying store wants | Sellers a day | About one every |
 |---|---|---|
-| Common loot (Jellopy, Sticky Mucus) | 24 | 1 hour |
-| Uncommon drops | 6-12 | 2-4 hours |
-| Rare drops | 1-2 | half a day to a day |
+| Common loot (Jellopy, Sticky Mucus) | 72 | 20 minutes |
+| Uncommon drops | 18-36 | 40-80 minutes |
+| Rare drops | 3-6 | 4-8 hours |
 | MVP-only items | never | |
 
 A customer takes 1-5 (cheap items 5-50), so a fairly priced stack of 30
-Elunium sells in about half a day. **Customers' pace** and **Sellers' pace**
+Elunium sells in about three hours. The generator's `DEMAND_SCALE` sets this
+base; the pace settings scale it per server. **Customers' pace** and **Sellers' pace**
 scale all of it: 200 % twice as often, 50 % half.
 
 **While you are away.** An `@autotrade` stall keeps trading. With
