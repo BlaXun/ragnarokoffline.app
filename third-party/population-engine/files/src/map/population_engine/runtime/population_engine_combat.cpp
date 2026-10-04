@@ -12,6 +12,7 @@
 #include "population_shell_runtime.hpp"
 
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <ctime>
 #include <unordered_set>
@@ -274,13 +275,65 @@ struct PopAllySearchCtx {
 	int               best_hp_pct;     ///< Tracks lowest HP% seen (100=no winner yet)
 	map_session_data *result;          ///< Best ally found (nullptr if none)
 	sc_type           gives_sc = SC_NONE; ///< Status the skill gives the ally, if any
+	int               result_rank = 3;   ///< pop_ally_rank() of `result`; lower goes first
 };
+
+/// An ally no skill can be aimed at: a GM's @hide (OPTION_INVISIBLE), or hiding, cloaking or
+/// chase walk. rAthena refuses the cast (status_check_skilluse) with no message, so picking one
+/// spent every turn on a refusal; with the owner first in line, a hidden owner got all of them.
+static bool pop_ally_untargetable(const map_session_data *ally)
+{
+	return pc_isinvisible(ally) || (ally->sc.option & (OPTION_HIDE | OPTION_CLOAK | OPTION_CHASEWALK)) != 0;
+}
+
+/// Who a buff goes to first when several allies lack it: the companion's owner (0), then other
+/// players (1), then companions and AI players (2). The scan used to take whoever the map listed
+/// first, so in a party of companions the player was often buffed last, or not at all.
+static int pop_ally_rank(const map_session_data *shell, const map_session_data *ally)
+{
+	if (shell->pop.companion_owner_account != 0 && ally->status.account_id == shell->pop.companion_owner_account)
+		return 0;
+	return population_engine_is_population_pc(ally->id) ? 2 : 1;
+}
+
+/// Keep `ally` if it outranks the one found so far. Returns 1 (stop the scan) once the owner is found.
+static int32 pop_ally_offer(PopAllySearchCtx *ctx, map_session_data *ally)
+{
+	const int rank = pop_ally_rank(ctx->shell, ally);
+	if (ctx->result == nullptr || rank < ctx->result_rank) {
+		ctx->result = ally;
+		ctx->result_rank = rank;
+	}
+	return rank == 0 ? 1 : 0;
+}
 
 /// True if giving `ally` the status `sc_id` would end a buff it holds that in turn ends `sc_id`.
 /// Two such buffs cancel each other (pre-renewal Kyrie Eleison and Assumptio), so two rows
 /// that each check only their own status would recast them over each other on the same ally,
 /// tick after tick, until the caster ran out of SP. The buff already there holds. A debuff the
 /// new status ends (Increase AGI over Decrease AGI) is still cleared.
+/// Whether Devotion on this ally would be refused when the cast completes, by the same checks
+/// rAthena makes (skills/swordman/sacrifice.cpp): a base level gap past devotion_level_difference,
+/// an ally another Crusader already devotes, a Crusader-line ally, Hell Power, or no free slot.
+/// A level 13 owner was out of a level 90 Royal Guard's reach, and every cast at them was refused.
+static bool pop_ally_devotion_refused(const map_session_data *shell, const map_session_data *ally)
+{
+	if (std::abs(static_cast<int>(shell->status.base_level) - static_cast<int>(ally->status.base_level))
+	    > battle_config.devotion_level_difference)
+		return true;
+	const status_change_entry *dev = ally->sc.getSCE(SC_DEVOTION);
+	if (dev && dev->val1 != shell->id)
+		return true;
+	if ((ally->class_ & MAPID_SECONDMASK) == MAPID_CRUSADER || ally->sc.getSCE(SC_HELLPOWER))
+		return true;
+	const int known = pc_checkskill(const_cast<map_session_data *>(shell), CR_DEVOTION);
+	const int slots = std::min(known > 0 ? known : 5, MAX_DEVOTION);
+	for (int i = 0; i < slots; ++i)
+		if (shell->devotion[i] == ally->id || shell->devotion[i] == 0)
+			return false;
+	return true;
+}
+
 static bool pop_ally_buff_clashes(map_session_data *ally, sc_type sc_id)
 {
 	if (sc_id == SC_NONE)
@@ -307,6 +360,22 @@ static bool pop_is_party_ally(const map_session_data *shell, const map_session_d
 		&& shell->status.party_id > 0
 		&& shell->status.party_id < 0x70000000
 		&& shell->status.party_id == ally->status.party_id;
+}
+
+/// Whom a shell's heals and buffs may go to. Real players only when they are its owner, in its
+/// party, or an arena ally. Other shells: any of them for an ambient shell, but a hired companion keeps to
+/// its own side (its owner's other companions, or its party), or it healed and buffed AI players
+/// that happened to pass; a Royal Guard cast Piety at a stranger's bot.
+static bool pop_shell_may_help(const map_session_data *shell, const map_session_data *ally)
+{
+	if (pop_is_party_ally(shell, ally) || population_engine_arena_is_ally(shell, ally))
+		return true;
+	if (shell->pop.companion_owner_account != 0 && ally->status.account_id == shell->pop.companion_owner_account)
+		return true;
+	if (!ally->state.population_combat)
+		return false;
+	return shell->pop.companion_owner_account == 0
+		|| ally->pop.companion_owner_account == shell->pop.companion_owner_account;
 }
 
 struct PopDeadAllySearchCtx {
@@ -414,12 +483,13 @@ static int32 pop_ally_hp_scan_cb(block_list *bl, va_list ap)
 	if (ally->id == ctx->shell->id) return 0;
 	// Real players are skipped UNLESS they are an arena ally of this shell
 	// (team-2 shell + real player on the same arena map = mutual allies).
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
 	if (ally->battle_status.max_hp == 0) return 0;
 	const int pct = static_cast<int>(ally->battle_status.hp * 100 / ally->battle_status.max_hp);
 	if (pct < ctx->hp_threshold && pct < ctx->best_hp_pct) {
@@ -503,19 +573,18 @@ static int32 pop_ally_status_scan_cb(block_list *bl, va_list ap)
 	if (!ally) return 0;
 	PopAllySearchCtx *ctx = va_arg(ap, PopAllySearchCtx*);
 	if (ally->id == ctx->shell->id) return 0;
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
 	if (ctx->sc_resolved < 0) return 0;
 	const status_change *sca = status_get_sc(ally);
 	const bool has_it = sca && sca->hasSCE(static_cast<sc_type>(ctx->sc_resolved));
-	if (has_it == ctx->want_has_status) {
-		ctx->result = ally;
-		return 1; // stop scan
-	}
+	if (has_it == ctx->want_has_status)
+		return pop_ally_offer(ctx, ally);
 	return 0;
 }
 
@@ -526,14 +595,14 @@ static int32 pop_ally_any_scan_cb(block_list *bl, va_list ap)
 	if (!ally) return 0;
 	PopAllySearchCtx *ctx = va_arg(ap, PopAllySearchCtx*);
 	if (ally->id == ctx->shell->id) return 0;
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
-	ctx->result = ally;
-	return 1; // take the first one
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
+	return pop_ally_offer(ctx, ally);
 }
 
 /// Context for Tank-role intercept: find a mob targeting a nearby real-party ally.
@@ -591,14 +660,14 @@ static map_session_data* population_shell_find_ally_target(
 		ctx.want_has_status = false;
 		map_foreachinrange(pop_ally_status_scan_cb, sd, scan_range, BL_PC, &ctx);
 		break;
-	case C::Always:
-		// For unconditional ally casts: prefer lowest-HP ally, fallback to any
+	default:
+		// Always, and any condition that is not about an ally (map_zone, an expanded tree): the
+		// caller has already checked it, so it says when to cast, not on whom. Those rows used to
+		// find no ally at all, so Blessing "in town" never fired. Prefer the lowest-HP ally.
 		ctx.hp_threshold = 100;
 		map_foreachinrange(pop_ally_hp_scan_cb, sd, scan_range, BL_PC, &ctx);
 		if (!ctx.result)
 			map_foreachinrange(pop_ally_any_scan_cb, sd, scan_range, BL_PC, &ctx);
-		break;
-	default:
 		break;
 	}
 	return ctx.result;
@@ -910,6 +979,10 @@ static uint8_t pop_ally_hp_threshold(const map_session_data* sd, uint16 skill_id
 /// on the caster, so its splash says nothing about where it lands.
 static int pop_self_blast_radius(uint16_t skill_id, uint16_t skill_lv)
 {
+	// Grand Cross lists a range of 9 and no splash; it hits a fixed cross of cells around the
+	// caster (skill_init_unit_layout), two cells deep and four along its arms.
+	if (skill_id == CR_GRANDCROSS || skill_id == NPC_GRANDDARKNESS)
+		return 2;
 	if (!(skill_get_inf(skill_id) & INF_SELF_SKILL))
 		return 0;
 	if (skill_get_range(skill_id, skill_lv) > 1)
@@ -943,12 +1016,62 @@ static bool pop_skill_weapon_ok(map_session_data *sd, uint16 skill_id)
 	return weapon == 0 || pc_check_weapontype(sd, weapon);
 }
 
+/// The state a skill needs before rAthena lets it start (skill_db Requires: State): a stance for a
+/// Sky Emperor's Light of Sun, a shield for Auto Guard, a Mado for a Mechanic's attacks, water
+/// underfoot for Water Ball, and so on. skill_check_condition_castbegin refuses the cast without
+/// it, so a row that does not check it was tried and refused every few seconds (a Sky Emperor in
+/// Lunar Stance had Light of Sun, Light of Star and Falling Star refused 66 times each). Mirrors
+/// that check, without its failure message.
+static bool pop_skill_state_ok(map_session_data *sd, uint16 skill_id, uint16 skill_lv)
+{
+	const std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	if (!skill)
+		return true;
+	// Spirit spheres, or a Gunslinger's coins (the same counter): a Night Watch with no coins had
+	// Adjustment, Madness Canceller, Increasing Accuracy and Magical Bullet refused 24 times each.
+	const int lv = cap_value(static_cast<int>(skill_lv), 1, MAX_SKILL_LEVEL);
+	if (skill->require.spiritball[lv - 1] > 0 && sd->spiritball < skill->require.spiritball[lv - 1])
+		return false;
+	// AP (4th jobs): a Night Watch with too little AP had Hidden Card (125 AP) refused 37 times.
+	if (skill->require.ap[lv - 1] > 0 && sd->battle_status.ap < static_cast<uint32>(skill->require.ap[lv - 1]))
+		return false;
+	// A status that stops the caster using skills: an Inquisitor under Steel Body tried Blessing
+	// and Increase AGI 52 times. Without a target this is the caster's half of the check every
+	// cast makes (unit_skilluse_id2), so it covers Silence, Berserk and the rest too.
+	if (!status_check_skilluse(sd, nullptr, skill_id, 0))
+		return false;
+	const status_change *sc = &sd->sc;
+	switch (skill->require.state) {
+	case ST_HIDDEN:        return pc_ishiding(sd);
+	case ST_RIDING:        return pc_isriding(sd) || pc_isridingdragon(sd);
+	case ST_FALCON:        return pc_isfalcon(sd);
+	case ST_CART:          return pc_iscarton(sd);
+	case ST_SHIELD:        return sd->status.shield > 0;
+	case ST_RECOVER_WEIGHT_RATE: return !sd->regen.state.overweight;
+	case ST_WATER:
+		return sc->getSCE(SC_DELUGE) || sc->getSCE(SC_SUITON)
+			|| (map_getcell(sd->m, sd->x, sd->y, CELL_CHKWATER) && !map_getcell(sd->m, sd->x, sd->y, CELL_CHKLANDPROTECTOR));
+	case ST_RIDINGDRAGON:  return pc_isridingdragon(sd);
+	case ST_WUG:           return pc_iswug(sd);
+	case ST_RIDINGWUG:     return pc_isridingwug(sd);
+	case ST_MADO:          return pc_ismadogear(sd);
+	case ST_ELEMENTALSPIRIT:
+	case ST_ELEMENTALSPIRIT2: return sd->ed != nullptr;
+	case ST_PECO:          return pc_isriding(sd);
+	case ST_SUNSTANCE:     return sc->getSCE(SC_SUNSTANCE) || sc->getSCE(SC_UNIVERSESTANCE);
+	case ST_MOONSTANCE:    return sc->getSCE(SC_LUNARSTANCE) || sc->getSCE(SC_UNIVERSESTANCE);
+	case ST_STARSTANCE:    return sc->getSCE(SC_STARSTANCE) || sc->getSCE(SC_UNIVERSESTANCE);
+	case ST_UNIVERSESTANCE: return sc->getSCE(SC_UNIVERSESTANCE) != nullptr;
+	default:               return true; // ST_NONE, ST_MOVE_ENABLE: checked when the cast starts
+	}
+}
+
 /// Unified condition gate that picks between the flat-enum legacy path and the
 /// expanded boolean tree based on whether the entry has a tree attached.
 /// Templated over the skill struct type so it works for both attack and buff entries.
 template <typename SkillT>
 static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& sk, block_list* target_bl) {
-	if (!pop_skill_weapon_ok(sd, sk.skill_id))
+	if (!pop_skill_weapon_ok(sd, sk.skill_id) || !pop_skill_state_ok(sd, sk.skill_id, sk.skill_lv))
 		return false;
 	// RAGNAROKMAC: enemy_count_nearby counts the whole detection range (30 cells), so a blast
 	// around the caster fired at a crowd it could not reach. Count only what the blast hits.
@@ -961,6 +1084,10 @@ static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& 
 		expanded_ai::TargetBag bag;
 		bag.shell = sd;
 		bag.enemy = target_bl;
+		// The same for an enemy_count_nearby inside an AND/OR tree (Grand Cross).
+		const int radius = pop_self_blast_radius(sk.skill_id, sk.skill_lv);
+		if (radius > 0)
+			bag.enemies_in_blast = pop_enemies_within(sd, radius);
 		return (*sk.expanded)(bag);
 	}
 	return population_shell_skill_condition_ok(sd, sk.condition,
@@ -975,6 +1102,11 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 		return;
 	const size_t n = sd->pop.attack_skills.size();
 	if (n == 0)
+		return;
+	// RAGNAROKMAC: every hit on a harvest plant does 1 damage, skill or not, so a skill only
+	// spends SP and cast time on it. Plain attacks only.
+	if (!ally_only && target_bl && target_bl->type == BL_MOB
+	    && population_shell_mob_is_plant(reinterpret_cast<const mob_data *>(target_bl)))
 		return;
 
 	// Standalone improvements (no autocombat dep):
@@ -1077,6 +1209,49 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 		}
 	}
 
+	// RAGNAROKMAC: element. A spell's damage is scaled by rAthena's element table (Fire Bolt does
+	// 150% to Earth, 25% to Fire, and heals a Fire 3 monster), and the rotation ignored it: a Mage
+	// cycled its bolts in list order whatever it fought. The skill the target is weakest to, among
+	// those ready now, goes first; while any ready skill does full damage, one the target resists
+	// is skipped; and one that would do nothing, or heal, never fires. A frozen target counts as
+	// Water, so Jupitel Thunder follows Frost Diver. Skills whose element comes from the weapon
+	// (ELE_WEAPON, endowed, random) count as neutral here.
+	int elem_cutoff = INT_MIN;
+	const int def_ele = (target_bl && !ally_only) ? status_get_element(target_bl) : ELE_NONE;
+	const int def_lv = (target_bl && !ally_only) ? status_get_element_level(target_bl) : 0;
+	auto elem_mult = [&](const PopulationShellCombatSkill &sk) -> int {
+		const int ele = skill_get_ele(sk.skill_id, sk.skill_lv);
+		if (!CHK_ELEMENT(ele) || !CHK_ELEMENT(def_ele))
+			return 100;
+		return elemental_attribute_db.getAttribute(def_lv, ele, def_ele);
+	};
+	if (target_bl && !ally_only && CHK_ELEMENT(def_ele)) {
+		size_t best_idx = SIZE_MAX;
+		int best = 100;
+		bool any_full = false;
+		for (size_t i = 0; i < n; ++i) {
+			const PopulationShellCombatSkill &sk = sd->pop.attack_skills[i];
+			if (!sk.active || sk.skill_id == 0 || sk.target == 2)
+				continue;
+			if (sd->scd.find(sk.skill_id) != sd->scd.end())
+				continue;
+			if (skill_get_sp(sk.skill_id, sk.skill_lv) > static_cast<int>(sd->battle_status.sp))
+				continue;
+			if (!pop_skill_cond_satisfied(sd, sk, target_bl))
+				continue;
+			const int m = elem_mult(sk);
+			if (m >= 100)
+				any_full = true;
+			if (m > best) {
+				best = m;
+				best_idx = i;
+			}
+		}
+		if (combo_promote_idx == SIZE_MAX)
+			combo_promote_idx = best_idx;
+		elem_cutoff = any_full ? 100 : 1;
+	}
+
 	// Round-robin cursor: start from the last-used position so every skill in the
 	// rotation gets equal time at the front. Without this, the first unconditional
 	// Rate:10000 skill in the list monopolises every tick regardless of lower-rate
@@ -1094,6 +1269,8 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 			continue;
 		// Ally-targeted skills are dispatched separately; skip in the enemy-attack rotation.
 		if (!ally_only && sk.target == 2)
+			continue;
+		if (elem_cutoff != INT_MIN && elem_mult(sk) < elem_cutoff)
 			continue;
 		if (ally_only && sk.target != 2)
 			continue;
@@ -1229,33 +1406,64 @@ static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
 	if (!scc || sc_id == SC_NONE)
 		return false;
 	const std::vector<sc_type> ends = status_db.getEndOnStart(sc_id);
-	if (ends.empty())
-		return false;
 	const std::shared_ptr<s_skill_db> skill = skill_db.find(bs.skill_id);
 	const std::vector<sc_type> none;
 	const std::vector<sc_type> &required = skill ? skill->require.status : none;
+	// Held, and from this companion's own cast. A stance has no duration (a Star Emperor's, a
+	// Royal Guard's Banding), so its cast is never recorded; it lasts until another ends it, and
+	// only its caster can take it up, so holding it is enough.
+	auto held_own = [&](const PopulationShellBuffSkill &own) {
+		if (skill_get_time(own.skill_id, skill_get_max(own.skill_id)) <= 0)
+			return true;
+		for (const s_pe_active_buff &ab : sd->pop.active_buffs)
+			if (ab.skill_id == own.skill_id && ab.expires_at > now)
+				return true;
+		return false;
+	};
+	bool earlier = true; // rows listed before this one outrank it
 	for (const PopulationShellBuffSkill &own : sd->pop.buff_skills) {
-		if (&own == &bs)
-			break; // only rows listed before this one outrank it
+		if (&own == &bs) {
+			earlier = false;
+			continue;
+		}
 		if (own.target != 1)
 			continue;
 		const sc_type own_sc = skill_get_sc(own.skill_id);
 		if (own_sc == SC_NONE || own_sc == sc_id || !scc->hasSCE(own_sc))
 			continue;
-		if (std::find(ends.begin(), ends.end(), own_sc) == ends.end())
-			continue;
 		if (std::find(required.begin(), required.end(), own_sc) != required.end())
 			continue;
-		for (const s_pe_active_buff &ab : sd->pop.active_buffs)
-			if (ab.skill_id == own.skill_id && ab.expires_at > now)
-				return true;
+		// This one would end an earlier row's buff.
+		if (earlier && std::find(ends.begin(), ends.end(), own_sc) != ends.end() && held_own(own))
+			return true;
+		// Or a buff held from any row ends this one, and not the other way round: Banding ends
+		// Prestige, and rAthena refuses Prestige while Banding is up; Maximum Power Thrust ends
+		// Power-Thrust at its next refresh. Casting it was a refusal or wasted.
+		const std::vector<sc_type> own_ends = status_db.getEndOnStart(own_sc);
+		if (std::find(own_ends.begin(), own_ends.end(), sc_id) != own_ends.end() && held_own(own))
+			return true;
 	}
 	return false;
 }
 
-static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tick current_tick)
+/// A row that answers someone's HP: a heal or shield for a hurt ally (ally_hp_below) or for the
+/// caster itself (hp_below). These are the rescue rows, tried before anything else each tick.
+static bool pop_row_is_rescue(uint8_t condition)
+{
+	const PopSkillCondition c = static_cast<PopSkillCondition>(condition);
+	return c == PopSkillCondition::AllyHpBelow || c == PopSkillCondition::HpBelow;
+}
+
+/// `rescue_only`: just the rows gated on someone's HP (pop_row_is_rescue).
+static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tick current_tick,
+	bool rescue_only = false)
 {
 	if (!sd || sd->pop.buff_skills.empty())
+		return false;
+	// Already casting, or in the after-cast delay: rAthena refuses any cast until it ends, so
+	// trying spent the turn on a refusal (an Arch Bishop's ally buffs failed three times in four
+	// because a self buff had just started in the same tick).
+	if (sd->ud.skilltimer != INVALID_TIMER || DIFF_TICK(current_tick, sd->ud.canact_tick) < 0)
 		return false;
 
 	status_change *scc = status_get_sc(sd);
@@ -1269,11 +1477,17 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 	const bool strict_gate = battle_config.population_engine_shell_skill_strict_gate != 0;
 
 	for (const PopulationShellBuffSkill &bs : sd->pop.buff_skills) {
+		if (rescue_only && !pop_row_is_rescue(bs.condition))
+			continue;
 		// YAML-authoritative: when the class doesn't have the skill learned
 		// (e.g. Monk/Champion using TF_HIDING), use the YAML level directly.
 		const uint16_t plv = pc_checkskill(sd, bs.skill_id);
 		const uint16_t use_lv = (plv > 0) ? std::min(bs.skill_lv, plv) : bs.skill_lv;
 
+		// On its own cooldown (Suffragium, Praefatio): skip it before skill_isNotOk, which would
+		// say so by sending the companion a "skill interval" failure each time it is asked.
+		if (sd->scd.find(bs.skill_id) != sd->scd.end())
+			continue;
 		if (skill_isNotOk(bs.skill_id, *sd))
 			continue;
 		// Strict gate: silence/sleep/sit/etc. (no target — pass nullptr).
@@ -1420,9 +1634,17 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 /// Picks the skill with the highest priority that passes conditions, finds the best
 /// matching ally using population_shell_find_ally_target, and casts on them.
 /// Returns true if a skill was dispatched (caller should set skill_cd and return).
-static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick current_tick)
+/// `rescue_only`: just the rows gated on an ally's HP, and without the Rate roll - a heal for a
+/// party member about to die is not left to chance.
+static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick current_tick,
+	bool rescue_only = false)
 {
 	if (!sd || sd->pop.attack_skills.empty())
+		return false;
+	// Already casting, or in the after-cast delay: rAthena refuses any cast until it ends, so
+	// trying spent the turn on a refusal (an Arch Bishop's ally buffs failed three times in four
+	// because a self buff had just started in the same tick).
+	if (sd->ud.skilltimer != INVALID_TIMER || DIFF_TICK(current_tick, sd->ud.canact_tick) < 0)
 		return false;
 
 	const size_t n = sd->pop.attack_skills.size();
@@ -1431,10 +1653,16 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		const PopulationShellCombatSkill &sk = sd->pop.attack_skills[idx];
 		if (!sk.active || sk.skill_id == 0 || sk.target != 2)
 			continue;
-		if (sk.rate < 10000 && static_cast<uint16_t>(rnd() % 10000) >= sk.rate)
+		if (rescue_only && !pop_row_is_rescue(sk.condition))
+			continue;
+		if (!rescue_only && sk.rate < 10000 && static_cast<uint16_t>(rnd() % 10000) >= sk.rate)
 			continue;
 		// Condition check (no enemy target_bl for ally skills).
 		if (!pop_skill_cond_satisfied(sd, sk, nullptr))
+			continue;
+		// On its own cooldown (Suffragium, Praefatio): skip it before skill_isNotOk, which would
+		// say so by sending the companion a "skill interval" failure each time it is asked.
+		if (sd->scd.find(sk.skill_id) != sd->scd.end())
 			continue;
 		if (skill_isNotOk(sk.skill_id, *sd))
 			continue;
@@ -1733,6 +1961,21 @@ static void population_shell_combat_process_tick(map_session_data *sd, t_tick cu
 					unit_walktobl(sd, hctx.result, 3, 1);
 				return;
 			}
+		}
+	}
+
+	// Rescue first, whatever the duty: a heal or shield for a party member (or this companion)
+	// whose HP is below its threshold comes before any buff kept up, ally buff or attack. The
+	// buff loop ran first and the ally rows went in list order, so a Priest kept Blessing and
+	// Increase AGI up while the player died, and an Attacker never healed anyone at all.
+	if (!flag_attack_only && do_skills && current_tick >= pe.skill_cd &&
+		battle_config.population_engine_shell_attackskill) {
+		if (population_shell_cast_ally_attack_skill(sd, current_tick, true))
+			return; // skill_cd set inside, from the cast's real timing
+		if (current_tick >= sd->pop.reactive_buff_cd && !sd->pop.buff_skills.empty() &&
+			population_shell_cast_expired_self_buffs(sd, current_tick, true)) {
+			sd->pop.reactive_buff_cd = current_tick + std::max(1, battle_config.population_engine_shell_skill_interval_ms);
+			return;
 		}
 	}
 
@@ -2300,6 +2543,13 @@ void population_engine_shell_reactive_cast(map_session_data *sd)
 {
 	if (!sd || !sd->state.population_combat)
 		return;
+	// RAGNAROKMAC: the hit that kills a shell fires this too, and so does every hit landing on
+	// it before the corpse is cleared. A dead caster is refused by unit_skilluse_id2 with no
+	// message; on a map too strong for its shells, dead ones tried Endure, Heal, Hiding and Back
+	// Slide hundreds of times. It fires as the damage lands, when HP is already 0 but pc_dead has
+	// not yet set the dead flag (pc_isdead), so check HP (status_isdead) as unit_skilluse_id2 does.
+	if (pc_isdead(sd) || status_isdead(*sd))
+		return;
 	const t_tick now = gettick();
 	// --- Buff pass (Target:1 and Target:2 skills) ---
 	if (!sd->pop.buff_skills.empty())
@@ -2433,7 +2683,7 @@ int population_engine_combat_per_tick(map_session_data *sd, bool do_skills)
 {
 	if (sd == nullptr)
 		return -1;
-	if (pc_isdead(sd))
+	if (pc_isdead(sd) || status_isdead(*sd))
 		return 0;
 	s_population &pe = sd->pop;
 	const bool hired_companion = sd->status.party_id > 0 && sd->status.party_id < 0x70000000
