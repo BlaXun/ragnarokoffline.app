@@ -222,6 +222,31 @@
       ]
     },
     {
+      "name": "cash-shop-extended",
+      "version": "",
+      "author": "Lil Art",
+      "description": "Fills the Cash Shop with scrolls, boxes and convenience items, and earns Cash Points as you play: for time online, for monster kills, and from a Cash Point Seller in Prontera who takes zeny. Also adds a Gacha Machine that pays out a random Cash Shop item, and a status NPC showing your progress. Renewal only.",
+      "homepage": "https://github.com/LilArt420/cashshopmod",
+      "tags": [
+        "cash-shop",
+        "gacha",
+        "npc",
+        "quality-of-life"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "",
+        "app": ""
+      },
+      "source": {
+        "github": "LilArt420/cashshopmod",
+        "asset": "cash-shop-extended-*.zip"
+      },
+      "files": []
+    },
+    {
       "name": "exp-card",
       "version": "1.1.0",
       "author": "BlaXun",
