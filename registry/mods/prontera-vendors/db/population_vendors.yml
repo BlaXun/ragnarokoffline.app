@@ -6750,9 +6750,9 @@ Body:
       - { Item: Thimble_Of_Archer_, Amount: 1, Price: [482000, 566000], Cards: [Phen_Card] }
       - { Item: Thimble_Of_Archer_, Amount: 1, Price: [47000, 55000], Cards: [Poporing_Card] }
       - { Item: Ring_, Amount: 1, Price: [65500, 76500], Cards: [Bon_Gun_Card] }
-      - { Item: Librarian_Glove, Amount: 1, Price: [570000, 669000], Refine: 5, Cards: [Creamy_Card] }
-      - { Item: Glove_, Amount: 1, Price: [137000, 161000], Refine: 4, Cards: [Kukre_Card] }
-      - { Item: Silversmith_Bracelet, Amount: 1, Price: [1549000, 1818000], Refine: 5, Cards: [Alligator_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [364000, 427000], Cards: [Creamy_Card] }
+      - { Item: Glove_, Amount: 1, Price: [80000, 94000], Cards: [Kukre_Card] }
+      - { Item: Silversmith_Bracelet, Amount: 1, Price: [797500, 936000], Cards: [Alligator_Card] }
       - { Item: Ring_, Amount: 1, Price: [244500, 287000], Cards: [Yoyo_Card] }
       - { Item: Waterdrop_Brooch, Amount: 1, Price: [591000, 694000], Cards: [See_Otter_Card] }
       - { Item: Thimble_Of_Archer_, Amount: 1, Price: [61500, 72500], Cards: [Kukre_Card] }

@@ -1514,6 +1514,8 @@ def carded_price(e, refine, cards, messed_up=False):
 
 
 def carded_spec(e, refine, cards, weight, messed_up=False):
+    if not e.get("Refineable"):
+        refine = 0  # accessories and the like cannot be refined
     p = carded_price(e, refine, cards, messed_up)
     if p is None or p > POOL_MAX:
         return None

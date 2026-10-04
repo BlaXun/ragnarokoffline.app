@@ -6426,11 +6426,11 @@ Body:
       - { Item: Diabolus_Ring, Amount: 1, Price: [3856000, 4527000], Cards: [Smokie_Card] }
       - { Item: Diabolus_Ring, Amount: 1, Price: [4567000, 5361000], Cards: [Mantis_Card] }
       - { Item: Diabolus_Ring, Amount: 1, Price: [3467500, 4070500], Cards: [Spore_Card] }
-      - { Item: Bradium_Ring, Amount: 1, Price: [5486500, 6440500], Refine: 5, Cards: [Erend_Card] }
-      - { Item: Linen_Glove, Amount: 1, Price: [915000, 1074500], Refine: 5, Cards: [Snowier_Card] }
+      - { Item: Bradium_Ring, Amount: 1, Price: [3052500, 3583500], Cards: [Erend_Card] }
+      - { Item: Linen_Glove, Amount: 1, Price: [524000, 615500], Cards: [Snowier_Card] }
       - { Item: Belt, Amount: 1, Price: [452500, 531000], Cards: [Cookie_Card] }
-      - { Item: Brooch_, Amount: 1, Price: [105000, 123000], Refine: 4, Cards: [Tarou_Card] }
-      - { Item: Rosary_, Amount: 1, Price: [597500, 701500], Refine: 5, Cards: [Cookie_Card] }
+      - { Item: Brooch_, Amount: 1, Price: [48000, 56000], Cards: [Tarou_Card] }
+      - { Item: Rosary_, Amount: 1, Price: [463000, 543500], Cards: [Cookie_Card] }
       - { Item: Brooch_, Amount: 1, Price: [454000, 533500], Cards: [Joker_Card] }
       - { Item: Thimble_Of_Archer_, Amount: 1, Price: [34000, 40000], Cards: [Anopheles_Card] }
       - { Item: Diabolus_Ring, Amount: 1, Price: [3159000, 3708500], Cards: [Poporing_Card] }

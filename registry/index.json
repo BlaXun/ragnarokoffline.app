@@ -430,7 +430,7 @@
         },
         {
           "path": "db/population_vendors.yml",
-          "sha256": "0b0854f711c5b48f2b9cc72f890cd32f8da96d06a731bac19ca510ab06209500"
+          "sha256": "9d3c9dfcf10dfcc3db8530ef4b61289ae88dcfc4062390d5c21b465b5254777f"
         },
         {
           "path": "images/icon.png",
@@ -466,7 +466,7 @@
         },
         {
           "path": "pre-re/db/population_vendors.yml",
-          "sha256": "cdf23bd3009dc8337755346a8fdcbed8bf2b784d1669d9bdff3c10ba02c721e5"
+          "sha256": "541de8d95ccb18512692697eba8d930bcaa6fb3872678e15edb0b404c8b462e0"
         }
       ]
     },
