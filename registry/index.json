@@ -418,11 +418,11 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "fb7f344582d2110a369d94a2f97668479081e61b89530e91d385670f0235d644"
+          "sha256": "0de3558b47e54755934043e36bf6fabd394fe098fa9bed963e830f36ee51d61b"
         },
         {
           "path": "db/population_vendor_pop.yml",
-          "sha256": "cde0b574d8cbe6311b9da8b9035c4a27ddb5a388a730f2b7b2432fdb2b9606fa"
+          "sha256": "c5eee64a360dc45b1a4b1e1ba5efcb18f855caf714bbfffedafb9f54789b51fc"
         },
         {
           "path": "db/population_vendor_prices/prontera-vendors.csv",
@@ -430,7 +430,7 @@
         },
         {
           "path": "db/population_vendors.yml",
-          "sha256": "6aed07040e9c8f98c6e0fcace67d58da76470ae2ca8dfe3e72b8f19ad0740c15"
+          "sha256": "0b0854f711c5b48f2b9cc72f890cd32f8da96d06a731bac19ca510ab06209500"
         },
         {
           "path": "images/icon.png",
@@ -458,7 +458,7 @@
         },
         {
           "path": "pre-re/db/population_vendor_pop.yml",
-          "sha256": "df8ac95a90552057b13a97ff205be4b6c545a0418b83494e73a33d0062d7f468"
+          "sha256": "5ec721d4c20a1a832ec8c17ec073021561cf6483e2ff801ab05e3733153e9260"
         },
         {
           "path": "pre-re/db/population_vendor_prices/prontera-vendors.csv",
@@ -466,7 +466,7 @@
         },
         {
           "path": "pre-re/db/population_vendors.yml",
-          "sha256": "d67472b519537d7e8a6a7c4b26cb8a2f1eb9b819d4bea681ceda5f010696d79e"
+          "sha256": "cdf23bd3009dc8337755346a8fdcbed8bf2b784d1669d9bdff3c10ba02c721e5"
         }
       ]
     },

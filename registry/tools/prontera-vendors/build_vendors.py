@@ -1372,6 +1372,275 @@ for _mid, _m in MOBS.items():
 RARE_CARDS -= COMMON_CARDS
 
 # ---------------------------------------------------------------------------
+# Carded gear
+# ---------------------------------------------------------------------------
+#
+# Carded equipment is one of the commonest sights on a real market street.
+# What is sold comes from two places:
+#
+#   carded.json   what iRO players really listed (scrape_carded.py, from
+#                 ragnastats): base item, refine, cards, how often. Weighs
+#                 the popular builds in by how often they were listed.
+#   CLASS_BUILDS  the builds the iRO wiki's class guides recommend, so each
+#                 class stall carries its classics even where the market
+#                 data is thin.
+#
+# Plus a share of "messed-up" cardings: cards that fit the slot but make an
+# odd mix, the kind players sell off cheap. MVP cards are never in anything.
+# A carded piece costs what its parts do (the item, its refines, its cards)
+# and a little for the work; a messed-up one half its cards.
+
+CARDED_PATH = os.path.join(HERE, "carded.json")
+try:
+    CARDED = json.load(open(CARDED_PATH))
+except FileNotFoundError:
+    CARDED = {}
+
+ITEMS_BY_NAME_SLOTS = {}
+for _e in ITEMS_BY_ID.values():
+    if _e.get("Name"):
+        ITEMS_BY_NAME_SLOTS.setdefault((_e["Name"].lower(), _e.get("Slots", 0)), _e)
+
+
+def by_name(name, slots=None):
+    """An item by display name ("Chain Mail", 1) or a card ("Hydra Card")."""
+    if slots is not None:
+        return ITEMS_BY_NAME_SLOTS.get((name.lower(), slots))
+    return ITEMS_BY_NAME.get(name.lower())
+
+
+# From the iRO wiki's class pages (Equipment): (item, slots, [cards], refine).
+# A card list shorter than the slots leaves the rest empty, as players do.
+CLASS_BUILDS = {
+    "class_assassin": [
+        ("Jur", 3, ["Soldier Skeleton Card"] * 3, 7), ("Jur", 3, ["Hydra Card"] * 3, 4),
+        ("Gladius", 3, ["Hydra Card"] * 3, 7), ("Main Gauche", 4, ["Andre Card"] * 4, 4),
+        ("Main Gauche", 4, ["Hydra Card"] * 4, 4), ("Chain Mail", 1, ["Peco Peco Card"], 4),
+        ("Hood", 1, ["Condor Card"], 4), ("Manteau", 1, ["Raydric Card"], 4),
+        ("Boots", 1, ["Matyr Card"], 4), ("Brooch", 1, ["Kobold Card"], 0), ("Clip", 1, ["Zerom Card"], 0),
+    ],
+    "class_rogue": [
+        ("Gladius", 3, ["Hydra Card"] * 3, 7), ("Composite Bow", 4, ["Hydra Card"] * 4, 7),
+        ("Manteau", 1, ["Raydric Card"], 4), ("Boots", 1, ["Matyr Card"], 4),
+    ],
+    "class_knight": [
+        ("Pike", 4, ["Hydra Card", "Hydra Card", "Skeleton Worker Card", "Vadon Card"], 7),
+        ("Full Plate", 1, ["Peco Peco Card"], 4), ("Chain Mail", 1, ["Pasana Card"], 4),
+        ("Manteau", 1, ["Raydric Card"], 4), ("Shield", 1, ["Thara Frog Card"], 4),
+        ("Boots", 1, ["Verit Card"], 4), ("Rosary", 1, ["Yoyo Card"], 0), ("Ring", 1, ["Mantis Card"], 0),
+        ("Helm", 1, ["Elder Willow Card"], 4),
+    ],
+    "class_crusader": [
+        ("Shield", 1, ["Thara Frog Card"], 4), ("Glittering Jacket", 1, ["Angeling Card"], 4),
+        ("Helm", 1, ["Cramp Card"], 4), ("Manteau", 1, ["Raydric Card"], 4), ("Clip", 1, ["Zerom Card"], 0),
+    ],
+    "class_wizard": [
+        ("Clip", 1, ["Vitata Card"], 0), ("Clip", 1, ["Phen Card"], 0), ("Clip", 1, ["Creamy Card"], 0),
+        ("Muffler", 1, ["Raydric Card"], 4), ("Muffler", 1, ["Noxious Card"], 4), ("Guard", 1, ["Thara Frog Card"], 4),
+        ("Shoes", 1, ["Eggyra Card"], 4), ("Shoes", 1, ["Verit Card"], 4),
+    ],
+    "class_sage": [
+        ("Clip", 1, ["Phen Card"], 0), ("Clip", 1, ["Vitata Card"], 0), ("Muffler", 1, ["Whisper Card"], 4),
+        ("Guard", 1, ["Thara Frog Card"], 4), ("Shoes", 1, ["Eggyra Card"], 4), ("Formal Suit", 1, ["Pupa Card"], 4),
+    ],
+    "class_hunter": [
+        ("Composite Bow", 4, ["Hydra Card", "Hydra Card", "Vadon Card", "Vadon Card"], 7),
+        ("Boots", 1, ["Matyr Card"], 4), ("Boots", 1, ["Male Thief Bug Card"], 4),
+        ("Muffler", 1, ["Whisper Card"], 4), ("Muffler", 1, ["Raydric Card"], 4), ("Tights", 1, ["Ghostring Card"], 4),
+        ("Brooch", 1, ["Zerom Card"], 0),
+    ],
+    "class_bard_dancer": [
+        ("Cap", 1, ["Willow Card"], 4), ("Sunglasses", 1, ["Nightmare Card"], 0),
+        ("Boots", 1, ["Matyr Card"], 4), ("Muffler", 1, ["Raydric Card"], 4),
+    ],
+    "class_priest": [
+        ("Saint's Robe", 1, ["Pupa Card"], 7), ("Silk Robe", 1, ["Baby Desert Wolf Card"], 4),
+        ("Buckler", 1, ["Thara Frog Card"], 4), ("Buckler", 1, ["Thief Bug Egg Card"], 4),
+        ("Muffler", 1, ["Raydric Card"], 4), ("Shoes", 1, ["Eggyra Card"], 7), ("Shoes", 1, ["Verit Card"], 7),
+        ("Clip", 1, ["Alligator Card"], 0), ("Biretta", 1, ["Willow Card"], 4),
+    ],
+    "class_monk": [
+        ("Chain", 3, ["Minorous Card"] * 3, 7), ("Mace", 4, ["Minorous Card"] * 4, 4),
+        ("Ring", 1, ["Mantis Card"], 0), ("Glove", 1, ["Zerom Card"], 0), ("Shoes", 1, ["Sohee Card"], 4),
+        ("Shoes", 1, ["Verit Card"], 4),
+    ],
+    "class_blacksmith": [
+        ("Battle Axe", 4, ["Minorous Card"] * 4, 4), ("Battle Axe", 4, ["Hydra Card"] * 4, 4),
+        ("Chain Mail", 1, ["Marc Card"], 4), ("Chain Mail", 1, ["Peco Peco Card"], 4),
+        ("Boots", 1, ["Matyr Card"], 4), ("Buckler", 1, ["Thara Frog Card"], 4),
+        ("Ring", 1, ["Mantis Card"], 0), ("Manteau", 1, ["Raydric Card"], 4),
+    ],
+    "class_alchemist": [
+        ("Chain Mail", 1, ["Marc Card"], 4), ("Buckler", 1, ["Thara Frog Card"], 4),
+        ("Boots", 1, ["Matyr Card"], 4), ("Manteau", 1, ["Raydric Card"], 4), ("Clip", 1, ["Vitata Card"], 0),
+    ],
+}
+
+ACCESSORY = {"Right_Accessory", "Left_Accessory", "Both_Accessory"}
+HEADGEAR = {"Head_Top", "Head_Mid", "Head_Low"}
+
+
+def card_fits(card, e):
+    """Whether a card goes into a piece of equipment's slots."""
+    cl, el = locs(card), locs(e)
+    if e.get("Type") == "Weapon":
+        return bool(cl & {"Right_Hand", "Both_Hand"})
+    if el & ACCESSORY:
+        return bool(cl & ACCESSORY)
+    if el & HEADGEAR:
+        return bool(cl & HEADGEAR)
+    return bool(cl & el)
+
+
+def carded_slot(e):
+    if e.get("Type") == "Weapon":
+        return "weapon"
+    return "accessory" if locs(e) & ACCESSORY else "armor"
+
+
+def carded_price(e, refine, cards, messed_up=False):
+    """What it cost to make: the item and its refines, its cards, a little
+    for the work; a messed-up one sells its cards at half."""
+    base = price(e)
+    if base is None:
+        return None
+    if refine:
+        base = refined_price(e, base, refine, False)
+    cp = [price(c) for c in cards]
+    if any(p is None for p in cp):
+        return None
+    total = base + sum(cp) * (0.5 if messed_up else 1.0)
+    return int(total * (0.95 if messed_up else 1.03))
+
+
+def carded_spec(e, refine, cards, weight, messed_up=False):
+    p = carded_price(e, refine, cards, messed_up)
+    if p is None or p > POOL_MAX:
+        return None
+    return dict(item=e["AegisName"], refine=refine, cards=[c["AegisName"] for c in cards], price=p, weight=weight)
+
+
+def carded_ok(e, cards):
+    return (e is not None and tradeable(e) and cards and all(cards) and len(cards) <= e.get("Slots", 0)
+            and not any(c["Id"] in MVP_CARDS for c in cards))
+
+
+def carded_market():
+    """The carded pieces iRO players listed, as specs, most listed first."""
+    out = []
+    for bid, rec in CARDED.items():
+        e = ITEMS_BY_ID.get(int(bid))
+        for v in rec.get("variants", []):
+            cards = [ITEMS_BY_ID.get(c) for c in v["cards"]]
+            if not carded_ok(e, cards) or v["refine"] > 10:
+                continue
+            spec = carded_spec(e, v["refine"], cards, max(1, v.get("listings") or 1))
+            if spec:
+                out.append((e, spec))
+    # ragnastats shows at most six pages, so every popular build reads "150
+    # listings": among those, the base item more players traded comes first.
+    out.sort(key=lambda t: (-min(t[1]["weight"], 150), -popularity(t[0])))
+    return out
+
+
+def varied(pairs, limit, per_base=3):
+    """The first `limit` of pairs, at most per_base builds of any one item,
+    so a stall is not all Clips."""
+    out, seen = [], {}
+    for e, spec in pairs:
+        if seen.get(e["Id"], 0) >= per_base:
+            continue
+        seen[e["Id"]] = seen.get(e["Id"], 0) + 1
+        out.append((e, spec))
+        if len(out) >= limit:
+            break
+    return out
+
+
+def carded_builds(key):
+    out = []
+    for name, slots, cards, refine in CLASS_BUILDS.get(key, []):
+        e = by_name(name, slots)
+        cs = [by_name(c) for c in cards]
+        missing = ([f"{name} [{slots}]"] if e is None else []) + [c for c, ce in zip(cards, cs) if ce is None]
+        if missing:
+            print(f"  {key}: guide build skipped, no {', '.join(sorted(set(missing)))} in this era", file=sys.stderr)
+            continue
+        if carded_ok(e, cs):
+            spec = carded_spec(e, refine, cs, 50)
+            if spec:
+                out.append((e, spec))
+    return out
+
+
+def carded_messed_up(bases, n, rng):
+    """n odd cardings of these bases: fitting cards, an unlikely mix."""
+    cards = [ITEMS_BY_ID[c] for c in sorted(COMMON_CARDS) if c in ITEMS_BY_ID and tradeable(ITEMS_BY_ID[c])]
+    out = []
+    for _ in range(n * 4):
+        if len(out) >= n or not bases:
+            break
+        e = rng.choice(bases)
+        fit = [c for c in cards if card_fits(c, e)]
+        if not fit:
+            continue
+        k = rng.randint(1, e.get("Slots", 1))
+        cs = [rng.choice(fit) for _ in range(k)]
+        if len({c["Id"] for c in cs}) < min(k, 2):
+            continue  # an odd mix, not a deliberate triple
+        spec = carded_spec(e, rng.choice([0, 0, 0, 4, 5]), cs, 1, messed_up=True)
+        if spec:
+            out.append((e, spec))
+    return out
+
+
+def add_carded():
+    """The carded stalls, and carded lines in the class, refined and slotted
+    stalls. Run once prices are known."""
+    rng = random.Random("carded")
+    market = carded_market()
+    by_slot = {"weapon": [], "armor": [], "accessory": []}
+    for e, spec in market:
+        by_slot[carded_slot(e)].append((e, spec))
+    print(f"  carded: {len(market)} market builds ({', '.join(f'{k} {len(v)}' for k, v in by_slot.items())})", file=sys.stderr)
+
+    def pick(pairs, limit):
+        return [spec for _, spec in varied(pairs, limit)]
+
+    for slot, key, titles in [
+        ("weapon", "carded_weapons", ["carded weapons", "S> carded weps", "triple carded stuff", "{name}'s Carded Arsenal",
+                                      "weapons w/ cards", "S> hydra/skel weps"]),
+        ("armor", "carded_armory", ["carded armor", "S> carded armory", "armor w/ cards", "{name}'s Carded Armory",
+                                    "S> thara/raydric gear", "carded gear fs"]),
+        ("accessory", "carded_accessories", ["carded accs", "S> clips n rings", "carded accessories",
+                                             "{name}'s Jewelry Box", "S> zerom/mantis accs"]),
+    ]:
+        pairs = varied(by_slot[slot], 60)
+        bases = [e for e, _ in pairs]
+        extra = [s for _, s in pairs] + [s for _, s in carded_messed_up(bases, max(3, len(pairs) // 6), rng)]
+        if not extra:
+            continue
+        THEMES.append(dict(key=key, job=random.Random(key).choice(["Merchant", "Blacksmith", "Whitesmith", "Creator"]),
+                           pick=[3, 6], weight=1, titles=titles, extra=extra))
+
+    for t in THEMES:
+        k = t["key"]
+        if k.startswith("class_"):
+            # Its guide builds, and what players listed that this class wears.
+            rule = t.get("rule")
+            worn = varied([(e, s) for e, s in market if rule and rule(e)], 8, per_base=2)
+            t.setdefault("extra", [])
+            t["extra"] += [s for _, s in carded_builds(k)] + [s for _, s in worn]
+        elif k == "refined_weapons":
+            t.setdefault("extra", [])
+            t["extra"] += [s for _, s in varied([(e, s) for e, s in by_slot["weapon"] if s["refine"] >= 5], 12, per_base=1)]
+        elif k == "slotted_gear":
+            t.setdefault("extra", [])
+            t["extra"] += pick(by_slot["armor"], 8) + [s for _, s in carded_messed_up(
+                [e for e, _ in by_slot["armor"]], 3, rng)]
+
+
+# ---------------------------------------------------------------------------
 # Resolve
 # ---------------------------------------------------------------------------
 
@@ -1713,6 +1982,7 @@ def main():
     calibrate()
     train_fallbacks()
     fill_table()
+    add_carded()
     rng = random.Random(1)
     vendors, profiles, market = [], [], []
     buy_market = []
@@ -1777,7 +2047,7 @@ def main():
                 out.append(f"      - {flow(d)}")
                 continue
             d = {"Item": e["AegisName"], "Amount": amount_for(e, p, rng)}
-            plain = not (spec.get("refine") or spec.get("element") or spec.get("stars"))
+            plain = not (spec.get("refine") or spec.get("element") or spec.get("stars") or spec.get("cards"))
             if plain and TABLE.get(e["Id"], (0, 0, ""))[0] > 0:
                 d["Price"] = list(TABLE[e["Id"]][:2])
             else:
@@ -1788,6 +2058,8 @@ def main():
                 d["Element"] = spec["element"]
             if spec.get("stars"):
                 d["Stars"] = spec["stars"]
+            if spec.get("cards"):
+                d["Cards"] = spec["cards"]
             out.append(f"      - {flow(d)}")
         vendors.append("\n".join(out))
         (buy_market if buying else market).append(key)

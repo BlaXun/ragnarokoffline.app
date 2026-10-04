@@ -60,7 +60,7 @@ Settings take effect when the server starts.
 
 ## Sell stalls
 
-115 themes. Each time a spot gets a stall (at server start, after a rotation
+118 themes. Each time a spot gets a stall (at server start, after a rotation
 or after a sell-out) it rolls a theme, so over a session the whole range
 comes through:
 
@@ -86,6 +86,14 @@ comes through:
   daggers (forged Fire/Water/Earth/Wind, some "Very Strong"), crimson
   weapons, shadow gear, a stall that sells nothing but an Ice Pick, rare
   collectibles, a "hunter's haul" of popular drops.
+- **Carded:** carded weapons, carded armory (body, shield, garment, shoes,
+  headgear) and carded accessories: the builds iRO players really listed
+  (from ragnastats: "+7 Triple Critical Jur", "Thara Frog Guard", "Clip of
+  Zerom"), weighted by how often, plus a few messed-up cardings sold cheap.
+  Class stalls carry their guide builds (iRO wiki) and carded pieces that
+  class wears; refined-weapon and slotted-gear stalls carry some too. A
+  carded piece costs its item, refines and cards, plus a little for the
+  work. Never MVP cards.
 - **Refined:** weapons from their safe limit to three past it, armor +4 to
   +7, priced by what it costs to make, including failed attempts past the
   safe limit.
@@ -280,6 +288,8 @@ python3 registry/tools/prontera-vendors/build_vendors.py --era pre-re      # the
 python3 registry/tools/prontera-vendors/build_vendors.py --refresh-prices  # fetch iRO prices the cache lacks
 python3 registry/tools/prontera-vendors/build_vendors.py --reprice         # rebuild the price list from the data
 python3 registry/tools/prontera-vendors/scrape_ragmaya.py --workers 12     # refresh kRO prices (resumable)
+python3 registry/tools/prontera-vendors/scrape_carded.py --adjectives      # iRO's card prefixes (once)
+python3 registry/tools/prontera-vendors/scrape_carded.py                   # carded builds iRO players sold (resumable)
 ```
 
 Themes are defined in `build_vendors.py`: a hand list, a rule over the item
@@ -332,6 +342,9 @@ registry/tools/prontera-vendors/     the generator, kept out of the mod
 ├── build_vendors.py
 ├── estimate.py                      the estimate model
 ├── scrape_ragmaya.py                kRO price fetcher
+├── scrape_carded.py                 carded builds from iRO listings (ragnastats)
+├── carded.json                      their cache: base item, refine, cards, listings
+├── card_adjectives.json             iRO's card prefixes, to read those names
 ├── prices_kro.json                  kRO price cache (RagMAYA)
 ├── prices.json                      iRO price cache (ragnastats)
 └── table_generated*.json            what it last wrote, to spot hand edits
