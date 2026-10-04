@@ -213,6 +213,7 @@ SKIP = re.compile(
     r"|BD_ENCORE"  # renewal: recasts the last song, which Dissonance resets; the song rows recast instead
     r"|WM_DEADHILLHERE"  # revives a dead party member only; the engine casts it, like ALL_RESURRECTION
     r"|AL_WARP"  # opens a destination menu on the caster's own client; a companion has none, so no portal
+    r"|MO_KITRANSLATION|SR_POWERVELOCITY"  # give the caster's spheres to a party member; heal nobody
     r"|HT_MAKINGARROW|AC_MAKINGARROW|HT_TALKIEBOX|HT_REMOVETRAP|HT_SPRINGTRAP|HT_PHANTASMIC"
     r"|TF_STEAL|TF_PICKSTONE|TF_THROWSTONE|TF_SPRINKLESAND"
     r"|WS_CARTBOOST|BS_ADRENALINE2|NC_|GN_|KO_|OB_|RL_|NJ_|TK_|SG_|SO_EL_|SO_SPELLFISH|SO_ELEMENTAL_SHIELD)"
@@ -221,8 +222,10 @@ SKIP = re.compile(
 # Skills the Support-without-Status branch cannot shape correctly. Only the CURES need this: their
 # gate must be "the ally HAS this status" (one row per status, and the status list lives in the
 # skill's impl - `status_change_end` - which no YAML field carries), where the branch's generic
-# "ally is hurt" gate fires on a healthy ally and wastes the cast. Everything else that lands in
-# that branch (AM_BERSERKPITCHER, SR_POWERVELOCITY, MO_KITRANSLATION, MO_ABSORBSPIRITS) keeps the
+# "ally is hurt" gate fires on a healthy ally and wastes the cast. Absorb Spirits needs it too: cast
+# on an ally it takes the ally's spheres, so its rows drain a monster for SP when SP is low, as the
+# Monk's do. Ki Translation and Power Velocity, which give the caster's spheres away and heal
+# nobody, are in SKIP. Everything else that lands in that branch (AM_BERSERKPITCHER) keeps the
 # branch's shape, which is what the 4th jobs already ship - Biolo has an AM_BERSERKPITCHER row, so
 # excluding them for the 2nd/3rd jobs would make this file inconsistent with its own settled policy.
 # WM_DEADHILLHERE is in SKIP instead: it only revives, so the engine casts it on a dead party member.
@@ -230,6 +233,7 @@ HAND_WRITTEN = {
     "AL_CURE": "cure: needs Condition: ally_status per status, from cure.cpp",
     "TF_DETOXIFY": "cure: needs Condition: ally_status per status, from detoxify.cpp",
     "GC_ANTIDOTE": "cure: needs Condition: ally_status per status, from antidote.cpp",
+    "MO_ABSORBSPIRITS": "SP drain: cast on a monster when SP is low, not on a hurt ally",
 }
 
 def q(skill, extra):

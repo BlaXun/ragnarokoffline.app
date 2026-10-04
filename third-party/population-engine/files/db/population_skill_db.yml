@@ -679,8 +679,6 @@ Body:
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BITESCAR }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
 
   - JobId: 16
     Skills:
@@ -1206,8 +1204,6 @@ Body:
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BITESCAR }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
 
   - JobId: 4017
     Skills:
@@ -2285,12 +2281,14 @@ Body:
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_CONFUSION }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BITESCAR }
-      - { SkillId: MO_ABSORBSPIRITS, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: MO_ABSORBSPIRITS, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
-      - { SkillId: SR_POWERVELOCITY, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: SR_POWERVELOCITY, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
+      - SkillId: MO_ABSORBSPIRITS
+        Level: 1
+        Rate: 6000
+        Cooldown: 4000
+        Condition:
+          AND:
+            - self_sp_pct_lt30
+            - enemy_distance_lt10
 
   - JobId: 4077
     Skills:
@@ -3015,16 +3013,20 @@ Body:
       - { SkillId: IQ_THIRD_EXOR_FLAME, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_THIRD_EXOR_FLAME }
       - { SkillId: IQ_THIRD_FLAME_BOMB, Level: 5, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: IQ_THIRD_PUNISH, Level: 5, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
-      - { SkillId: MO_ABSORBSPIRITS, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: MO_ABSORBSPIRITS, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
+      - SkillId: MO_ABSORBSPIRITS
+        Level: 1
+        Rate: 6000
+        Cooldown: 4000
+        Condition:
+          AND:
+            - self_sp_pct_lt30
+            - enemy_distance_lt10
       - { SkillId: MO_BALKYOUNG, Level: 1, Rate: 9000 }
       - { SkillId: MO_BLADESTOP, Level: 5, Rate: 8000, Target: self, Condition: melee_attacked }
       - { SkillId: MO_BODYRELOCATION, Level: 1, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: MO_EXTREMITYFIST, Level: 5, Rate: 9000 }
       - { SkillId: MO_FINGEROFFENSIVE, Level: 5, Rate: 9000 }
       - { SkillId: MO_INVESTIGATE, Level: 5, Rate: 9000 }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: MO_KITRANSLATION, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
       - { SkillId: MO_STEELBODY, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_STEELBODY }
       - { SkillId: SR_CRESCENTELBOW, Level: 5, Rate: 8000, Target: self, Condition: melee_attacked }
       - { SkillId: SR_CURSEDCIRCLE, Level: 5, Rate: 8000, Target: self, Condition: enemy_count_nearby, CondValue: 2 }
@@ -3039,8 +3041,6 @@ Body:
       - { SkillId: SR_GENTLETOUCH_REVITALIZE, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_GT_REVITALIZE }
       - { SkillId: SR_KNUCKLEARROW, Level: 10, Rate: 9000 }
       - { SkillId: SR_LIGHTNINGWALK, Level: 5, Rate: 8000, Target: self, Condition: range_attacked }
-      - { SkillId: SR_POWERVELOCITY, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: SR_POWERVELOCITY, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
       - { SkillId: SR_RAISINGDRAGON, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_RAISINGDRAGON }
       # Spirit spheres for the Gentle Touches, Steel Body and Root, which cost them.
       - SkillId: MO_CALLSPIRITS
@@ -3372,8 +3372,14 @@ Body:
       - { SkillId: MG_SIGHT, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_SIGHT }
       - { SkillId: MG_SOULSTRIKE, Level: 10, Rate: 9000 }
       - { SkillId: MG_THUNDERSTORM, Level: 10, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
-      - { SkillId: MO_ABSORBSPIRITS, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
-      - { SkillId: MO_ABSORBSPIRITS, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
+      - SkillId: MO_ABSORBSPIRITS
+        Level: 1
+        Rate: 6000
+        Cooldown: 4000
+        Condition:
+          AND:
+            - self_sp_pct_lt30
+            - enemy_distance_lt10
       - { SkillId: PR_ASPERSIO, Level: 5, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_ASPERSIO }
       - { SkillId: PR_GLORIA, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_GLORIA }
       - { SkillId: PR_IMPOSITIO, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_IMPOSITIO }
