@@ -394,7 +394,7 @@
     },
     {
       "name": "prontera-vendors",
-      "version": "1.4.0",
+      "version": "1.3.0",
       "author": "BlaXun",
       "description": "A living player market on Prontera's main road. Fake players run real vending stalls on the inner sidewalks (cards, weapons and armor by class, refined gear, potions, gems, pet eggs, loot from every dungeon and more) and real buying stores on the outer sidewalks that buy your loot: ores, quest turn-ins, junk drops and the loot of every dungeon and leveling field. Prices follow a real server's market (kRO), stalls undercut each other and change as their owners come and go, and everything is tunable in Settings. Needs the population engine switched on.",
       "homepage": "",
@@ -418,11 +418,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "7029a7604148e93ed566d7c0de2776b2af05f79bdf7d9861a4f2765c83b8152b"
-        },
-        {
-          "path": "db/population_market.yml",
-          "sha256": "694022a691574cdded27f68eb3e598c49eee01c813a5e7c0e1836b186d5ef7b3"
+          "sha256": "9eea56235500b9b23e8eb8d537451f2b739b489529fe3e1ee0967adf82739c71"
         },
         {
           "path": "db/population_vendor_pop.yml",
@@ -434,7 +430,7 @@
         },
         {
           "path": "db/population_vendors.yml",
-          "sha256": "26058a249fbed6daae7cd3f39122162497db1af25052c8dceb916a51b307d27e"
+          "sha256": "9d3c9dfcf10dfcc3db8530ef4b61289ae88dcfc4062390d5c21b465b5254777f"
         },
         {
           "path": "images/icon.png",
@@ -446,15 +442,11 @@
         },
         {
           "path": "mod.json",
-          "sha256": "71e37fc55bdc0a2175f14b496c31f794199dcb699d1baf1c3619bf18de7eea7c"
+          "sha256": "2a770fe9f3e5b910a3cde5e06c70ed791ef39b8ab8ea0e4d0abdd8bccc866209"
         },
         {
           "path": "npc/prontera-vendors-customers.txt",
           "sha256": "b8a87d0ddddc8e2dfc33ae5ccfc40c6e66d54e8994c361e2c2f324b0a9a57b84"
-        },
-        {
-          "path": "npc/prontera-vendors-market.txt",
-          "sha256": "f51cdd1e899bbd0159a02bf3c3744d01f45a6ce02cdec43ca2c923109237178e"
         },
         {
           "path": "npc/prontera-vendors-newer.txt",
@@ -462,11 +454,7 @@
         },
         {
           "path": "npc/prontera-vendors.txt",
-          "sha256": "2a73c9b2ec4b0658c6713bcb58b46125701d64abc49b2b8d591dee3f1f0f0789"
-        },
-        {
-          "path": "pre-re/db/population_market.yml",
-          "sha256": "63aaf8cdddf4eb8165f433784452207031c62b28e7b96ea81ff4414914099594"
+          "sha256": "00ece05ed4b084b4c34642925a014787ce464b8f2e884deff3ee635451157711"
         },
         {
           "path": "pre-re/db/population_vendor_pop.yml",
@@ -478,11 +466,11 @@
         },
         {
           "path": "pre-re/db/population_vendors.yml",
-          "sha256": "a740530468d697518bd109b63e629252a9b45462857a5de908fd307c4e18b03c"
+          "sha256": "541de8d95ccb18512692697eba8d930bcaa6fb3872678e15edb0b404c8b462e0"
         },
         {
           "path": "settings/index.html",
-          "sha256": "45ff8a58801bd7e584763771d477c870f58fb80d4fb7221b523fc40b4617c068"
+          "sha256": "2c155db40d6bcb8a9834a0c34001bfa3b02dc508a1ff71ecbbcd2bd52fea7c77"
         }
       ]
     },

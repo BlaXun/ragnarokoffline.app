@@ -109,7 +109,7 @@ static double pop_customers_plain_price(const PopCustomerSettings& cs, t_itemid 
 static PopMarketRef pop_customers_ref(const PopCustomerSettings& cs, const struct item& it) {
 	PopMarketRef ref;
 	PopMarketRow row;
-	ref.price = pop_customers_plain_price(cs, it.nameid, &row) * population_market_factor(it.nameid); // the dynamic market's index
+	ref.price = pop_customers_plain_price(cs, it.nameid, &row);
 	// A refined or carded piece is worth more than the plain one: about what
 	// the safe refines cost and the cards are worth. Forged and signed items
 	// (card[0] special) have no cards to add.
@@ -326,7 +326,6 @@ static PopCustomerDeal pop_customers_purchase(map_session_data* vsd, int j, int 
 		z -= z * (battle_config.vending_tax / 10000.);
 	deal.zeny = static_cast<int32>(z);
 	const t_itemid nameid = vsd->cart.u.items_cart[idx].nameid;
-	const uint32 unit = vsd->vending[j].value;
 	const uint32 char_id = vsd->status.char_id;
 	const bool away = vsd->state.autotrade;
 
@@ -343,7 +342,6 @@ static PopCustomerDeal pop_customers_purchase(map_session_data* vsd, int j, int 
 	}
 	pc_cart_delitem(vsd, idx, amount, 0, LOG_TYPE_VENDING);
 	clif_vendingreport(*vsd, idx, amount, 0, deal.zeny);
-	population_engine_market_trade(nameid, amount, unit, 2);
 
 	// compact the vending list
 	int cursor = 0;
@@ -424,7 +422,6 @@ static PopCustomerDeal pop_customers_sell_to(map_session_data* bsd, int listidx,
 	pc_payzeny(bsd, deal.zeny, LOG_TYPE_BUYING_STORE, 0);
 	bsd->buyingstore.zenylimit -= deal.zeny;
 	clif_buyingstore_update_item(bsd, nameid, amount, 0, deal.zeny);
-	population_engine_market_trade(nameid, amount, static_cast<uint32>(bi.price), 3);
 
 	if (save_settings & CHARSAVE_VENDING)
 		chrif_save(bsd, CSAVE_NORMAL | CSAVE_INVENTORY);

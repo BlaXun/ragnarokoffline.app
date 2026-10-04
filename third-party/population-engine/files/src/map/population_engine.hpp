@@ -237,11 +237,5 @@ int population_engine_arena_relation(const block_list *s_bl, const block_list *t
 /// the autosupport subsystem.
 bool population_engine_arena_is_ally(const map_session_data *a, const map_session_data *b);
 
-/// RAGNAROKMAC: dynamic market. A trade the market should hear of: kind 0 a
-/// player bought `amount` of `id` from a population shell's stall at `price`
-/// each, 1 a player sold them into a shell's buying store (2 and 3 are the
-/// engine's own, for players' stalls). Does nothing while the market is off.
-void population_engine_market_trade(uint32_t id, int amount, uint32_t price, int kind);
-
 #endif // POPULATION_ENGINE_HPP
 // images rebuild trigger

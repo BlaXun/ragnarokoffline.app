@@ -202,27 +202,6 @@ PopulationSkillDatabase& population_skill_db();
 PopulationSpawnDatabase& population_spawn_db();
 PopulationVendorDatabase& population_vendor_db();
 
-/// RAGNAROKMAC: db/population_market.yml -- the dynamic market's item groups
-/// (spillover) and news events. A mod ships them through db/import; with none
-/// the market still runs on trades alone.
-class PopulationMarketDatabase : public YamlDatabase {
-	std::vector<PopulationMarketGroup> groups_;
-	std::vector<PopulationMarketEvent> events_;
-	std::unordered_map<t_itemid, std::vector<size_t>> groups_of_;
-
-public:
-	PopulationMarketDatabase();
-	void clear() override;
-	const std::string getDefaultLocation() override;
-	uint64 parseBodyNode(const ryml::NodeRef& node) override;
-	const std::vector<PopulationMarketGroup>& groups() const { return groups_; }
-	const std::vector<PopulationMarketEvent>& events() const { return events_; }
-	/// The groups an item belongs to (indices into groups()).
-	const std::vector<size_t>* groups_of(t_itemid id) const;
-};
-
-PopulationMarketDatabase& population_market_db();
-
 /// Pick the right job DB for a shell based on its source tag.
 PopulationEngineDatabase& population_engine_db_for(PopulationDbSource src);
 
