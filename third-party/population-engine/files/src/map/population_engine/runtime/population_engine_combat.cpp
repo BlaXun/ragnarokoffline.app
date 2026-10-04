@@ -910,6 +910,10 @@ static uint8_t pop_ally_hp_threshold(const map_session_data* sd, uint16 skill_id
 /// on the caster, so its splash says nothing about where it lands.
 static int pop_self_blast_radius(uint16_t skill_id, uint16_t skill_lv)
 {
+	// Grand Cross lists a range of 9 and no splash; it hits a fixed cross of cells around the
+	// caster (skill_init_unit_layout), two cells deep and four along its arms.
+	if (skill_id == CR_GRANDCROSS || skill_id == NPC_GRANDDARKNESS)
+		return 2;
 	if (!(skill_get_inf(skill_id) & INF_SELF_SKILL))
 		return 0;
 	if (skill_get_range(skill_id, skill_lv) > 1)
@@ -961,6 +965,10 @@ static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& 
 		expanded_ai::TargetBag bag;
 		bag.shell = sd;
 		bag.enemy = target_bl;
+		// The same for an enemy_count_nearby inside an AND/OR tree (Grand Cross).
+		const int radius = pop_self_blast_radius(sk.skill_id, sk.skill_lv);
+		if (radius > 0)
+			bag.enemies_in_blast = pop_enemies_within(sd, radius);
 		return (*sk.expanded)(bag);
 	}
 	return population_shell_skill_condition_ok(sd, sk.condition,
