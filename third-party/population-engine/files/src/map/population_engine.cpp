@@ -2250,6 +2250,14 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 	if (owner_distance > leash) {
 		population_shell_target_change(sd, 0);
 		unit_stop_attack(sd);
+		// RAGNAROKMAC: Intensive Aim (Night Watch) is a toggle that roots its user until it is cast
+		// again, so a companion that had it on stood still and was only warped back once the owner
+		// was out of sight. Drop it to follow, as a player toggles it off to move; the combat row
+		// turns it back on at the next fight.
+		if (sd->sc.getSCE(SC_INTENSIVE_AIM)) {
+			status_change_end(sd, SC_INTENSIVE_AIM_COUNT);
+			status_change_end(sd, SC_INTENSIVE_AIM);
+		}
 		// RAGNAROKMAC: full path search (flag 0). The easy path (flag 1) never walks round an
 		// obstacle, so with a wall or a tree in between the walk did not start at all and the
 		// companion stood still until the owner was far enough away to warp it.

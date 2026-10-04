@@ -3281,7 +3281,7 @@ Body:
       - { SkillId: NW_THE_VIGILANTE_AT_NIGHT, Level: 10, Rate: 9000 }
       - { SkillId: NW_GRENADE_FRAGMENT, Level: 10, Rate: 8000 }
       - { SkillId: NW_BASIC_GRENADE, Level: 10, Rate: 8000 }
-      - { SkillId: NW_INTENSIVE_AIM, Level: 10, Rate: 10000 }
+      - { SkillId: NW_INTENSIVE_AIM, Level: 10, Rate: 10000, Condition: not_self_status, CondValue: SC_INTENSIVE_AIM }
       # Flip the Coin makes the coins Adjustment, Madness Canceller and the rest cost.
       - SkillId: GS_GLITTERING
         Level: 5
