@@ -1192,30 +1192,42 @@ static bool pop_buff_would_end_own(map_session_data *sd, status_change *scc,
 	if (!scc || sc_id == SC_NONE)
 		return false;
 	const std::vector<sc_type> ends = status_db.getEndOnStart(sc_id);
-	if (ends.empty())
-		return false;
 	const std::shared_ptr<s_skill_db> skill = skill_db.find(bs.skill_id);
 	const std::vector<sc_type> none;
 	const std::vector<sc_type> &required = skill ? skill->require.status : none;
-	for (const PopulationShellBuffSkill &own : sd->pop.buff_skills) {
-		if (&own == &bs)
-			break; // only rows listed before this one outrank it
-		if (own.target != 1)
-			continue;
-		const sc_type own_sc = skill_get_sc(own.skill_id);
-		if (own_sc == SC_NONE || own_sc == sc_id || !scc->hasSCE(own_sc))
-			continue;
-		if (std::find(ends.begin(), ends.end(), own_sc) == ends.end())
-			continue;
-		if (std::find(required.begin(), required.end(), own_sc) != required.end())
-			continue;
-		// A stance has no duration (a Star Emperor's), so its cast is never recorded below; it
-		// lasts until another ends it, and only its caster can take it up, so holding it is enough.
+	// Held, and from this companion's own cast. A stance has no duration (a Star Emperor's, a
+	// Royal Guard's Banding), so its cast is never recorded; it lasts until another ends it, and
+	// only its caster can take it up, so holding it is enough.
+	auto held_own = [&](const PopulationShellBuffSkill &own) {
 		if (skill_get_time(own.skill_id, skill_get_max(own.skill_id)) <= 0)
 			return true;
 		for (const s_pe_active_buff &ab : sd->pop.active_buffs)
 			if (ab.skill_id == own.skill_id && ab.expires_at > now)
 				return true;
+		return false;
+	};
+	bool earlier = true; // rows listed before this one outrank it
+	for (const PopulationShellBuffSkill &own : sd->pop.buff_skills) {
+		if (&own == &bs) {
+			earlier = false;
+			continue;
+		}
+		if (own.target != 1)
+			continue;
+		const sc_type own_sc = skill_get_sc(own.skill_id);
+		if (own_sc == SC_NONE || own_sc == sc_id || !scc->hasSCE(own_sc))
+			continue;
+		if (std::find(required.begin(), required.end(), own_sc) != required.end())
+			continue;
+		// This one would end an earlier row's buff.
+		if (earlier && std::find(ends.begin(), ends.end(), own_sc) != ends.end() && held_own(own))
+			return true;
+		// Or a buff held from any row ends this one, and not the other way round: Banding ends
+		// Prestige, and rAthena refuses Prestige while Banding is up; Maximum Power Thrust ends
+		// Power-Thrust at its next refresh. Casting it was a refusal or wasted.
+		const std::vector<sc_type> own_ends = status_db.getEndOnStart(own_sc);
+		if (std::find(own_ends.begin(), own_ends.end(), sc_id) != own_ends.end() && held_own(own))
+			return true;
 	}
 	return false;
 }
