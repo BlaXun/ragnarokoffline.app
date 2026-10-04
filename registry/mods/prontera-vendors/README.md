@@ -59,16 +59,7 @@ defaults. On an app without settings pages they show in the Mods tab.
 | Price level (%) | 100 | Every price × this / 100, for sell stalls and buyers alike. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count toward it). |
 | Vendors shout their wares | on | Stalls call out a real item and price now and then ("S> Elunium 13K", "B> Oridecon 9500"). |
-| Seconds between a stall's shouts | 360 | Average per stall (each waits ½× to 1½×); no two stalls shout within 6 seconds of each other. |
-| Customers buy from your stalls | off | Customers for the stalls you open (see below). |
-| Customers' pace (%) | 100 | How often they come. |
-| Sellers fill your buying stores | off | Sellers for the buying stores you open. |
-| Sellers' pace (%) | 100 | How often they come. |
-| Customers come while the server is off | on | Restored @autotrade stalls get the downtime (up to 48 h). |
-| Dynamic market | on | Prices react to trades and news, then drift back (see below). |
-| Market strength (%) | 100 | How hard a trade moves a price. |
-| Price recovery (hours) | 72 | After this long, half of a move has faded. |
-| Market news | on | About once a week an event moves a group of items for a few days. |
+| Seconds between a stall's shouts | 180 | Average per stall (each waits ½× to 1½×); no two stalls shout within 6 seconds of each other. |
 
 Settings take effect when the server starts.
 
@@ -242,45 +233,6 @@ with each line's market price, price factor and expected customers a day,
 and how long the last pass took; `@vendorinfo customers ff <minutes>`
 fast-forwards them.
 
-## A dynamic market
-
-**Dynamic market** (on by default) makes prices follow the market, then drift
-back to the price list:
-
-- **Trades move them.** Buying from the stalls drives a price up; selling to
-  the buyers drives it down; your own stall's customers and sellers pull it
-  toward what they paid. How far depends on how much of the item changes
-  hands each day: at 100 % strength, selling 30 Elunium to the buyers lowers
-  it about 5 %, 3 Angeling Cards about 12 %, 500 Jellopy hardly at all.
-- **Related items move together**: a third of a move spills over to their
-  group (Elunium and Oridecon and their rough stones, herbs, potions,
-  gemstones, Ygg items, boxes and albums, dragon parts...).
-- **Market news** (optional) moves a group for a few days about once a week:
-  War of Emperium season (potions and gems up), refining fever, a hat-making
-  craze, a card craze, an Alchemist Guild order, gambling night, a pet fair;
-  an orc rampage, a spore harvest, a Glast Heim purge, a dragon hunt, a
-  merchant clearance, smith overstock (prices down); a festival (food up, junk
-  down); and monsters migrating between dungeons (one's loot down, another's
-  up).
-- **Prices drift back**: after **Price recovery** hours (72 by default) half of
-  any move has faded. Time the server is off counts too. Prices stay between
-  half and twice the price list.
-- **Everyone uses the moved price**: stalls price their stock at it when they
-  open, buyers offer at it, and your customers judge your prices by it. A
-  buyer still always pays less than a stall asks, so nothing can be flipped.
-- **You can see it**: the **market board** in Prontera (131, 218) lists
-  the news and the five items rising and falling most, and stalls now and
-  then shout about a big mover ("S> Elunium 9K, cheap today!"), at most once
-  per map in ten minutes, through the usual shout settings.
-- **For GMs**: `@vendorinfo market` lists the movers; `@vendorinfo market
-  <item>` shows one item's index, what moved it and its baseline;
-  `@vendorinfo market news` lists the events and `@vendorinfo market news
-  <event>` starts one now; `@vendorinfo market reset` puts every price back.
-
-The groups and events are in `db/population_market.yml`, generated from the
-same data as the stalls (`MARKET_GROUPS` and `market_events` in the
-generator).
-
 ## Prices
 
 Prices follow kRO's player market, which is cheaper and steadier than old
@@ -401,12 +353,10 @@ registry/mods/prontera-vendors/
 ├── npc/
 │   ├── prontera-vendors.txt         hands the settings to the engine
 │   ├── prontera-vendors-customers.txt  the customer settings, for the engine
-│   ├── prontera-vendors-market.txt     the market settings, and the market board
 │   └── prontera-vendors-newer.txt   the settings that need app 1.4.5
 ├── db/
 │   ├── population_vendors.yml       markets + themes (generated)
 │   ├── population_vendor_pop.yml    one vendor profile per theme (generated)
-│   ├── population_market.yml        market groups and news events (generated)
 │   └── population_vendor_prices/
 │       └── prontera-vendors.csv     the price list; edit freely
 └── pre-re/db/                       the pre-renewal set, same layout

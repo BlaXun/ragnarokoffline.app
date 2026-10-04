@@ -205,29 +205,6 @@ struct PopulationStockTitle {
 	std::vector<t_itemid> any;   ///< At least one of these, when not empty.
 };
 
-/// RAGNAROKMAC: dynamic market (population_market.yml). A group of related
-/// items: a price move of one drags the others by Share percent of it.
-struct PopulationMarketGroup {
-	std::string key;
-	std::vector<t_itemid> items;
-	int share_pct = 30;
-};
-
-/// One effect of a market news event: its items' prices move by a percent
-/// rolled in [change_min, change_max] when the event starts.
-struct PopulationMarketEffect {
-	std::vector<t_itemid> items;
-	int change_min = 0, change_max = 0;
-};
-
-/// A market news event: board text, how long it holds, what it moves.
-struct PopulationMarketEvent {
-	std::string key;
-	std::string text;
-	int days = 3;
-	std::vector<PopulationMarketEffect> effects;
-};
-
 /// Vendor stock sourcing mode. RAGNAROKMAC: added Pool as a third type (was bool dynamic).
 enum class PopulationVendorType : uint8_t {
 	Static  = 0, ///< Serve exactly the YAML `Stock:` list.

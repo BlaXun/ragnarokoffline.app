@@ -248,24 +248,6 @@ engine's vendors spawn exactly as upstream's do.
   price table named it does nothing, not even its clock
   (`$pop_customers_clock`). `@vendorinfo customers [ff <minutes>]` shows the
   model for the player stalls on a map, or fast-forwards them.
-- **Dynamic market** (`runtime/population_market.cpp`, `db/population_market.yml`):
-  every item has a price index, 1.00 at its baseline (a mod's price table).
-  A player buying from a shell's stall pushes it up and selling into a
-  shell's buying store pushes it down (patch 0026 hooks `vending_purchasereq`
-  and `buyingstore_trade` for exactly those); a customer or seller at a
-  player's own stall pulls it toward the price they dealt at. A trade moves
-  it by its share of the item's normal daily volume, so common loot barely
-  moves and rare items do. Moves spill over to related items
-  (`population_market.yml` groups), optional news events push a group for
-  some days, and everything drifts back with a half-life worked out from
-  timestamps, so time the server was off counts. Bounds 0.5-2.0. Shell
-  stalls and buying stores price at the index when they open; the customer
-  model judges by it; shells shout about big movers (at most one per map in
-  ten minutes); `$@pop_board_*` feeds a board NPC. State lives in permanent
-  server variables (`$pop_mk_*`, `$pop_mn_*`); no tables. Off unless a mod
-  sets `$@pop_market` (the file's header lists the settings).
-  `@vendorinfo market [<item> | news [<event>] | reset]` shows it, starts an
-  event or resets it.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).
