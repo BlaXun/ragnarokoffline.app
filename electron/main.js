@@ -871,6 +871,21 @@ function clientComplete(p) {
 	return !!p.data_grf && fs.existsSync(p.data_grf);
 }
 
+// Rebuild the overlay after a mod changed, and bring the asset server back.
+// linkClient starts with assetServer.prepare(), which stops the server, and
+// nothing else starts it again: removing a mod or changing its options left
+// the game page without assets until the next Apply or restart.
+async function relinkForMods() {
+	if (!clientComplete(getClientPaths())) return;
+	const hadAssets = assetServer.running;
+	try {
+		await linkClient(getClientPaths());
+	} finally {
+		// Even after a failed rebuild: serving what is there beats serving nothing.
+		if (hadAssets) await assetsStart();
+	}
+}
+
 function linkClient(paths) {
 	const selected = { ...paths };
 	const job = assetLinkQueue.then(() => linkClientOwned(selected));
@@ -2238,7 +2253,7 @@ const handlers = {
 	// asset overlay here rather than leaving the game showing stale options.
 	set_mod_settings: async ({ name, values }) => {
 		await runStack(['mod-settings', String(name), JSON.stringify(values ?? {})]);
-		if (clientComplete(getClientPaths())) await linkClient(getClientPaths());
+		await relinkForMods();
 		return { applied: true };
 	},
 	// A mod's own settings page, in a window of its own. What that window can
@@ -2311,7 +2326,7 @@ const handlers = {
 		}
 		// Client-side files the mod shipped leave the game with the next
 		// overlay, the same way changed options reach it.
-		if (clientComplete(getClientPaths())) await linkClient(getClientPaths());
+		await relinkForMods();
 		const wasOn = row && row[0] === 'on';
 		return `Removed ${name} (moved to the trash).${wasOn ? ' Apply to restart the server without it.' : ''}`;
 	},
