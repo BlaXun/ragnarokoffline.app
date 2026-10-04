@@ -938,6 +938,49 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 		}
 	}
 
+	// RAGNAROKMAC: StockTitles: signs that name what is for sale, used only when
+	// a stall's own pick bears them out (Needs: all of these, Any: one of
+	// these), with {item} and {price} filled from its stock. They join the
+	// TitleFromPool signs at that moment. Older builds ignore the key and show
+	// TitleFromPool alone, so a mod keeps item names out of that list.
+	if (this->nodeExists(node, "StockTitles")) {
+		const ryml::NodeRef& st_node = node[c4::to_csubstr("StockTitles")];
+		if (st_node.is_seq()) {
+			for (const ryml::NodeRef& tn : st_node.children()) {
+				PopulationStockTitle st;
+				if (!this->asString(tn, "Title", st.text) || st.text.empty()) {
+					this->invalidWarning(tn, "VendorKey '%s': a StockTitles entry needs Title; skipped.\n", key.c_str());
+					continue;
+				}
+				std::string unknown;
+				auto read_items = [&](const char* field, std::vector<t_itemid>& out) {
+					if (!this->nodeExists(tn, field))
+						return;
+					const ryml::NodeRef& ln = tn[c4::to_csubstr(field)];
+					if (!ln.is_seq())
+						return;
+					for (const ryml::NodeRef& in : ln.children()) {
+						std::string name;
+						if (!ryml::read(in, &name) || name.empty())
+							continue;
+						if (auto idata = item_db.searchname(name.c_str()))
+							out.push_back(static_cast<t_itemid>(idata->nameid));
+						else if (unknown.empty())
+							unknown = name;
+					}
+				};
+				read_items("Needs", st.needs);
+				read_items("Any", st.any);
+				if (!unknown.empty()) {
+					this->invalidWarning(tn, "VendorKey '%s': StockTitles \"%s\" names unknown item '%s'; skipped.\n",
+						key.c_str(), st.text.c_str(), unknown.c_str());
+					continue;
+				}
+				entry.stock_titles.push_back(std::move(st));
+			}
+		}
+	}
+
 	// RAGNAROKMAC: Spawns: makes this a *mod vendor*. Its shells come from the mod
 	// vendor pass, never from VendorPlacement, so a mod cannot change where or how
 	// many of the engine's own vendors (or another mod's) appear. Each block is
@@ -1022,6 +1065,38 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 				if (this->nodeExists(sn, "ScaleWithDensity")) {
 					bool b = false;
 					if (this->asBool(sn, "ScaleWithDensity", b)) sp.scale_with_density = b;
+				}
+				// RAGNAROKMAC: Fill: Lanes fills the Areas one at a time, in the
+				// order listed, each shell beside another; Random (the default)
+				// spreads them over all of them.
+				if (this->nodeExists(sn, "Fill")) {
+					std::string fill;
+					if (this->asString(sn, "Fill", fill)) {
+						std::transform(fill.begin(), fill.end(), fill.begin(), ::tolower);
+						if (fill == "lanes")
+							sp.fill_lanes = true;
+						else if (fill != "random")
+							this->invalidWarning(sn, "VendorKey '%s': Fill must be Lanes or Random; using Random.\n", key.c_str());
+					}
+				}
+				// RAGNAROKMAC: LaneFillPct: N or [min, max] (1-100): with Fill: Lanes,
+				// the share of a lane's usable cells its shells take before the next
+				// lane opens, rolled per lane. 100, the default, fills each lane.
+				if (this->nodeExists(sn, "LaneFillPct")) {
+					const ryml::NodeRef& pn = sn[c4::to_csubstr("LaneFillPct")];
+					int32_t lo = 100, hi = 100;
+					bool ok = false;
+					if (pn.is_seq() && pn.num_children() == 2)
+						ok = ryml::read(pn[0], &lo) && ryml::read(pn[1], &hi);
+					else if (pn.has_val())
+						ok = ryml::read(pn, &lo) && ((hi = lo), true);
+					if (ok) {
+						if (lo > hi) std::swap(lo, hi);
+						sp.lane_fill_min = std::max(1, std::min(100, static_cast<int>(lo)));
+						sp.lane_fill_max = std::max(1, std::min(100, static_cast<int>(hi)));
+					} else {
+						this->invalidWarning(sn, "VendorKey '%s': LaneFillPct must be a number or [min, max]; using 100.\n", key.c_str());
+					}
 				}
 				sp.spawn_id = key + "#" + sp.map + "#" + std::to_string(idx++);
 				entry.spawns.push_back(std::move(sp));
