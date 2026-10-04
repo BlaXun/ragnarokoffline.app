@@ -2350,6 +2350,12 @@ void population_engine_shell_reactive_cast(map_session_data *sd)
 {
 	if (!sd || !sd->state.population_combat)
 		return;
+	// RAGNAROKMAC: the hit that kills a shell fires this too, and so does every hit landing on
+	// it before the corpse is cleared. A dead caster is refused by unit_skilluse_id2 with no
+	// message; on a map too strong for its shells, dead ones tried Endure, Heal, Hiding and Back
+	// Slide hundreds of times.
+	if (pc_isdead(sd))
+		return;
 	const t_tick now = gettick();
 	// --- Buff pass (Target:1 and Target:2 skills) ---
 	if (!sd->pop.buff_skills.empty())

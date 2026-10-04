@@ -40,3 +40,10 @@ test('every skill row passes through it', () => {
 	const gate = fn('static inline bool pop_skill_cond_satisfied(');
 	assert.match(gate, /if \(!pop_skill_weapon_ok\(sd, sk\.skill_id\) \|\| !pop_skill_state_ok\(sd, sk\.skill_id, sk\.skill_lv\)\)\s*return false;/);
 });
+
+test('a dead shell does not react to the hit that killed it', () => {
+	const body = fn('void population_engine_shell_reactive_cast(');
+	assert.match(body, /if \(pc_isdead\(sd\)\)\s*return;/);
+	assert.ok(body.indexOf('pc_isdead(sd)') < body.indexOf('population_shell_cast_expired_self_buffs'),
+		'before any cast');
+});
