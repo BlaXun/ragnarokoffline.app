@@ -5,6 +5,9 @@
 // underfoot. Rows did not check it, so such skills were tried and refused every few seconds; a Sky
 // Emperor in Lunar Stance had Light of Sun, Light of Star and Falling Star refused 66 times each.
 // The condition gate now checks the state first, as it checks the weapon under Weapon rules.
+// Later testing found the same for costs and for statuses that stop the caster using skills: a
+// Night Watch with too little AP had Hidden Card refused 37 times, and an Inquisitor under Steel
+// Body tried Blessing and Increase AGI 52 times.
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -23,6 +26,9 @@ test('the required state is read from the skill database and checked like castbe
 	const body = fn('static bool pop_skill_state_ok(');
 	assert.match(body, /switch \(skill->require\.state\)/);
 	assert.match(body, /sd->spiritball < skill->require\.spiritball\[lv - 1\]/, 'spheres or coins the skill costs');
+	assert.match(body, /sd->battle_status\.ap < static_cast<uint32>\(skill->require\.ap\[lv - 1\]\)/, 'the AP the skill costs');
+	assert.match(body, /if \(!status_check_skilluse\(sd, nullptr, skill_id, 0\)\)\s*return false;/,
+		'a status that stops the caster using skills (Steel Body, Silence)');
 	for (const st of ['ST_SUNSTANCE', 'ST_MOONSTANCE', 'ST_STARSTANCE', 'ST_UNIVERSESTANCE', 'ST_SHIELD', 'ST_CART',
 		'ST_MADO', 'ST_FALCON', 'ST_WUG', 'ST_RIDINGDRAGON', 'ST_WATER', 'ST_HIDDEN'])
 		assert.match(body, new RegExp(`case ${st}:`), st);

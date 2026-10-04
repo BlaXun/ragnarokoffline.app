@@ -959,6 +959,14 @@ static bool pop_skill_state_ok(map_session_data *sd, uint16 skill_id, uint16 ski
 	const int lv = cap_value(static_cast<int>(skill_lv), 1, MAX_SKILL_LEVEL);
 	if (skill->require.spiritball[lv - 1] > 0 && sd->spiritball < skill->require.spiritball[lv - 1])
 		return false;
+	// AP (4th jobs): a Night Watch with too little AP had Hidden Card (125 AP) refused 37 times.
+	if (skill->require.ap[lv - 1] > 0 && sd->battle_status.ap < static_cast<uint32>(skill->require.ap[lv - 1]))
+		return false;
+	// A status that stops the caster using skills: an Inquisitor under Steel Body tried Blessing
+	// and Increase AGI 52 times. Without a target this is the caster's half of the check every
+	// cast makes (unit_skilluse_id2), so it covers Silence, Berserk and the rest too.
+	if (!status_check_skilluse(sd, nullptr, skill_id, 0))
+		return false;
 	const status_change *sc = &sd->sc;
 	switch (skill->require.state) {
 	case ST_HIDDEN:        return pc_ishiding(sd);
