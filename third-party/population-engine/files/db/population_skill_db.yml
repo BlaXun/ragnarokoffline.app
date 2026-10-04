@@ -1899,7 +1899,7 @@ Body:
       - { SkillId: AL_HEAL,            Level: 10, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: CR_DEVOTION,        Level: 5,  Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_DEVOTION, Cooldown: 30000 }
       - { SkillId: PR_KYRIE,           Level: 10, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_KYRIE }
-      - { SkillId: LG_PIETY,           Level: 5,  Rate: 6000, Target: ally }
+      - { SkillId: LG_PIETY,           Level: 5,  Rate: 6000, Target: self, Condition: not_self_status, CondValue: SC_BENEDICTIO }
       - { SkillId: CR_AUTOGUARD,       Level: 10, Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_AUTOGUARD }
       - { SkillId: CR_REFLECTSHIELD,   Level: 10, Rate: 8000,  Target: self, Condition: not_self_status, CondValue: SC_REFLECTSHIELD }
       - SkillId: CR_DEFENDER
@@ -1962,7 +1962,7 @@ Body:
       - { SkillId: AL_HEAL,            Level: 10, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 60 }
       - { SkillId: CR_DEVOTION,        Level: 5,  Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_DEVOTION, Cooldown: 30000 }
       - { SkillId: PR_KYRIE,           Level: 10, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_KYRIE }
-      - { SkillId: LG_PIETY,           Level: 5,  Rate: 6000, Target: ally }
+      - { SkillId: LG_PIETY,           Level: 5,  Rate: 6000, Target: self, Condition: not_self_status, CondValue: SC_BENEDICTIO }
       - { SkillId: CR_AUTOGUARD,       Level: 10, Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_AUTOGUARD }
       - { SkillId: CR_REFLECTSHIELD,   Level: 10, Rate: 8000,  Target: self, Condition: not_self_status, CondValue: SC_REFLECTSHIELD }
       - SkillId: CR_DEFENDER
@@ -2823,7 +2823,7 @@ Body:
       - { SkillId: LG_INSPIRATION, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_INSPIRATION }
       - { SkillId: LG_KINGS_GRACE, Level: 5, Rate: 8000, Target: self, Condition: hp_below, CondValue: 20 }
       - { SkillId: LG_MOONSLASHER, Level: 5, Rate: 8000, Target: self, Condition: enemy_count_nearby, CondValue: 2 }
-      - { SkillId: LG_PIETY, Level: 5, Rate: 8000, Target: ally, Condition: not_ally_status, CondValue: SC_BENEDICTIO }
+      - { SkillId: LG_PIETY, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_BENEDICTIO }
       - { SkillId: LG_PINPOINTATTACK, Level: 5, Rate: 9000 }
       - { SkillId: LG_PRESTIGE, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_PRESTIGE }
       - { SkillId: LG_RAGEBURST, Level: 1, Rate: 9000 }
