@@ -2952,6 +2952,14 @@ Body:
       - { SkillId: SR_POWERVELOCITY, Level: 1, Rate: 10000, Target: ally, Condition: ally_hp_below, CondValue: 70 }
       - { SkillId: SR_POWERVELOCITY, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
       - { SkillId: SR_RAISINGDRAGON, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_RAISINGDRAGON }
+      # Spirit spheres for the Gentle Touches, Steel Body and Root, which cost them.
+      - SkillId: MO_CALLSPIRITS
+        Level: 5
+        Rate: 10000
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt5
       - { SkillId: SR_RIDEINLIGHTNING, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_SILENCE }
       - { SkillId: AL_CURE, Level: 1, Rate: 7000, Target: ally, Condition: ally_status, CondValue: SC_BLIND }
@@ -3184,6 +3192,14 @@ Body:
       - { SkillId: NW_GRENADE_FRAGMENT, Level: 10, Rate: 8000 }
       - { SkillId: NW_BASIC_GRENADE, Level: 10, Rate: 8000 }
       - { SkillId: NW_INTENSIVE_AIM, Level: 10, Rate: 10000 }
+      # Flip the Coin makes the coins Adjustment, Madness Canceller and the rest cost.
+      - SkillId: GS_GLITTERING
+        Level: 5
+        Rate: 10000
+        Target: self
+        Condition:
+          AND:
+            - self_spheres_lt10
       - { SkillId: GS_ADJUSTMENT, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADJUSTMENT }
       - { SkillId: GS_BULLSEYE, Level: 1, Rate: 9000 }
       - { SkillId: GS_DISARM, Level: 5, Rate: 9000 }
