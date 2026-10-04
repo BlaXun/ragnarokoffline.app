@@ -1103,6 +1103,11 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 	const size_t n = sd->pop.attack_skills.size();
 	if (n == 0)
 		return;
+	// RAGNAROKMAC: every hit on a harvest plant does 1 damage, skill or not, so a skill only
+	// spends SP and cast time on it. Plain attacks only.
+	if (!ally_only && target_bl && target_bl->type == BL_MOB
+	    && population_shell_mob_is_plant(reinterpret_cast<const mob_data *>(target_bl)))
+		return;
 
 	// Standalone improvements (no autocombat dep):
 	//  * SP-reserve floor: skip skills that would drop SP below configured % of max.
