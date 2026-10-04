@@ -121,7 +121,7 @@ def npc_shop_prices():
             prices[iid] = min(prices.get(iid, price), price)
 
     for root, _, files in os.walk(os.path.join(RA, "npc")):
-        if os.sep + OTHER_ERA + os.sep in root + os.sep:
+        if OTHER_ERA in os.path.relpath(root, os.path.join(RA, "npc")).split(os.sep):
             continue
         for f in files:
             if not f.endswith(".txt"):
@@ -149,7 +149,7 @@ def npc_shop_items():
     scripts restock them with."""
     ids = set()
     for root, _, files in os.walk(os.path.join(RA, "npc")):
-        if os.sep + OTHER_ERA + os.sep in root + os.sep:
+        if OTHER_ERA in os.path.relpath(root, os.path.join(RA, "npc")).split(os.sep):
             continue
         for f in files:
             if not f.endswith(".txt"):
@@ -1033,8 +1033,11 @@ def quest_asks():
     """Item id -> how many NPC scripts of this era ask a player for it
     (countitem), the measure of what quests want."""
     asks = {}
-    for root, _, files in os.walk(os.path.join(RA, "npc")):
-        if os.sep + OTHER_ERA + os.sep in root + os.sep or os.sep + "custom" in root or os.sep + "test" in root:
+    npc = os.path.join(RA, "npc")
+    for root, _, files in os.walk(npc):
+        # Folders under npc/ only: the checkout's own path may say anything.
+        parts = os.path.relpath(root, npc).split(os.sep)
+        if OTHER_ERA in parts or "custom" in parts or "test" in parts:
             continue
         for f in files:
             if not f.endswith(".txt"):
@@ -1187,12 +1190,26 @@ for _key, _title, _files in AREAS_LOOT:
 # Every item some monster drops, and how many kinds of monster drop it.
 ANY_DROP = set()
 DROPPERS = {}
+# What only MVPs drop: nobody brings those to a buying store.
+MVP_ONLY = set()
 for _m in MOBS.values():
     for _d in _m.get("Drops") or []:
         _e = item(_d["Item"])
         if _e:
             ANY_DROP.add(_e["Id"])
             DROPPERS[_e["Id"]] = DROPPERS.get(_e["Id"], 0) + 1
+_by_normal = set()
+# How much of an item ordinary monsters drop: the sum of their drop chances
+# (1.0 = one per kill of one kind of monster). Jellopy runs to dozens, a card
+# to a few ten-thousandths.
+DROP_ABUNDANCE = {}
+for _mid, _m in MOBS.items():
+    for _d in _m.get("Drops") or []:
+        _e = item(_d["Item"])
+        if _e and _mid not in MVP_IDS:
+            _by_normal.add(_e["Id"])
+            DROP_ABUNDANCE[_e["Id"]] = DROP_ABUNDANCE.get(_e["Id"], 0) + _d.get("Rate", 0) / 10000
+MVP_ONLY = ANY_DROP - _by_normal
 # A loot stall skips what more kinds of monster than this drop (Elunium,
 # Yggdrasil Berry...), so each dungeon's stall shows its own loot.
 LOOT_MAX_DROPPERS = 12
@@ -1589,8 +1606,65 @@ def fill_table():
         TABLE[e["Id"]] = (*band(p), src) if p is not None else (0, 0, "")
 
 
+# Items some fake buying store wants, filled in as the buy themes resolve: a
+# customer for a player's stall is likelier to want those.
+BUY_WANTED = set()
+
+
+def demand(e, lo, hi, busy_cut):
+    """(BuyersPerDay, SellersPerDay) for the customers who visit players'
+    stalls: how many come a day, at a fair price, to buy the item from a
+    player's vending stall and to sell it into a player's buying store.
+
+    Buyers: what fake buyers want and quests ask for sells best, heavily
+    traded items better still; equipment and cards slower; dear items slower.
+    Sellers: as much as monsters drop of it (the sum of their drop chances),
+    for items a buying store may take, fewer for dear ones; none for what
+    only MVPs drop.
+    About 24 a day is one an hour; each takes a batch (cheap loot by the
+    stack, dear things one at a time)."""
+    p = (lo + hi) // 2 if lo else 0
+    if e["Id"] in BUY_WANTED:
+        buyers = 12
+    elif e.get("Type") == "Card":
+        buyers = 2
+    elif is_equip(e):
+        buyers = 2.5
+    else:
+        buyers = 4
+    if QUEST_ASKS.get(e["Id"], 0) >= 2:
+        buyers += 5
+    if popularity(e) >= busy_cut:
+        buyers *= 1.5
+    if p >= 1_000_000:
+        buyers *= 0.3
+    elif p >= 100_000:
+        buyers *= 0.6
+    sellers = 0
+    if buyable(e) and e["Id"] not in MVP_ONLY:
+        a = DROP_ABUNDANCE.get(e["Id"], 0)
+        if a >= 5:
+            sellers = 24
+        elif a >= 1:
+            sellers = 12
+        elif a >= 0.2:
+            sellers = 6
+        elif a >= 0.05:
+            sellers = 2
+        else:
+            sellers = 1  # rare drops, crafted goods, quest rewards: someone still has a few
+        if p >= 1_000_000:
+            sellers *= 0.2
+        elif p >= 100_000:
+            sellers *= 0.5
+        sellers = max(1, round(sellers))
+    return max(1, round(buyers)), sellers
+
+
 def write_table():
     import csv
+    priced = sorted(popularity(ITEMS_BY_ID[i]) for i, (lo, _, _) in TABLE.items() if lo)
+    busy_cut = priced[int(len(priced) * 0.9)] if priced else 0
     os.makedirs(os.path.dirname(TABLE_CSV), exist_ok=True)
     with open(TABLE_CSV, "w", encoding="utf-8", newline="") as f:
         f.write("# prontera-vendors price table: what each item sells for, as a range each\n"
@@ -1603,12 +1677,17 @@ def write_table():
                 "# estimate (a model's guess from drops, levels and stats: a ballpark,\n"
                 "# worth checking), manual (changed by hand; kept on re-runs),\n"
                 "# set (fixed in build_vendors.py's PRICE_SET; wins over this file).\n"
-                "# Refined, forged and carded lines are priced in population_vendors.yml.\n")
+                "# Refined, forged and carded lines are priced in population_vendors.yml.\n"
+                "# BuyersPerDay / SellersPerDay: how many customers a day, at a fair\n"
+                "# price, buy the item from a player's stall / sell it into a player's\n"
+                "# buying store (the mod's customer settings). Whole numbers; the generator\n"
+                "# rewrites them from its rules on every run, so tune those, or the pace\n"
+                "# settings, rather than these columns.\n")
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["Id", "Name", "Min", "Max", "Source"])
+        w.writerow(["Id", "Name", "Min", "Max", "Source", "BuyersPerDay", "SellersPerDay"])
         gen = {}
         for iid, (lo, hi, src) in sorted(TABLE.items(), key=lambda kv: (ITEMS_BY_ID[kv[0]]["Name"].lower(), kv[0])):
-            w.writerow([iid, ITEMS_BY_ID[iid]["Name"], lo, hi, src])
+            w.writerow([iid, ITEMS_BY_ID[iid]["Name"], lo, hi, src, *demand(ITEMS_BY_ID[iid], lo, hi, busy_cut)])
             gen[str(iid)] = [lo, hi]
     json.dump(gen, open(GENERATED_PATH, "w"), separators=(",", ":"), sort_keys=True)
 
@@ -1690,6 +1769,7 @@ def main():
                     "    Pool:"]
         for e, spec, p in lines:
             if buying:
+                BUY_WANTED.add(e["Id"])
                 lo_p = TABLE.get(e["Id"], (0, 0, ""))[0] or band(p)[0]
                 pay_lo, pay_hi = t.get("pay", PAY_OTHER)
                 d = {"Item": e["AegisName"], "Amount": buy_amount(p, rng),

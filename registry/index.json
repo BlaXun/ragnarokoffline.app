@@ -394,7 +394,7 @@
     },
     {
       "name": "prontera-vendors",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": "BlaXun",
       "description": "A living player market on Prontera's main road. Fake players run real vending stalls on the inner sidewalks (cards, weapons and armor by class, refined gear, potions, gems, pet eggs, loot from every dungeon and more) and real buying stores on the outer sidewalks that buy your loot: ores, quest turn-ins, junk drops and the loot of every dungeon and leveling field. Prices follow a real server's market (kRO), stalls undercut each other and change as their owners come and go, and everything is tunable in Settings. Needs the population engine switched on.",
       "homepage": "",
@@ -418,7 +418,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "a60f66086b4cf215514d60941585fefd094af75432e3615999c96df6b8d5fe90"
+          "sha256": "fb7f344582d2110a369d94a2f97668479081e61b89530e91d385670f0235d644"
         },
         {
           "path": "db/population_vendor_pop.yml",
@@ -426,7 +426,7 @@
         },
         {
           "path": "db/population_vendor_prices/prontera-vendors.csv",
-          "sha256": "4ec530894804a23636809f88524b1ad2f1a3db468a3dc232e731ae68f64b1844"
+          "sha256": "a20b7d70b7c99bc34ff537337ac396bbcaddd1568818139e4c2c7b9c63a43024"
         },
         {
           "path": "db/population_vendors.yml",
@@ -442,7 +442,11 @@
         },
         {
           "path": "mod.json",
-          "sha256": "8452d574a59a28bc841dc0d2e218ce89b47de1a5c0d971a62ce9e50c0fa24583"
+          "sha256": "d0448b001d042c1f2b42422e68e704a841535b4f96a11c80345ae4eebef2801c"
+        },
+        {
+          "path": "npc/prontera-vendors-customers.txt",
+          "sha256": "b8a87d0ddddc8e2dfc33ae5ccfc40c6e66d54e8994c361e2c2f324b0a9a57b84"
         },
         {
           "path": "npc/prontera-vendors-newer.txt",
@@ -458,7 +462,7 @@
         },
         {
           "path": "pre-re/db/population_vendor_prices/prontera-vendors.csv",
-          "sha256": "5f598c58cf81d5fdb108e3034ef20639bff39059e5294f8774f23ce9790da6be"
+          "sha256": "07e1d4761f521b21b7b7756030e843fce21f61413414c34ce84ae1e36b672246"
         },
         {
           "path": "pre-re/db/population_vendors.yml",

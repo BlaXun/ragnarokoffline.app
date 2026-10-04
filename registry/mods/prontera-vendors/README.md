@@ -164,6 +164,44 @@ rotate; each stands at most once at a time.
 - It packs up when it has bought everything or spent its zeny.
 - Anyone can open a buying store, so buyers wear any class's sprite and gear.
 
+## Customers for your own stalls
+
+Two settings, both off by default, bring the street's customers to the
+stalls *you* open (needs the app build whose population engine has them; on
+an older one they do nothing):
+
+- **Customers buy from your stalls.** Open a vending stall as usual (a
+  Merchant-class skill, as on any server), online or on `@autotrade`, and
+  customers buy now and then. You get the zeny less the vending tax and the
+  usual "sold" message, as if a player bought.
+- **Sellers fill your buying stores.** Open a buying store and players
+  bring loot to it: common drops often, rare ones seldom.
+
+What decides a sale:
+
+| | Effect |
+|---|---|
+| Your price vs the market (the price list's range) | under an NPC's price: snapped up; under market: faster; at market: steady; 1.5x: rare; 2x: never |
+| Your buying-store offer vs the market | above market: eager; near it: steady; a lowball: rare; no more than an NPC pays: never |
+| Demand (`BuyersPerDay`, `SellersPerDay` in the price list) | what fake buyers want and quests ask for sells best; sellers come as often as monsters drop the item |
+| A fake stall on the map selling it cheaper (or buying it dearer) | half as many customers, a third if it is more than 5 % better |
+| The map | Prontera in full, anywhere else 75 % |
+
+As a guide, at 100 % pace a fairly priced stack of 30 Elunium sells in about
+half a day. **Customers' pace** and **Sellers' pace** speed either up or
+slow it down.
+
+**While you are away.** An `@autotrade` stall keeps trading. With
+**Customers come while the server is off** on, a restart also gives it the
+customers of the time the server was down (up to 48 hours). The Merchant
+Guild mails you (RODEX) what your stall or store did while you were away:
+after a start, when it sells out or closes, and every six hours.
+
+**For GMs:** `@vendorinfo customers` lists the player stalls on your map
+with each line's market price, price factor and expected customers a day,
+and how long the last pass took; `@vendorinfo customers ff <minutes>`
+fast-forwards them.
+
 ## Prices
 
 Prices follow kRO's player market, which is cheaper and steadier than old
@@ -281,6 +319,7 @@ registry/mods/prontera-vendors/
 ├── images/                          icon and screenshot
 ├── npc/
 │   ├── prontera-vendors.txt         hands the settings to the engine
+│   ├── prontera-vendors-customers.txt  the customer settings, for the engine
 │   └── prontera-vendors-newer.txt   the settings that need app 1.4.5
 ├── db/
 │   ├── population_vendors.yml       markets + themes (generated)
