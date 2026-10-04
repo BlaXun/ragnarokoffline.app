@@ -1079,6 +1079,25 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 							this->invalidWarning(sn, "VendorKey '%s': Fill must be Lanes or Random; using Random.\n", key.c_str());
 					}
 				}
+				// RAGNAROKMAC: LaneFillPct: N or [min, max] (1-100): with Fill: Lanes,
+				// the share of a lane's usable cells its shells take before the next
+				// lane opens, rolled per lane. 100, the default, fills each lane.
+				if (this->nodeExists(sn, "LaneFillPct")) {
+					const ryml::NodeRef& pn = sn[c4::to_csubstr("LaneFillPct")];
+					int32_t lo = 100, hi = 100;
+					bool ok = false;
+					if (pn.is_seq() && pn.num_children() == 2)
+						ok = ryml::read(pn[0], &lo) && ryml::read(pn[1], &hi);
+					else if (pn.has_val())
+						ok = ryml::read(pn, &lo) && ((hi = lo), true);
+					if (ok) {
+						if (lo > hi) std::swap(lo, hi);
+						sp.lane_fill_min = std::max(1, std::min(100, static_cast<int>(lo)));
+						sp.lane_fill_max = std::max(1, std::min(100, static_cast<int>(hi)));
+					} else {
+						this->invalidWarning(sn, "VendorKey '%s': LaneFillPct must be a number or [min, max]; using 100.\n", key.c_str());
+					}
+				}
 				sp.spawn_id = key + "#" + sp.map + "#" + std::to_string(idx++);
 				entry.spawns.push_back(std::move(sp));
 			}

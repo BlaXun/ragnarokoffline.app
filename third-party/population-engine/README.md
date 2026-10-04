@@ -238,9 +238,12 @@ engine's vendors spawn exactly as upstream's do.
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).
   `Fill: Lanes` fills the `Areas` one at a time in the order listed, each
-  shell on a free cell beside one already in that area, the way players open
-  shops next to a busy street; the next area gets shells only once the earlier
-  ones are full. `Fill: Random` (the default) spreads them over all areas.
+  shell on a free cell within two cells of one already in that area, the way
+  players open shops next to a busy street; the next area gets shells once
+  the earlier ones have their share. `LaneFillPct: [70, 80]` sets that share
+  of a lane's usable cells, rolled per lane (default 100: full), which leaves
+  natural gaps; once every lane has its share the rest fill in order.
+  `Fill: Random` (the default) spreads them over all areas.
   A shell in `Areas` keeps `min_npc_vendchat_distance` (3 cells) from any
   NPC, as a player's own shop must, so an NPC another mod puts there is not
   covered by a stall; fixed `Positions` are taken as given.

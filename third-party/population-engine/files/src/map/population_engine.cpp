@@ -2353,28 +2353,38 @@ static bool pop_mod_vendor_near_npc(int16_t m, int16_t x, int16_t y) {
 }
 
 /// RAGNAROKMAC: a cell for the next shell of a "Fill: Lanes" block, the way
-/// players open shops: in the first area (lane) that has room, in the order
-/// the block lists them, on a free cell beside a shell already there, or
-/// anywhere in it when the lane is empty or its run of shells is boxed in (an
-/// NPC, a wall). A later lane gets shells only once every earlier one is
-/// full. "Beside" is one cell past the block's MinSpacing. False if no lane
-/// has a usable cell.
+/// players open shops: in the first area (lane) that has not reached its share
+/// of shells, in the order the block lists them, on a free cell near a shell
+/// already there (within two cells past MinSpacing, so a stall now and then
+/// leaves a gap), or anywhere in it when the lane is empty or its run is boxed
+/// in (an NPC, a wall). A lane's share is LaneFillPct of its usable cells
+/// (walkable, vending allowed, clear of NPCs), rolled once per lane in its
+/// [min, max]; 100 fills it. Once every lane has its share the rest fill in
+/// the same order, so a high Count still finds room. False if no cell is free.
 static bool pop_mod_vendor_lane_cell(int16_t m, const PopulationModSpawn& sp,
 	const std::vector<std::pair<int16_t, int16_t>>& mine, int16_t& out_x, int16_t& out_y)
 {
-	const int reach = sp.min_spacing + 1;
-	std::vector<std::pair<int16_t, int16_t>> beside, free_cells;
-	for (const PopulationModSpawnArea& a : sp.areas) {
-		beside.clear();
-		free_cells.clear();
-		bool lane_has_shells = false;
+	static std::unordered_map<std::string, int> lane_pct; // per lane, rolled once per run
+	const int reach = sp.min_spacing + 2;
+	struct Lane {
+		std::vector<std::pair<int16_t, int16_t>> beside, free_cells;
+		bool has_shells = false, at_share = false;
+	};
+	std::vector<Lane> lanes(sp.areas.size());
+	for (size_t li = 0; li < sp.areas.size(); ++li) {
+		const PopulationModSpawnArea& a = sp.areas[li];
+		Lane& lane = lanes[li];
+		int shells = 0, usable = 0;
 		for (const auto& p : mine)
-			if (p.first >= a.x1 && p.first <= a.x2 && p.second >= a.y1 && p.second <= a.y2) {
-				lane_has_shells = true;
-				break;
-			}
+			if (p.first >= a.x1 && p.first <= a.x2 && p.second >= a.y1 && p.second <= a.y2)
+				++shells;
+		lane.has_shells = shells > 0;
 		for (int16_t y = a.y1; y <= a.y2; ++y) {
 			for (int16_t x = a.x1; x <= a.x2; ++x) {
+				if (!map_getcell(m, x, y, CELL_CHKPASS) || map_getcell(m, x, y, CELL_CHKNOVENDING) ||
+				    pop_mod_vendor_near_npc(m, x, y))
+					continue;
+				++usable;
 				bool too_close = false, near_one = false;
 				for (const auto& p : mine) {
 					const int dx = std::abs(p.first - x), dy = std::abs(p.second - y);
@@ -2385,21 +2395,39 @@ static bool pop_mod_vendor_lane_cell(int16_t m, const PopulationModSpawn& sp,
 					if (dx <= reach && dy <= reach)
 						near_one = true;
 				}
-				if (too_close || !pop_mod_vendor_cell_free(m, x, y) || pop_mod_vendor_near_npc(m, x, y))
+				if (too_close || !pop_mod_vendor_cell_free(m, x, y))
 					continue;
-				free_cells.emplace_back(x, y);
+				lane.free_cells.emplace_back(x, y);
 				if (near_one)
-					beside.emplace_back(x, y);
+					lane.beside.emplace_back(x, y);
 			}
 		}
-		const auto& from = (lane_has_shells && !beside.empty()) ? beside : free_cells;
+		int pct = 100;
+		if (sp.lane_fill_min < 100) {
+			const std::string key = sp.spawn_id + "#" + std::to_string(li);
+			auto it = lane_pct.find(key);
+			if (it == lane_pct.end())
+				it = lane_pct.emplace(key, sp.lane_fill_min +
+					static_cast<int>(rnd() % static_cast<uint32_t>(sp.lane_fill_max - sp.lane_fill_min + 1))).first;
+			pct = it->second;
+		}
+		lane.at_share = shells * 100 >= usable * pct;
+	}
+	auto take = [&](const Lane& lane) {
+		const auto& from = (lane.has_shells && !lane.beside.empty()) ? lane.beside : lane.free_cells;
 		if (from.empty())
-			continue; // this lane is full: on to the next
+			return false;
 		const auto& c = from[rnd() % from.size()];
 		out_x = c.first;
 		out_y = c.second;
 		return true;
-	}
+	};
+	for (const Lane& lane : lanes)
+		if (!lane.at_share && take(lane))
+			return true;
+	for (const Lane& lane : lanes) // every lane has its share: the rest, in order
+		if (take(lane))
+			return true;
 	return false;
 }
 

@@ -230,6 +230,8 @@ struct PopulationModSpawn {
 	int min_spacing = 0;                              ///< Cells between shells of THIS block only.
 	bool scale_with_density = false;                  ///< Opt in to the "How busy" slider.
 	bool fill_lanes = false;                          ///< RAGNAROKMAC: "Fill: Lanes" -- areas fill in order, shells side by side.
+	int lane_fill_min = 100;                          ///< RAGNAROKMAC: LaneFillPct -- share of a lane's usable cells
+	int lane_fill_max = 100;                          ///< taken before the next lane opens, rolled per lane in [min, max].
 	std::string spawn_id;                             ///< "<VendorKey>#<map>#<index>", stamped on each shell.
 };
 

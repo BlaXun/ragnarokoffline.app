@@ -15,8 +15,9 @@
 # Each block is either fixed seats (one shell per position; an occupied seat
 # stays empty until it is free) or Count shells anywhere in Areas, never within
 # min_npc_vendchat_distance (3 cells) of an NPC. Fill: Lanes fills the Areas one
-# at a time in the order listed, each shell beside another, instead of spreading
-# them at random (Fill: Random, the default). Counts are
+# at a time in the order listed, each shell near another, instead of spreading
+# them at random (Fill: Random, the default); LaneFillPct: [70, 80] moves on to
+# the next area once one holds that share of its cells. Counts are
 # exact unless ScaleWithDensity: true. The shells' look comes from a
 # PlacementBound profile in population_vendor_pop.yml with the same VendorKey.
 # See the shipped db/population_vendors.yml for the stock fields.
