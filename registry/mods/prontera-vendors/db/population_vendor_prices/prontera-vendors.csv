@@ -6,7 +6,8 @@
 # Source: kro (RagMAYA, kRO vending), ragnastats (iRO, converted),
 # npc (from the NPC price), sibling (a same-named item's price),
 # estimate (a model's guess from drops, levels and stats: a ballpark,
-# worth checking), manual (changed by hand; kept on re-runs).
+# worth checking), manual (changed by hand; kept on re-runs),
+# set (fixed in build_vendors.py's PRICE_SET; wins over this file).
 # Refined, forged and carded lines are priced in population_vendors.yml.
 Id,Name,Min,Max,Source
 105831,+10 [C] Crown of Good and Evil (Night's Watch) Se,0,0,
@@ -123,7 +124,7 @@ Id,Name,Min,Max,Source
 20926,2018-RTC Memorial Cloak,0,0,
 400014,2019 RTC Memorial Poring Pool,0,0,
 25863,2019 Superstar R Ticket,1700,2000,estimate
-9586,2019 Superstar R Ticket Box,677000,795000,estimate
+9586,2019 Superstar R Ticket Box,714000,838500,estimate
 400082,2020RTC Naughty Ghost,0,0,
 410102,2021RTC 3rd Place Gaming Headset,0,0,
 410100,2021RTC Champion Gaming Headset,0,0,
@@ -7447,7 +7448,7 @@ Id,Name,Min,Max,Source
 4398,Dolor of Thanatos Card,225000,264500,kro
 300250,Dolorian Card,1104000,1296000,kro
 9060,Domovoi Egg,0,0,
-100020,Don Cristal Chino Box,127000,149500,estimate
+100020,Don Cristal Chino Box,136500,160000,estimate
 1000917,Donor List Baldur 1,0,0,
 1000897,Donor List Chaos 1,0,0,
 1000898,Donor List Chaos 2,0,0,
@@ -8603,7 +8604,7 @@ Id,Name,Min,Max,Source
 7105,False Heaven Ring,785,1050,npc
 4020,Familiar Card,73500,86000,kro
 9138,Familiar Egg,5111000,6000000,kro
-100021,Family Crystal Box,127000,149500,estimate
+100021,Family Crystal Box,136500,160000,estimate
 5771,Family Hat,0,0,
 16592,Family Hat Box,0,0,
 16593,Family Hat Box,0,0,
@@ -9474,7 +9475,7 @@ Id,Name,Min,Max,Source
 5056,Fruit of Love,0,0,
 23260,Fruit Parfait,0,0,
 4670,Fruit Pom Spider Card,322000,378000,kro
-101331,Fruit Set Trap,241500,283500,estimate
+101331,Fruit Set Trap,252000,296000,estimate
 6534,Fruit Sundae,0,0,
 4405,Frus Card,953500,1119500,ragnastats
 16415,FTurtle Hat Box,0,0,
@@ -12217,7 +12218,7 @@ Id,Name,Min,Max,Source
 400453,Invincible Crest Hat,0,0,
 23033,Invisible Box,0,0,
 20506,Invisible Manteau,303600000,356400000,kro
-22670,Invitation of Darkness,329000,386000,estimate
+22670,Invitation of Darkness,348500,409000,estimate
 7028,Invite for Duel,0,0,
 7853,iPod nano Raffle Ticket,0,0,
 560004,Ira Fist,910500,1069000,kro
@@ -12666,7 +12667,7 @@ Id,Name,Min,Max,Source
 100109,Lapine Thump Box II,9200000,10800000,kro
 6255,Large Cookpot,530,715,npc
 25765,Large Dragon Bone,276000,324000,kro
-12326,Large Firecracker,81000,95000,estimate
+12326,Large Firecracker,83500,98000,estimate
 1686,Large Foxtail Staff,18000,21000,estimate
 1001244,Large Gray Feather,7500,8850,kro
 5311,Large Hisbiscus,0,0,
@@ -14324,7 +14325,7 @@ Id,Name,Min,Max,Source
 490207,Memento Mori,0,0,
 22620,Memorial Box,0,0,
 1001010,Memorial clock of the Principality,0,0,
-23724,Memorial Egg,77500,91000,estimate
+23724,Memorial Egg,79500,93500,estimate
 14699,Memorial Garuda Lucky Egg,0,0,
 2109,Memory Book,135000,158500,ragnastats
 2121,Memory Book,277000,325500,ragnastats
@@ -14532,7 +14533,7 @@ Id,Name,Min,Max,Source
 18553,Mini Tree,3620000,4249500,ragnastats
 18598,Mini Tree J,0,0,
 7616,Miniboss Voucher,0,0,
-100022,Minions Crystal Box,156500,183500,estimate
+100022,Minions Crystal Box,166000,195000,estimate
 2311,Mink Coat,46000,54000,kro
 310658,Minor Casting Reduction(Dual),0,0,
 1000521,Minor Casting Stone (Dual),69511000,81600000,kro
@@ -15014,7 +15015,7 @@ Id,Name,Min,Max,Source
 12749,Mystic Scroll,0,0,
 6111,Mystic Stone,920,1050,npc
 12544,Mystic Tree Branch,0,0,
-12246,Mystical Card Album,158000,186000,kro
+12246,Mystical Card Album,2700000,3300000,set
 5177,Mythical Lion Mask,24500,29000,npc
 470266,Mythical Moonlight Paw,0,0,
 9079,Mythlit Egg,0,0,
@@ -15371,7 +15372,7 @@ Id,Name,Min,Max,Source
 7329,Old Bronze Key,0,0,
 637,Old Broom,358500,421000,kro
 420110,Old Camouflage Scarf,0,0,
-616,Old Card Album,9200,10500,kro
+616,Old Card Album,900000,1100000,set
 490260,Old Cart Modeling Pendant,0,0,
 12612,Old Coin Bag,17,24,npc
 6648,Old Crown,0,0,
@@ -15393,7 +15394,7 @@ Id,Name,Min,Max,Source
 22876,Old Money Pocket,0,0,
 20932,Old Morocc Shawl,0,0,
 1000944,Old old dagger,0,0,
-12609,Old Ore Box,44000,52000,estimate
+12609,Old Ore Box,41500,49000,estimate
 7052,Old Papers,0,0,
 13442,Old Parasol,460000,540000,kro
 6652,Old Photo Album,0,0,
@@ -16352,7 +16353,7 @@ Id,Name,Min,Max,Source
 15012,Puente Robe,184000,216000,kro
 535,Pumpkin,2,4,ragnastats
 11550,Pumpkin Cake,8,12,npc
-22841,Pumpkin Candy,64000,75000,estimate
+22841,Pumpkin Candy,67000,79000,estimate
 18535,Pumpkin Hat 2010,0,0,
 19175,Pumpkin Head,0,0,
 7225,Pumpkin Lantern,6250,7350,ragnastats
@@ -16943,7 +16944,7 @@ Id,Name,Min,Max,Source
 11556,RG Blue Potion,0,0,
 12857,RG Golden Apple,0,0,
 12856,RG Golden Apple Slice,0,0,
-12858,RG Golden Potion,43000,50500,estimate
+12858,RG Golden Potion,39500,46500,estimate
 830025,RG-5649,0,0,
 1000822,Rgan Shell,3100,3650,kro
 9067,Rhino Egg,0,0,
@@ -17386,8 +17387,8 @@ Id,Name,Min,Max,Source
 1002697,Rusty Trowel,0,0,
 26151,Rutilus Stick-OS,0,0,
 550075,Rutilus Stick-OSAD,0,0,
-12696,RWC Celebration Firecracker,55500,65000,estimate
-12697,RWC Celebration Firecracker,55500,65000,estimate
+12696,RWC Celebration Firecracker,51000,60000,estimate
+12697,RWC Celebration Firecracker,51000,60000,estimate
 7273,RWC Necklace,0,0,
 17134,RWC Scroll,0,0,
 18650,RWC Shouting Mouth,0,0,
@@ -20683,7 +20684,7 @@ Id,Name,Min,Max,Source
 23323,Unlimited Wing Of Fly 3D Box,138000,162000,kro
 480175,Unpredictable Magic Cloak,0,0,
 23188,Unprocessed Parts,414000,486000,kro
-12346,Unripe Acorn,47000,55000,estimate
+12346,Unripe Acorn,44500,52500,estimate
 619,Unripe Apple,85500,100000,kro
 12292,Unripe Yggdrasilberry,425,575,npc
 18142,Unrivaled Bow,0,0,
@@ -20697,7 +20698,7 @@ Id,Name,Min,Max,Source
 101745,Unsealing the dimension,0,0,
 7644,Unsent Letter,16000,19000,estimate
 25129,Unstable Energy Particle,3450,4100,estimate
-9517,Untouched Gemstone,17500,21000,estimate
+9517,Untouched Gemstone,16500,19000,estimate
 7970,Unwritten Letter1,0,0,
 7971,Unwritten Letter2,0,0,
 4549,Upd Maya Puple Card,0,0,

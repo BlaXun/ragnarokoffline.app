@@ -22,11 +22,22 @@ browse and trade exactly as you would with a player.
 
 ## Where
 
-| Sidewalk | What stands there |
+| Lane | What stands there |
 |---|---|
-| Inner, x=147 and x=164 (y=136–173, and y=52–111) | Sell stalls |
-| Outer, x=140 and x=171 (y=136–172) | Buying stores |
-| West of the fountain, rows y=110 and y=125 (x=104–135) | Buying stores |
+| Inner sidewalks, x=147 and x=164, north (y=136–173) | Sell stalls, filled first |
+| Inner sidewalks, x=147 and x=164, south (y=52–111) | Sell stalls, then these |
+| East of the fountain, rows y=125 and y=110 (x=172–207) | Sell stalls, last |
+| Outer sidewalks, x=140 and x=171 (y=136–172) | Buying stores, filled first |
+| West of the fountain, rows y=125 and y=110 (x=104–135) | Buying stores, then these |
+
+Stalls fill one lane at a time, in the order above, each opening near a
+stall already there (sometimes leaving a cell free), the way players crowd
+into a street that is already busy. Once a lane holds 70–80 % of the stalls
+it has room for, the next stall goes to the following lane, so a busy lane
+keeps a few natural gaps; when every lane has its share, the rest fill in
+the same order. No stall stands within 3 cells of an NPC,
+the same rule a player's own shop follows. On an app build older than the
+one with lane filling, stalls spread at random over all their lanes instead.
 
 The engine's own Prontera vendors keep spawning exactly as they would
 without the mod; these are extra.
@@ -36,9 +47,9 @@ without the mod; these are extra.
 | Setting | Default | What it does |
 |---|---|---|
 | Sell shops | on | Off removes every sell stall. |
-| Sell stalls | 20 | How many sell stalls stand on the inner sidewalks. |
+| Sell stalls | 30 | How many sell stalls stand on their lanes (0–100). |
 | Buy shops | on | Off removes every buying store. |
-| Buy stalls | 20 | How many buying stores stand on the outer sidewalks. |
+| Buy stalls | 30 | How many buying stores stand on their lanes (0–100). |
 | Minutes before a stall changes | 240 | How long a vendor stays before packing up. Each varies by up to half either way, and stalls are checked once a minute, so short values run long (2 means roughly 1–5 minutes). 0 keeps them until the server restarts. |
 | Price level (%) | 100 | Every price × this / 100, for sell stalls and buyers alike. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count toward it). |
@@ -56,7 +67,7 @@ comes through:
 - **Staples, always up:** general goods, potions, forge supplies, healing
   items, common cards and rare cards (at least one each, at most two).
 - **Goods:** slim potions, gemstones, Ygg/Ori/Elu, skill supplies, ammo,
-  magic scrolls, dyes, taming items, elemental converters, Undershirt +
+  magic scrolls, dyestuffs (every sign says so), taming items, elemental converters, Undershirt +
   Pantie, Bloody Branches, OBB/OPB, OCA/MCA.
 - **Cards:** besides the two staples, binders by slot (weapon, armor,
   headgear, garment and shoes, shield, accessory) and a cheap-cards stall.
@@ -91,29 +102,64 @@ comes through:
 Every other theme stands at most once at a time. Shop signs mix theme names
 with the vague titles real stalls use ("Stuff", "SALE", "Happy hunting!",
 "..."), taken from a sample of 500 iRO shops, and two stalls never show the
-same sign (a repeat gets a number: "ores n more 2").
+same sign (a repeat gets a number: "ores n more 2"). A sign that offers goods
+("SALE", "cheap stuff") only ever hangs over a stall that sells; buyers get
+their own ("WTB", "B> paying well"), and now and then a cheeky one ("B> your
+mom", "WTB> a happy life"). Stalls of mixed goods (general goods, the
+hunter's haul and the random stalls) get cheeky sell signs too ("S> my
+sanity, cheap", "S> definitely not stolen"); a stall of one kind of thing
+always says what it sells.
+
+A sign that names items ("S> OBB OPB", "B> ori elu", "B> Soldier Skeleton
+loot") only goes up over a stall that really has them, and some signs name
+an item and price straight from the stall's stock: "S> Elunium 13k", "B>
+Sticky Mucus 450z". These need an app build with the matching population
+engine (`StockTitles`); on an older one, stalls show only the signs that
+name no item, so a sign never lies either way.
 
 A stall that sells out packs up within a minute, as a player would, and
 another takes the spot.
 
 ## Buying stores
 
-17 themes. As on any real server, the common materials always have buyers:
+About 70 themes, most of them buying what you bring home from hunting:
 
 - **Always there:** two buyers of upgrade ores (Elunium, Oridecon, Rough
   Elunium, Rough Oridecon, Emveretarcon), and one each for crafting
   materials (Steel, Iron, Iron Ore, Coal, Star Crumb), elemental stones and
-  converters, herbs (Green, Red, Yellow, White, Blue) and alchemy materials
-  (Empty Bottle, Poison Spore, Medicine Bowl, Detrimindexta,
-  Karvodailnirol and more).
-- **The rest rotate:** common and rare cards, OCA/MCA/OBB/OPB and branches,
-  Ygg items, potions, other consumables, gemstones, popular quest
-  materials, loot by monster level (three bands), and a random buyer.
+  converters, herbs, alchemy and brewing materials (Witched Starsand, Empty
+  Bottle, Poison Spore, Medicine Bowl and more), berries (Strawberry, Grape,
+  Honey, the SP food no NPC sells) and junk: the drops nearly every monster
+  leaves (Sticky Mucus, Zargon, Jellopy, Garlet, Cyfar, Shell...).
+- **Dungeon buyers:** one per dungeon, about 38: "Buying Byalan loot",
+  "WTB> Thor's Volcano loot", "B> Soldier Skeleton loot". Each wants what that
+  dungeon's monsters drop most, weighted by how many of them spawn, so a Payon
+  Cave buyer asks for Skel-Bones and Decayed Nails, not a rare drop.
+- **Leveling-field buyers:** the fields players farm, where the loot has
+  buyers on real servers: the spore fields (Strawberries, spores), Payon
+  Forest (Horns, Acorns, Resin), the Sograt desert (Grit, Fine Sand, Frills),
+  the Orc fields, Kokomo Beach, the Geffen, Juno, Einbroch and Rachel fields,
+  and the fields of the EXP-quest NPCs. Their signs name the place and its
+  monster, from that era's own spawns: the Sograt buyer is "B> Scorpion
+  loot" in renewal and "B> Hode loot" in pre-renewal.
+- **Quests:** turn-ins for the repeatable EXP quests and the Eden Group's
+  collecting missions (Fluff, Grit, Huge Leaf, Rusty Screw...), anything
+  several NPC quests ask for, and dyestuffs.
+- **The rest:** rare cards (never the low-level ones: those you sell at a
+  stall), OCA/MCA/OBB/OPB and branches, Ygg items, potions, other
+  consumables, gemstones, loot by monster level (six bands), and a random
+  buyer.
+
+Dungeon and field buyers together hold a little over half the spots that
+rotate; each stands at most once at a time.
 
 - A store wants 2–5 kinds of item (rAthena's limit) and only items rAthena
-  allows in buying stores, so never equipment.
-- It pays 60–85 % of the low end of the item's sell price, never less than
-  an NPC pays.
+  allows in buying stores, so never equipment. (Pre-renewal rAthena does not
+  allow Jellopy, so no buyer there takes it.)
+- Buyers of loot, turn-ins, herbs, berries and alchemy materials pay 75–95 %
+  of the low end of the item's sell price; the rest (cards, boxes, Ygg,
+  gems, ores...) pay 60–85 %. Either way it is less than any stall asks and
+  never less than an NPC pays.
 - It wants lots of cheap loot and a few of anything valuable.
 - It packs up when it has bought everything or spent its zeny.
 - Anyone can open a buying store, so buyers wear any class's sprite and gear.
@@ -136,6 +182,18 @@ each price comes from, in order:
    either way, so worth checking.
 
 Items none of these can price have no price and are never sold.
+
+A few prices are set in the generator rather than taken from a market
+(`PRICE_SET` in `build_vendors.py`, `set` in the price list):
+
+| Item | Renewal | Pre-renewal |
+|---|---|---|
+| Old Card Album | 900,000 – 1,100,000 | 600,000 – 750,000 |
+| Mystical Card Album | 2,700,000 – 3,300,000 | 1,800,000 – 2,250,000 |
+
+An Old Card Album sells for about what the card it rolls is worth on average
+on this price list, under the 2.5M the Eden market NPC asks; a Mystical Card
+Album, a shot at the rare cards, for three OCAs.
 
 Each item has a `[min, max]` range, and every stall rolls inside it. Half the
 time an item is listed 1–5 % under the cheapest rival stall on the map, but
@@ -186,8 +244,9 @@ python3 registry/tools/prontera-vendors/build_vendors.py --reprice         # reb
 python3 registry/tools/prontera-vendors/scrape_ragmaya.py --workers 12     # refresh kRO prices (resumable)
 ```
 
-Themes are defined at the top of `build_vendors.py`: a hand list, a rule over
-the item database, or "what these dungeons' monsters drop". A re-run keeps
+Themes are defined in `build_vendors.py`: a hand list, a rule over the item
+database, "what these dungeons' monsters drop", or, for buyers, a place
+(`AREAS_LOOT`, `BUY_ONLY_DUNGEONS`, `FIELD_SPOTS`). A re-run keeps
 rows of the price list you changed by hand (marked `manual`); everything else
 follows the data. The YAML can be edited by hand for a quick test, but a
 re-run overwrites it.
@@ -195,7 +254,9 @@ re-run overwrites it.
 How the YAML works:
 
 - **The first two entries are the markets.** Each has `Spawns` (map, areas,
-  Count) and `Themes` (each with `Weight`, `Min`, `Max`).
+  Count, `Fill: Lanes`) and `Themes` (each with `Weight`, `Min`, `Max`). The
+  areas are the lanes, filled in the order listed (`AREAS` and `BUY_AREAS` at
+  the top of the generator).
 - **The settings override some of it.** The Sell stalls and Buy stalls
   settings replace each market's Count.
 - **Each theme is a `Type: Pool` vendor.** Its fields are `PickCount`,

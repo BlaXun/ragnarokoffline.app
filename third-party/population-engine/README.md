@@ -226,9 +226,24 @@ engine's vendors spawn exactly as upstream's do.
   (`PriceMistakeOneIn`), picks a title from `TitleFromPool`, and is replaced
   after `RotationHours` (or `RotationMinutes`) ± `RotationJitterMinutes` with
   a fresh pick. `{name}` in a shop title is the shell's own name.
+- `StockTitles:` on a mod vendor: signs that name what is for sale, each
+  `{ Title, Needs: [items], Any: [items] }`. A mod stall picks its sign after
+  its stock, from `TitleFromPool` plus every `StockTitles` sign that stock
+  bears out (all of `Needs`, one of `Any`), so a sign never names an item the
+  stall lacks. `{item}` and `{price}` in one are filled from a line it really
+  carries ("S> {item} {price}" reads "S> Elunium 13k"). Older builds ignore
+  the key, so item names belong there, not in `TitleFromPool`; without it a
+  stall picks its sign exactly as before.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).
+  `Fill: Lanes` fills the `Areas` one at a time in the order listed, each
+  shell on a free cell within two cells of one already in that area, the way
+  players open shops next to a busy street; the next area gets shells once
+  the earlier ones have their share. `LaneFillPct: [70, 80]` sets that share
+  of a lane's usable cells, rolled per lane (default 100: full), which leaves
+  natural gaps; once every lane has its share the rest fill in order.
+  `Fill: Random` (the default) spreads them over all areas.
   A shell in `Areas` keeps `min_npc_vendchat_distance` (3 cells) from any
   NPC, as a player's own shop must, so an NPC another mod puts there is not
   covered by a stall; fixed `Positions` are taken as given.

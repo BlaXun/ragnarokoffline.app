@@ -6,7 +6,8 @@
 # Source: kro (RagMAYA, kRO vending), ragnastats (iRO, converted),
 # npc (from the NPC price), sibling (a same-named item's price),
 # estimate (a model's guess from drops, levels and stats: a ballpark,
-# worth checking), manual (changed by hand; kept on re-runs).
+# worth checking), manual (changed by hand; kept on re-runs),
+# set (fixed in build_vendors.py's PRICE_SET; wins over this file).
 # Refined, forged and carded lines are priced in population_vendors.yml.
 Id,Name,Min,Max,Source
 13634,1 Hour Package Vol. 1,0,0,
@@ -1266,7 +1267,7 @@ Id,Name,Min,Max,Source
 6300,event,0,0,
 6301,event,0,0,
 7711,Event Ticket,0,0,
-12281,Event Treasure Box,10000,12000,estimate
+12281,Event Treasure Box,10500,12000,estimate
 1615,Evil Bone Wand,184000,216000,kro
 4141,Evil Druid Card,2300000,2700000,kro
 923,Evil Horn,6300,7450,kro
@@ -2795,7 +2796,7 @@ Id,Name,Min,Max,Source
 14274,Mystical Amplification Scroll 10 Box,0,0,
 14275,Mystical Amplification Scroll 30 Box,0,0,
 14276,Mystical Amplification Scroll 50 Box,0,0,
-12246,Mystical Card Album,158000,186000,kro
+12246,Mystical Card Album,1800000,2250000,set
 5177,Mythical Lion Mask,24500,29000,npc
 1130,Nagan,92000,108000,ragnastats
 2736,Navel Ring,0,0,
@@ -2818,8 +2819,8 @@ Id,Name,Min,Max,Source
 1740,Nepenthes Bow,551500,647500,ragnastats
 4167,Nereid Card,205500,241500,ragnastats
 9038,New Year Doll Egg,0,0,
-12238,New Year Rice Cake,9600,11000,estimate
-12239,New Year Rice Cake,9600,11000,estimate
+12238,New Year Rice Cake,9700,11000,estimate
+12239,New Year Rice Cake,9700,11000,estimate
 7039,Newbie Tag,0,0,
 5686,Nice Hat Feather,0,0,
 7460,Niflheim Express Ticket,1,3,npc
@@ -2887,7 +2888,7 @@ Id,Name,Min,Max,Source
 11004,Old Book,0,0,
 7329,Old Bronze Key,0,0,
 637,Old Broom,358500,421000,kro
-616,Old Card Album,276000,324000,kro
+616,Old Card Album,600000,750000,set
 7031,Old Frying Pan,2150,2550,ragnastats
 12244,Old Gift Box,0,0,
 12187,Old Green Box,0,0,
