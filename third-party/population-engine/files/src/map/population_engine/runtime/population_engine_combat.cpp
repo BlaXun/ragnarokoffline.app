@@ -339,6 +339,22 @@ static bool pop_is_party_ally(const map_session_data *shell, const map_session_d
 		&& shell->status.party_id == ally->status.party_id;
 }
 
+/// Whom a shell's heals and buffs may go to. Real players only when they are its owner, in its
+/// party, or an arena ally. Other shells: any of them for an ambient shell, but a hired companion keeps to
+/// its own side (its owner's other companions, or its party), or it healed and buffed AI players
+/// that happened to pass; a Royal Guard cast Piety at a stranger's bot.
+static bool pop_shell_may_help(const map_session_data *shell, const map_session_data *ally)
+{
+	if (pop_is_party_ally(shell, ally) || population_engine_arena_is_ally(shell, ally))
+		return true;
+	if (shell->pop.companion_owner_account != 0 && ally->status.account_id == shell->pop.companion_owner_account)
+		return true;
+	if (!ally->state.population_combat)
+		return false;
+	return shell->pop.companion_owner_account == 0
+		|| ally->pop.companion_owner_account == shell->pop.companion_owner_account;
+}
+
 struct PopDeadAllySearchCtx {
 	map_session_data *shell;
 	map_session_data *result;
@@ -421,8 +437,7 @@ static int32 pop_ally_hp_scan_cb(block_list *bl, va_list ap)
 	if (ally->id == ctx->shell->id) return 0;
 	// Real players are skipped UNLESS they are an arena ally of this shell
 	// (team-2 shell + real player on the same arena map = mutual allies).
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
@@ -511,8 +526,7 @@ static int32 pop_ally_status_scan_cb(block_list *bl, va_list ap)
 	if (!ally) return 0;
 	PopAllySearchCtx *ctx = va_arg(ap, PopAllySearchCtx*);
 	if (ally->id == ctx->shell->id) return 0;
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
@@ -533,8 +547,7 @@ static int32 pop_ally_any_scan_cb(block_list *bl, va_list ap)
 	if (!ally) return 0;
 	PopAllySearchCtx *ctx = va_arg(ap, PopAllySearchCtx*);
 	if (ally->id == ctx->shell->id) return 0;
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;

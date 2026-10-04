@@ -54,3 +54,16 @@ test('an ally nobody can target is passed over', () => {
 		'static int32 pop_ally_any_scan_cb('])
 		assert.match(fn(cb), /if \(pop_ally_untargetable\(ally\)\) return 0;/, cb);
 });
+
+test('a companion heals and buffs its own side, not passing AI players', () => {
+	const body = /static bool pop_shell_may_help\([^)]*\)\n\{([\s\S]*?)\n\}/.exec(combat);
+	assert.ok(body, 'pop_shell_may_help must exist');
+	assert.match(body[1], /ally->status\.account_id == shell->pop\.companion_owner_account/, 'its owner, party or not');
+	assert.match(body[1], /shell->pop\.companion_owner_account == 0\s*\|\| ally->pop\.companion_owner_account == shell->pop\.companion_owner_account/,
+		'ambient shells help any shell; a companion only its owner\'s');
+	for (const cb of ['pop_ally_hp_scan_cb', 'pop_ally_status_scan_cb', 'pop_ally_any_scan_cb']) {
+		const m = new RegExp(`static int32 ${cb}\\([^)]*\\)\\n\\{([\\s\\S]*?)\\n\\}`).exec(combat);
+		assert.ok(m && /if \(!pop_shell_may_help\(ctx->shell, ally\)\)/.test(m[1]), cb);
+		assert.ok(!/ally->state\.population_combat && !pop_is_party_ally/.test(m[1]), `${cb} drops the old any-shell rule`);
+	}
+});
