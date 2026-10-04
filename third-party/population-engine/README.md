@@ -226,6 +226,14 @@ engine's vendors spawn exactly as upstream's do.
   (`PriceMistakeOneIn`), picks a title from `TitleFromPool`, and is replaced
   after `RotationHours` (or `RotationMinutes`) ± `RotationJitterMinutes` with
   a fresh pick. `{name}` in a shop title is the shell's own name.
+- `StockTitles:` on a mod vendor: signs that name what is for sale, each
+  `{ Title, Needs: [items], Any: [items] }`. A mod stall picks its sign after
+  its stock, from `TitleFromPool` plus every `StockTitles` sign that stock
+  bears out (all of `Needs`, one of `Any`), so a sign never names an item the
+  stall lacks. `{item}` and `{price}` in one are filled from a line it really
+  carries ("S> {item} {price}" reads "S> Elunium 13k"). Older builds ignore
+  the key, so item names belong there, not in `TitleFromPool`; without it a
+  stall picks its sign exactly as before.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).

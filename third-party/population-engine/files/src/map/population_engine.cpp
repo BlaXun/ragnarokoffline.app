@@ -2241,29 +2241,77 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 // shell's look comes from the PlacementBound profile whose VendorKey equals the
 // entry's key; its stock comes from the entry itself.
 
-/// RAGNAROKMAC: a sign for a mod stall from its entry's pool, with {name} as
-/// the owner's name, never one another stall on the map already shows
-/// (another from the pool if free, else numbered). The vending path does the
-/// same inline; buying stores use this.
-static std::string pop_mod_pick_title(map_session_data* sd, const PopulationVendorEntry& e) {
-	auto resolve = [&](const std::string& t) {
+/// RAGNAROKMAC: a price the way players write it on a sign: 450z, 4.5k, 13k, 1.2m.
+static std::string pop_price_short(uint32_t p) {
+	char b[32];
+	if (p >= 1000000)
+		safesnprintf(b, sizeof(b), "%.1fm", p / 1000000.0);
+	else if (p >= 1000)
+		safesnprintf(b, sizeof(b), "%.1fk", p / 1000.0);
+	else
+		safesnprintf(b, sizeof(b), "%uz", p);
+	std::string s = b;
+	if (s.size() > 3 && s.compare(s.size() - 3, 2, ".0") == 0)
+		s.erase(s.size() - 3, 2);
+	return s;
+}
+
+/// RAGNAROKMAC: a sign for a mod stall, chosen once its stock is known (item
+/// id and price of each line it opened with): its entry's TitleFromPool, plus
+/// every StockTitles sign that stock bears out, with {item} and {price} filled
+/// from one of its lines; {name} is the owner's name. Never one another stall
+/// on the map already shows (another if one is free, else numbered): a vending
+/// stall looks at other vending stalls, a buying store at both, as before.
+/// fallback is the sign when there is no pool. Without StockTitles this picks
+/// exactly as the code before it did.
+static std::string pop_mod_pick_title(map_session_data* sd, const PopulationVendorEntry& e,
+	const std::vector<std::pair<t_itemid, uint32_t>>& stock, const std::string& fallback, bool buying)
+{
+	const std::pair<t_itemid, uint32_t>* line = stock.empty() ? nullptr : &stock[rnd() % stock.size()];
+	auto has = [&](t_itemid id) {
+		for (const auto& s : stock)
+			if (s.first == id)
+				return true;
+		return false;
+	};
+	// {item} and {price} only in StockTitles: TitleFromPool signs read as before.
+	auto resolve = [&](const std::string& t, bool from_stock) {
 		std::string r = t;
 		population_engine_chat_replace_all(r, "{name}", std::string(sd->status.name));
+		if (from_stock && line != nullptr) {
+			std::shared_ptr<item_data> id = item_db.find(line->first);
+			population_engine_chat_replace_all(r, "{item}", id ? id->ename : std::string("stuff"));
+			population_engine_chat_replace_all(r, "{price}", pop_price_short(line->second));
+		}
 		if (r.size() >= MESSAGE_SIZE)
 			r.resize(MESSAGE_SIZE - 1);
 		return r;
 	};
 	auto in_use = [&](const std::string& t) {
 		for (map_session_data* o : g_population_engine_pcs)
-			if (o && o != sd && o->m == sd->m && (o->state.vending || o->state.buyingstore) && t == o->message)
+			if (o && o != sd && o->m == sd->m && (o->state.vending || (buying && o->state.buyingstore)) && t == o->message)
 				return true;
 		return false;
 	};
 	std::vector<std::string> cands;
 	for (const std::string& t : e.title_pool)
-		cands.push_back(resolve(t));
+		cands.push_back(resolve(t, false));
+	for (const PopulationStockTitle& st : e.stock_titles) {
+		if (line == nullptr && (st.text.find("{item}") != std::string::npos || st.text.find("{price}") != std::string::npos))
+			continue;
+		bool ok = true;
+		for (t_itemid id : st.needs)
+			if (!has(id)) { ok = false; break; }
+		if (ok && !st.any.empty()) {
+			ok = false;
+			for (t_itemid id : st.any)
+				if (has(id)) { ok = true; break; }
+		}
+		if (ok)
+			cands.push_back(resolve(st.text, true));
+	}
 	if (cands.empty())
-		cands.push_back(resolve(e.title.empty() ? std::string("Buying") : e.title));
+		cands.push_back(resolve(fallback, false));
 	for (size_t i = cands.size(); i > 1; --i)
 		std::swap(cands[i - 1], cands[rnd() % i]);
 	for (const std::string& c : cands)
@@ -2665,7 +2713,10 @@ static bool pop_shell_open_buyingstore(map_session_data* sd, const PopulationVen
 
 	if (buyingstore_setup(sd, static_cast<unsigned char>(list.size())) != 0)
 		return false;
-	const std::string title = pop_mod_pick_title(sd, e);
+	std::vector<std::pair<t_itemid, uint32_t>> bought;
+	for (const auto& sub : list)
+		bought.emplace_back(sub.itemId, sub.price);
+	const std::string title = pop_mod_pick_title(sd, e, bought, e.title.empty() ? std::string("Buying") : e.title, true);
 	if (buyingstore_create(sd, static_cast<int32>(budget), 1, title.c_str(), list.data(), static_cast<uint32>(list.size()), nullptr) != 0) {
 		ShowWarning("Population engine: buyer '%s' (%s) could not open its buying store.\n", sd->status.name, e.key.c_str());
 		return false;
@@ -5838,45 +5889,8 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					vend_title_buf.resize(MESSAGE_SIZE - 1);
 				vend_title = vend_title_buf.c_str();
 			}
-			// RAGNAROKMAC: a mod vendor never shows a sign another stall on the map
-			// already shows: another title from its pool if one is free, else the
-			// same with a number ("ores n more 2"), as players do.
-			if (mod_entry != nullptr) {
-				auto in_use = [&](const std::string& t) {
-					for (map_session_data* o : g_population_engine_pcs)
-						if (o && o != sd && o->m == sd->m && o->state.vending && t == o->message)
-							return true;
-					return false;
-				};
-				auto resolve = [&](const std::string& t) {
-					std::string r = t;
-					population_engine_chat_replace_all(r, "{name}", std::string(sd->status.name));
-					if (r.size() >= MESSAGE_SIZE)
-						r.resize(MESSAGE_SIZE - 1);
-					return r;
-				};
-				std::string chosen = vend_title;
-				if (in_use(chosen)) {
-					std::vector<std::string> cands;
-					for (const std::string& t : mod_entry->title_pool)
-						cands.push_back(resolve(t));
-					for (size_t i = cands.size(); i > 1; --i)
-						std::swap(cands[i - 1], cands[rnd() % i]);
-					bool found = false;
-					for (const std::string& c : cands)
-						if (!in_use(c)) { chosen = c; found = true; break; }
-					if (!found) {
-						const std::string base = chosen;
-						for (int n = 2; n < 100; ++n) {
-							const std::string suffix = " " + std::to_string(n);
-							std::string t = base.substr(0, std::min(base.size(), static_cast<size_t>(MESSAGE_SIZE - 1) - suffix.size())) + suffix;
-							if (!in_use(t)) { chosen = t; break; }
-						}
-					}
-				}
-				vend_title_buf = chosen;
-				vend_title = vend_title_buf.c_str();
-			}
+			// RAGNAROKMAC: a mod vendor's sign is chosen once its stock is in the
+			// cart (pop_mod_pick_title, below), so it never names what it lacks.
 
 			// Build the stock list to use.
 			// Priority: static vendor_cfg stock → dynamic (map mob drops) → built-in defaults.
@@ -6266,6 +6280,20 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			}
 
 			if (vend_count > 0) {
+				// RAGNAROKMAC: a mod stall's sign, from what it actually opened with.
+				if (mod_entry != nullptr) {
+					std::vector<std::pair<t_itemid, uint32_t>> sold;
+					for (int vi = 0; vi < vend_count; ++vi) {
+						const int ci = *(uint16*)(vend_data + vi * 8 + 0) - 2;
+						if (ci < 0 || ci >= MAX_CART)
+							continue;
+						const t_itemid nameid = sd->cart.u.items_cart[ci].nameid; // packed: copy out
+						const uint32_t price = *(uint32*)(vend_data + vi * 8 + 4);
+						sold.emplace_back(nameid, price);
+					}
+					vend_title_buf = pop_mod_pick_title(sd, *mod_entry, sold, std::string(vend_title), false);
+					vend_title = vend_title_buf.c_str();
+				}
 				sd->state.prevend = 1;
 				vending_openvending(*sd, vend_title, vend_data, vend_count, nullptr);
 

@@ -196,6 +196,15 @@ struct PopulationVendorStock {
 	std::vector<t_itemid> cards;     ///< Cards in its slots (not with a forged element).
 };
 
+/// RAGNAROKMAC: a shop sign that only goes up over stock that bears it out
+/// (StockTitles). {item} and {price} in it are filled from a line the stall
+/// really carries, so "B> {item} {price}" reads "B> Sticky Mucus 450z".
+struct PopulationStockTitle {
+	std::string text;
+	std::vector<t_itemid> needs; ///< Every one of these must be in the stall.
+	std::vector<t_itemid> any;   ///< At least one of these, when not empty.
+};
+
 /// Vendor stock sourcing mode. RAGNAROKMAC: added Pool as a third type (was bool dynamic).
 enum class PopulationVendorType : uint8_t {
 	Static  = 0, ///< Serve exactly the YAML `Stock:` list.
@@ -271,6 +280,7 @@ struct PopulationVendorEntry {
 	int rotation_sec   = 0;                          ///< Shell lifetime before despawn. 0 = never rotate.
 	int rotation_jitter_sec = 0;                     ///< Per-shell random offset: rotation_sec ± rotation_jitter_sec.
 	std::vector<std::string> title_pool;             ///< When non-empty, each shell picks a title from here instead of `title`.
+	std::vector<PopulationStockTitle> stock_titles;  ///< RAGNAROKMAC: signs a mod stall may add to the pick when its stock bears them out.
 	/// RAGNAROKMAC: per-item price variation, rolled independently for each item
 	/// of each spawned shell, so vendors undercut/overprice one another like a
 	/// real market instead of all showing identical numbers.

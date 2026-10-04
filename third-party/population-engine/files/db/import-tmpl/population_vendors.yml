@@ -30,6 +30,11 @@ Header:
 #    Type: Pool
 #    Pool:
 #      - { Item: Red_Potion, Amount: 100, Price: 50 }
+#    TitleFromPool:          # signs that fit any pick
+#      - "potions here"
+#    StockTitles:            # signs only shown when the stall's pick bears them out
+#      - { Title: "S> red pots", Needs: [Red_Potion] }
+#      - { Title: "S> {item} {price}" }   # filled from a line it carries
 #    Spawns:
 #      - Map: prontera
 #        Positions:
