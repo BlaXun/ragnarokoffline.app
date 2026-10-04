@@ -838,7 +838,13 @@ for _key, _title, _lo, _hi in [("loot_lv1_20", "lvl 1-20 mob loot", 1, 20), ("lo
 GENERIC_TITLES = ["Happy hunting!", "...", "zzz", "Things.", "etc", "AFK-----AFK", "Come on", "Come here u", "See"]
 SELL_TITLES = ["Stuff", "SALE", "sale", "Sell", "cheap stuff", "cheap stuff 2", "junk shop", "Goodies",
                "This looks good", "Stuff you might want", "Bringing Simples You Need Cheap", "random"]
-BUY_TITLES = ["Buying", "B>", "WTB", "buying stuff", "B> paying well", "B> > npc price", "WTB, fair prices"]
+BUY_TITLES = ["Buying", "B>", "WTB", "buying stuff", "B> paying well", "B> > npc price", "WTB, fair prices",
+              # The cheeky ones every street has. None names a real item, so
+              # none can promise what the store does not want.
+              "B> your mom", "WTB> a happy life", "B> friends pls", "WTB> GF", "B> motivation", "B> sleep",
+              "WTB> luck +10", "B> ur soul, good price", "WTB> MVP card for 10z", "B> hugs", "B> coffee",
+              "WTB> a reason to log off", "B> anything shiny", "WTB> patience", "B> time, any amount",
+              "WTB> 100% refine rate"]
 
 # Signs that name what is for sale go out as StockTitles: the engine only
 # hangs one over a stall whose own pick bears it out, and fills {item} and

@@ -6225,9 +6225,9 @@ Body:
       - "buying ores"
       - "{name} buys ores"
       - "{name} is buying"
-      - "Come on"
-      - "B>"
+      - "Things."
       - "B> paying well"
+      - "B> hugs"
     StockTitles:
       - { Title: "B> ori elu", Needs: [Oridecon, Elunium] }
       - { Title: "B> Oridecon / Elunium", Needs: [Oridecon, Elunium] }
@@ -6255,9 +6255,9 @@ Body:
       - "buying crafting mats"
       - "WTB smith mats"
       - "{name} is buying"
-      - "zzz"
-      - "B>"
-      - "B> paying well"
+      - "WTB> a reason to log off"
+      - "B> > npc price"
+      - "B> hugs"
     StockTitles:
       - { Title: "B> steel iron coal", Needs: [Steel, Iron, Coal] }
       - { Title: "B> star crumbs", Needs: [Star_Crumb] }
@@ -6282,9 +6282,9 @@ Body:
     TitleFromPool:
       - "B> ele stones"
       - "{name} is buying"
-      - "etc"
-      - "WTB"
-      - "Things."
+      - "Happy hunting!"
+      - "B> motivation"
+      - "WTB> GF"
     StockTitles:
       - { Title: "buying flame hearts etc", Needs: [Flame_Heart] }
       - { Title: "B> converters", Any: [Elemental_Earth, Elemental_Fire, Elemental_Water, Elemental_Wind] }
@@ -6317,9 +6317,9 @@ Body:
       - "B> herbs"
       - "WTB herbs"
       - "{name} is buying"
-      - "Things."
-      - "Buying"
-      - "zzz"
+      - "WTB> patience"
+      - "B>"
+      - "B> friends pls"
     StockTitles:
       - { Title: "buying green herbs", Needs: [Green_Herb] }
       - { Title: "B> red/yellow herbs", Any: [Red_Herb, Yellow_Herb] }
@@ -6346,9 +6346,9 @@ Body:
       - "WTB alchemy stuff"
       - "B> brewing mats"
       - "{name} is buying"
-      - "Come here u"
-      - "See"
-      - "buying stuff"
+      - "Come on"
+      - "B> sleep"
+      - "B> time, any amount"
     StockTitles:
       - { Title: "buying bottles n bowls", Needs: [Empty_Bottle, Medicine_Bowl] }
       - { Title: "B> witched starsand", Needs: [Starsand_Of_Witch] }
@@ -6381,9 +6381,9 @@ Body:
     TitleFromPool:
       - "WTB SP food"
       - "{name} is buying"
-      - "WTB"
-      - "..."
-      - "WTB, fair prices"
+      - "B> > npc price"
+      - "Things."
+      - "B> sleep"
     StockTitles:
       - { Title: "B> straws", Needs: [Strawberry] }
       - { Title: "buying strawberries", Needs: [Strawberry] }
@@ -6416,9 +6416,9 @@ Body:
       - "WTB common drops"
       - "dump ur loot here"
       - "{name} is buying"
-      - "WTB"
       - "B> > npc price"
-      - "B> paying well"
+      - "B> time, any amount"
+      - "WTB> a reason to log off"
     StockTitles:
       - { Title: "B> {item} n more" }
       - { Title: "B> {item}" }
@@ -6473,9 +6473,9 @@ Body:
       - "WTB Eden mission items"
       - "B> exp quest items"
       - "{name} is buying"
+      - "WTB> 100% refine rate"
       - "etc"
-      - "WTB, fair prices"
-      - "B>"
+      - "B> your mom"
     StockTitles:
       - { Title: "B> fluff/grit/huge leaf", Any: [Fluff, Great_Leaf, Grit] }
       - { Title: "WTB {item} {price}" }
@@ -6526,8 +6526,8 @@ Body:
       - "buying hat quest mats"
       - "WTB loot for quests"
       - "{name} is buying"
-      - "Things."
-      - "zzz"
+      - "WTB> patience"
+      - "B> time, any amount"
       - "..."
     StockTitles:
       - { Title: "WTB {item} {price}" }
@@ -6627,9 +6627,9 @@ Body:
       - "B> Dyestuffs"
       - "buying dyestuffs"
       - "{name} is buying"
-      - "Happy hunting!"
-      - "B> paying well"
-      - "B>"
+      - "B> ur soul, good price"
+      - "B> anything shiny"
+      - "WTB, fair prices"
     StockTitles:
       - { Title: "WTB scarlet/white dyestuffs", Any: [Scarlet_Dyestuffs, White_Dyestuffs] }
       - { Title: "buying {item}" }
@@ -6659,8 +6659,8 @@ Body:
       - "WTB cards, fair price"
       - "{name} is buying"
       - "Buying"
-      - "AFK-----AFK"
-      - "B> > npc price"
+      - "Happy hunting!"
+      - "WTB> patience"
     StockTitles:
       - { Title: "buying {item}" }
       - { Title: "WTB {item} {price}" }
@@ -6708,9 +6708,9 @@ Body:
     TitleFromPool:
       - "buying boxes"
       - "{name} is buying"
-      - "B> > npc price"
-      - "..."
+      - "B> motivation"
       - "zzz"
+      - "WTB, fair prices"
     StockTitles:
       - { Title: "B> OCA", Needs: [Old_Card_Album] }
       - { Title: "B> OBB OPB", Needs: [Old_Blue_Box, Old_Violet_Box] }
@@ -6737,9 +6737,9 @@ Body:
     Title: "{name} is buying"
     TitleFromPool:
       - "{name} is buying"
-      - "B>"
-      - "See"
+      - "WTB"
       - "B> > npc price"
+      - "B> time, any amount"
     StockTitles:
       - { Title: "B> yggs", Needs: [Yggdrasilberry] }
       - { Title: "buying ygg berries", Needs: [Yggdrasilberry] }
@@ -6767,9 +6767,9 @@ Body:
       - "buying potions"
       - "WTB herbs n pots"
       - "{name} is buying"
-      - "B>"
-      - "B> paying well"
-      - "WTB, fair prices"
+      - "WTB"
+      - "B> coffee"
+      - "etc"
     StockTitles:
       - { Title: "WTB {item} {price}" }
       - { Title: "B> {item} {price}" }
@@ -6818,9 +6818,9 @@ Body:
       - "B> useables"
       - "buying consumables"
       - "{name} is buying"
-      - "B>"
+      - "buying stuff"
       - "Buying"
-      - "..."
+      - "WTB> luck +10"
     StockTitles:
       - { Title: "WTB awakening/berserk", Any: [Awakening_Potion, Berserk_Potion] }
       - { Title: "buying {item}" }
@@ -6870,9 +6870,9 @@ Body:
       - "B> gems"
       - "buying jewels"
       - "{name} is buying"
-      - "B>"
+      - "WTB"
       - "Buying"
-      - "B> > npc price"
+      - "WTB> 100% refine rate"
     StockTitles:
       - { Title: "B> blue gems", Needs: [Blue_Gemstone] }
       - { Title: "B> {item}" }
@@ -6924,9 +6924,9 @@ Body:
       - "buying random loot"
       - "B>"
       - "{name} is buying"
-      - "Things."
-      - "zzz"
-      - "B> > npc price"
+      - "Come here u"
+      - "WTB> a reason to log off"
+      - "B> hugs"
     StockTitles:
       - { Title: "buying {item}" }
       - { Title: "WTB {item} {price}" }
@@ -7007,8 +7007,8 @@ Body:
       - "B> mob loot"
       - "B> drops"
       - "{name} is buying"
-      - "Come on"
-      - "WTB, fair prices"
+      - "etc"
+      - "..."
       - "Buying"
     StockTitles:
       - { Title: "B> {item} n more" }
@@ -7110,9 +7110,9 @@ Body:
       - "B> mob loot"
       - "B> drops"
       - "{name} is buying"
-      - "B> paying well"
-      - "WTB, fair prices"
-      - "buying stuff"
+      - "B> friends pls"
+      - "zzz"
+      - "B> ur soul, good price"
     StockTitles:
       - { Title: "WTB {item} {price}" }
       - { Title: "B> {item}" }
@@ -7204,9 +7204,9 @@ Body:
       - "B> mob loot"
       - "B> drops"
       - "{name} is buying"
-      - "Buying"
-      - "..."
-      - "Happy hunting!"
+      - "B>"
+      - "Come on"
+      - "WTB> patience"
     StockTitles:
       - { Title: "B> {item}" }
       - { Title: "B> {item} n more" }
@@ -7308,8 +7308,8 @@ Body:
       - "B> drops"
       - "{name} is buying"
       - "See"
-      - "WTB"
-      - "etc"
+      - "B> motivation"
+      - "AFK-----AFK"
     StockTitles:
       - { Title: "B> {item}" }
       - { Title: "B> {item} {price}" }
@@ -7410,9 +7410,9 @@ Body:
       - "B> mob loot"
       - "B> drops"
       - "{name} is buying"
-      - "AFK-----AFK"
-      - "B>"
-      - "Buying"
+      - "..."
+      - "B> > npc price"
+      - "buying stuff"
     StockTitles:
       - { Title: "B> {item} n more" }
       - { Title: "buying {item}" }
@@ -7513,9 +7513,9 @@ Body:
       - "B> mob loot"
       - "B> drops"
       - "{name} is buying"
-      - "Things."
-      - "B> paying well"
-      - "Happy hunting!"
+      - "WTB> patience"
+      - "B> coffee"
+      - "See"
     StockTitles:
       - { Title: "B> {item}" }
       - { Title: "buying {item}" }
@@ -7616,9 +7616,9 @@ Body:
       - "B> Byalan drops"
       - "{name} buys Byalan loot"
       - "{name} is buying"
-      - "Buying"
-      - "WTB, fair prices"
-      - "etc"
+      - "B>"
+      - "zzz"
+      - "Happy hunting!"
     StockTitles:
       - { Title: "B> Vadon loot", Any: [Nipper] }
       - { Title: "WTB Vadon drops", Any: [Nipper] }
@@ -7680,9 +7680,9 @@ Body:
       - "B> Geffenia drops"
       - "{name} buys Geffenia loot"
       - "{name} is buying"
-      - "B> paying well"
-      - "Come here u"
-      - "Happy hunting!"
+      - "WTB> a happy life"
+      - "Come on"
+      - "B> friends pls"
     StockTitles:
       - { Title: "B> False Angel loot", Any: [Yellow_Gemstone] }
       - { Title: "WTB False Angel drops", Any: [Yellow_Gemstone] }
@@ -7719,9 +7719,9 @@ Body:
       - "B> Kiel drops"
       - "{name} buys Kiel loot"
       - "{name} is buying"
-      - "etc"
       - "Happy hunting!"
-      - "WTB"
+      - "Come here u"
+      - "B> friends pls"
     StockTitles:
       - { Title: "B> Aliza loot", Any: [Alice's_Apron, Sturdy_Iron_Piece] }
       - { Title: "WTB Aliza drops", Any: [Alice's_Apron, Sturdy_Iron_Piece] }
@@ -7749,9 +7749,9 @@ Body:
       - "B> Payon Cave drops"
       - "{name} buys Payon Cave loot"
       - "{name} is buying"
-      - "Things."
-      - "..."
-      - "Buying"
+      - "B> time, any amount"
+      - "B>"
+      - "WTB> 100% refine rate"
     StockTitles:
       - { Title: "B> Soldier Skeleton loot", Any: [Skel_Bone] }
       - { Title: "WTB Soldier Skeleton drops", Any: [Skel_Bone] }
@@ -7814,9 +7814,9 @@ Body:
       - "B> Orc Dungeon drops"
       - "{name} buys Orc Dungeon loot"
       - "{name} is buying"
-      - "zzz"
-      - "..."
-      - "Things."
+      - "B> anything shiny"
+      - "B>"
+      - "B> your mom"
     StockTitles:
       - { Title: "B> Orc Zombie loot", Any: [Emperium, Nail_Of_Orc] }
       - { Title: "WTB Orc Zombie drops", Any: [Emperium, Nail_Of_Orc] }
@@ -7860,9 +7860,9 @@ Body:
       - "B> Ant Hell drops"
       - "{name} buys Ant Hell loot"
       - "{name} is buying"
-      - "..."
-      - "Come on"
-      - "Things."
+      - "B> coffee"
+      - "WTB> a happy life"
+      - "WTB"
     StockTitles:
       - { Title: "B> Andre loot", Any: [Worm_Peelings] }
       - { Title: "WTB Andre drops", Any: [Worm_Peelings] }
@@ -7903,9 +7903,9 @@ Body:
       - "B> Sphinx drops"
       - "{name} buys Sphinx loot"
       - "{name} is buying"
-      - "B>"
-      - "Come on"
-      - "See"
+      - "WTB"
+      - "WTB, fair prices"
+      - "etc"
     StockTitles:
       - { Title: "B> Requiem loot", Any: [Cookbook06, Emperium, Horrendous_Mouth, Mementos] }
       - { Title: "WTB Requiem drops", Any: [Cookbook06, Emperium, Horrendous_Mouth, Mementos] }
@@ -7949,9 +7949,9 @@ Body:
       - "B> Pyramid drops"
       - "{name} buys Pyramid loot"
       - "{name} is buying"
-      - "AFK-----AFK"
-      - "etc"
-      - "Happy hunting!"
+      - "..."
+      - "Come on"
+      - "B> paying well"
     StockTitles:
       - { Title: "B> Mummy loot", Any: [Mementos, Rotten_Bandage] }
       - { Title: "WTB Mummy drops", Any: [Mementos, Rotten_Bandage] }
@@ -7993,9 +7993,9 @@ Body:
       - "B> Sunken Ship drops"
       - "{name} buys Sunken Ship loot"
       - "{name} is buying"
-      - "B>"
-      - "AFK-----AFK"
-      - "Things."
+      - "WTB"
+      - "B> time, any amount"
+      - "WTB> a happy life"
     StockTitles:
       - { Title: "B> Pirate Skeleton loot", Any: [Cookbook06, Skel_Bone] }
       - { Title: "WTB Pirate Skeleton drops", Any: [Cookbook06, Skel_Bone] }
@@ -8058,9 +8058,9 @@ Body:
       - "B> Clock Tower drops"
       - "{name} buys Clock Tower loot"
       - "{name} is buying"
-      - "WTB, fair prices"
+      - "WTB> luck +10"
+      - "WTB> a reason to log off"
       - "B> paying well"
-      - "B>"
     StockTitles:
       - { Title: "B> Rideword loot", Any: [Bookclip_In_Memory, Old_Magic_Book, Worn_Out_Page] }
       - { Title: "WTB Rideword drops", Any: [Bookclip_In_Memory, Old_Magic_Book, Worn_Out_Page] }
@@ -8122,9 +8122,9 @@ Body:
       - "B> Glast Heim drops"
       - "{name} buys Glast Heim loot"
       - "{name} is buying"
-      - "Things."
-      - "Come on"
-      - "Happy hunting!"
+      - "B> time, any amount"
+      - "Come here u"
+      - "B> sleep"
     StockTitles:
       - { Title: "B> {item}" }
       - { Title: "B> {item} n more" }
@@ -8185,9 +8185,9 @@ Body:
       - "B> Turtle Island drops"
       - "{name} buys Turtle Island loot"
       - "{name} is buying"
-      - "B> > npc price"
-      - "See"
-      - "..."
+      - "WTB> GF"
+      - "B> time, any amount"
+      - "WTB> 100% refine rate"
     StockTitles:
       - { Title: "B> Freezer loot", Any: [Broken_Shell, Ice_Fragment, Ice_Piece, Turtle_Shell] }
       - { Title: "WTB Freezer drops", Any: [Broken_Shell, Ice_Fragment, Ice_Piece, Turtle_Shell] }
@@ -8239,9 +8239,9 @@ Body:
       - "B> Toy Factory drops"
       - "{name} buys Toy Factory loot"
       - "{name} is buying"
-      - "B> paying well"
-      - "WTB"
-      - "B>"
+      - "WTB> a happy life"
+      - "B> > npc price"
+      - "B> ur soul, good price"
     StockTitles:
       - { Title: "B> Christmas Cookie loot", Any: [Scarlet_Jewel] }
       - { Title: "WTB Christmas Cookie drops", Any: [Scarlet_Jewel] }
@@ -8273,9 +8273,9 @@ Body:
       - "B> Niflheim drops"
       - "{name} buys Niflheim loot"
       - "{name} is buying"
-      - "See"
+      - "Come here u"
       - "AFK-----AFK"
-      - "..."
+      - "WTB> MVP card for 10z"
     StockTitles:
       - { Title: "B> Disguiser loot", Any: [Red_Scarf, Tangled_Chain] }
       - { Title: "WTB Disguiser drops", Any: [Red_Scarf, Tangled_Chain] }
@@ -8327,9 +8327,9 @@ Body:
       - "B> Magma Dungeon drops"
       - "{name} buys Magma Dungeon loot"
       - "{name} is buying"
-      - "WTB, fair prices"
-      - "B> paying well"
-      - "buying stuff"
+      - "B> sleep"
+      - "B> hugs"
+      - "B> ur soul, good price"
     StockTitles:
       - { Title: "B> Nightmare Terror loot", Any: [Burning_Horse_Shoe] }
       - { Title: "WTB Nightmare Terror drops", Any: [Burning_Horse_Shoe] }
@@ -8372,9 +8372,9 @@ Body:
       - "B> Ice Cave drops"
       - "{name} buys Ice Cave loot"
       - "{name} is buying"
-      - "B>"
-      - "B> paying well"
-      - "WTB, fair prices"
+      - "WTB"
+      - "B> anything shiny"
+      - "Things."
     StockTitles:
       - { Title: "B> Siroma loot", Any: [Ice_Heart, Ice_Piece] }
       - { Title: "WTB Siroma drops", Any: [Ice_Heart, Ice_Piece] }
@@ -8417,8 +8417,8 @@ Body:
       - "{name} buys Abyss Lake loot"
       - "{name} is buying"
       - "Buying"
-      - "AFK-----AFK"
-      - "Things."
+      - "WTB> a reason to log off"
+      - "B> anything shiny"
     StockTitles:
       - { Title: "B> Ferus loot", Any: [Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragonball_Green, Dragonball_Red, Flame_Heart] }
       - { Title: "WTB Ferus drops", Any: [Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragonball_Green, Dragonball_Red, Flame_Heart] }
@@ -8474,9 +8474,9 @@ Body:
       - "B> Thanatos Tower drops"
       - "{name} buys Thanatos Tower loot"
       - "{name} is buying"
-      - "WTB"
-      - "See"
-      - "AFK-----AFK"
+      - "B> paying well"
+      - "WTB> a happy life"
+      - "WTB> a reason to log off"
     StockTitles:
       - { Title: "B> Death Word loot", Any: [Bloody_Page, Bookclip_In_Memory, Cookbook08, Cookbook09, Worn_Out_Page] }
       - { Title: "WTB Death Word drops", Any: [Bloody_Page, Bookclip_In_Memory, Cookbook08, Cookbook09, Worn_Out_Page] }
@@ -8534,9 +8534,9 @@ Body:
       - "B> Odin Shrine drops"
       - "{name} buys Odin Shrine loot"
       - "{name} is buying"
-      - "zzz"
-      - "..."
-      - "Come on"
+      - "B> anything shiny"
+      - "WTB> patience"
+      - "B> your mom"
     StockTitles:
       - { Title: "B> Plasma loot", Any: [Boody_Red, Cardinal_Jewel_, Crystal_Jewel_, Gold, Light_Granule, Yellow_Gemstone] }
       - { Title: "WTB Plasma drops", Any: [Boody_Red, Cardinal_Jewel_, Crystal_Jewel_, Gold, Light_Granule, Yellow_Gemstone] }
@@ -8583,9 +8583,9 @@ Body:
       - "B> Juperos drops"
       - "{name} buys Juperos loot"
       - "{name} is buying"
-      - "AFK-----AFK"
-      - "B> > npc price"
-      - "B>"
+      - "..."
+      - "WTB> 100% refine rate"
+      - "B> paying well"
     StockTitles:
       - { Title: "B> Venatu loot", Any: [Mystery_Piece, Oil_Bottle, Piece_Of_Crest1, Piece_Of_Crest2, Piece_Of_Crest3, Piece_Of_Crest4, Screw] }
       - { Title: "WTB Venatu drops", Any: [Mystery_Piece, Oil_Bottle, Piece_Of_Crest1, Piece_Of_Crest2, Piece_Of_Crest3, Piece_Of_Crest4, Screw] }
@@ -8622,9 +8622,9 @@ Body:
       - "B> Bio Lab drops"
       - "{name} buys Bio Lab loot"
       - "{name} is buying"
-      - "Buying"
-      - "Happy hunting!"
-      - "Come on"
+      - "B>"
+      - "See"
+      - "WTB> luck +10"
     StockTitles:
       - { Title: "B> Remover loot", Any: [Detrimindexta, Karvodailnirol, Old_Steel_Plate, Particles_Of_Energy1, Particles_Of_Energy2] }
       - { Title: "WTB Remover drops", Any: [Detrimindexta, Karvodailnirol, Old_Steel_Plate, Particles_Of_Energy1, Particles_Of_Energy2] }
@@ -8666,9 +8666,9 @@ Body:
       - "B> Comodo Cave drops"
       - "{name} buys Comodo Cave loot"
       - "{name} is buying"
-      - "Come here u"
       - "Come on"
-      - "Happy hunting!"
+      - "WTB> 100% refine rate"
+      - "WTB"
     StockTitles:
       - { Title: "B> Stalactic Golem loot", Any: [Mud_Lump, Star_Crumb] }
       - { Title: "WTB Stalactic Golem drops", Any: [Mud_Lump, Star_Crumb] }
@@ -8711,9 +8711,9 @@ Body:
       - "B> Amatsu Dungeon drops"
       - "{name} buys Amatsu Dungeon loot"
       - "{name} is buying"
-      - "etc"
-      - "buying stuff"
-      - "Come on"
+      - "Happy hunting!"
+      - "B> sleep"
+      - "..."
     StockTitles:
       - { Title: "B> Firelock Soldier loot", Any: [Large_Jellopy] }
       - { Title: "WTB Firelock Soldier drops", Any: [Large_Jellopy] }
@@ -8754,9 +8754,9 @@ Body:
       - "B> Culvert drops"
       - "{name} buys Culvert loot"
       - "{name} is buying"
-      - "AFK-----AFK"
-      - "Come here u"
-      - "Happy hunting!"
+      - "zzz"
+      - "Come on"
+      - "WTB> 100% refine rate"
     StockTitles:
       - { Title: "B> Thief Bug loot", Any: [Jellopy, Worm_Peelings] }
       - { Title: "WTB Thief Bug drops", Any: [Jellopy, Worm_Peelings] }
@@ -8803,9 +8803,9 @@ Body:
       - "B> Guild Dungeon drops"
       - "{name} buys Guild Dungeon loot"
       - "{name} is buying"
-      - "etc"
-      - "Come on"
-      - "Things."
+      - "WTB> 100% refine rate"
+      - "WTB> a reason to log off"
+      - "WTB> a happy life"
     StockTitles:
       - { Title: "B> Dark Shadow loot", Any: [Piece_Of_Black_Cloth, Piece_Of_Darkness] }
       - { Title: "WTB Dark Shadow drops", Any: [Piece_Of_Black_Cloth, Piece_Of_Darkness] }
@@ -8868,9 +8868,9 @@ Body:
       - "B> Thor's Volcano drops"
       - "{name} buys Thor's Volcano loot"
       - "{name} is buying"
-      - "buying stuff"
-      - "B>"
+      - "WTB, fair prices"
       - "AFK-----AFK"
+      - "B>"
     StockTitles:
       - { Title: "B> Kasa loot", Any: [Burning_Heart, Flame_Heart, Hot_Hair] }
       - { Title: "WTB Kasa drops", Any: [Burning_Heart, Flame_Heart, Hot_Hair] }
@@ -8902,9 +8902,9 @@ Body:
       - "B> Labyrinth Forest drops"
       - "{name} buys Labyrinth Forest loot"
       - "{name} is buying"
-      - "WTB, fair prices"
-      - "Things."
-      - "WTB"
+      - "WTB> luck +10"
+      - "WTB> a happy life"
+      - "WTB> GF"
     StockTitles:
       - { Title: "B> Chaos Baphomet Jr. loot", Any: [Evil_Horn, Short_Rope] }
       - { Title: "WTB Chaos Baphomet Jr. drops", Any: [Evil_Horn, Short_Rope] }
@@ -8967,9 +8967,9 @@ Body:
       - "B> Geffen Dungeon drops"
       - "{name} buys Geffen Dungeon loot"
       - "{name} is buying"
-      - "B>"
-      - "Happy hunting!"
-      - "WTB"
+      - "buying stuff"
+      - "Come on"
+      - "B> friends pls"
     StockTitles:
       - { Title: "B> Ghoul loot", Any: [Horrendous_Mouth, Mementos] }
       - { Title: "WTB Ghoul drops", Any: [Horrendous_Mouth, Mementos] }
@@ -9032,9 +9032,9 @@ Body:
       - "B> Mjolnir Mine drops"
       - "{name} buys Mjolnir Mine loot"
       - "{name} is buying"
-      - "..."
-      - "WTB"
-      - "zzz"
+      - "B> hugs"
+      - "WTB> a happy life"
+      - "Things."
     StockTitles:
       - { Title: "B> Skeleton Worker loot", Any: [Coal, Lantern] }
       - { Title: "WTB Skeleton Worker drops", Any: [Coal, Lantern] }
@@ -9074,9 +9074,9 @@ Body:
       - "B> Gonryun drops"
       - "{name} buys Gonryun loot"
       - "{name} is buying"
-      - "..."
-      - "WTB"
-      - "etc"
+      - "B> hugs"
+      - "WTB> GF"
+      - "buying stuff"
     StockTitles:
       - { Title: "B> Bloody Butterfly loot", Any: [Great_Wing, Powder_Of_Butterfly, Sharp_Feeler] }
       - { Title: "WTB Bloody Butterfly drops", Any: [Great_Wing, Powder_Of_Butterfly, Sharp_Feeler] }
@@ -9123,9 +9123,9 @@ Body:
       - "B> Louyang drops"
       - "{name} buys Louyang loot"
       - "{name} is buying"
-      - "B> > npc price"
-      - "WTB, fair prices"
-      - "Happy hunting!"
+      - "B> motivation"
+      - "zzz"
+      - "See"
     StockTitles:
       - { Title: "B> Yao Jun loot", Any: [Munak_Doll] }
       - { Title: "WTB Yao Jun drops", Any: [Munak_Doll] }
@@ -9178,9 +9178,9 @@ Body:
       - "B> Ayothaya drops"
       - "{name} buys Ayothaya loot"
       - "{name} is buying"
-      - "Come on"
-      - "WTB, fair prices"
-      - "Come here u"
+      - "etc"
+      - "Things."
+      - "WTB> MVP card for 10z"
     StockTitles:
       - { Title: "B> Tamruan loot", Any: [Broken_Armor_Piece, Sword_Accessory] }
       - { Title: "WTB Tamruan drops", Any: [Broken_Armor_Piece, Sword_Accessory] }
@@ -9214,9 +9214,9 @@ Body:
       - "B> Einbroch Mine drops"
       - "{name} buys Einbroch Mine loot"
       - "{name} is buying"
-      - "WTB"
-      - "See"
       - "B> paying well"
+      - "B> motivation"
+      - "B> anything shiny"
     StockTitles:
       - { Title: "B> Pitman loot", Any: [Coal, Gun_Powder, Headlamp, Lantern, Old_Pick, Old_Steel_Plate] }
       - { Title: "WTB Pitman drops", Any: [Coal, Gun_Powder, Headlamp, Lantern, Old_Pick, Old_Steel_Plate] }
@@ -9279,9 +9279,9 @@ Body:
       - "B> Moscovia drops"
       - "{name} buys Moscovia loot"
       - "{name} is buying"
-      - "etc"
-      - "WTB"
-      - "buying stuff"
+      - "WTB> 100% refine rate"
+      - "B> friends pls"
+      - "B> sleep"
     StockTitles:
       - { Title: "B> Baba-Yaga loot", Any: [Old_Magic_Circle, Pill, Yaga_Pestle] }
       - { Title: "WTB Baba-Yaga drops", Any: [Old_Magic_Circle, Pill, Yaga_Pestle] }
@@ -9327,9 +9327,9 @@ Body:
       - "B> Brasilis drops"
       - "{name} buys Brasilis loot"
       - "{name} is buying"
-      - "buying stuff"
-      - "zzz"
-      - "Come here u"
+      - "B> your mom"
+      - "..."
+      - "B> > npc price"
     StockTitles:
       - { Title: "B> Iara loot", Any: [Crystal_Mirror, Fin, Heart_Of_Mermaid, Illusion_Flower, Witherless_Rose] }
       - { Title: "WTB Iara drops", Any: [Crystal_Mirror, Fin, Heart_Of_Mermaid, Illusion_Flower, Witherless_Rose] }
@@ -9372,9 +9372,9 @@ Body:
       - "B> Nidhoggur's Nest drops"
       - "{name} buys Nidhoggur's Nest loot"
       - "{name} is buying"
-      - "B> paying well"
-      - "See"
-      - "buying stuff"
+      - "WTB> a happy life"
+      - "B> hugs"
+      - "B> ur soul, good price"
     StockTitles:
       - { Title: "B> Draco loot", Any: [Dragon's_Mane, Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragon_Train] }
       - { Title: "WTB Draco drops", Any: [Dragon's_Mane, Dragon's_Skin, Dragon_Canine, Dragon_Scale, Dragon_Train] }
@@ -9415,9 +9415,9 @@ Body:
       - "B> Cursed Abbey drops"
       - "{name} buys Cursed Abbey loot"
       - "{name} is buying"
-      - "Things."
-      - "Happy hunting!"
-      - "buying stuff"
+      - "B> time, any amount"
+      - "Come on"
+      - "B> ur soul, good price"
     StockTitles:
       - { Title: "B> Zombie Slaughter loot", Any: [Broken_Farming_Utensil, Clattering_Skull, Mementos] }
       - { Title: "WTB Zombie Slaughter drops", Any: [Broken_Farming_Utensil, Clattering_Skull, Mementos] }
@@ -9449,9 +9449,9 @@ Body:
       - "B> Rachel Sanctuary drops"
       - "{name} buys Rachel Sanctuary loot"
       - "{name} is buying"
-      - "WTB"
+      - "B> > npc price"
+      - "See"
       - "Happy hunting!"
-      - "AFK-----AFK"
     StockTitles:
       - { Title: "B> Isilla loot", Any: [Bloody_Rune, White_Mask] }
       - { Title: "WTB Isilla drops", Any: [Bloody_Rune, White_Mask] }
@@ -9482,8 +9482,8 @@ Body:
       - "{name} buys Spore field loot"
       - "{name} is buying"
       - "Buying"
+      - "AFK-----AFK"
       - "etc"
-      - "zzz"
     StockTitles:
       - { Title: "B> Grove loot", Any: [Melon, Reptile_Tongue] }
       - { Title: "WTB Grove drops", Any: [Melon, Reptile_Tongue] }
@@ -9535,9 +9535,9 @@ Body:
       - "B> Payon Forest drops"
       - "{name} buys Payon Forest loot"
       - "{name} is buying"
-      - "WTB"
-      - "WTB, fair prices"
-      - "See"
+      - "B> > npc price"
+      - "Things."
+      - "B> friends pls"
     StockTitles:
       - { Title: "B> Horn loot", Any: [Emveretarcon, Horn, Shell] }
       - { Title: "WTB Horn drops", Any: [Emveretarcon, Horn, Shell] }
@@ -9588,8 +9588,8 @@ Body:
       - "{name} buys Sograt Desert loot"
       - "{name} is buying"
       - "See"
-      - "zzz"
-      - "buying stuff"
+      - "B> ur soul, good price"
+      - "WTB"
     StockTitles:
       - { Title: "B> Scorpion loot", Any: [Boody_Red, Fine_Grit, Scorpion's_Tail] }
       - { Title: "WTB Scorpion drops", Any: [Boody_Red, Fine_Grit, Scorpion's_Tail] }
@@ -9637,9 +9637,9 @@ Body:
       - "B> Orc field drops"
       - "{name} buys Orc field loot"
       - "{name} is buying"
-      - "Come here u"
-      - "B> paying well"
-      - "Come on"
+      - "AFK-----AFK"
+      - "WTB> a reason to log off"
+      - "B> friends pls"
     StockTitles:
       - { Title: "B> Orc Warrior loot", Any: [Orcish_Voucher] }
       - { Title: "WTB Orc Warrior drops", Any: [Orcish_Voucher] }
@@ -9674,9 +9674,9 @@ Body:
       - "B> Kokomo Beach drops"
       - "{name} buys Kokomo Beach loot"
       - "{name} is buying"
-      - "AFK-----AFK"
-      - "etc"
-      - "Happy hunting!"
+      - "zzz"
+      - "Come on"
+      - "B> friends pls"
     StockTitles:
       - { Title: "B> Alligator loot", Any: [Anolian_Skin, Worn_Out_Prison_Uniform] }
       - { Title: "WTB Alligator drops", Any: [Anolian_Skin, Worn_Out_Prison_Uniform] }
@@ -9731,9 +9731,9 @@ Body:
       - "B> Geffen field drops"
       - "{name} buys Geffen field loot"
       - "{name} is buying"
-      - "..."
-      - "AFK-----AFK"
-      - "zzz"
+      - "B> hugs"
+      - "Buying"
+      - "B> ur soul, good price"
     StockTitles:
       - { Title: "B> Petite loot", Any: [Dragon_Scale, Dragon_Train] }
       - { Title: "WTB Petite drops", Any: [Dragon_Scale, Dragon_Train] }
@@ -9770,7 +9770,7 @@ Body:
       - "{name} buys Juno field loot"
       - "{name} is buying"
       - "See"
-      - "..."
+      - "WTB> luck +10"
       - "buying stuff"
     StockTitles:
       - { Title: "B> Goat loot", Any: [Gaoat's_Skin, Goat's_Horn] }
@@ -9818,9 +9818,9 @@ Body:
       - "B> Einbroch field drops"
       - "{name} buys Einbroch field loot"
       - "{name} is buying"
-      - "WTB"
-      - "..."
-      - "B>"
+      - "B> > npc price"
+      - "WTB, fair prices"
+      - "WTB> a happy life"
     StockTitles:
       - { Title: "B> Venomous loot", Any: [Air_Pollutant, Explosive_Powder, Poison_Powder, Poisonous_Gas, Spawns, Tear_Gas] }
       - { Title: "WTB Venomous drops", Any: [Air_Pollutant, Explosive_Powder, Poison_Powder, Poisonous_Gas, Spawns, Tear_Gas] }
@@ -9880,9 +9880,9 @@ Body:
       - "B> Rachel field drops"
       - "{name} buys Rachel field loot"
       - "{name} is buying"
-      - "Happy hunting!"
+      - "WTB> MVP card for 10z"
+      - "zzz"
       - "WTB, fair prices"
-      - "B>"
     StockTitles:
       - { Title: "B> Roween loot", Any: [Animal's_Skin, Rotten_Meat, Wind_Of_Verdure] }
       - { Title: "WTB Roween drops", Any: [Animal's_Skin, Rotten_Meat, Wind_Of_Verdure] }
@@ -9920,9 +9920,9 @@ Body:
       - "B> Ayothaya/Umbala drops"
       - "{name} buys Ayothaya/Umbala loot"
       - "{name} is buying"
-      - "WTB"
-      - "buying stuff"
-      - "Come here u"
+      - "B> > npc price"
+      - "WTB> MVP card for 10z"
+      - "WTB> a reason to log off"
     StockTitles:
       - { Title: "B> Caramel loot", Any: [Animal's_Skin, Porcupine_Spike] }
       - { Title: "WTB Caramel drops", Any: [Animal's_Skin, Porcupine_Spike] }
