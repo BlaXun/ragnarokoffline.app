@@ -3,7 +3,8 @@
 #   4 south, 6 east). The spots are two cells beside rAthena's custom warper
 #   (npc/custom/warper.txt), so both fit when common-npcs is on too.
 # Era: any, re or pre-re -- a town that only exists in one era.
-# Regenerate the mod's scripts after editing:  python3 build_waypoints.py --write
+# Regenerate the mod's scripts after editing:
+#   python3 registry/tools/waypoint-system/build_waypoints.py --write
 Map,Name,X,Y,Dir,Era
 prontera,Prontera,157,192,4,any
 izlude,Izlude,136,150,4,re

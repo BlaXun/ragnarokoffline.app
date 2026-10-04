@@ -8,6 +8,15 @@ drop, and it attunes to you. From then on a **Waypoint Keeper** in any town
 sends you there for a fee, and the board sends you back to the town you came
 from, once per trip.
 
+**Where things are defined:** every waypoint is one row of
+[`registry/tools/waypoint-system/waypoints.csv`](../../tools/waypoint-system/waypoints.csv):
+the map, its name in the keeper's menu, where the board stands, the items it
+asks for and the travel fee, each per era (`PreReItems`/`ReItems`,
+`PreReFee`/`ReFee`). The keepers' towns are in `towns.csv` beside it. Those
+files are the source; the mod ships only the scripts generated from them. See
+[Adding or changing a waypoint](#adding-or-changing-a-waypoint). The settings
+scale every fee and item count at once.
+
 ## Playing it
 
 - **Find a board.** It stands a few steps from where you walk onto the map.
@@ -45,17 +54,39 @@ has its own generated table (`npc/waypoints_placed.txt`, and
 three renewal-only waypoints (Krakatau, Malaya field, Rockridge mine) are
 left out of pre-renewal.
 
-## Changing the waypoints
+## Adding or changing a waypoint
 
-The list and the balance are generated from rAthena's own data by
-[`registry/tools/waypoint-system`](../../tools/waypoint-system):
+Everything about a waypoint is one row of
+[`registry/tools/waypoint-system/waypoints.csv`](../../tools/waypoint-system/waypoints.csv):
+its map, menu name, where the board stands, and per era what it asks for
+(`Resin:50 Fin:5`, by AegisName) and what the trip costs. `towns.csv` beside it
+says where the keepers stand. Neither is shipped: the build script turns them
+into `npc/waypoints_placed.txt` and `pre-re/npc/waypoints_placed.txt`, and
+those are what the mod carries.
 
-- `waypoints.csv`: one row per waypoint. Add a row to add a waypoint, delete
-  one to drop it. The `Id` is permanent, because unlocks are saved under it.
-- `towns.csv`: where the keepers stand.
-- `build_waypoints.py --write` regenerates both eras' scripts, and
-  `--preview balance-preview.csv` writes the fee and items of every waypoint
-  for review. The balance knobs are at the top of the script.
+To add a waypoint, add a row with the next unused `Id`, the `Map`, `Type`
+(Field or Dungeon), `Region` and `Name`, and leave the rest empty. Then, from
+the repository root:
+
+```
+python3 registry/tools/waypoint-system/build_waypoints.py --suggest   # fills the empty cells
+python3 registry/tools/waypoint-system/build_waypoints.py --write     # checks every row, writes the scripts
+python3 scripts/mod-index.py                                          # the scripts' digests changed
+```
+
+`build_waypoints.py --check` fails when the committed scripts are not exactly
+what the CSVs generate, so a reviewer can trust them from the CSV diff alone.
+
+The CSVs and the build script live outside the mod: players need only the
+generated scripts, and the registry does not carry `.py` files.
+
+`--suggest` applies the mod's balance rules to rAthena's spawns and drops: a
+spot beside the warp you walk in by (for a dungeon floor, the stairs from the
+floor above), drops of the monsters there, and a fee from the map's level and
+distance from town. It only fills empty cells, so change whatever you like
+afterwards. `-` in an era's items or fee leaves the waypoint out of that era.
+`--write` refuses an unknown item, an unwalkable spot or a malformed cell and
+names the row. Never renumber or reuse an `Id`: unlocks are saved under it.
 
 ## Files
 
@@ -64,7 +95,7 @@ The list and the balance are generated from rAthena's own data by
 | `npc/waypoints.txt` | the board and keeper templates, and the unlock helpers |
 | `npc/waypoints_placed.txt` | generated, renewal: the data, and every board and keeper |
 | `pre-re/npc/waypoints_placed.txt` | generated, pre-renewal |
-| `System/jobname.lub` | gives the keeper NPC id 19510 its sprite |
+| `System/jobname.lub` | gives the keeper NPC id 19520 its sprite |
 | `data/sprite/npc/wp_npc.*` | the keeper's sprite |
 
 The boards use the stock bulletin-board sprite (858).

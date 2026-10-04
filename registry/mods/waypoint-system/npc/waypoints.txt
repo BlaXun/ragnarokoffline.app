@@ -60,7 +60,6 @@ function	script	F_WP_Need	{
 		.@town$ = getd("$@WPT_" + WP_RET_MAP$ + "$");
 		if (.@town$ == "")
 			.@town$ = WP_RET_MAP$;
-		next;
 		if (select("Return to " + .@town$ + ":Stay here") == 2)
 			close;
 		.@map$ = WP_RET_MAP$;
@@ -68,7 +67,6 @@ function	script	F_WP_Need	{
 		.@y = WP_RET_Y;
 		WP_RET = 0;
 		WP_RET_MAP$ = "";
-		close2;
 		warp .@map$, .@x, .@y;
 		end;
 	}
@@ -108,7 +106,8 @@ function	script	F_WP_Need	{
 			delitem getd("$@WP_IT" + .@n + "[" + .@id + "]"), .@need;
 	}
 	callfunc "F_WP_Set", "U", .@id;
-	specialeffect2 EF_READYPORTAL2;
+	// A one-shot effect: EF_READYPORTAL2, the Warp Portal's, stays on screen.
+	specialeffect2 EF_BLESSING;
 	mes "The carvings glow, and the board hums as you step back. It is attuned to you now.";
 	mes "Any Waypoint Keeper in town can send you here.";
 	close;
@@ -149,30 +148,33 @@ function	script	F_WP_Need	{
 	if (.@c >= .@n)
 		close;
 	.@id = .@ids[.@c];
-	next;
+	// From here: one question, then straight there. clear swaps the text
+	// without a Next button, and the warp closes the window by itself.
+	clear;
 	mes "[Waypoint Keeper]";
 	if (!callfunc("F_WP_Has", "U", .@id)) {
 		mes "You have seen that board, but it does not know you yet. Bring it what it asks for, and then I can send you.";
 		close;
 	}
 	.@fee = $@WP_FEE[.@id] * .@fee_pct / 100;
-	if (.@fee > 0) {
+	if (.@fee > 0)
 		mes $@WP_NAME$[.@id] + " will be " + callfunc("F_InsertComma", .@fee) + " zeny.";
-		if (select("Go:Cancel") == 2)
-			close;
-		if (Zeny < .@fee) {
-			mes "[Waypoint Keeper]";
-			mes "You are short of zeny for that trip.";
-			close;
-		}
-		Zeny -= .@fee;
+	else
+		mes $@WP_NAME$[.@id] + "?";
+	if (select("Go:Cancel") == 2)
+		close;
+	if (Zeny < .@fee) {
+		clear;
+		mes "[Waypoint Keeper]";
+		mes "You are short of zeny for that trip.";
+		close;
 	}
+	Zeny -= .@fee;
 	getmapxy(.@map$, .@x, .@y);
 	WP_RET = .@id;
 	WP_RET_MAP$ = .@map$;
 	WP_RET_X = .@x;
 	WP_RET_Y = .@y;
-	close2;
 	warp $@WP_MAP$[.@id], $@WP_X[.@id], $@WP_Y[.@id];
 	end;
 }

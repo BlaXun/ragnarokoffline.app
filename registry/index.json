@@ -510,7 +510,7 @@
       "name": "waypoint-system",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Travel you earn instead of a free warper. Waypoint boards stand on 41 fields and dungeon floors, low to high level. Bring a board the items its monsters drop and it attunes to you; from then on a Waypoint Keeper in any town sends you there for a fee, and the board sends you back. Both eras.",
+      "description": "Travel you earn instead of a free warper. Waypoint boards stand on 41 fields and dungeon floors, low to high level. Bring a board the items its monsters drop and it attunes to you; from then on a Waypoint Keeper in any town sends you there for a fee, and the board sends you back. Both eras. Every waypoint, with its board position, the items it asks for and its travel fee per era, is one row of registry/tools/waypoint-system/waypoints.csv in the app repository, built into this mod's scripts; the README says how to add one.",
       "homepage": "",
       "tags": [
         "exploration",
@@ -529,11 +529,11 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "55bb9ffb5a0e41e3c0ff3a603573ac340130fcbdaf58a907f34304d6ab0d7ee6"
+          "sha256": "5e62ede7a1d3ea586d2d4dba00101ce97e16f32c08cb5dd95f7489be2a6cc2f0"
         },
         {
           "path": "System/jobname.lub",
-          "sha256": "bb5b892a96524f080eb422ea9786ee8751de0064dfcb6451186de625d62a7ba1"
+          "sha256": "3e3e4ec17e156cca120124f35d9f86aecb13ddc46411a731c3afde3a04bd55af"
         },
         {
           "path": "data/sprite/npc/wp_npc.act",
@@ -545,19 +545,19 @@
         },
         {
           "path": "mod.json",
-          "sha256": "5f80d7be5f386e86caf5f93e11b6ef8b7984572cc9209d89ff365d47379c431a"
+          "sha256": "a49d2d9ead5900f08f078a3531c011b64b242bcbc19d47e549255c36fb21506a"
         },
         {
           "path": "npc/waypoints.txt",
-          "sha256": "05440851946af260e37711407277dc35c7a0ae4ee19fe4e467e707206f85c244"
+          "sha256": "8fb5c5451bfe3afc18b0bc986034e3b246e94750cc02220b94881d70eeb80f0b"
         },
         {
           "path": "npc/waypoints_placed.txt",
-          "sha256": "158c0d68fd4d334ef3f3e503abd1ac7482f0e5e6adc4ad73d9f6ffa5406abbac"
+          "sha256": "0796e677a3b1278ceafbb0b0decfc96c7530a60aaf1e6ada6ed87b9514ea2980"
         },
         {
           "path": "pre-re/npc/waypoints_placed.txt",
-          "sha256": "58a7211f1aac31c3e9ff359239356bde3cb7ef000cb2e371febb219d2f520c29"
+          "sha256": "2b08b5d6dfade6a7e658a239431ec08a0cc3efbe89cbf7aa3617455c2bf5794e"
         }
       ]
     }

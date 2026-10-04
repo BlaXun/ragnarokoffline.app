@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
-"""Build the waypoint-system mod's scripts from rAthena's own data.
+"""Build the waypoint-system mod's scripts from waypoints.csv and towns.csv.
 
-Reads waypoints.csv (the curated waypoints) and towns.csv (where the Waypoint
-Keepers stand) and an rAthena checkout, and works out for each era what every
-waypoint costs to use, what it takes to unlock, and where its board stands.
+The CSVs say everything: where each board stands, what it asks for and what
+the trip costs, per era. This script only checks them against rAthena's maps
+and items and writes them out as the mod's NPC scripts.
 
-    python3 build_waypoints.py                  print the table for both eras
-    python3 build_waypoints.py --preview x.csv  also write it as a CSV, for review
-    python3 build_waypoints.py --write          write the mod's generated scripts
-    python3 build_waypoints.py --fill-spots     suggest a board spot for new rows
+    python3 build_waypoints.py              check the CSVs, show what would be written
+    python3 build_waypoints.py --write      write the mod's scripts
+    python3 build_waypoints.py --check      fail if the mod's scripts are stale
+    python3 build_waypoints.py --suggest    fill the empty cells of new rows
+
+The CSVs live here, beside this script, and are not shipped: the mod carries
+only the scripts generated from them. After --write, run scripts/mod-index.py.
+
+--suggest is the balance rules below, applied to rAthena's spawns and drops: a
+board spot beside the warp you walk in by, items the monsters there drop, and a
+fee from the map's level and distance from town. It only fills empty cells, so
+a value somebody chose is never overwritten; "-" marks an era as off.
 
 --rathena (or RATHENA_DIR) points at the checkout; the default is the app's
 vendor/rathena. Python 3, no packages. Nothing here runs in the game.
@@ -17,6 +25,7 @@ import argparse
 import collections
 import csv
 import glob
+import math
 import os
 import re
 import struct
@@ -38,14 +47,15 @@ FEE_PER_LEVEL = {"Field": 15, "Dungeon": 30}
 FEE_PER_FLOOR = 300
 FEE_CAP = 5000
 # Unlock: roughly how many kills on the map the items should take.
-BUDGET = {("Field", False): 60, ("Field", True): 120,
-          ("Dungeon", False): 150, ("Dungeon", True): 250}
+BUDGET = {("Field", False): 120, ("Field", True): 240,
+          ("Dungeon", False): 300, ("Dungeon", True): 500}
 HIGH_BAND = {"pre-re": 66, "re": 111}    # average mob level that counts as "high"
 COMMON_MIN = 0.02                        # expected drops per kill to count as common
 UNCOMMON = (50, 500)                     # per-drop rate (of 10000) for the uncommon pick
 UNCOMMON_MIN_SHARE = 0.15                # ...from a mob that is this share of the map
-QTY_COMMON = (5, 100)
-QTY_UNCOMMON = (1, 10)
+# (least, most, round up to a multiple of) for a common and a rare item.
+QTY_COMMON = (10, 200, 10)
+QTY_UNCOMMON = (5, 20, 5)
 SERVER_DROP_RATE = 1.0                   # conf/battle/drops.conf item_rate_common / 100
 # Generic items found everywhere and worth more than the unlock: refine ores and
 # gemstones. Never asked for.
@@ -63,6 +73,10 @@ NOISE_TOWNS = {"-", "bat_room", "turbo_room", "job3_rune01", "lhz_in02", "moc_pa
 KAFRA_EXTRA = {"cmd_fild07", "mjolnir_02", "gef_fild10", "izlude", "dicastes01"}
 # Ways in that the script scan misses (the NPC is defined on "-" and duplicated).
 MANUAL_EDGES = [("izlude", "izlu2dun", None, None)]
+
+# The keeper's NPC id, mapped to its sprite in the mod's System/jobname.lub.
+# Ids 19000-19998 are free for mods, but one id per mod: card-remover has 19510.
+KEEPER_SPRITE = 19520
 
 # --- Board placement ---------------------------------------------------------
 BOARD_RING = (3, 8)        # cells from where you walk onto the map
@@ -303,15 +317,25 @@ def land_beside(cells, bx, by):
     return None
 
 
-def build(rathena, era, rows):
-    world = World(rathena, era)
-    cache = read_map_cache(rathena, era)
-    mobs = {m["Id"]: m for m in read_yaml_list(f"{rathena}/db/{era}/mob_db.yml",
-                                                {"Name", "Level", "Class", "Ai", "MvpExp"})}
+def load_items(rathena, era):
+    """AegisName -> item, from the era's item tables."""
     items = {}
     for p in glob.glob(f"{rathena}/db/{era}/item_db*.yml"):
         for it in read_yaml_list(p, {"AegisName", "Name", "Type"}):
             items[it.get("AegisName")] = it
+    return items
+
+
+def suggest_era(rathena, era, rows):
+    """What the balance rules would ask for and charge, per row of one era.
+
+    Returns {Id: dict(Level, Fee, Items=[(aegis, qty, source mob, rate)], ...)},
+    or a dict with Skip saying why there is no suggestion."""
+    world = World(rathena, era)
+    cache = read_map_cache(rathena, era)
+    mobs = {m["Id"]: m for m in read_yaml_list(f"{rathena}/db/{era}/mob_db.yml",
+                                                {"Name", "Level", "Class", "Ai", "MvpExp"})}
+    items = load_items(rathena, era)
     sold = {a for a, it in items.items() if a in world.shop_items or str(it["Id"]) in world.shop_items}
 
     # Floor depth: how many dungeon maps deep, walking in from outside.
@@ -321,11 +345,10 @@ def build(rathena, era, rows):
                                   outside).items() if m in dun}
     nearest = bfs(world.edges, sorted(world.hubs))
 
-    out = []
+    out = {}
     for r in rows:
         mp, typ = r["Map"], r["Type"]
-        w = dict(r, Era=era)
-        out.append(w)
+        w = out[r["Id"]] = {}
         if mp not in cache:
             w["Skip"] = "map not in this era"
             continue
@@ -366,7 +389,8 @@ def build(rathena, era, rows):
                     continue
                 if source[a][0] in used_mobs and len(cands) > n:
                     continue
-                picks.append((a, min(lo_hi[1], max(lo_hi[0], round(budget * epk[a])))))
+                lo, hi, step = lo_hi
+                picks.append((a, min(hi, max(lo, math.ceil(budget * epk[a] / step) * step))))
                 used_mobs.add(source[a][0])
 
         ranked = [a for a, _ in epk.most_common()]
@@ -382,24 +406,73 @@ def build(rathena, era, rows):
 
         hops = nearest.get(mp)
         if hops is None:
-            w["Skip"] = "no route from any town"
+            w["Skip"] = "no route from any town: set the fee by hand"
             continue
         floors = max(0, depth.get(mp, 1) - 1) if typ == "Dungeon" else 0
         fee = min(FEE_CAP, round50(max(FEE_BASE + FEE_PER_HOP * hops, FEE_PER_LEVEL[typ] * level)
                                    + FEE_PER_FLOOR * floors))
-        if not (r.get("BoardX") and r.get("BoardY")):
-            w["Skip"] = "no BoardX,BoardY: run --fill-spots"
+        w.update(Level=level, High=high, Budget=budget, Hops=hops, Fee=fee,
+                 Items=[(a, q, source[a][0], source[a][2]) for a, q in picks])
+    return out
+
+
+ERA_COLS = {"pre-re": ("PreReItems", "PreReFee"), "re": ("ReItems", "ReFee")}
+MAX_ITEMS = 3                            # the board script reads $@WP_IT1..3
+
+
+def parse_items(text):
+    """"Resin:21 Fin:2" -> [("Resin", 21), ("Fin", 2)]. Raises ValueError."""
+    out = []
+    for part in text.split():
+        name, _, qty = part.partition(":")
+        if not name or not qty.isdigit() or int(qty) < 1:
+            raise ValueError(f"{part!r} is not AegisName:Quantity")
+        out.append((name, int(qty)))
+    return out
+
+
+def from_csv(rathena, era, rows):
+    """The waypoints of one era exactly as waypoints.csv says, checked against
+    the era's maps and items. Returns (waypoints, problems, off)."""
+    cache = read_map_cache(rathena, era)
+    items = load_items(rathena, era)
+    items_col, fee_col = ERA_COLS[era]
+    live, problems, off = [], [], []
+    for r in rows:
+        where = f"{r['Id']} {r['Map']} ({era})"
+        if r[items_col].strip() in ("", "-") or r[fee_col].strip() in ("", "-"):
+            off.append((r, "empty" if "" in (r[items_col].strip(), r[fee_col].strip()) else "-"))
+            continue
+        try:
+            wanted = parse_items(r[items_col])
+        except ValueError as e:
+            problems.append(f"{where}: {items_col}: {e}")
+            continue
+        unknown = [a for a, _ in wanted if a not in items]
+        if unknown:
+            problems.append(f"{where}: {items_col}: no such item in this era: {', '.join(unknown)}")
+            continue
+        if len(wanted) > MAX_ITEMS:
+            problems.append(f"{where}: {items_col}: at most {MAX_ITEMS} items")
+            continue
+        if not r[fee_col].strip().isdigit():
+            problems.append(f"{where}: {fee_col} must be a whole number of zeny")
+            continue
+        if r["Map"] not in cache:
+            problems.append(f"{where}: no such map in this era (put - in {items_col} to leave it out)")
+            continue
+        if not (r["BoardX"].isdigit() and r["BoardY"].isdigit()):
+            problems.append(f"{where}: BoardX,BoardY missing: run --suggest")
             continue
         board = (int(r["BoardX"]), int(r["BoardY"]))
-        cells = Cells(cache[mp])
+        cells = Cells(cache[r["Map"]])
         landing = land_beside(cells, *board) if cells.walkable(*board) else None
         if not landing:
-            w["Skip"] = f"BoardX,BoardY {board[0]},{board[1]} is not walkable here"
+            problems.append(f"{where}: BoardX,BoardY {board[0]},{board[1]} is not walkable")
             continue
-        w.update(Level=level, High=high, Budget=budget, Floor=depth.get(mp), Hops=hops, Fee=fee,
-                 Board=board, Land=landing,
-                 Items=[(items[a]["Id"], items[a]["Name"], q, source[a][0], source[a][2]) for a, q in picks])
-    return world, cache, out
+        live.append(dict(r, Fee=int(r[fee_col]), Board=board, Land=landing,
+                         Items=[(items[a]["Id"], items[a]["Name"], q) for a, q in wanted]))
+    return cache, live, problems, off
 
 
 def read_csv(name):
@@ -425,11 +498,12 @@ def check_towns(towns, cache, world, era):
 
 def script_text(era, waypoints, towns):
     q = lambda s: '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
-    live = [w for w in waypoints if "Skip" not in w]
+    live = waypoints
     L = ["//===== Ragnarok Offline: waypoint-system ===================",
          f"//= Generated for {'renewal' if era == 're' else 'pre-renewal'} by",
          "//= registry/tools/waypoint-system/build_waypoints.py --write.",
-         "//= Do not edit: change waypoints.csv or towns.csv and regenerate.",
+         "//= Do not edit: change registry/tools/waypoint-system/waypoints.csv",
+         "//= or towns.csv and regenerate.",
          "//============================================================",
          "",
          "// What each waypoint is, indexed by its permanent Id.",
@@ -445,10 +519,10 @@ def script_text(era, waypoints, towns):
                 f'$@WP_TYPE[{i}] = {0 if w["Type"] == "Field" else 1};',
                 f'$@WP_FEE[{i}] = {w["Fee"]};',
                 f'$@WP_X[{i}] = {w["Land"][0]}; $@WP_Y[{i}] = {w["Land"][1]};']
-        for n, (iid, _, qty, _, _) in enumerate(w["Items"], 1):
+        for n, (iid, _, qty) in enumerate(w["Items"], 1):
             sets.append(f"$@WP_IT{n}[{i}] = {iid}; $@WP_QT{n}[{i}] = {qty};")
-        names = "; ".join(f"{qty}x {nm}" for _, nm, qty, _, _ in w["Items"])
-        L.append(f"\t// {w['Map']}: L{w['Level']}, {w['Hops']} maps from town, {names}")
+        names = "; ".join(f"{qty}x {nm}" for _, nm, qty in w["Items"])
+        L.append(f"\t// {w['Map']}: {names}")
         L.extend("\t" + s for s in sets)
     for t in towns:
         L.append(f'\t$@WPT_{t["Map"]}$ = {q(t["Name"])};')
@@ -459,34 +533,53 @@ def script_text(era, waypoints, towns):
     L += ["", "// The Waypoint Keepers, one per town."]
     # rAthena caps an NPC's full name, # part included, at 24 characters.
     for n, t in enumerate(towns, 1):
-        L.append(f"{t['Map']},{t['X']},{t['Y']},{t['Dir']}\tduplicate(WaypointKeeper)\tWaypoint Keeper#{n}\t19510")
+        L.append(f"{t['Map']},{t['X']},{t['Y']},{t['Dir']}\tduplicate(WaypointKeeper)\tWaypoint Keeper#{n}\t{KEEPER_SPRITE}")
     return "\n".join(L) + "\n"
 
 
-def fill_spots(rathena):
-    """Write a suggested BoardX,BoardY into every row of waypoints.csv that has
-    none. Rows that already have a spot are left exactly as they are."""
+def read_rows():
     path = os.path.join(HERE, "waypoints.csv")
     lines = open(path, newline="").read().splitlines()
     comments = [l for l in lines if l.startswith("#")]
-    rows = list(csv.DictReader(l for l in lines if not l.startswith("#")))
-    if not any(not (r["BoardX"] and r["BoardY"]) for r in rows):
-        print("every waypoint already has a spot")
-        return
-    eras = []
+    rows = list(csv.DictReader(l for l in lines if l and not l.startswith("#")))
+    return path, comments, rows
+
+
+def suggest(rathena):
+    """Fill every empty cell of waypoints.csv that the rules can fill: the
+    board spot, and each era's items and fee. A filled cell is never changed;
+    "-" means "off in this era" and is left alone too."""
+    path, comments, rows = read_rows()
+    eras = {}
     for era in ("re", "pre-re"):
         world = World(rathena, era)
-        eras.append((world, read_map_cache(rathena, era), world.walking()))
+        eras[era] = (world, read_map_cache(rathena, era), world.walking())
     for r in rows:
-        if r["BoardX"] and r["BoardY"]:
+        if not (r["BoardX"] and r["BoardY"]):
+            spot = suggest_spot(r["Map"], [(w, Cells(c[r["Map"]]) if r["Map"] in c else None, n)
+                                           for w, c, n in eras.values()], r["Type"] == "Dungeon")
+            if spot:
+                r["BoardX"], r["BoardY"] = str(spot[0]), str(spot[1])
+                print(f"{r['Id']:>3} {r['Map']:12} board {spot[0]},{spot[1]}, beside the warp from {spot[2]}")
+            else:
+                print(f"{r['Id']:>3} {r['Map']:12} no open spot found: set BoardX,BoardY by hand")
+    for era, (items_col, fee_col) in ERA_COLS.items():
+        todo = [r for r in rows if not r[items_col].strip() or not r[fee_col].strip()]
+        if not todo:
             continue
-        spot = suggest_spot(r["Map"], [(w, Cells(c[r["Map"]]) if r["Map"] in c else None, n) for w, c, n in eras],
-                            r["Type"] == "Dungeon")
-        if not spot:
-            print(f"{r['Id']:>3} {r['Map']:12} no open spot found: set BoardX,BoardY by hand")
-            continue
-        r["BoardX"], r["BoardY"] = str(spot[0]), str(spot[1])
-        print(f"{r['Id']:>3} {r['Map']:12} {spot[0]},{spot[1]}  beside the warp from {spot[2]}")
+        got = suggest_era(rathena, era, todo)
+        for r in todo:
+            w = got[r["Id"]]
+            if "Skip" in w:
+                print(f"{r['Id']:>3} {r['Map']:12} {era}: nothing suggested ({w['Skip']})")
+                continue
+            if not r[items_col].strip():
+                r[items_col] = " ".join(f"{a}:{q}" for a, q, _, _ in w["Items"])
+            if not r[fee_col].strip():
+                r[fee_col] = str(w["Fee"])
+            why = "; ".join(f"{a} from {m} {rate / 100:g}%" for a, _, m, rate in w["Items"])
+            print(f"{r['Id']:>3} {r['Map']:12} {era}: L{w['Level']}, ~{w['Budget']} kills, "
+                  f"{r[items_col]}, {r[fee_col]}z  ({why})")
     with open(path, "w", newline="") as f:
         f.write("\n".join(comments) + "\n")
         out = csv.DictWriter(f, fieldnames=list(rows[0].keys()), lineterminator="\n")
@@ -497,41 +590,60 @@ def fill_spots(rathena):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--rathena", default=os.environ.get("RATHENA_DIR", os.path.join(ROOT, "vendor/rathena")))
-    ap.add_argument("--era", choices=["re", "pre-re"], action="append")
-    ap.add_argument("--preview", help="also write the table to this CSV, for review")
-    ap.add_argument("--write", action="store_true", help="write the mod's generated scripts")
-    ap.add_argument("--fill-spots", action="store_true",
-                    help="put a suggested BoardX,BoardY into every waypoints.csv row that has none")
+    ap.add_argument("--suggest", action="store_true",
+                    help="fill the empty cells of waypoints.csv: board spot, items and fee")
+    ap.add_argument("--write", action="store_true", help="write the mod's scripts from the CSVs")
+    ap.add_argument("--check", action="store_true",
+                    help="fail if the mod's scripts are not exactly what the CSVs generate")
     a = ap.parse_args()
-    if a.fill_spots:
-        fill_spots(a.rathena)
-    rows, towns = read_csv("waypoints.csv"), read_csv("towns.csv")
-    preview = []
-    for era in a.era or ["pre-re", "re"]:
-        print(f"===== {era}")
-        world, cache, built = build(a.rathena, era, rows)
-        for w in built:
-            if "Skip" in w:
-                print(f"{w['Id']:>3} {w['Map']:12} {w['Type']:7} SKIP {w['Skip']}")
-                continue
-            it = "; ".join(f"{q}x {n} [{s} {r / 100:g}%]" for _, n, q, s, r in w["Items"])
-            print(f"{w['Id']:>3} {w['Map']:12} {w['Type']:7} L{w['Level']:<3}{'H' if w['High'] else ' '} "
-                  f"floor{w['Floor'] or '-'} hops {w['Hops']} fee {w['Fee']:<5} board {w['Board'][0]},{w['Board'][1]}"
-                  f"  kills~{w['Budget']}  {it}")
-            preview.append([era, w["Id"], w["Map"], w["Type"], w["Name"], w["Level"], "H" if w["High"] else "",
-                            w["Hops"], w["Fee"], w["Budget"]] + [f"{q}x {n} ({s} {r / 100:g}%)" for _, n, q, s, r in w["Items"]])
-        live_towns = check_towns(towns, cache, world, era)
-        if a.write:
-            path = os.path.join(MOD, OUT[era])
+    if a.suggest:
+        suggest(a.rathena)
+    _, _, rows = read_rows()
+    towns = read_csv("towns.csv")
+    ids = [r["Id"] for r in rows]
+    if len(set(ids)) != len(ids) or not all(i.isdigit() for i in ids):
+        print("waypoints.csv: every Id must be a unique whole number", file=sys.stderr)
+        return 1
+    failed = stale = False
+    for era in ("pre-re", "re"):
+        cache, live, problems, off = from_csv(a.rathena, era, rows)
+        if not a.check:
+            print(f"===== {era}: {len(live)} waypoints")
+            for w in live:
+                names = ", ".join(f"{q}x {n}" for _, n, q in w["Items"])
+                print(f"{w['Id']:>3} {w['Map']:12} {w['Type']:7} board {w['Board'][0]},{w['Board'][1]}  "
+                      f"fee {w['Fee']:<5} {names}")
+            for r, why in off:
+                print(f"{r['Id']:>3} {r['Map']:12} off in this era" + (" (no items or fee yet: run --suggest)" if why == "empty" else ""))
+        for p in problems:
+            print(f"PROBLEM {p}", file=sys.stderr)
+        failed |= bool(problems)
+        if problems:
+            continue
+        text = script_text(era, live, check_towns(towns, cache, None, era))
+        path = os.path.join(MOD, OUT[era])
+        if a.check:
+            # Line endings aside, as git sees them: a Windows checkout has CRLF.
+            on_disk = open(path, newline="").read().replace("\r\n", "\n") if os.path.exists(path) else ""
+            if on_disk != text:
+                print(f"{os.path.relpath(path, ROOT)} is not what the CSVs generate: "
+                      f"run build_waypoints.py --write", file=sys.stderr)
+                stale = True
+            else:
+                print(f"{os.path.relpath(path, ROOT)} matches the CSVs")
+        elif a.write:
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "w", newline="\n") as f:
-                f.write(script_text(era, built, live_towns))
+                f.write(text)
             print(f"wrote {os.path.relpath(path, ROOT)}")
-    if a.preview:
-        with open(a.preview, "w", newline="") as f:
-            out = csv.writer(f, lineterminator="\n")
-            out.writerow(["Era", "Id", "Map", "Type", "Name", "Level", "Band", "Hops", "Fee", "Kills", "Item1", "Item2", "Item3"])
-            out.writerows(preview)
+    if failed:
+        print("nothing written for an era with problems" if a.write else "fix the problems above", file=sys.stderr)
+        return 1
+    if stale:
+        return 1
+    if a.write:
+        print("now run: python3 scripts/mod-index.py   (the scripts' digests changed)")
+    return 0
 
 
 if __name__ == "__main__":
