@@ -311,6 +311,28 @@ static int32 pop_ally_offer(PopAllySearchCtx *ctx, map_session_data *ally)
 /// that each check only their own status would recast them over each other on the same ally,
 /// tick after tick, until the caster ran out of SP. The buff already there holds. A debuff the
 /// new status ends (Increase AGI over Decrease AGI) is still cleared.
+/// Whether Devotion on this ally would be refused when the cast completes, by the same checks
+/// rAthena makes (skills/swordman/sacrifice.cpp): a base level gap past devotion_level_difference,
+/// an ally another Crusader already devotes, a Crusader-line ally, Hell Power, or no free slot.
+/// A level 13 owner was out of a level 90 Royal Guard's reach, and every cast at them was refused.
+static bool pop_ally_devotion_refused(const map_session_data *shell, const map_session_data *ally)
+{
+	if (std::abs(static_cast<int>(shell->status.base_level) - static_cast<int>(ally->status.base_level))
+	    > battle_config.devotion_level_difference)
+		return true;
+	const status_change_entry *dev = ally->sc.getSCE(SC_DEVOTION);
+	if (dev && dev->val1 != shell->id)
+		return true;
+	if ((ally->class_ & MAPID_SECONDMASK) == MAPID_CRUSADER || ally->sc.getSCE(SC_HELLPOWER))
+		return true;
+	const int known = pc_checkskill(const_cast<map_session_data *>(shell), CR_DEVOTION);
+	const int slots = std::min(known > 0 ? known : 5, MAX_DEVOTION);
+	for (int i = 0; i < slots; ++i)
+		if (shell->devotion[i] == ally->id || shell->devotion[i] == 0)
+			return false;
+	return true;
+}
+
 static bool pop_ally_buff_clashes(map_session_data *ally, sc_type sc_id)
 {
 	if (sc_id == SC_NONE)
@@ -443,6 +465,7 @@ static int32 pop_ally_hp_scan_cb(block_list *bl, va_list ap)
 	if (status_isdead(*ally)) return 0;
 	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
 	if (ally->battle_status.max_hp == 0) return 0;
 	const int pct = static_cast<int>(ally->battle_status.hp * 100 / ally->battle_status.max_hp);
 	if (pct < ctx->hp_threshold && pct < ctx->best_hp_pct) {
@@ -532,6 +555,7 @@ static int32 pop_ally_status_scan_cb(block_list *bl, va_list ap)
 	if (status_isdead(*ally)) return 0;
 	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
 	if (ctx->sc_resolved < 0) return 0;
 	const status_change *sca = status_get_sc(ally);
 	const bool has_it = sca && sca->hasSCE(static_cast<sc_type>(ctx->sc_resolved));
@@ -553,6 +577,7 @@ static int32 pop_ally_any_scan_cb(block_list *bl, va_list ap)
 	if (status_isdead(*ally)) return 0;
 	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
 	return pop_ally_offer(ctx, ally);
 }
 

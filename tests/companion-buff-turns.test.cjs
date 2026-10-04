@@ -67,3 +67,16 @@ test('a companion heals and buffs its own side, not passing AI players', () => {
 		assert.ok(!/ally->state\.population_combat && !pop_is_party_ally/.test(m[1]), `${cb} drops the old any-shell rule`);
 	}
 });
+
+test('Devotion skips allies rAthena would refuse it on', () => {
+	const body = /static bool pop_ally_devotion_refused\([^)]*\)\n\{([\s\S]*?)\n\}/.exec(combat);
+	assert.ok(body, 'pop_ally_devotion_refused must exist');
+	assert.match(body[1], /battle_config\.devotion_level_difference/, 'the level gap');
+	assert.match(body[1], /dev->val1 != shell->id/, 'devoted by another Crusader');
+	assert.match(body[1], /MAPID_CRUSADER/);
+	assert.match(body[1], /shell->devotion\[i\] == ally->id \|\| shell->devotion\[i\] == 0/, 'a free slot');
+	for (const cb of ['pop_ally_hp_scan_cb', 'pop_ally_status_scan_cb', 'pop_ally_any_scan_cb']) {
+		const m = new RegExp(`static int32 ${cb}\\([^)]*\\)\\n\\{([\\s\\S]*?)\\n\\}`).exec(combat);
+		assert.ok(m && /ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused\(ctx->shell, ally\)/.test(m[1]), cb);
+	}
+});
