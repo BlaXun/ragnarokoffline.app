@@ -1450,7 +1450,7 @@ mod tests {
         assert!(template.contains("\t\t\tport: 6900,"), "the template moved its port line");
 
         let mut cfg = fixture_config("login-port");
-        cfg.ports = crate::ports::Ports { asset: 13338, login: 16900, char: 16121, map: 15121, agent: 17490 };
+        cfg.ports = crate::ports::Ports { asset: 13338, login: 16900, char: 16121, map: 15121, web: 18888, agent: 17490 };
         fs::create_dir_all(cfg.root.join("config")).unwrap();
         fs::write(cfg.root.join("config/Config.local.js"), &template).unwrap();
         let web = cfg.state.join("web");

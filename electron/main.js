@@ -700,6 +700,8 @@ async function assetsStart() {
 			ENABLE_STATIC_SERVE: 'true', ENABLE_WSPROXY: 'true',
 			ROBROWSER_PATH: path.resolve(root, 'vendor/roBrowserLegacy/dist/Web'),
 			WS_ALLOWED_TARGETS: proxyTargets(client).sort().join(','),
+			// rAthena's web server keeps guild emblems; the client asks this origin for them.
+			WEB_SERVER_TARGET: `127.0.0.1:${gamePorts().web}`,
 			DATA_OVERRIDE_PATH: path.resolve(translationRoot(), 'data'),
 			ENABLE_COMPRESSION: process.env.ENABLE_COMPRESSION || 'true',
 			CACHE_MAX_FILES: process.env.CACHE_MAX_FILES || '5000',
