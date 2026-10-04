@@ -220,6 +220,7 @@ struct PopulationModSpawn {
 	std::vector<PopulationModSpawnArea> areas;        ///< Where those shells may stand.
 	int min_spacing = 0;                              ///< Cells between shells of THIS block only.
 	bool scale_with_density = false;                  ///< Opt in to the "How busy" slider.
+	bool fill_lanes = false;                          ///< RAGNAROKMAC: "Fill: Lanes" -- areas fill in order, shells side by side.
 	std::string spawn_id;                             ///< "<VendorKey>#<map>#<index>", stamped on each shell.
 };
 

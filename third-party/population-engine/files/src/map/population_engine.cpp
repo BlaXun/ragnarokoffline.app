@@ -2304,6 +2304,57 @@ static bool pop_mod_vendor_near_npc(int16_t m, int16_t x, int16_t y) {
 		static_cast<int16_t>(x + d), static_cast<int16_t>(y + d), BL_NPC, 0) > 0;
 }
 
+/// RAGNAROKMAC: a cell for the next shell of a "Fill: Lanes" block, the way
+/// players open shops: in the first area (lane) that has room, in the order
+/// the block lists them, on a free cell beside a shell already there, or
+/// anywhere in it when the lane is empty or its run of shells is boxed in (an
+/// NPC, a wall). A later lane gets shells only once every earlier one is
+/// full. "Beside" is one cell past the block's MinSpacing. False if no lane
+/// has a usable cell.
+static bool pop_mod_vendor_lane_cell(int16_t m, const PopulationModSpawn& sp,
+	const std::vector<std::pair<int16_t, int16_t>>& mine, int16_t& out_x, int16_t& out_y)
+{
+	const int reach = sp.min_spacing + 1;
+	std::vector<std::pair<int16_t, int16_t>> beside, free_cells;
+	for (const PopulationModSpawnArea& a : sp.areas) {
+		beside.clear();
+		free_cells.clear();
+		bool lane_has_shells = false;
+		for (const auto& p : mine)
+			if (p.first >= a.x1 && p.first <= a.x2 && p.second >= a.y1 && p.second <= a.y2) {
+				lane_has_shells = true;
+				break;
+			}
+		for (int16_t y = a.y1; y <= a.y2; ++y) {
+			for (int16_t x = a.x1; x <= a.x2; ++x) {
+				bool too_close = false, near_one = false;
+				for (const auto& p : mine) {
+					const int dx = std::abs(p.first - x), dy = std::abs(p.second - y);
+					if (dx <= sp.min_spacing && dy <= sp.min_spacing) {
+						too_close = true;
+						break;
+					}
+					if (dx <= reach && dy <= reach)
+						near_one = true;
+				}
+				if (too_close || !pop_mod_vendor_cell_free(m, x, y) || pop_mod_vendor_near_npc(m, x, y))
+					continue;
+				free_cells.emplace_back(x, y);
+				if (near_one)
+					beside.emplace_back(x, y);
+			}
+		}
+		const auto& from = (lane_has_shells && !beside.empty()) ? beside : free_cells;
+		if (from.empty())
+			continue; // this lane is full: on to the next
+		const auto& c = from[rnd() % from.size()];
+		out_x = c.first;
+		out_y = c.second;
+		return true;
+	}
+	return false;
+}
+
 /// Spawn one shell for a mod vendor block at (x, y). Mirrors the look-building in
 /// autosummon_fill_map, but with the vendor's own profile handed in directly.
 static bool pop_mod_vendor_spawn_one(int16_t m, const PopulationVendorEntry& entry,
@@ -2823,9 +2874,10 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 			size_t cur = population_engine_count_mod_shells(m, sp.spawn_id);
 			if (cur >= target)
 				continue;
-			// MinSpacing is kept only between this block's own shells.
+			// MinSpacing is kept only between this block's own shells, and
+			// Fill: Lanes places beside them.
 			std::vector<std::pair<int16_t, int16_t>> mine;
-			if (sp.min_spacing > 0) {
+			if (sp.min_spacing > 0 || sp.fill_lanes) {
 				for (map_session_data* psd : g_population_engine_pcs)
 					if (psd && psd->m == m && psd->pop.vendor_spawn_id == sp.spawn_id)
 						mine.emplace_back(psd->x, psd->y);
@@ -2841,7 +2893,15 @@ static void population_engine_mod_vendor_pass(size_t* pbudget, size_t max_global
 				if (budget_out()) return;
 				if (limit_hit()) goto next_entry;
 				bool placed = false;
-				for (int attempt = 0; attempt < 40 && !placed; ++attempt) {
+				if (sp.fill_lanes) {
+					int16_t x = 0, y = 0;
+					if (pop_mod_vendor_lane_cell(m, sp, mine, x, y) && spawn_here(x, y, -1)) {
+						spent();
+						mine.emplace_back(x, y);
+						placed = true;
+					}
+				}
+				for (int attempt = 0; attempt < 40 && !placed && !sp.fill_lanes; ++attempt) {
 					uint64_t r = static_cast<uint64_t>(rnd()) % total_cells;
 					const PopulationModSpawnArea* a = &sp.areas.back();
 					for (const auto& cand : sp.areas) {

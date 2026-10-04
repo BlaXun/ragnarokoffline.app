@@ -1023,6 +1023,19 @@ uint64 PopulationVendorDatabase::parseBodyNode(const ryml::NodeRef& node)
 					bool b = false;
 					if (this->asBool(sn, "ScaleWithDensity", b)) sp.scale_with_density = b;
 				}
+				// RAGNAROKMAC: Fill: Lanes fills the Areas one at a time, in the
+				// order listed, each shell beside another; Random (the default)
+				// spreads them over all of them.
+				if (this->nodeExists(sn, "Fill")) {
+					std::string fill;
+					if (this->asString(sn, "Fill", fill)) {
+						std::transform(fill.begin(), fill.end(), fill.begin(), ::tolower);
+						if (fill == "lanes")
+							sp.fill_lanes = true;
+						else if (fill != "random")
+							this->invalidWarning(sn, "VendorKey '%s': Fill must be Lanes or Random; using Random.\n", key.c_str());
+					}
+				}
 				sp.spawn_id = key + "#" + sp.map + "#" + std::to_string(idx++);
 				entry.spawns.push_back(std::move(sp));
 			}
