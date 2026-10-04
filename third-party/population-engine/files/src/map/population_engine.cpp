@@ -2068,6 +2068,10 @@ static uint32 pop_companion_party_threat(map_session_data *sd)
 	return 0;
 }
 
+/// RAGNAROKMAC: how far from its owner a companion takes on a monster by itself (Attack mode), and
+/// so how far it may stray while fighting one (pop_companion_follow_owner).
+static constexpr int kCompanionCombatRadius = 12;
+
 /// A companion only joins combat chosen by its owner or forced on the party.
 /// This intentionally replaces the shell's town/field origin behavior.
 static uint32 pop_companion_combat_target(map_session_data *sd, map_session_data *owner, t_tick now)
@@ -2117,14 +2121,14 @@ static uint32 pop_companion_combat_target(map_session_data *sd, map_session_data
 	// do not spread out or chase ambient targets across the map.
 	if (sd->pop.companion_mode == PopulationCompanionMode::Attack) {
 		uint32 best_id = 0;
-		int best_distance = 13;
+		int best_distance = kCompanionCombatRadius + 1;
 		for (const auto &entry : sd->pop.mob_tracker.tracked_mobs) {
 			const s_pe_tracked_mob &mob = entry.second;
 			block_list *mob_bl = map_id2bl(static_cast<int>(mob.mob_id));
 			if (!mob_bl || mob_bl->m != owner->m)
 				continue;
 			const int owner_distance = distance_bl(owner, mob_bl);
-			if (owner_distance > 12 || owner_distance >= best_distance)
+			if (owner_distance > kCompanionCombatRadius || owner_distance >= best_distance)
 				continue;
 			if (!population_shell_check_target(sd, mob.mob_id) &&
 				!population_shell_check_target_for_movement(sd, mob.mob_id))
@@ -2204,8 +2208,22 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		return false;
 	}
 
+	// RAGNAROKMAC: how far the companion may stray from its owner. Combat takes monsters up to
+	// 12 cells from the owner (pop_companion_combat_target), but the follow walked the companion
+	// back as soon as it was 5 cells away: it set off for a monster 8 cells out, turned back at
+	// the fifth cell, took the monster again on arrival, and paced back and forth until the
+	// owner came closer. While it fights a monster inside that radius it may go as far as the
+	// fight takes it; once the owner moves on and the monster is left behind, the leash is 4.
+	int leash = 4;
+	if (sd->pop.target_id != 0) {
+		block_list *target = map_id2bl(static_cast<int>(sd->pop.target_id));
+		if (target && target->m == owner->m && !status_isdead(*target)
+		    && check_distance_bl(owner, target, kCompanionCombatRadius))
+			leash = kCompanionCombatRadius + 2;
+	}
+
 	if (now < sd->pop.companion_follow_next)
-		return sd->m == owner->m && check_distance_bl(sd, owner, 4);
+		return sd->m == owner->m && check_distance_bl(sd, owner, leash);
 	sd->pop.companion_follow_next = now + 400;
 
 	if (sd->m != owner->m) {
@@ -2220,7 +2238,7 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		warp_near_owner();
 		return false;
 	}
-	if (owner_distance > 4) {
+	if (owner_distance > leash) {
 		population_shell_target_change(sd, 0);
 		unit_stop_attack(sd);
 		// RAGNAROKMAC: full path search (flag 0). The easy path (flag 1) never walks round an
