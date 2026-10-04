@@ -2588,6 +2588,21 @@ void population_engine_set_mod_vendor_price(const char* prefix, int pct) {
 	ShowInfo("Population engine: mod vendors '%s*': prices at %d%%.\n", e.prefix.c_str(), pct > 0 ? e.price_pct : 100);
 }
 
+/// RAGNAROKMAC: a price percentage for one item that a mod sets in
+/// $@pop_item_pct[<item id>] (unset or 0 = 100), on top of its mod's price
+/// level. Applied wherever the engine prices a mod's stalls and buyers and in
+/// the customers' market price, so a mod can move single prices at runtime: a
+/// sale, a seasonal surge, a market that follows trades.
+static int pop_item_price_pct(t_itemid id) {
+	static int32 key = 0;
+	if (key == 0)
+		key = add_str("$@pop_item_pct");
+	if (id == 0)
+		return 100;
+	const int64 v = mapreg_readreg(reference_uid(key, id));
+	return v > 0 ? static_cast<int>(std::min<int64>(v, 1000)) : 100;
+}
+
 /// The price level a mod vendor's mod set, in percent (100 = as listed).
 static int pop_mod_vendor_price_pct(const PopulationVendorEntry* mod_entry) {
 	if (mod_entry == nullptr)
@@ -2738,7 +2753,7 @@ static bool pop_shell_open_buyingstore(map_session_data* sd, const PopulationVen
 		const PopulationVendorStock& vs = *cands[i];
 		std::shared_ptr<item_data> id = item_db.find(vs.nameid);
 		int64_t p = vs.price_max > vs.price ? vs.price + static_cast<int64_t>(rnd() % (vs.price_max - vs.price + 1)) : vs.price;
-		p = p * pct / 100;
+		p = p * pct / 100 * pop_item_price_pct(vs.nameid) / 100;
 		if (p >= 10000)     p = p / 500 * 500;
 		else if (p >= 1000) p = p / 50 * 50;
 		else if (p >= 100)  p = p / 5 * 5;
@@ -6106,6 +6121,11 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					if (price_pct != 100) {
 						p = p * price_pct / 100;
 						band_lo = band_lo * price_pct / 100;
+					}
+					// RAGNAROKMAC: and the item's own price percentage, if its mod set one.
+					if (const int item_pct = pop_item_price_pct(vs.nameid); item_pct != 100) {
+						p = p * item_pct / 100;
+						band_lo = band_lo * item_pct / 100;
 					}
 					const bool plain = vs.refine_max == 0 && vs.element == 0 && vs.stars == 0 && vs.cards.empty();
 					if (plain && vendor_cfg->undercut_chance > 0 &&

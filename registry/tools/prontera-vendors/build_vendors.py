@@ -1950,6 +1950,197 @@ def demand(e, lo, hi, busy_cut):
     return max(1, round(buyers * DEMAND_SCALE)), round(sellers * DEMAND_SCALE)
 
 
+# ---------------------------------------------------------------------------
+# Dynamic market: its data, as an NPC script (npc/prontera-vendors-market-data.txt)
+# ---------------------------------------------------------------------------
+#
+# The market itself is the mod's own NPC script (npc/prontera-vendors-market.txt).
+# This writes what it needs to know and cannot work out at runtime: how much of
+# each item changes hands on a normal day (how far one trade moves its price),
+# which items move together (a group shares a move, Share percent of it), and
+# the news events that push a group for some days. Items are the ones this
+# era has; an event with nothing left is left out. Like waypoint-system's
+# data, it is generated here and shipped, and nothing reads a file at runtime.
+
+MARKET_GROUPS = [
+    ("forge", 30, ["Elunium", "Oridecon", "Elunium_Stone", "Oridecon_Stone", "Emveretarcon"]),
+    ("crafting", 30, ["Steel", "Iron", "Iron_Ore", "Coal"]),
+    ("herbs", 30, sorted(HERBS)),
+    ("potions", 30, ["Red_Potion", "Orange_Potion", "Yellow_Potion", "White_Potion", "Blue_Potion"]),
+    ("slims", 30, ["Red_Slim_Potion", "Yellow_Slim_Potion", "White_Slim_Potion"]),
+    ("gemstones", 30, ["Blue_Gemstone", "Yellow_Gemstone", "Red_Gemstone"]),
+    ("elemental", 25, ["Flame_Heart", "Mistic_Frozen", "Rough_Wind", "Great_Nature",
+                       "Boody_Red", "Crystal_Blue", "Wind_Of_Verdure", "Yellow_Live"]),
+    ("boxes", 25, ["Old_Blue_Box", "Old_Violet_Box", "Old_Card_Album", "Magic_Card_Album",
+                   "Bloody_Dead_Branch", "Branch_Of_Dead_Tree"]),
+    ("ygg", 30, ["Yggdrasilberry", "Seed_Of_Yggdrasil", "Leaf_Of_Yggdrasil"]),
+    ("berries", 25, sorted(BERRIES)),
+    ("dragon", 30, ["Dragon_Scale", "Dragon_Canine", "Dragon_Train", "Burning_Heart"]),
+]
+
+
+def market_items(names):
+    """The aegis names of those this era has, tradeable, once each."""
+    out = []
+    for n in names:
+        e = item(n)
+        if e and tradeable(e) and e["AegisName"] not in out:
+            out.append(e["AegisName"])
+    return out
+
+
+def place_items(key, n=15):
+    """A dungeon's (AREAS_LOOT) or field's (FIELD_SPOTS) loot, the commonest first."""
+    for k, _, files in AREAS_LOOT:
+        if k == key:
+            counts = place_counts(files=files)
+            break
+    else:
+        for k, _, maps, keep in FIELD_SPOTS:
+            if k == key:
+                counts = place_counts(maps=maps)
+                break
+        else:
+            return []
+    loot = place_loot(counts)
+    return [ITEMS_BY_ID[i]["AegisName"] for i in sorted(loot, key=lambda i: -loot[i])[:n]]
+
+
+def market_events():
+    """(key, text, days, [(change_min, change_max, [aegis...])]) for this era."""
+    rng = random.Random("market-news")
+    quest = [e["AegisName"] for e in sorted((ITEMS_BY_ID[i] for i in QUEST_ASKS if i in ITEMS_BY_ID),
+                                            key=lambda e: -QUEST_ASKS[e["Id"]])
+             if buyable(e) and e.get("Type") == "Etc"][:12]
+    cards = [ITEMS_BY_ID[i]["AegisName"] for i in sorted(COMMON_CARDS | RARE_CARDS, key=lambda i: -popularity(ITEMS_BY_ID[i]))
+             if i in ITEMS_BY_ID and tradeable(ITEMS_BY_ID[i])][:40]
+    everyday = sorted(e["AegisName"] for e in ITEMS_BY_ID.values()
+                      if e.get("Type") in ("Healing", "Usable") and tradeable(e) and 0 < (price(e) or 0) < 5_000)
+    junk = [e["AegisName"] for e in sorted((e for e in ITEMS_BY_ID.values() if e.get("Type") == "Etc" and buyable(e)),
+                                          key=lambda e: -DROPPERS.get(e["Id"], 0))][:12]
+    food = ["Apple", "Banana", "Grape", "Carrot", "Meat", "Honey", "Royal_Jelly", "Strawberry", "Orange", "Lemon",
+            "Red_Potion", "Orange_Potion", "Yellow_Potion", "White_Potion"]
+    pets = [spec if isinstance(spec, str) else spec["item"] for t in THEMES if t["key"] == "pets" for spec in t["items"]]
+    events = [
+        ("woe_season", "War of Emperium season: guilds stock up on potions and gems.", 5,
+         [(20, 40, ["White_Potion", "Blue_Potion", "Red_Slim_Potion", "Yellow_Slim_Potion", "White_Slim_Potion",
+                    "Blue_Gemstone", "Yellow_Gemstone", "Red_Gemstone", "Acid_Bottle", "Fire_Bottle"])]),
+        ("refining_fever", "The Prontera smith has a lucky week, everyone wants to refine.", 4,
+         [(20, 35, ["Elunium", "Oridecon", "Elunium_Stone", "Oridecon_Stone", "Steel"])]),
+        ("hat_craze", "A new hat is in fashion: quest materials sought.", 5, [(25, 50, quest)]),
+        ("card_craze", "Collectors are buying up cards.", 4, [(15, 30, cards)]),
+        ("alchemist_order", "The Alchemist Guild places a big order.", 4,
+         [(25, 45, sorted(HERBS) + ["Empty_Bottle", "Medicine_Bowl", "Starsand_Of_Witch", "Stem"])]),
+        ("gambling_night", "Gamblers flock to Prontera: boxes and albums in demand.", 3,
+         [(20, 40, ["Old_Blue_Box", "Old_Violet_Box", "Old_Card_Album", "Magic_Card_Album",
+                    "Bloody_Dead_Branch", "Branch_Of_Dead_Tree"])]),
+        ("pet_fair", "A pet fair in Prontera: taming items and pet food sought.", 3, [(30, 60, pets)]),
+        ("orc_rampage", "Adventurers flood the orc fields: orc loot everywhere.", 4,
+         [(-40, -25, place_items("orc_fields"))]),
+        ("spore_harvest", "A bumper spore season in Payon.", 4,
+         [(-35, -20, ["Strawberry", "Poison_Spore", "Mushroom_Spore", "Stem"])]),
+        ("glast_heim_purge", "A guild cleared Glast Heim, its loot is everywhere.", 4,
+         [(-40, -25, place_items("glast_heim"))]),
+        ("dragon_hunt", "Dragon hunters return from Magma and Abyss Lake.", 4,
+         [(-40, -25, ["Dragon_Scale", "Dragon_Canine", "Dragon_Train", "Burning_Heart"])]),
+        ("merchant_clearance", "A big merchant is closing shop: everyday goods cheap.", 3,
+         [(-25, -15, rng.sample(everyday, min(10, len(everyday))))]),
+        ("smith_overstock", "Forges are overstocked: ores at a discount.", 3,
+         [(-30, -15, ["Elunium", "Oridecon", "Elunium_Stone", "Oridecon_Stone", "Iron", "Coal"])]),
+        ("festival", "Festival! Food and potions sought, junk loot ignored.", 3,
+         [(20, 20, food), (-15, -15, junk)]),
+    ]
+    places = dict((k, re.sub(r" (Drops|Loot)$", "", t)) for k, t, _ in AREAS_LOOT)
+    for flood, scarce in [("byalan", "payon_cave"), ("glast_heim", "sphinx"), ("clock_tower", "turtle_island"),
+                          ("magma", "abyss_lake"), ("orc_dungeon", "geffenia"), ("pyramids", "toy_factory")]:
+        events.append((f"migration_{flood}_{scarce}",
+                       f"Monsters are on the move: {places[flood]} loot floods in, {places[scarce]} loot grows scarce.", 4,
+                       [(-30, -30, place_items(flood)), (30, 30, place_items(scarce))]))
+    return events
+
+
+
+# Every item the stalls and buyers deal in, filled in as the themes resolve.
+MARKET_ITEMS = set()
+
+
+def market_volume(e):
+    """How many change hands on a normal day: its customers and sellers a day
+    (the price list), times what each deals in (cheap loot by the hundred,
+    dear things one at a time)."""
+    lo, hi, _ = TABLE.get(e["Id"], (0, 0, ""))
+    p = (lo + hi) // 2 if lo else (price(e) or 0)
+    buyers, sellers = demand(e, lo, hi, 0)
+    deals = max(1.0, (buyers + max(sellers, 1)) / 2.0)
+    each = 100 if p < 1000 else 3 if p < 20000 else 1.5 if p < 200000 else 1
+    return max(1, round(deals * each))
+
+
+def write_market_script():
+    """npc/prontera-vendors-market-data.txt: the market's data, filled into
+    temporary server variables at start ($@pv_*), read by the market script."""
+    groups = [(key, share, market_items(names)) for key, share, names in MARKET_GROUPS]
+    groups = [(key, share, items) for key, share, items in groups if len(items) >= 2]
+    events = []
+    for key, text, days, effects in market_events():
+        fx = [(lo, hi, market_items(names)) for lo, hi, names in effects]
+        fx = [(lo, hi, items) for lo, hi, items in fx if items][:2]
+        if fx:
+            events.append((key, text, days, fx))
+    ids = set(MARKET_ITEMS)
+    for _, _, items in groups:
+        ids.update(item(n)["Id"] for n in items)
+    for _, _, _, fx in events:
+        for _, _, items in fx:
+            ids.update(item(n)["Id"] for n in items)
+    out = ["//===== Ragnarok Offline: prontera-vendors =================================",
+           "//= The dynamic market's data, for npc/prontera-vendors-market.txt.",
+           "//= GENERATED by registry/tools/prontera-vendors/build_vendors.py",
+           "//= (MARKET_GROUPS, market_events, market_volume); a re-run overwrites it.",
+           "//===========================================================================",
+           "-\tscript\tProntVendorsMarketData\t-1,{",
+           "\tend;",
+           "OnInit:",
+           "\t// How many of each item change hands on a normal day.",
+           "\tdeletearray $@pv_vol;"]
+    vol = sorted((i, market_volume(ITEMS_BY_ID[i])) for i in ids if i in ITEMS_BY_ID)
+    for k in range(0, len(vol), 8):
+        out.append("\t" + " ".join(f"$@pv_vol[{i}] = {v};" for i, v in vol[k:k + 8]))
+    out += ["\t// Groups: their items in a row, where each starts, how many, and the share of a move.",
+            "\tdeletearray $@pv_gitem; deletearray $@pv_gstart; deletearray $@pv_glen; deletearray $@pv_gshare; deletearray $@pv_ig;"]
+    flat, seen = [], set()
+    for g, (key, share, items) in enumerate(groups):
+        mine = [item(n)["Id"] for n in items]
+        out.append(f"\t$@pv_gstart[{g}] = {len(flat)}; $@pv_glen[{g}] = {len(mine)}; $@pv_gshare[{g}] = {share}; // {key}")
+        for i in mine:
+            if i not in seen:  # an item's first group is its group
+                out.append(f"\t$@pv_ig[{i}] = {g + 1};")
+                seen.add(i)
+        flat += mine
+    for k in range(0, len(flat), 16):
+        out.append(f"\tsetarray $@pv_gitem[{k}], " + ", ".join(map(str, flat[k:k + 16])) + ";")
+    out.append(f"\t$@pv_gcount = {len(groups)};")
+    out += ["\t// News: key, board text, days; up to two effects each (percent range, items).",
+            "\tdeletearray $@pv_evkey$; deletearray $@pv_evtext$; deletearray $@pv_evdays; deletearray $@pv_fxev;",
+            "\tdeletearray $@pv_fxmin; deletearray $@pv_fxmax; deletearray $@pv_fxstart; deletearray $@pv_fxlen; deletearray $@pv_fxitem;"]
+    flat, f = [], 0
+    for e, (key, text, days, fx) in enumerate(events):
+        out.append(f'\t$@pv_evkey$[{e}] = "{key}"; $@pv_evtext$[{e}] = {q(text)}; $@pv_evdays[{e}] = {days};')
+        for lo, hi, items in fx:
+            mine = [item(n)["Id"] for n in items]
+            out.append(f"\t$@pv_fxev[{f}] = {e}; $@pv_fxmin[{f}] = {lo}; $@pv_fxmax[{f}] = {hi}; "
+                       f"$@pv_fxstart[{f}] = {len(flat)}; $@pv_fxlen[{f}] = {len(mine)};")
+            flat += mine
+            f += 1
+    for k in range(0, len(flat), 16):
+        out.append(f"\tsetarray $@pv_fxitem[{k}], " + ", ".join(map(str, flat[k:k + 16])) + ";")
+    out += [f"\t$@pv_evcount = {len(events)};", f"\t$@pv_fxcount = {f};", "\tend;", "}"]
+    npc = os.path.join(os.path.dirname(OUT_DB), "npc")
+    os.makedirs(npc, exist_ok=True)
+    open(os.path.join(npc, "prontera-vendors-market-data.txt"), "w", encoding="utf-8", newline="\n").write("\n".join(out) + "\n")
+    print(f"  market: {len(vol)} item volumes, {len(groups)} groups, {len(events)} news events", file=sys.stderr)
+
+
 def write_table():
     import csv
     priced = sorted(popularity(ITEMS_BY_ID[i]) for i, (lo, _, _) in TABLE.items() if lo)
@@ -2058,6 +2249,7 @@ def main():
                     "    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }",
                     "    Pool:"]
         for e, spec, p in lines:
+            MARKET_ITEMS.add(e["Id"])
             if buying:
                 BUY_WANTED.add(e["Id"])
                 lo_p = TABLE.get(e["Id"], (0, 0, ""))[0] or band(p)[0]
@@ -2101,6 +2293,7 @@ def main():
         ]))
         print(f"  {t['key']}: {len(lines)} items", file=sys.stderr)
     write_table()
+    write_market_script()
 
     # The market: every sidewalk spot rolls one of the themes whenever a stall
     # is put there, so the street changes as stalls rotate. Its Count is what
