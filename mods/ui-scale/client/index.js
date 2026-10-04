@@ -21,6 +21,8 @@ const LABELS = {
     CashShopIcon: 'Cash shop icon',
     RodexIcon: 'Mail icon',
     PCGoldTimer: 'Gold timer',
+    JoystickUI: 'Gamepad hotbar',
+    JoystickSelectionUI: 'Gamepad shortcut picker',
     Equipment: 'Equipment',
     SkillList: 'Skills',
     SkillDescription: 'Skill description',

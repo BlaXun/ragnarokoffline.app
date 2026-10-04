@@ -2173,7 +2173,8 @@ gives it the global factor back.
 
 Only the windows `windows()` names can be scaled: the hotbar (`ShortCut`,
 `ShortCuts`), the chat (`ChatBox`), `Inventory`, the status icons
-(`StatusIcons`), the HP/SP window (`BasicInfo`), `MiniMap` and other windows
+(`StatusIcons`), the HP/SP window (`BasicInfo`), `MiniMap`, the gamepad
+hotbar along the bottom (`JoystickUI`) and other windows
 the client has checked to keep dragging, resizing and scrolling at another
 size. A name it doesn't list is a `TypeError`, and so is a value that is not a
 number. A version of a window is scaled by its public name (the client's

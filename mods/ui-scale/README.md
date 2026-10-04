@@ -13,8 +13,8 @@ Browser zoom (Ctrl +) is the other way to make the interface larger: it
 scales every window at once and leaves the 3D view alone. The two combine.
 
 Only the windows the client has checked to keep working at another size are
-listed: the hotbar, chat, inventory, buff icons, basic info, minimap and the
-other common windows. The rest stay as they are.
+listed: the hotbar, chat, inventory, buff icons, basic info, minimap, the
+gamepad hotbar along the bottom and the other common windows. The rest stay as they are.
 
 It is also the worked example of two client API features:
 
