@@ -1016,12 +1016,62 @@ static bool pop_skill_weapon_ok(map_session_data *sd, uint16 skill_id)
 	return weapon == 0 || pc_check_weapontype(sd, weapon);
 }
 
+/// The state a skill needs before rAthena lets it start (skill_db Requires: State): a stance for a
+/// Sky Emperor's Light of Sun, a shield for Auto Guard, a Mado for a Mechanic's attacks, water
+/// underfoot for Water Ball, and so on. skill_check_condition_castbegin refuses the cast without
+/// it, so a row that does not check it was tried and refused every few seconds (a Sky Emperor in
+/// Lunar Stance had Light of Sun, Light of Star and Falling Star refused 66 times each). Mirrors
+/// that check, without its failure message.
+static bool pop_skill_state_ok(map_session_data *sd, uint16 skill_id, uint16 skill_lv)
+{
+	const std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	if (!skill)
+		return true;
+	// Spirit spheres, or a Gunslinger's coins (the same counter): a Night Watch with no coins had
+	// Adjustment, Madness Canceller, Increasing Accuracy and Magical Bullet refused 24 times each.
+	const int lv = cap_value(static_cast<int>(skill_lv), 1, MAX_SKILL_LEVEL);
+	if (skill->require.spiritball[lv - 1] > 0 && sd->spiritball < skill->require.spiritball[lv - 1])
+		return false;
+	// AP (4th jobs): a Night Watch with too little AP had Hidden Card (125 AP) refused 37 times.
+	if (skill->require.ap[lv - 1] > 0 && sd->battle_status.ap < static_cast<uint32>(skill->require.ap[lv - 1]))
+		return false;
+	// A status that stops the caster using skills: an Inquisitor under Steel Body tried Blessing
+	// and Increase AGI 52 times. Without a target this is the caster's half of the check every
+	// cast makes (unit_skilluse_id2), so it covers Silence, Berserk and the rest too.
+	if (!status_check_skilluse(sd, nullptr, skill_id, 0))
+		return false;
+	const status_change *sc = &sd->sc;
+	switch (skill->require.state) {
+	case ST_HIDDEN:        return pc_ishiding(sd);
+	case ST_RIDING:        return pc_isriding(sd) || pc_isridingdragon(sd);
+	case ST_FALCON:        return pc_isfalcon(sd);
+	case ST_CART:          return pc_iscarton(sd);
+	case ST_SHIELD:        return sd->status.shield > 0;
+	case ST_RECOVER_WEIGHT_RATE: return !sd->regen.state.overweight;
+	case ST_WATER:
+		return sc->getSCE(SC_DELUGE) || sc->getSCE(SC_SUITON)
+			|| (map_getcell(sd->m, sd->x, sd->y, CELL_CHKWATER) && !map_getcell(sd->m, sd->x, sd->y, CELL_CHKLANDPROTECTOR));
+	case ST_RIDINGDRAGON:  return pc_isridingdragon(sd);
+	case ST_WUG:           return pc_iswug(sd);
+	case ST_RIDINGWUG:     return pc_isridingwug(sd);
+	case ST_MADO:          return pc_ismadogear(sd);
+	case ST_ELEMENTALSPIRIT:
+	case ST_ELEMENTALSPIRIT2: return sd->ed != nullptr;
+	case ST_PECO:          return pc_isriding(sd);
+	case ST_SUNSTANCE:     return sc->getSCE(SC_SUNSTANCE) || sc->getSCE(SC_UNIVERSESTANCE);
+	case ST_MOONSTANCE:    return sc->getSCE(SC_LUNARSTANCE) || sc->getSCE(SC_UNIVERSESTANCE);
+	case ST_STARSTANCE:    return sc->getSCE(SC_STARSTANCE) || sc->getSCE(SC_UNIVERSESTANCE);
+	case ST_UNIVERSESTANCE: return sc->getSCE(SC_UNIVERSESTANCE) != nullptr;
+	default:               return true; // ST_NONE, ST_MOVE_ENABLE: checked when the cast starts
+	}
+}
+
 /// Unified condition gate that picks between the flat-enum legacy path and the
 /// expanded boolean tree based on whether the entry has a tree attached.
 /// Templated over the skill struct type so it works for both attack and buff entries.
 template <typename SkillT>
 static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& sk, block_list* target_bl) {
-	if (!pop_skill_weapon_ok(sd, sk.skill_id))
+	if (!pop_skill_weapon_ok(sd, sk.skill_id) || !pop_skill_state_ok(sd, sk.skill_id, sk.skill_lv))
 		return false;
 	// RAGNAROKMAC: enemy_count_nearby counts the whole detection range (30 cells), so a blast
 	// around the caster fired at a crowd it could not reach. Count only what the blast hits.
@@ -2488,6 +2538,13 @@ void population_engine_shell_reactive_cast(map_session_data *sd)
 {
 	if (!sd || !sd->state.population_combat)
 		return;
+	// RAGNAROKMAC: the hit that kills a shell fires this too, and so does every hit landing on
+	// it before the corpse is cleared. A dead caster is refused by unit_skilluse_id2 with no
+	// message; on a map too strong for its shells, dead ones tried Endure, Heal, Hiding and Back
+	// Slide hundreds of times. It fires as the damage lands, when HP is already 0 but pc_dead has
+	// not yet set the dead flag (pc_isdead), so check HP (status_isdead) as unit_skilluse_id2 does.
+	if (pc_isdead(sd) || status_isdead(*sd))
+		return;
 	const t_tick now = gettick();
 	// --- Buff pass (Target:1 and Target:2 skills) ---
 	if (!sd->pop.buff_skills.empty())
@@ -2621,7 +2678,7 @@ int population_engine_combat_per_tick(map_session_data *sd, bool do_skills)
 {
 	if (sd == nullptr)
 		return -1;
-	if (pc_isdead(sd))
+	if (pc_isdead(sd) || status_isdead(*sd))
 		return 0;
 	s_population &pe = sd->pop;
 	const bool hired_companion = sd->status.party_id > 0 && sd->status.party_id < 0x70000000
