@@ -68,12 +68,22 @@ POOL_MAX = 50_000_000
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
-# Prontera's sidewalks: west (x=147) and east (x=164) of the main road.
+# Stalls per market by default, and the most the settings allow.
+STALLS = 30
+STALLS_MAX = 100
+
+# Prontera's sidewalks: west (x=147) and east (x=164) of the main road, and
+# the two rows east of the fountain (y=110 and y=125). The market fills them
+# one lane at a time in this order ("Fill: Lanes"), each stall next to the
+# last, as players crowd into a street that is already busy: the lanes at the
+# top (north) first, then the bottom, then the left, then the right.
 AREAS = [
-    {"X1": 147, "Y1": 136, "X2": 147, "Y2": 170},
-    {"X1": 164, "Y1": 135, "X2": 164, "Y2": 173},
-    {"X1": 147, "Y1": 52, "X2": 147, "Y2": 111},
-    {"X1": 164, "Y1": 52, "X2": 164, "Y2": 111},
+    {"X1": 147, "Y1": 136, "X2": 147, "Y2": 170},  # top, west
+    {"X1": 164, "Y1": 135, "X2": 164, "Y2": 173},  # top, east
+    {"X1": 147, "Y1": 52, "X2": 147, "Y2": 111},   # bottom, west
+    {"X1": 164, "Y1": 52, "X2": 164, "Y2": 111},   # bottom, east
+    {"X1": 172, "Y1": 125, "X2": 207, "Y2": 125},  # right, upper row
+    {"X1": 172, "Y1": 110, "X2": 207, "Y2": 110},  # right, lower row
 ]
 
 # ---------------------------------------------------------------------------
@@ -114,6 +124,11 @@ def npc_shop_prices():
             if not f.endswith(".txt"):
                 continue
             for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
+                # A commented-out shop sells nothing: renewal's shops.txt keeps
+                # a disabled test shop that "sold" Old Card Albums at 10,000z,
+                # which capped every OCA price to that.
+                if line.lstrip().startswith("//"):
+                    continue
                 parts = line.rstrip("\n").split("\t")
                 if len(parts) >= 4 and parts[1] in ("shop", "marketshop"):
                     for tok in parts[3].split(",")[1:]:
@@ -137,6 +152,8 @@ def npc_shop_items():
             if not f.endswith(".txt"):
                 continue
             for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
+                if line.lstrip().startswith("//"):
+                    continue
                 parts = line.rstrip("\n").split("\t")
                 # Plain zeny shops and market shops (id:price[:stock])...
                 if len(parts) >= 4 and parts[1] in ("shop", "marketshop"):
@@ -254,9 +271,12 @@ def price(e, refresh=False):
 def priced(e, refresh=False):
     """(price, source) on the chosen SCALE, or (None, None).
 
-    A row edited by hand in the price table wins. Then the main source's market
-    price, then the other source's converted with the per-category factor, then
-    the NPC-based floor."""
+    A price fixed in PRICE_SET wins, then a row edited by hand in the price
+    table. Then the main source's market price, then the other source's
+    converted with the per-category factor, then the NPC-based floor."""
+    fixed = PRICE_SET.get(e["AegisName"])
+    if fixed:
+        return sum(fixed) // 2, "set"
     row = TABLE.get(e["Id"])
     if row and row[2] == "manual" and row[0] > 0:
         return (row[0] + row[1]) // 2, "manual"
@@ -336,6 +356,18 @@ except FileNotFoundError:
 # kRO has nothing; "iro": the other way round.
 SCALE = "kro"
 KRO_MIN_SAMPLES = 3
+
+# Prices set here rather than taken from a market, as [min, max] per era. They
+# live in the script, not as hand edits in the price table, so --reprice keeps
+# them and the reason stays beside the number.
+# Card albums: kRO's median (~300k) is a cash-shop price, and on this price
+# list an Old Card Album rolls a card worth ~975k on average in renewal (~667k
+# pre-renewal), so it sells for about that, under the 2.5M the Eden market NPC
+# asks. A Mystical Card Album is a shot at the rare cards: three OCAs' worth.
+PRICE_SET = {
+    "re": {"Old_Card_Album": (900_000, 1_100_000), "Magic_Card_Album": (2_700_000, 3_300_000)},
+    "pre-re": {"Old_Card_Album": (600_000, 750_000), "Magic_Card_Album": (1_800_000, 2_250_000)},
+}[ERA]
 
 
 def popularity(e):
@@ -717,6 +749,19 @@ for _key, _titles, _jobs in [
     THEMES.append(dict(key=_key, job=random.Random(_key).choice(["Merchant", "Blacksmith", "Whitesmith", "Alchemist", "Creator"]),
                        pick=[5, 9], weight=1, rule=class_gear(_jobs), titles=_titles + [f"{{name}}'s {_titles[0]}"]))
 
+def is_dyestuff(e):
+    # Mysterious Dyestuff is a quest token an NPC hands out for 1z, not a dye.
+    return "Dyestuff" in e["Name"] and "Mysterious" not in e["Name"]
+
+
+# Dyestuffs: a stall that sells nothing else says so on every sign, with no
+# generic titles mixed in.
+THEMES.append(dict(key="dyes", job="Alchemist", pick=[5, 9], weight=1, generic=0,
+                   titles=["S> Dyestuffs", "wts dyestuffs cheap", "Dyestuffs, every color", "Rainbow Dyestuffs",
+                           "Dyestuffs n pigments", "Dye ur hats! Dyestuffs", "Paint the town: Dyestuffs",
+                           "Black n White Dyestuffs here", "Dyestuffs for hat quests", "{name}'s Dyestuffs"],
+                   rule=lambda e: e.get("Type") == "Etc" and is_dyestuff(e)))
+
 # Shops by weapon type and by armor slot, the way many players sort a cart.
 def wtype(*subtypes):
     return lambda e: e.get("Type") == "Weapon" and e.get("SubType") in subtypes
@@ -751,10 +796,9 @@ for _key, _titles, _rule in [
      lambda e: e.get("Type") == "Ammo"),
     ("scrolls", ["scrolls", "S> magic scrolls", "spell scrolls fs"],
      lambda e: e.get("Type") in ("Usable", "DelayConsume") and "Scroll" in e["Name"]),
-    ("dyes", ["dyes", "S> dyestuffs", "colors n cloth"],
-     lambda e: e.get("Type") == "Etc" and ("Dyestuff" in e["Name"] or "Dyestuffs" in e["Name"])),
+    # Dyestuffs have a stall of their own (below), so this one shows the rest.
     ("rare_etc", ["rare loot", "collector items", "S> rare etc"],
-     lambda e: e.get("Type") == "Etc" and (price(e) or 0) >= 100_000),
+     lambda e: e.get("Type") == "Etc" and (price(e) or 0) >= 100_000 and not is_dyestuff(e)),
 ]:
     THEMES.append(dict(key=_key, job=random.Random(_key).choice(["Merchant", "Blacksmith", "Whitesmith", "Alchemist", "Creator"]),
                        pick=[5, 9], weight=1, rule=_rule, titles=_titles + [f"{{name}}'s {_titles[0].capitalize()}"]))
@@ -788,10 +832,13 @@ for _key, _title, _lo, _hi in [("loot_lv1_20", "lvl 1-20 mob loot", 1, 20), ("lo
 
 # Generic shop signs. Real stalls often say nothing about what they sell;
 # these are the kind sampled from iRO shops (no player names). Each theme
-# gets a few, so about a third of signs are like this.
-GENERIC_TITLES = ["Stuff", "SALE", "Happy hunting!", "...", "zzz", "Things.", "etc", "cheap stuff", "junk shop",
-                  "Goodies", "This looks good", "AFK-----AFK", "Come on", "Come here u", "Sell", "See",
-                  "Stuff you might want", "Bringing Simples You Need Cheap", "cheap stuff 2", "sale", "random"]
+# gets a few, so about a third of signs are like this. A sign that offers
+# goods ("SALE") only goes on a stall that sells, a "WTB" only on a buyer;
+# the neutral ones fit either.
+GENERIC_TITLES = ["Happy hunting!", "...", "zzz", "Things.", "etc", "AFK-----AFK", "Come on", "Come here u", "See"]
+SELL_TITLES = ["Stuff", "SALE", "sale", "Sell", "cheap stuff", "cheap stuff 2", "junk shop", "Goodies",
+               "This looks good", "Stuff you might want", "Bringing Simples You Need Cheap", "random"]
+BUY_TITLES = ["Buying", "B>", "WTB", "buying stuff", "B> paying well", "B> > npc price", "WTB, fair prices"]
 
 # Card binders by slot, the way players sort them. Cards are among the most
 # traded things on a real server (about one shop in eight in the iRO sample
@@ -820,15 +867,20 @@ for _key, _titles, _rule in [
 
 # Buy shops: players' buying stores, which ask for items instead of selling
 # them. rAthena lets a buying store take only items flagged BuyingStore, and
-# at most 5 kinds at once. They pay under the market (60-85 % of the sell
-# range's low end) and anyone can open one, so buyers wear any job's sprite.
+# at most 5 kinds at once. Anyone can open one, so buyers wear any job's
+# sprite. Most of them buy what a player brings home from hunting: common
+# loot, quest turn-ins, the loot of a dungeon or a leveling field. Those pay
+# 75-95 % of the low end of the sell range, so selling to them beats an NPC;
+# the rest (cards, boxes, ygg, gems...) pay 60-85 %. Either way a buyer pays
+# less than any stall asks, so nothing can be bought and sold back for profit.
 BUY_PREFIX = "prontera-vendors/buy/"
 BUY_MARKET = BUY_PREFIX + "sidewalks"
+# Filled in the same order as the sell lanes: top first, then the left.
 BUY_AREAS = [
-    {"X1": 140, "Y1": 136, "X2": 140, "Y2": 172},
-    {"X1": 171, "Y1": 136, "X2": 171, "Y2": 172},
-    {"X1": 104, "Y1": 110, "X2": 135, "Y2": 110},
-    {"X1": 104, "Y1": 125, "X2": 135, "Y2": 125},
+    {"X1": 140, "Y1": 136, "X2": 140, "Y2": 172},  # top, west (outer sidewalk)
+    {"X1": 171, "Y1": 136, "X2": 171, "Y2": 172},  # top, east (outer sidewalk)
+    {"X1": 104, "Y1": 125, "X2": 135, "Y2": 125},  # left, upper row
+    {"X1": 104, "Y1": 110, "X2": 135, "Y2": 110},  # left, lower row
 ]
 BUY_JOBS = {  # sprite -> a gear set that fits it
     "Knight": "para_knight_base", "LordKnight": "para_knight_base", "RuneKnight": "para_knight_base",
@@ -840,31 +892,117 @@ BUY_JOBS = {  # sprite -> a gear set that fits it
     "AssassinCross": "para_thief", "Rogue": "para_thief", "Stalker": "para_thief", "GuillotineCross": "para_thief",
     "Blacksmith": "para_merchant", "Alchemist": "para_merchant", "Merchant": "para_merchant",
 }
+PAY_COMMON = (0.75, 0.95)
+PAY_OTHER = (0.60, 0.85)
 
 
 def buyable(e):
     return bool((e.get("Flags") or {}).get("BuyingStore")) and tradeable(e)
 
 
+def named(*names):
+    """Aegis names of items by their display names, those this era has."""
+    out = set()
+    for n in names:
+        e = ITEMS_BY_NAME.get(n.lower())
+        if e:
+            out.add(e["AegisName"])
+    return out
+
+
+ITEMS_BY_NAME = {e["Name"].lower(): e for e in ITEMS_BY_ID.values() if e.get("Name")}
+
+UPGRADE = {"Oridecon", "Elunium", "Oridecon_Stone", "Elunium_Stone", "Emveretarcon"}
+CRAFTING = {"Steel", "Iron", "Iron_Ore", "Coal", "Star_Crumb"}
+ELEMENTAL = {"Flame_Heart", "Mistic_Frozen", "Rough_Wind", "Great_Nature", "Boody_Red", "Crystal_Blue",
+             "Wind_Of_Verdure", "Yellow_Live", "Elemental_Fire", "Elemental_Water", "Elemental_Earth",
+             "Elemental_Wind"}
+HERBS = {"Green_Herb", "Red_Herb", "Yellow_Herb", "White_Herb", "Blue_Herb"}
+# Alchemist and Genetic brewing: Witched Starsand above all ("always a buy
+# shop for Witch Starsand and brewing materials").
+ALCHEMY = {"Empty_Bottle", "Poison_Spore", "Medicine_Bowl", "Detrimindexta", "Karvodailnirol", "Poison_Bottle",
+           "Acid_Bottle", "Fire_Bottle", "Stem", "Blossom_Of_Maneater", "Aloe_Leaflet", "Starsand_Of_Witch",
+           "Mushroom_Spore", "Root_Of_Maneater", "Heart_Of_Mermaid", "Fluorescent_Liquid"}
+# SP food nobody can buy from an NPC: many players keep a buying store open
+# for Strawberries alone.
+BERRIES = named("Strawberry", "Grape", "Honey", "Lemon", "Apple", "Banana", "Carrot", "Orange")
+# Repeatable EXP quests (Langry, Halgus, Laertes, Yullo, Private Jeremy, Shone,
+# Lemly, Li, Lella, Cuir, the Einbroch villager, Lilla, the vegetable farmer)
+# and the Eden Group's collecting missions: what they ask for, in bulk.
+TURN_INS = named("Fluff", "Chrysalis", "Powder of Butterfly", "Porcupine Quill", "Stone Heart", "Earthworm Peeling",
+                 "Frill", "Dokebi Horn", "Huge Leaf", "Anolian Skin", "Bacillus", "Sharp Leaf", "Antelope Horn",
+                 "Skel-Bone", "Animal Skin", "Bear's Footskin", "Insect Feeler", "Garlet", "Yoyo Tail", "Acorn",
+                 "Raccoon Leaf", "Mole Whiskers", "Mole Claw", "Fine Sand", "Grit", "Sticky Webfoot",
+                 "Maneater Blossom", "Bloody Page", "Mystic Horn", "Fragment", "Rusty Screw")
 # Items with buyers of their own, kept out of the general potion and
 # consumable buyers.
 BUY_SPECIALS = {"Old_Card_Album", "Magic_Card_Album", "Old_Blue_Box", "Old_Violet_Box", "Bloody_Dead_Branch",
                 "Branch_Of_Dead_Tree", "Old_Gift_Box", "Yggdrasilberry", "Seed_Of_Yggdrasil", "Leaf_Of_Yggdrasil",
-                "Royal_Jelly", "Fruit_Of_Mastela"}
+                "Royal_Jelly", "Fruit_Of_Mastela"} | BERRIES
+# What a dedicated buyer already takes; the junk buyer leaves it to them.
+OWN_BUYER = UPGRADE | CRAFTING | ELEMENTAL | HERBS | ALCHEMY | BERRIES
+
+
+def quest_asks():
+    """Item id -> how many NPC scripts of this era ask a player for it
+    (countitem), the measure of what quests want."""
+    asks = {}
+    for root, _, files in os.walk(os.path.join(RA, "npc")):
+        if os.sep + OTHER_ERA + os.sep in root + os.sep or os.sep + "custom" in root or os.sep + "test" in root:
+            continue
+        for f in files:
+            if not f.endswith(".txt"):
+                continue
+            seen = set()
+            for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
+                if line.lstrip().startswith("//"):
+                    continue
+                for m in re.finditer(r"countitem\(\s*(\w+)\s*\)", line):
+                    t = m.group(1)
+                    e = ITEMS_BY_ID.get(int(t)) if t.isdigit() else item(t)
+                    if e:
+                        seen.add(e["Id"])
+            for i in seen:
+                asks[i] = asks.get(i, 0) + 1
+    return asks
+
+
+QUEST_ASKS = quest_asks()
 
 BUY_THEMES = [
     # The buyers a real server always has, so each has a Min in the market:
-    # upgrade ores above all, crafting materials, elemental stones, herbs and
-    # alchemy materials.
+    # upgrade ores above all, crafting materials, elemental stones, herbs,
+    # alchemy materials, berries and the junk every hunter carries.
     dict(key="upgrade", titles=["B> ori elu", "buying ores", "B> Oridecon / Elunium", "WTB elu ori rough",
                                 "B> rough ori / rough elu", "{name} buys ores"],
-         rule=lambda e: buyable(e) and e["AegisName"] in {"Oridecon", "Elunium", "Oridecon_Stone", "Elunium_Stone",
-              "Emveretarcon"}, weight=3, min=2, max=3),
+         rule=lambda e: buyable(e) and e["AegisName"] in UPGRADE, weight=3, min=2, max=3),
     dict(key="crafting", titles=["B> steel iron coal", "buying crafting mats", "B> star crumbs", "WTB smith mats"],
-         rule=lambda e: buyable(e) and e["AegisName"] in {"Steel", "Iron", "Iron_Ore", "Coal", "Star_Crumb"},
-         weight=2, min=1, max=2),
-    dict(key="cards_common", titles=["B> cards", "buying cards", "WTB cards", "B> common cards"],
-         rule=lambda e: buyable(e) and e["Id"] in COMMON_CARDS, weight=2),
+         rule=lambda e: buyable(e) and e["AegisName"] in CRAFTING, weight=2, min=1),
+    dict(key="elemental", titles=["B> ele stones", "buying flame hearts etc", "B> converters"],
+         rule=lambda e: buyable(e) and e["AegisName"] in ELEMENTAL, weight=2, min=1),
+    dict(key="herbs", titles=["B> herbs", "buying green herbs", "B> red/yellow herbs", "WTB herbs"],
+         rule=lambda e: buyable(e) and e["AegisName"] in HERBS, weight=2, min=1, pay=PAY_COMMON),
+    dict(key="alchemy", titles=["B> alche mats", "buying bottles n bowls", "WTB alchemy stuff", "B> witched starsand",
+                                "B> brewing mats"],
+         rule=lambda e: buyable(e) and e["AegisName"] in ALCHEMY, weight=2, min=1, pay=PAY_COMMON),
+    dict(key="berries", titles=["B> straws", "buying strawberries", "B> strawberry grape honey", "WTB SP food",
+                                "B> straws, good price"],
+         rule=lambda e: buyable(e) and e["AegisName"] in BERRIES, weight=2, min=1, pay=PAY_COMMON),
+    dict(key="junk", titles=["B> jellopy n fluff", "buying junk loot", "B> your loot, > npc", "WTB common drops",
+                             "B> shells feathers etc", "dump ur loot here"],
+         rule=lambda e: buyable(e) and e.get("Type") == "Etc" and e["AegisName"] not in OWN_BUYER
+         and not ("Gemstone" in e["AegisName"] or "Jewel" in e["AegisName"] or e["AegisName"].endswith("_Ore"))
+         and DROPPERS.get(e["Id"], 0) >= 15 and 0 < (price(e) or 0) < 2_000,
+         rank=lambda e: DROPPERS.get(e["Id"], 0), limit=40, weight=2, min=1, pay=PAY_COMMON),
+    # The rest rotate.
+    dict(key="turn_ins", titles=["B> turn-in items", "buying quest turn-ins", "B> fluff/grit/huge leaf",
+                                 "WTB Eden mission items", "B> exp quest items"],
+         rule=lambda e: buyable(e) and e["AegisName"] in TURN_INS, weight=2, pay=PAY_COMMON),
+    dict(key="quest_mats", titles=["B> quest items", "buying hat quest mats", "WTB loot for quests"],
+         rule=lambda e: buyable(e) and e.get("Type") == "Etc" and QUEST_ASKS.get(e["Id"], 0) >= 2,
+         rank=lambda e: QUEST_ASKS.get(e["Id"], 0), limit=80, weight=2, pay=PAY_COMMON),
+    dict(key="dyestuffs", titles=["B> Dyestuffs", "buying dyestuffs", "WTB scarlet/white dyestuffs"],
+         rule=lambda e: buyable(e) and is_dyestuff(e)),
     dict(key="cards_rare", titles=["B> good cards", "buying rare cards", "WTB cards, fair price"],
          rule=lambda e: buyable(e) and e["Id"] in RARE_CARDS),
     dict(key="boxes", titles=["B> OCA", "B> OBB OPB", "buying boxes", "B> BB / DB", "WTB albums"],
@@ -879,33 +1017,20 @@ BUY_THEMES = [
          rule=lambda e: buyable(e) and e.get("Type") in ("Usable", "DelayConsume") and e["AegisName"] not in BUY_SPECIALS),
     dict(key="gems", titles=["B> gems", "buying jewels", "B> blue gems"],
          rule=lambda e: buyable(e) and ("Gemstone" in e["AegisName"] or "Jewel" in e["AegisName"])),
-    dict(key="elemental", titles=["B> ele stones", "buying flame hearts etc", "B> converters"],
-         rule=lambda e: buyable(e) and e["AegisName"] in {"Flame_Heart", "Mistic_Frozen", "Rough_Wind", "Great_Nature",
-              "Boody_Red", "Crystal_Blue", "Wind_Of_Verdure", "Yellow_Live", "Elemental_Fire", "Elemental_Water",
-              "Elemental_Earth", "Elemental_Wind"}, weight=2, min=1, max=2),
-    dict(key="herbs", titles=["B> herbs", "buying green herbs", "B> red/yellow herbs", "WTB herbs"],
-         rule=lambda e: buyable(e) and e["AegisName"] in {"Green_Herb", "Red_Herb", "Yellow_Herb", "White_Herb",
-              "Blue_Herb"}, weight=2, min=1, max=2),
-    dict(key="alchemy", titles=["B> alche mats", "buying bottles n bowls", "WTB alchemy stuff"],
-         rule=lambda e: buyable(e) and e["AegisName"] in {"Empty_Bottle", "Poison_Spore", "Medicine_Bowl",
-              "Detrimindexta", "Karvodailnirol", "Poison_Bottle", "Acid_Bottle", "Fire_Bottle", "Stem",
-              "Blossom_Of_Maneater", "Aloe_Leaflet"}, weight=2, min=1, max=2),
-    dict(key="quest_mats", titles=["B> quest items", "buying hat quest mats", "WTB loot for quests"],
-         rule=lambda e: buyable(e) and e.get("Type") == "Etc" and popularity(e) >= 2000),
-    dict(key="loot_low", titles=["B> low lv loot", "buying loot lv 1-40", "B> mob loot"],
-         levels=(1, 40), buyfilter=True),
-    dict(key="loot_mid", titles=["B> loot lv 41-80", "buying mid loot", "B> drops"],
-         levels=(41, 80), buyfilter=True),
-    dict(key="loot_high", titles=["B> high lv loot", "buying loot lv 81+", "B> rare drops"],
-         levels=(81, 175), buyfilter=True),
     dict(key="random", titles=["Buying", "B> stuff", "buying random loot", "B>"],
-         rule=lambda e: buyable(e) and e.get("Type") in ("Etc", "Card", "Healing", "Usable") and popularity(e) >= 200,
+         rule=lambda e: buyable(e) and e.get("Type") in ("Etc", "Card", "Healing", "Usable") and popularity(e) >= 200
+         and e["Id"] not in COMMON_CARDS,
          sample="random", limit=60),
 ]
-for _t in BUY_THEMES:
-    _t.update(buy=True, pick=[2, 5], job=random.Random(_t["key"]).choice(sorted(BUY_JOBS)))
-    _t.setdefault("weight", 1)
-    _t["titles"] = _t["titles"] + [f"{{name}} is buying"]
+# Loot by monster level, the same bands as the sell stalls (and one past 99
+# where the era has such monsters). Unlike a sell stall, a buyer keeps the
+# drops many monsters share: those are exactly what a hunter carries home.
+for _lo, _hi in [(1, 20), (21, 40), (41, 60), (61, 80), (81, 99), (100, 175)]:
+    BUY_THEMES.append(dict(key=f"loot_lv{_lo}_{_hi}" if _hi < 175 else f"loot_lv{_lo}_up",
+                           titles=[f"B> lv {_lo}-{_hi} loot" if _hi < 175 else f"B> lv {_lo}+ loot",
+                                   f"buying loot from lv {_lo}-{_hi} mobs" if _hi < 175 else f"buying lv {_lo}+ mob loot",
+                                   "B> mob loot", "B> drops"],
+                           levels=(_lo, _hi), buyfilter=True, limit=80, pay=PAY_COMMON))
 
 
 def buy_amount(p, rng):
@@ -985,6 +1110,141 @@ for _m in MOBS.values():
 # A loot stall skips what more kinds of monster than this drop (Elunium,
 # Yggdrasil Berry...), so each dungeon's stall shows its own loot.
 LOOT_MAX_DROPPERS = 12
+# Buyers are looser: a place's own loot is often shared (Skel-Bone, Huge Leaf),
+# and that is what its hunters carry. Only the drops of nearly everything
+# (Jellopy, Garlet, fruit) are left to the junk buyer.
+PLACE_MAX_DROPPERS = 40
+
+
+def spawn_lines():
+    """(file under npc/<era>/mobs, map, mob id, count) for every normal spawn line."""
+    out = []
+    base = os.path.join(RA, "npc", ERA, "mobs")
+    for root, _, files in os.walk(base):
+        for f in files:
+            if not f.endswith(".txt"):
+                continue
+            rel = os.path.relpath(os.path.join(root, f), base).replace(os.sep, "/")
+            for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
+                if line.lstrip().startswith("//"):
+                    continue
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 4 or not parts[1].startswith("monster"):
+                    continue
+                mid = mob_ref(parts[3])
+                fields = parts[3].split(",")
+                n = int(fields[1]) if len(fields) > 1 and fields[1].strip().isdigit() else 1
+                if mid in MOBS and mid not in MVP_IDS:
+                    out.append((rel, parts[0].split(",")[0], mid, n))
+    return out
+
+
+SPAWN_LINES = spawn_lines()
+
+
+def place_counts(files=(), maps=()):
+    """Mob id -> how many spawn in these spawn files (a bare name means
+    dungeons/) or on these maps."""
+    files = {f if "/" in f else "dungeons/" + f for f in files}
+    out = {}
+    for rel, mp, mid, n in SPAWN_LINES:
+        if rel in files or mp in maps:
+            out[mid] = out.get(mid, 0) + n
+    return out
+
+
+def place_loot(counts, keep=()):
+    """Item id -> how much of it a place yields (spawn count x drop rate): the
+    buyable loot of its monsters, its most common first."""
+    w = {}
+    for mid, n in counts.items():
+        for d in MOBS[mid].get("Drops") or []:
+            e = item(d["Item"])
+            if not e or not buyable(e):
+                continue
+            if e["AegisName"] not in keep and (e.get("Type") != "Etc" or DROPPERS.get(e["Id"], 0) > PLACE_MAX_DROPPERS):
+                continue
+            w[e["Id"]] = w.get(e["Id"], 0) + n * d.get("Rate", 1)
+    return w
+
+
+def top_monster(counts):
+    """The monster a place is known for: the one that spawns most, leaving out
+    plants and eggs, which nobody hunts."""
+    best = sorted((-n, mid) for mid, n in counts.items()
+                  if MOBS[mid].get("Race") != "Plant" and not MOBS[mid]["Name"].endswith("Egg"))
+    return MOBS[best[0][1]]["Name"] if best else None
+
+
+# Leveling fields players farm, from iRO's leveling-spot lists, where the loot
+# has buyers on real servers: quest turn-ins (Grit and Fine Sand for Eden,
+# Antelope Horn and Bacillus for the EXP quests), Strawberries and spores,
+# Dragon Scales for Abyss Lake. The monsters come from this era's spawns, so
+# the same field reads differently in each era. (key, sign name, maps, keep:
+# items kept even when they are not loot proper)
+FIELD_SPOTS = [
+    ("spore_fields", "Spore field", ["pay_fild08", "mjolnir_06", "cmd_fild01"],
+     {"Strawberry", "Poison_Spore", "Mushroom_Spore", "Stem"}),
+    ("payon_forest", "Payon Forest", ["pay_fild09", "pay_fild10"], {"Branch_Of_Dead_Tree"}),
+    ("sograt", "Sograt Desert", ["moc_fild11", "moc_fild16", "moc_fild17", "moc_fild18"], set()),
+    ("orc_fields", "Orc field", ["gef_fild10", "gef_fild14"], set()),
+    ("kokomo", "Kokomo Beach", ["cmd_fild02", "cmd_fild03", "cmd_fild04"], set()),
+    ("geffen_fields", "Geffen field", ["gef_fild08"], set()),
+    ("juno_fields", "Juno field", ["yuno_fild06", "yuno_fild07", "yuno_fild11"], set()),
+    ("einbroch_fields", "Einbroch field", ["ein_fild01", "ein_fild04", "ein_fild06", "lhz_fild01"], set()),
+    ("rachel_fields", "Rachel field", ["ra_fild05", "ra_fild12"], set()),
+    ("quest_fields", "Ayothaya/Umbala", ["ayo_fild01", "um_fild01", "mjolnir_01"], set()),
+]
+# Dungeons with a buyer but no sell stall of their own.
+BUY_ONLY_DUNGEONS = [
+    ("thor_volcano", "Thor's Volcano", ["thor_v.txt"]),
+    ("labyrinth", "Labyrinth Forest", ["prt_maze.txt"]),
+    ("geffen_dungeon", "Geffen Dungeon", ["gef_dun.txt"]),
+    ("mjolnir_mine", "Mjolnir Mine", ["mjo_dun.txt"]),
+    ("gonryun", "Gonryun", ["gon_dun.txt"]),
+    ("louyang", "Louyang", ["lou_dun.txt"]),
+    ("ayothaya", "Ayothaya", ["ayo_dun.txt"]),
+    ("einbroch_mine", "Einbroch Mine", ["ein_dun.txt"]),
+    ("moscovia", "Moscovia", ["mosk_dun.txt"]),
+    ("brasilis", "Brasilis", ["bra_dun.txt"]),
+    ("nidhoggur", "Nidhoggur's Nest", ["nyd_dun.txt"]),
+    ("abbey", "Cursed Abbey", ["abbey.txt"]),
+    ("rachel_sanctuary", "Rachel Sanctuary", ["ra_san.txt"]),
+    ("umbala", "Umbala", ["um_dun.txt"]),
+]
+# A place whose monsters leave fewer kinds than this has no buyer in that era.
+PLACE_MIN_ITEMS = 5
+
+
+def place_buyer(key, place, counts, keep=()):
+    loot = place_loot(counts, keep)
+    if len(loot) < PLACE_MIN_ITEMS:
+        return None
+    mon = top_monster(counts)
+    titles = [f"Buying {place} loot", f"WTB> {place} loot", f"B> {place} drops", f"{{name}} buys {place} loot"]
+    if mon:
+        titles += [f"B> {mon} loot", f"WTB {mon} drops"]
+    return dict(key=key, titles=titles, place=[ITEMS_BY_ID[i] for i in loot], rank=lambda e, w=loot: w[e["Id"]],
+                limit=40, weight=1, max=1, pay=PAY_COMMON, location=True)
+
+
+for _key, _title, _files in AREAS_LOOT:
+    _t = place_buyer("dungeon_" + _key, re.sub(r" (Drops|Loot)$", "", _title), place_counts(files=_files))
+    if _t:
+        BUY_THEMES.append(_t)
+for _key, _place, _files in BUY_ONLY_DUNGEONS:
+    _t = place_buyer("dungeon_" + _key, _place, place_counts(files=_files))
+    if _t:
+        BUY_THEMES.append(_t)
+for _key, _place, _maps, _keep in FIELD_SPOTS:
+    _t = place_buyer("field_" + _key, _place, place_counts(maps=_maps), _keep)
+    if _t:
+        BUY_THEMES.append(_t)
+
+for _t in BUY_THEMES:
+    _t.update(buy=True, pick=[2, 5], job=random.Random(_t["key"]).choice(sorted(BUY_JOBS)))
+    _t.setdefault("weight", 1)
+    _t["titles"] = _t["titles"] + [f"{{name}} is buying"]
 
 # Card tiers by the monster that drops them: level and boss class, since
 # nearly every card drops at the same 0.01%.
@@ -1032,7 +1292,7 @@ def spawned_mobs():
     return out
 
 
-def level_items(lo, hi):
+def level_items(lo, hi, max_droppers=LOOT_MAX_DROPPERS):
     spawned = spawned_mobs()
     out = {}
     for mid, m in MOBS.items():
@@ -1040,7 +1300,7 @@ def level_items(lo, hi):
             continue
         for d in m.get("Drops") or []:
             e = item(d["Item"])
-            if e and e.get("Type") != "Card" and DROPPERS.get(e["Id"], 0) <= LOOT_MAX_DROPPERS:
+            if e and e.get("Type") != "Card" and DROPPERS.get(e["Id"], 0) <= max_droppers:
                 out[e["Id"]] = e
     return list(out.values())
 
@@ -1087,8 +1347,12 @@ def theme_candidates(theme):
         candidates = boss_items()
     elif theme.get("mvp"):
         candidates = mvp_items()
+    elif "place" in theme:
+        # A place buyer's loot, already chosen and weighted: all of it.
+        return [e for e in theme["place"] if tradeable(e)]
     elif "levels" in theme:
-        candidates = level_items(*theme["levels"])
+        candidates = level_items(*theme["levels"],
+                                 max_droppers=PLACE_MAX_DROPPERS if theme.get("buyfilter") else LOOT_MAX_DROPPERS)
         if theme.get("buyfilter"):
             candidates = [e for e in candidates if buyable(e)]
     candidates = [e for e in candidates if tradeable(e)]
@@ -1155,7 +1419,7 @@ def resolve(theme, refresh, rng):
             p = price(e, refresh)
             if p is None or p > POOL_MAX:
                 continue
-            ranked.append((popularity(e), e, p))
+            ranked.append((theme.get("rank", popularity)(e), e, p))
         limit = theme.get("limit", 30)
         if theme.get("sample") == "random":
             random.Random(theme["key"]).shuffle(ranked)
@@ -1223,6 +1487,10 @@ def fill_table():
     for e in ITEMS_BY_ID.values():
         if not tradeable(e) or not e.get("Name"):
             continue
+        fixed = PRICE_SET.get(e["AegisName"])
+        if fixed:
+            TABLE[e["Id"]] = (*fixed, "set")
+            continue
         row = TABLE.get(e["Id"])
         if row and row[2] == "manual":
             continue
@@ -1242,7 +1510,8 @@ def write_table():
                 "# Source: kro (RagMAYA, kRO vending), ragnastats (iRO, converted),\n"
                 "# npc (from the NPC price), sibling (a same-named item's price),\n"
                 "# estimate (a model's guess from drops, levels and stats: a ballpark,\n"
-                "# worth checking), manual (changed by hand; kept on re-runs).\n"
+                "# worth checking), manual (changed by hand; kept on re-runs),\n"
+                "# set (fixed in build_vendors.py's PRICE_SET; wins over this file).\n"
                 "# Refined, forged and carded lines are priced in population_vendors.yml.\n")
         w = csv.writer(f, lineterminator="\n")
         w.writerow(["Id", "Name", "Min", "Max", "Source"])
@@ -1285,7 +1554,9 @@ def main():
         buying = t.get("buy", False)
         key = (BUY_PREFIX if buying else PREFIX) + t["key"]
         out = [f"  - VendorKey: {key}", "    Type: Pool", f"    Title: {q(t['titles'][0])}", "    TitleFromPool:"]
-        titles = list(t["titles"]) + random.Random(t["key"]).sample(GENERIC_TITLES, t.get("generic", 3))
+        # Generic signs that fit the stall: never a "SALE" over a buyer.
+        generic = [x for x in (BUY_TITLES if buying else SELL_TITLES) + GENERIC_TITLES if x not in t["titles"]]
+        titles = list(t["titles"]) + random.Random(t["key"]).sample(generic, t.get("generic", 3))
         out += [f"      - {q(x)}" for x in titles]
         lo, hi = t["pick"]
         max_slots = min(12, max(hi, 1))
@@ -1304,8 +1575,9 @@ def main():
         for e, spec, p in lines:
             if buying:
                 lo_p = TABLE.get(e["Id"], (0, 0, ""))[0] or band(p)[0]
+                pay_lo, pay_hi = t.get("pay", PAY_OTHER)
                 d = {"Item": e["AegisName"], "Amount": buy_amount(p, rng),
-                     "Price": [tidy(max(1, int(lo_p * 0.6))), tidy(max(1, int(lo_p * 0.85)))]}
+                     "Price": [tidy(max(1, int(lo_p * pay_lo))), tidy(max(1, int(lo_p * pay_hi)))]}
                 out.append(f"      - {flow(d)}")
                 continue
             d = {"Item": e["AegisName"], "Amount": amount_for(e, p, rng)}
@@ -1345,7 +1617,8 @@ def main():
     # The market: every sidewalk spot rolls one of the themes whenever a stall
     # is put there, so the street changes as stalls rotate. Its Count is what
     # the "Sell stalls" setting replaces.
-    m = [f"  - Market: {MARKET}", "    Spawns:", "      - Map: prontera", "        Count: 20", "        Areas:"]
+    m = [f"  - Market: {MARKET}", "    Spawns:", "      - Map: prontera", f"        Count: {STALLS}",
+         "        Fill: Lanes", "        Areas:"]
     m += [f"          - {flow(a)}" for a in AREAS]
     m.append("    Themes:")
     for key in market:
@@ -1361,7 +1634,8 @@ def main():
 
     # The buy market: the same, on its own sidewalks, replaced by "Buy stalls".
     if buy_market:
-        bm = [f"  - Market: {BUY_MARKET}", "    Spawns:", "      - Map: prontera", "        Count: 20", "        Areas:"]
+        bm = [f"  - Market: {BUY_MARKET}", "    Spawns:", "      - Map: prontera", f"        Count: {STALLS}",
+              "        Fill: Lanes", "        Areas:"]
         bm += [f"          - {flow(a)}" for a in BUY_AREAS]
         bm.append("    Themes:")
         spec = {BUY_PREFIX + t["key"]: t for t in BUY_THEMES}
@@ -1370,9 +1644,17 @@ def main():
             w = {"Theme": key, "Weight": t.get("weight", 1)}
             if t.get("min"):
                 w["Min"] = t["min"]
-            w["Max"] = t.get("max", 2)
+            w["Max"] = t.get("max", 3)
             bm.append(f"      - {flow(w)}")
         vendors.insert(1, "\n".join(bm))
+        room = sum(t.get("max", 3) for t in BUY_THEMES if BUY_PREFIX + t["key"] in buy_market)
+        if room < STALLS_MAX:
+            print(f"  WARNING: buy themes allow only {room} stalls at once, below the {STALLS_MAX} the setting allows",
+                  file=sys.stderr)
+        loc = sum(t["weight"] for t in BUY_THEMES if t.get("location") and BUY_PREFIX + t["key"] in buy_market)
+        allw = sum(t["weight"] for t in BUY_THEMES if BUY_PREFIX + t["key"] in buy_market)
+        print(f"  buy market: {len(buy_market)} themes, room for {room}; places carry {loc}/{allw} of the weight",
+              file=sys.stderr)
 
     head = (
         "###########################################################################\n"
