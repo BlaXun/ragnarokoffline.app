@@ -2068,8 +2068,7 @@ static uint32 pop_companion_party_threat(map_session_data *sd)
 	return 0;
 }
 
-/// RAGNAROKMAC: how far from its owner a companion takes on a monster by itself (Attack mode), and
-/// so how far it may stray while fighting one (pop_companion_follow_owner).
+/// RAGNAROKMAC: how far from its owner a companion takes on a monster by itself (Attack mode).
 static constexpr int kCompanionCombatRadius = 12;
 
 /// A companion only joins combat chosen by its owner or forced on the party.
@@ -2208,18 +2207,20 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		return false;
 	}
 
-	// RAGNAROKMAC: how far the companion may stray from its owner. Combat takes monsters up to
-	// 12 cells from the owner (pop_companion_combat_target), but the follow walked the companion
-	// back as soon as it was 5 cells away: it set off for a monster 8 cells out, turned back at
-	// the fifth cell, took the monster again on arrival, and paced back and forth until the
-	// owner came closer. While it fights a monster inside that radius it may go as far as the
-	// fight takes it; once the owner moves on and the monster is left behind, the leash is 4.
+	// RAGNAROKMAC: how far the companion may stray from its owner. Combat takes monsters some way
+	// from the owner (Attack mode up to 12 cells; the owner's target, a party threat or the last
+	// attacker with no limit), but the follow walked the companion back as soon as it was 5 cells
+	// away: it set off for a monster 8 cells out, turned back at the fifth cell, took the monster
+	// again on arrival, and paced back and forth until the owner came closer. While it fights a
+	// monster within the owner's sight it may go as far as the fight takes it, up to where it
+	// would be warped back anyway; once the owner moves on and leaves the monster out of sight,
+	// the leash is 4.
 	int leash = 4;
 	if (sd->pop.target_id != 0) {
 		block_list *target = map_id2bl(static_cast<int>(sd->pop.target_id));
 		if (target && target->m == owner->m && !status_isdead(*target)
-		    && check_distance_bl(owner, target, kCompanionCombatRadius))
-			leash = kCompanionCombatRadius + 2;
+		    && check_distance_bl(owner, target, AREA_SIZE))
+			leash = AREA_SIZE + 2;
 	}
 
 	if (now < sd->pop.companion_follow_next)
