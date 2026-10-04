@@ -275,13 +275,65 @@ struct PopAllySearchCtx {
 	int               best_hp_pct;     ///< Tracks lowest HP% seen (100=no winner yet)
 	map_session_data *result;          ///< Best ally found (nullptr if none)
 	sc_type           gives_sc = SC_NONE; ///< Status the skill gives the ally, if any
+	int               result_rank = 3;   ///< pop_ally_rank() of `result`; lower goes first
 };
+
+/// An ally no skill can be aimed at: a GM's @hide (OPTION_INVISIBLE), or hiding, cloaking or
+/// chase walk. rAthena refuses the cast (status_check_skilluse) with no message, so picking one
+/// spent every turn on a refusal; with the owner first in line, a hidden owner got all of them.
+static bool pop_ally_untargetable(const map_session_data *ally)
+{
+	return pc_isinvisible(ally) || (ally->sc.option & (OPTION_HIDE | OPTION_CLOAK | OPTION_CHASEWALK)) != 0;
+}
+
+/// Who a buff goes to first when several allies lack it: the companion's owner (0), then other
+/// players (1), then companions and AI players (2). The scan used to take whoever the map listed
+/// first, so in a party of companions the player was often buffed last, or not at all.
+static int pop_ally_rank(const map_session_data *shell, const map_session_data *ally)
+{
+	if (shell->pop.companion_owner_account != 0 && ally->status.account_id == shell->pop.companion_owner_account)
+		return 0;
+	return population_engine_is_population_pc(ally->id) ? 2 : 1;
+}
+
+/// Keep `ally` if it outranks the one found so far. Returns 1 (stop the scan) once the owner is found.
+static int32 pop_ally_offer(PopAllySearchCtx *ctx, map_session_data *ally)
+{
+	const int rank = pop_ally_rank(ctx->shell, ally);
+	if (ctx->result == nullptr || rank < ctx->result_rank) {
+		ctx->result = ally;
+		ctx->result_rank = rank;
+	}
+	return rank == 0 ? 1 : 0;
+}
 
 /// True if giving `ally` the status `sc_id` would end a buff it holds that in turn ends `sc_id`.
 /// Two such buffs cancel each other (pre-renewal Kyrie Eleison and Assumptio), so two rows
 /// that each check only their own status would recast them over each other on the same ally,
 /// tick after tick, until the caster ran out of SP. The buff already there holds. A debuff the
 /// new status ends (Increase AGI over Decrease AGI) is still cleared.
+/// Whether Devotion on this ally would be refused when the cast completes, by the same checks
+/// rAthena makes (skills/swordman/sacrifice.cpp): a base level gap past devotion_level_difference,
+/// an ally another Crusader already devotes, a Crusader-line ally, Hell Power, or no free slot.
+/// A level 13 owner was out of a level 90 Royal Guard's reach, and every cast at them was refused.
+static bool pop_ally_devotion_refused(const map_session_data *shell, const map_session_data *ally)
+{
+	if (std::abs(static_cast<int>(shell->status.base_level) - static_cast<int>(ally->status.base_level))
+	    > battle_config.devotion_level_difference)
+		return true;
+	const status_change_entry *dev = ally->sc.getSCE(SC_DEVOTION);
+	if (dev && dev->val1 != shell->id)
+		return true;
+	if ((ally->class_ & MAPID_SECONDMASK) == MAPID_CRUSADER || ally->sc.getSCE(SC_HELLPOWER))
+		return true;
+	const int known = pc_checkskill(const_cast<map_session_data *>(shell), CR_DEVOTION);
+	const int slots = std::min(known > 0 ? known : 5, MAX_DEVOTION);
+	for (int i = 0; i < slots; ++i)
+		if (shell->devotion[i] == ally->id || shell->devotion[i] == 0)
+			return false;
+	return true;
+}
+
 static bool pop_ally_buff_clashes(map_session_data *ally, sc_type sc_id)
 {
 	if (sc_id == SC_NONE)
@@ -308,6 +360,22 @@ static bool pop_is_party_ally(const map_session_data *shell, const map_session_d
 		&& shell->status.party_id > 0
 		&& shell->status.party_id < 0x70000000
 		&& shell->status.party_id == ally->status.party_id;
+}
+
+/// Whom a shell's heals and buffs may go to. Real players only when they are its owner, in its
+/// party, or an arena ally. Other shells: any of them for an ambient shell, but a hired companion keeps to
+/// its own side (its owner's other companions, or its party), or it healed and buffed AI players
+/// that happened to pass; a Royal Guard cast Piety at a stranger's bot.
+static bool pop_shell_may_help(const map_session_data *shell, const map_session_data *ally)
+{
+	if (pop_is_party_ally(shell, ally) || population_engine_arena_is_ally(shell, ally))
+		return true;
+	if (shell->pop.companion_owner_account != 0 && ally->status.account_id == shell->pop.companion_owner_account)
+		return true;
+	if (!ally->state.population_combat)
+		return false;
+	return shell->pop.companion_owner_account == 0
+		|| ally->pop.companion_owner_account == shell->pop.companion_owner_account;
 }
 
 struct PopDeadAllySearchCtx {
@@ -415,12 +483,13 @@ static int32 pop_ally_hp_scan_cb(block_list *bl, va_list ap)
 	if (ally->id == ctx->shell->id) return 0;
 	// Real players are skipped UNLESS they are an arena ally of this shell
 	// (team-2 shell + real player on the same arena map = mutual allies).
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
 	if (ally->battle_status.max_hp == 0) return 0;
 	const int pct = static_cast<int>(ally->battle_status.hp * 100 / ally->battle_status.max_hp);
 	if (pct < ctx->hp_threshold && pct < ctx->best_hp_pct) {
@@ -504,19 +573,18 @@ static int32 pop_ally_status_scan_cb(block_list *bl, va_list ap)
 	if (!ally) return 0;
 	PopAllySearchCtx *ctx = va_arg(ap, PopAllySearchCtx*);
 	if (ally->id == ctx->shell->id) return 0;
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
 	if (ctx->sc_resolved < 0) return 0;
 	const status_change *sca = status_get_sc(ally);
 	const bool has_it = sca && sca->hasSCE(static_cast<sc_type>(ctx->sc_resolved));
-	if (has_it == ctx->want_has_status) {
-		ctx->result = ally;
-		return 1; // stop scan
-	}
+	if (has_it == ctx->want_has_status)
+		return pop_ally_offer(ctx, ally);
 	return 0;
 }
 
@@ -527,14 +595,14 @@ static int32 pop_ally_any_scan_cb(block_list *bl, va_list ap)
 	if (!ally) return 0;
 	PopAllySearchCtx *ctx = va_arg(ap, PopAllySearchCtx*);
 	if (ally->id == ctx->shell->id) return 0;
-	if (!ally->state.population_combat && !pop_is_party_ally(ctx->shell, ally)
-	    && !population_engine_arena_is_ally(ctx->shell, ally))
+	if (!pop_shell_may_help(ctx->shell, ally))
 		return 0;
 	if (!ally->state.active || ally->state.warping) return 0;
 	if (status_isdead(*ally)) return 0;
+	if (pop_ally_untargetable(ally)) return 0;
 	if (pop_ally_buff_clashes(ally, ctx->gives_sc)) return 0;
-	ctx->result = ally;
-	return 1; // take the first one
+	if (ctx->gives_sc == SC_DEVOTION && pop_ally_devotion_refused(ctx->shell, ally)) return 0;
+	return pop_ally_offer(ctx, ally);
 }
 
 /// Context for Tank-role intercept: find a mob targeting a nearby real-party ally.
@@ -1337,6 +1405,11 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 {
 	if (!sd || sd->pop.buff_skills.empty())
 		return false;
+	// Already casting, or in the after-cast delay: rAthena refuses any cast until it ends, so
+	// trying spent the turn on a refusal (an Arch Bishop's ally buffs failed three times in four
+	// because a self buff had just started in the same tick).
+	if (sd->ud.skilltimer != INVALID_TIMER || DIFF_TICK(current_tick, sd->ud.canact_tick) < 0)
+		return false;
 
 	status_change *scc = status_get_sc(sd);
 
@@ -1356,6 +1429,10 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 		const uint16_t plv = pc_checkskill(sd, bs.skill_id);
 		const uint16_t use_lv = (plv > 0) ? std::min(bs.skill_lv, plv) : bs.skill_lv;
 
+		// On its own cooldown (Suffragium, Praefatio): skip it before skill_isNotOk, which would
+		// say so by sending the companion a "skill interval" failure each time it is asked.
+		if (sd->scd.find(bs.skill_id) != sd->scd.end())
+			continue;
 		if (skill_isNotOk(bs.skill_id, *sd))
 			continue;
 		// Strict gate: silence/sleep/sit/etc. (no target — pass nullptr).
@@ -1509,6 +1586,11 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 {
 	if (!sd || sd->pop.attack_skills.empty())
 		return false;
+	// Already casting, or in the after-cast delay: rAthena refuses any cast until it ends, so
+	// trying spent the turn on a refusal (an Arch Bishop's ally buffs failed three times in four
+	// because a self buff had just started in the same tick).
+	if (sd->ud.skilltimer != INVALID_TIMER || DIFF_TICK(current_tick, sd->ud.canact_tick) < 0)
+		return false;
 
 	const size_t n = sd->pop.attack_skills.size();
 	for (size_t t = 0; t < n; ++t) {
@@ -1522,6 +1604,10 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 			continue;
 		// Condition check (no enemy target_bl for ally skills).
 		if (!pop_skill_cond_satisfied(sd, sk, nullptr))
+			continue;
+		// On its own cooldown (Suffragium, Praefatio): skip it before skill_isNotOk, which would
+		// say so by sending the companion a "skill interval" failure each time it is asked.
+		if (sd->scd.find(sk.skill_id) != sd->scd.end())
 			continue;
 		if (skill_isNotOk(sk.skill_id, *sd))
 			continue;
