@@ -45,3 +45,21 @@ test('the other target rules rAthena makes are mirrored', () => {
 		'a second Marionette on the same pair ends it');
 	assert.match(refused, /default:\n\t\treturn false;/, 'any other skill is not refused');
 });
+
+const YAML = path.join(ROOT, 'third-party', 'population-engine', 'files', 'db', 'population_skill_db.yml');
+const yaml = fs.readFileSync(YAML, 'utf8').replace(/\r\n/g, '\n');
+const GEN = fs.readFileSync(path.join(ROOT, 'scripts', 'gen-population-skill-presets.py'), 'utf8');
+
+test('no White Imprison row aims at an ally, and the generator does not bring one back', () => {
+	assert.ok(!/SkillId: WL_WHITEIMPRISON,[^}]*Target: ally/.test(yaml), 'White Imprison lands only on the caster or an enemy');
+	assert.match(GEN, /\|WL_WHITEIMPRISON"/, 'the generator skips it');
+});
+
+test('Marionette waits on the caster\'s own link, not the ally\'s', () => {
+	const rows = yaml.match(/\{ SkillId: CG_MARIONETTE,[^}]*\}/g) || [];
+	assert.ok(rows.length >= 4, 'Clown, Gypsy, Troubadour and Trouvere carry it');
+	for (const row of rows)
+		assert.match(row, /Target: ally, Condition: not_self_status, CondValue: SC_MARIONETTE \}/,
+			'SC_MARIONETTE is on the caster; the ally holds SC_MARIONETTE2');
+	assert.match(GEN, /"CG_MARIONETTE":/, 'the generator leaves the hand-written rows alone');
+});
