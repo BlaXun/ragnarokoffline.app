@@ -167,6 +167,25 @@ fn translation_extras(cfg: &Config) -> Vec<(PathBuf, PathBuf)> {
         .collect()
 }
 
+/// The client asks for `SignBoardList.lub`, and the asset server matches the
+/// translation folder by exact case on Linux. The pre-renewal layer ships it
+/// as `signboardlist.lub`, so the request missed it and fell through to the
+/// GRF's renewal signboards. Renamed in the staged copy, never the source.
+fn restore_signboard_name(dir: &Path) -> Result<(), String> {
+    const NAME: &str = "SignBoardList.lub";
+    if !dir.is_dir() {
+        return Ok(());
+    }
+    for e in entries(dir)? {
+        let name = e.file_name();
+        let n = name.to_string_lossy();
+        if n != NAME && n.eq_ignore_ascii_case(NAME) {
+            fs::rename(e.path(), dir.join(NAME)).map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
+
 pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     let data = readable_path(
         Path::new(args.first().ok_or("data.grf path required")?),
@@ -243,6 +262,7 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
                 copy_over(&translation.join("Pre-Renewal").join(sub), &en.join(sub))?;
             }
         }
+        restore_signboard_name(&en.join("data/luafiles514/lua files"))?;
         for (src, dst) in translation_extras(cfg) {
             // A pin without one of them is an older translation, not a fault.
             if translation.join(&src).is_file() {
@@ -305,7 +325,10 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     )?;
     let (plugins, tables) = overlay_mods(cfg, &server_root, &merged)?;
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
-    fnv(&mut fingerprint, b"owned-assets-v2");
+    // Bumped when how the tree is staged changes without its inputs changing
+    // (v3: the signboard table's name), so a client holding the old staging in
+    // its cache drops it.
+    fnv(&mut fingerprint, b"owned-assets-v3");
     fnv(&mut fingerprint, text.as_str().as_bytes());
     // Config.local.js carries it, and that file is an ordinary HTTP request
     // the shell only re-fetches when this fingerprint moves. Left out at the
@@ -894,6 +917,69 @@ mod tests {
         missing[2] = client.join("unplugged.grf").to_str().unwrap().to_string();
         assert!(link(&cfg, &missing).unwrap_err().contains("unplugged.grf"));
         assert_eq!(fs::read(client.join("data.grf")).unwrap(), b"archive");
+        fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
+    }
+
+    /// The client asks for `SignBoardList.lub` in that case, and the asset
+    /// server reads the translation folder case-sensitively on Linux. The
+    /// pre-renewal layer ships the table as `signboardlist.lub`, so unless it
+    /// is staged under the name the client asks for, the request falls through
+    /// to the GRF and the renewal signboards stay over NPCs that have moved.
+    #[test]
+    fn the_pre_renewal_signboard_table_is_staged_under_the_name_the_client_asks_for() {
+        let cfg = fixture_config("signboard-case");
+        let client = cfg.state.parent().unwrap().join("client files");
+        write(&client.join("data.grf"), "archive");
+        let en = cfg.root.join("vendor/ROenglishRE/Translation");
+        write(&en.join("Renewal/data/table.txt"), "renewal table");
+        write(
+            &en.join("Renewal/SystemEN/LuaFiles514/itemInfo.lua"),
+            "English items",
+        );
+        write(
+            &en.join("Renewal/SystemEN/OngoingQuests.lub"),
+            "English quests",
+        );
+        let table = "data/luafiles514/lua files/signboardlist.lub";
+        write(&en.join("Pre-Renewal").join(table), "classic signs");
+        write(
+            &cfg.root.join("config/Config.local.js"),
+            "window.ROConfigLocal = {\nrenewal: true,\n};\n",
+        );
+        write(&cfg.root.join("config/index.html"), "game entry");
+        let args = vec![client.join("data.grf").to_str().unwrap().to_string()];
+        let staged = cfg
+            .state
+            .join("assets/.translation/data/luafiles514/lua files");
+        // Names as the directory lists them: an exact-case lookup is what the
+        // asset server does, and a case-insensitive filesystem would answer
+        // `exists()` for either spelling.
+        let names = |dir: &Path| -> Vec<String> {
+            fs::read_dir(dir)
+                .map(|d| {
+                    d.map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+                        .collect()
+                })
+                .unwrap_or_default()
+        };
+
+        link(&cfg, &args).unwrap();
+        assert!(
+            !names(&staged).iter().any(|n| n.eq_ignore_ascii_case("SignBoardList.lub")),
+            "renewal has no signboard table of its own; the client's stays in front"
+        );
+
+        write(&cfg.state.join("prerenewal"), "true");
+        link(&cfg, &args).unwrap();
+        assert!(
+            names(&staged).iter().any(|n| n == "SignBoardList.lub"),
+            "staged under {:?}, which the client's request does not match",
+            names(&staged)
+        );
+        assert_eq!(
+            fs::read_to_string(staged.join("SignBoardList.lub")).unwrap(),
+            "classic signs"
+        );
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
     }
 
