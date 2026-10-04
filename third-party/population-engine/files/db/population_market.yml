@@ -1,0 +1,32 @@
+# Population Engine -- dynamic market: item groups and news events.
+#
+# RAGNAROKMAC. The engine's base table is empty: a mod brings its groups and
+# events through db/import/population_market.yml (imported below). With none,
+# a mod's dynamic market still runs on trades alone, without spillover or news.
+#
+# Group: related items. When a trade moves one item's price, the others in the
+# group move by Share percent of that.
+#
+#   - Group: forge
+#     Share: 30
+#     Items: [Elunium, Oridecon, Elunium_Stone, Oridecon_Stone]
+#
+# Event: market news. When it starts, each effect moves its items' prices by a
+# percent rolled in Change: [min, max]; that holds for Days, then fades like
+# any price move. Text is what the market board shows.
+#
+#   - Event: refining_fever
+#     Text: "The Prontera smith has a lucky week, everyone wants to refine."
+#     Days: 4
+#     Effects:
+#       - { Change: [20, 35], Items: [Elunium, Oridecon] }
+#
+# Items by AegisName; an item this server does not have is skipped quietly.
+
+Header:
+  Type: POPULATION_MARKET_DB
+  Version: 1
+
+Footer:
+  Imports:
+    - Path: db/import/population_market.yml

@@ -1,0 +1,56 @@
+//===== Ragnarok Offline: prontera-vendors =================================
+//= The dynamic market: hands its settings to the population engine (from
+//= the app build that has it), which moves prices with trades and news and
+//= lets them drift back, and the market board in Prontera that shows it.
+//= Temporary server variables ($@), so removing the mod switches the market
+//= off at the next start. On an older build nothing reads them, and the
+//= board says the market is quiet.
+//===========================================================================
+-	script	ProntVendorsMarket	-1,{
+	end;
+OnInit:
+	.@mod$ = "prontera-vendors";
+	$@pop_customers_table$ = .@mod$;
+	$@pop_market = callfunc("F_ModSetting", .@mod$, "dynamic_market", 1);
+	$@pop_market_strength = callfunc("F_ModSetting", .@mod$, "market_strength", 100);
+	$@pop_market_halflife = callfunc("F_ModSetting", .@mod$, "market_recovery_hours", 72);
+	$@pop_market_news = callfunc("F_ModSetting", .@mod$, "market_news", 1);
+	end;
+}
+
+//= The market board in Prontera (131, 218): the news, and the five
+//= items rising and falling most. The engine writes $@pop_board_* once a
+//= minute. Move it by changing the coordinates below.
+prontera,131,218,4	script	Market Board#pv	4_BOARD3,{
+	mes "[Prontera Market Board]";
+	if (!$@pop_board_on) {
+		mes "The market is quiet. Prices are what they always are.";
+		close;
+	}
+	.@shown = 0;
+	for (.@i = 0; .@i < 4; .@i++) {
+		if ($@pop_board_news$[.@i] == "") continue;
+		if (!.@shown) mes "^0055CC- News -^000000";
+		mes $@pop_board_news$[.@i];
+		.@shown++;
+	}
+	.@n = 0;
+	for (.@i = 0; .@i < 5; .@i++) {
+		if ($@pop_board_up$[.@i] == "") continue;
+		if (!.@n) mes "^008800- Rising -^000000";
+		mes $@pop_board_up$[.@i];
+		.@n++;
+	}
+	.@shown += .@n;
+	.@n = 0;
+	for (.@i = 0; .@i < 5; .@i++) {
+		if ($@pop_board_down$[.@i] == "") continue;
+		if (!.@n) mes "^CC0000- Falling -^000000";
+		mes $@pop_board_down$[.@i];
+		.@n++;
+	}
+	.@shown += .@n;
+	if (!.@shown)
+		mes "Prices are steady today.";
+	close;
+}

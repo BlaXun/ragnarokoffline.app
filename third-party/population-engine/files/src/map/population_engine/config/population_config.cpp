@@ -35,6 +35,7 @@ constexpr char kNamesYaml[]       = "population_names.yml";
 constexpr char kSkillYaml[]       = "population_skill_db.yml";
 constexpr char kSpawnYaml[]       = "population_spawn.yml";
 constexpr char kVendorsYaml[]     = "population_vendors.yml";
+constexpr char kMarketYaml[]      = "population_market.yml";
 
 static std::string population_config_join_db(const char *basename)
 {
@@ -301,6 +302,7 @@ PopulationEngineDatabase g_population_vendor_pop_db("population_vendor_pop.yml")
 PopulationSkillDatabase g_population_skill_db;
 PopulationSpawnDatabase g_population_spawn_db;
 PopulationVendorDatabase g_population_vendor_db;
+PopulationMarketDatabase g_population_market_db;
 
 struct PopulationDbWiring {
 	PopulationDbWiring() {
@@ -423,6 +425,126 @@ PopulationSpawnDatabase& population_spawn_db()
 PopulationVendorDatabase& population_vendor_db()
 {
 	return g_population_vendor_db;
+}
+
+PopulationMarketDatabase& population_market_db()
+{
+	return g_population_market_db;
+}
+
+// ---------------------------------------------------------------------------
+// RAGNAROKMAC: dynamic market groups and news events
+// ---------------------------------------------------------------------------
+//
+//   - Group: forge                 - Event: refining_fever
+//     Share: 30                      Text: "The Prontera smith has a lucky week..."
+//     Items: [Elunium, ...]          Days: 4
+//                                    Effects:
+//                                      - { Change: [20, 35], Items: [Elunium, ...] }
+//
+// Items by AegisName; one this server does not have is skipped quietly (a
+// mod's list may name items of the other era).
+
+PopulationMarketDatabase::PopulationMarketDatabase()
+	: YamlDatabase("POPULATION_MARKET_DB", 1)
+{
+}
+
+void PopulationMarketDatabase::clear()
+{
+	groups_.clear();
+	events_.clear();
+	groups_of_.clear();
+}
+
+const std::string PopulationMarketDatabase::getDefaultLocation()
+{
+	return population_config_join_db(kMarketYaml);
+}
+
+const std::vector<size_t>* PopulationMarketDatabase::groups_of(t_itemid id) const
+{
+	auto it = groups_of_.find(id);
+	return it != groups_of_.end() ? &it->second : nullptr;
+}
+
+static std::vector<t_itemid> pop_market_items(const ryml::NodeRef& seq)
+{
+	std::vector<t_itemid> out;
+	if (!seq.is_seq())
+		return out;
+	for (const ryml::NodeRef& c : seq.children()) {
+		std::string name;
+		c4::csubstr v = c.val();
+		name.assign(v.str, v.len);
+		if (auto id = item_db.searchname(name.c_str()))
+			out.push_back(static_cast<t_itemid>(id->nameid));
+	}
+	return out;
+}
+
+uint64 PopulationMarketDatabase::parseBodyNode(const ryml::NodeRef& node)
+{
+	if (this->nodeExists(node, "Group")) {
+		PopulationMarketGroup g;
+		this->asString(node, "Group", g.key);
+		if (this->nodeExists(node, "Share")) {
+			int32_t share = 30;
+			if (this->asInt32(node, "Share", share))
+				g.share_pct = std::max(0, std::min(100, static_cast<int>(share)));
+		}
+		if (this->nodeExists(node, "Items"))
+			g.items = pop_market_items(node[c4::to_csubstr("Items")]);
+		if (g.items.size() < 2)
+			return 1; // nothing to spill over to in this era
+		const size_t idx = groups_.size();
+		for (t_itemid id : g.items)
+			groups_of_[id].push_back(idx);
+		groups_.push_back(std::move(g));
+		return 1;
+	}
+	if (this->nodeExists(node, "Event")) {
+		PopulationMarketEvent e;
+		this->asString(node, "Event", e.key);
+		if (this->nodeExists(node, "Text"))
+			this->asString(node, "Text", e.text);
+		if (this->nodeExists(node, "Days")) {
+			int32_t days = 3;
+			if (this->asInt32(node, "Days", days))
+				e.days = std::max(1, std::min(60, static_cast<int>(days)));
+		}
+		if (this->nodeExists(node, "Effects")) {
+			const ryml::NodeRef& fx = node[c4::to_csubstr("Effects")];
+			if (fx.is_seq()) {
+				for (const ryml::NodeRef& f : fx.children()) {
+					PopulationMarketEffect eff;
+					if (this->nodeExists(f, "Change")) {
+						const ryml::NodeRef& cn = f[c4::to_csubstr("Change")];
+						int32_t lo = 0, hi = 0;
+						if (cn.is_seq() && cn.num_children() == 2) {
+							ryml::read(cn[0], &lo);
+							ryml::read(cn[1], &hi);
+						} else if (this->asInt32(f, "Change", lo)) {
+							hi = lo;
+						}
+						if (lo > hi) std::swap(lo, hi);
+						eff.change_min = std::max(-90, static_cast<int>(lo));
+						eff.change_max = std::min(500, static_cast<int>(hi));
+					}
+					if (this->nodeExists(f, "Items"))
+						eff.items = pop_market_items(f[c4::to_csubstr("Items")]);
+					if (!eff.items.empty() && (eff.change_min != 0 || eff.change_max != 0))
+						e.effects.push_back(std::move(eff));
+				}
+			}
+		}
+		if (e.key.empty() || e.effects.empty())
+			return 1; // nothing it could move in this era
+		events_.push_back(std::move(e));
+		return 1;
+	}
+	this->invalidWarning(node, "A population_market.yml entry needs Group or Event; skipped.\n");
+	return 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,10 @@
+# Population Engine -- dynamic market groups and news events, import stub.
+#
+# Copied into db/import by `make import`, the same way rAthena's own stubs are,
+# so db/population_market.yml can import db/import/population_market.yml
+# unconditionally. A mod's db/population_market.yml replaces this file; see
+# db/population_market.yml for the format.
+
+Header:
+  Type: POPULATION_MARKET_DB
+  Version: 1

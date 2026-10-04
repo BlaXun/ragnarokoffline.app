@@ -129,6 +129,9 @@ static std::unordered_map<int32, t_tick> g_pop_chat_next_tick; ///< Per-shell ne
 /// RAGNAROKMAC: last vendor callout per map, for a mod vendor's Callouts MapGapSeconds.
 static std::unordered_map<int16, t_tick> g_pop_vendor_last_callout;
 static bool pop_mod_vendor_callout_pace(const map_session_data* sd, const PopulationVendorEntry* ve, int& lo, int& hi);
+/// RAGNAROKMAC: dynamic market (runtime/population_market.cpp, included below).
+static bool population_market_trend_line(map_session_data* sd, char* out, size_t out_sz);
+static double population_market_factor(t_itemid id);
 static int32 g_pop_chat_timer = INVALID_TIMER;
 static int32 g_population_combat_global_timer = INVALID_TIMER;
 static size_t g_chat_cursor = 0;    ///< Round-robin index for batched chat replies.
@@ -493,9 +496,13 @@ TIMER_FUNC(population_engine_chat_timer) {
 			}
 		}
 
-		const std::string& pick = (*pool)[rnd() % pool->size()];
 		char buf[CHAT_SIZE_MAX];
-		population_engine_format_chat_line(raw_sd, pick.c_str(), buf, sizeof(buf));
+		// RAGNAROKMAC: now and then a mod stall says how the market moved
+		// ("S> Elunium 9K, cheap today!") instead of its usual line.
+		if (mod_ve == nullptr || !population_market_trend_line(raw_sd, buf, sizeof(buf))) {
+			const std::string& pick = (*pool)[rnd() % pool->size()];
+			population_engine_format_chat_line(raw_sd, pick.c_str(), buf, sizeof(buf));
+		}
 		if (population_engine_chat_line_blocked(buf))
 			continue;
 
@@ -2712,6 +2719,7 @@ static bool pop_shell_open_buyingstore(map_session_data* sd, const PopulationVen
 		std::shared_ptr<item_data> id = item_db.find(vs.nameid);
 		int64_t p = vs.price_max > vs.price ? vs.price + static_cast<int64_t>(rnd() % (vs.price_max - vs.price + 1)) : vs.price;
 		p = p * pct / 100;
+		p = static_cast<int64_t>(p * population_market_factor(vs.nameid)); // RAGNAROKMAC: dynamic market
 		if (p >= 10000)     p = p / 500 * 500;
 		else if (p >= 1000) p = p / 50 * 50;
 		else if (p >= 100)  p = p / 5 * 5;
@@ -2761,7 +2769,9 @@ static bool pop_shell_open_buyingstore(map_session_data* sd, const PopulationVen
 	return true;
 }
 
-// RAGNAROKMAC: customers for real players' stalls (opt-in; see the file).
+// RAGNAROKMAC: the dynamic market, and customers for real players' stalls
+// (both opt-in; see the files).
+#include "population_engine/runtime/population_market.cpp"
 #include "population_engine/runtime/population_customers.cpp"
 
 /// RAGNAROKMAC: @vendorinfo. No argument: every mod stall on the GM's map.
@@ -2776,6 +2786,13 @@ void population_engine_vendorinfo(map_session_data* sd, const char* arg) {
 	while (!q.empty() && std::isspace(static_cast<unsigned char>(q.back()))) q.pop_back();
 	while (!q.empty() && std::isspace(static_cast<unsigned char>(q.front()))) q.erase(q.begin());
 
+	// RAGNAROKMAC: @vendorinfo market [...]: the dynamic market.
+	if (q.compare(0, 6, "market") == 0) {
+		std::string rest = q.substr(6);
+		while (!rest.empty() && std::isspace(static_cast<unsigned char>(rest.front()))) rest.erase(rest.begin());
+		population_market_info(sd, rest);
+		return;
+	}
 	// RAGNAROKMAC: @vendorinfo customers [ff <minutes>]: players' stalls.
 	if (q.compare(0, 9, "customers") == 0) {
 		std::string rest = q.substr(9);
@@ -4792,7 +4809,9 @@ TIMER_FUNC(population_engine_vendor_rotation_timer)
 	}
 	if (released > 0)
 		ShowInfo("Population engine: rotated %zu vendor shell(s).\n", released);
-	// RAGNAROKMAC: the customers of players' stalls, on the same minute.
+	// RAGNAROKMAC: the dynamic market and the customers of players' stalls,
+	// on the same minute.
+	population_market_pass();
 	population_customers_pass();
 	return 0;
 }
@@ -4837,6 +4856,9 @@ void do_init_population_engine_load_databases() {
 		ShowWarning("Population engine: population_spawn.yml missing or invalid; autosummon disabled until fixed.\n");
 	if (!population_vendor_db().load())
 		ShowWarning("Population engine: population_vendors.yml missing or invalid; vendor shells use built-in default stock.\n");
+	// RAGNAROKMAC: the dynamic market's groups and news (empty unless a mod ships them).
+	if (!population_market_db().load())
+		ShowWarning("Population engine: population_market.yml missing or invalid; the market runs without groups or news.\n");
 
 	extern struct Battle_Config battle_config;
 
@@ -4959,6 +4981,7 @@ bool population_engine_reload_equipment(uint32_t *out_entry_count)
 		ShowStatus("Population engine: population_vendors.yml reloaded (%zu entries).\n", population_vendor_db().entry_count());
 	else
 		ShowWarning("Population engine: population_vendors.yml reload failed (missing or invalid).\n");
+	population_market_db().reload();
 
 	// RAGNAROKMAC: a reload may follow a mod adding or changing map monsters.
 	g_pop_map_mob_level.clear();
@@ -6018,6 +6041,12 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					if (price_pct != 100) {
 						p = p * price_pct / 100;
 						band_lo = band_lo * price_pct / 100;
+					}
+					// RAGNAROKMAC: the dynamic market's index for the item (1.0 when off).
+					{
+						const double mf = population_market_factor(vs.nameid);
+						p = static_cast<int64_t>(p * mf);
+						band_lo = static_cast<int64_t>(band_lo * mf);
 					}
 					const bool plain = vs.refine_max == 0 && vs.element == 0 && vs.stars == 0 && vs.cards.empty();
 					if (plain && vendor_cfg->undercut_chance > 0 &&
