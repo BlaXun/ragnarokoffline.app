@@ -248,6 +248,11 @@ engine's vendors spawn exactly as upstream's do.
   price table named it does nothing, not even its clock
   (`$pop_customers_clock`). `@vendorinfo customers [ff <minutes>]` shows the
   model for the player stalls on a map, or fast-forwards them.
+- **Per-item price percentage**: a mod may set `$@pop_item_pct[<item id>]`
+  (unset or 0 = 100) to move one item's price at runtime. The engine applies
+  it, on top of the mod's price level, wherever it prices mod stalls and mod
+  buyers and in the customers' market price. prontera-vendors' dynamic market
+  sets it from its own NPC script.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).
