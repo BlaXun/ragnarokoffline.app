@@ -978,6 +978,18 @@ BUY_JOBS = {  # sprite -> a gear set that fits it
     "AssassinCross": "para_thief", "Rogue": "para_thief", "Stalker": "para_thief", "GuillotineCross": "para_thief",
     "Blacksmith": "para_merchant", "Alchemist": "para_merchant", "Merchant": "para_merchant",
 }
+
+
+def era_jobs():
+    """The jobs this era's job database has, by name without spaces or
+    underscores ("RuneKnight" = "Rune_Knight"): pre-renewal has no third
+    jobs, and a profile with one is skipped by the server."""
+    body = yaml.load(open(os.path.join(RA, "db", ERA, "job_stats.yml"), encoding="utf-8"), Loader=Loader)["Body"]
+    return {k.replace("_", "").replace(" ", "").lower() for e in body for k in (e.get("Jobs") or {})}
+
+
+ERA_JOBS = era_jobs()
+BUY_JOBS = {k: v for k, v in BUY_JOBS.items() if k.lower() in ERA_JOBS}
 PAY_COMMON = (0.75, 0.95)
 PAY_OTHER = (0.60, 0.85)
 
