@@ -591,14 +591,14 @@ static map_session_data* population_shell_find_ally_target(
 		ctx.want_has_status = false;
 		map_foreachinrange(pop_ally_status_scan_cb, sd, scan_range, BL_PC, &ctx);
 		break;
-	case C::Always:
-		// For unconditional ally casts: prefer lowest-HP ally, fallback to any
+	default:
+		// Always, and any condition that is not about an ally (map_zone, an expanded tree): the
+		// caller has already checked it, so it says when to cast, not on whom. Those rows used to
+		// find no ally at all, so Blessing "in town" never fired. Prefer the lowest-HP ally.
 		ctx.hp_threshold = 100;
 		map_foreachinrange(pop_ally_hp_scan_cb, sd, scan_range, BL_PC, &ctx);
 		if (!ctx.result)
 			map_foreachinrange(pop_ally_any_scan_cb, sd, scan_range, BL_PC, &ctx);
-		break;
-	default:
 		break;
 	}
 	return ctx.result;
