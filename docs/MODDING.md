@@ -175,7 +175,25 @@ Mods**, right below the mod's checkbox:
 app has to render them without knowing what the mod means by them. Anything
 richer is the mod's own UI problem. A number takes optional `min` and `max`, a
 string an optional `max_length` (200 at most); `key` is up to 40 letters,
-digits or underscores, and a mod may declare at most twenty.
+digits or underscores.
+
+**A mod may declare at most 20 settings.** The app refuses a `mod.json` with
+more ("a mod may declare at most 20 settings"), and a
+[settings page](#settingspage--a-settings-window-of-your-own) does not lift
+the limit: it shows the same declared settings. If you need more, in order of
+preference:
+
+- **Split the mod.** Options that turn separate features on and off usually
+  mean separate mods, each with its own few settings. A mod that needs another
+  says so with `requires.mods`, and a mod that only bundles others can list
+  them there too.
+- **Use fewer, broader settings.** One `number` setting can choose between
+  presets ("Market pace: 1 slow, 2 normal, 3 busy"), and one `string`
+  setting can hold a short list your scripts split (up to 200 characters).
+- **For options only the client uses**, keep them in
+  [`api.preferences`](#client-api-1) from your client code. They have no
+  count limit, but they're per player and per browser, the server never sees
+  them, and the Mods tab doesn't show them.
 
 The values arrive as the **first argument to your client entry point**, the one
 you were already given:
@@ -288,6 +306,10 @@ await window.modSettings.apply();                        // restart the server, 
 
 `set` takes any subset of your settings and keeps the rest as they are; a key
 you did not declare, or a value of the wrong type, is refused with the reason.
+
+So a settings page can't hold more options than `settings` declares, and the
+[20-setting limit](#settings--options-the-app-renders-for-you) applies to it as
+well. A page changes how the options look, not how many there are.
 `apply` resolves once the server is back up.
 
 The window is deliberately small in what it can do. The page is served from
