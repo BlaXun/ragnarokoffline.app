@@ -984,7 +984,7 @@ Body:
     Skills:
 
       - { SkillId: WS_CARTTERMINATION, Level: 10, Rate: 10000 }
-      - { SkillId: WS_MELTDOWN,       Level: 10, Rate: 6000  }
+      - { SkillId: WS_MELTDOWN,       Level: 10, Rate: 6000, Condition: not_self_status, CondValue: SC_MELTDOWN }
       - { SkillId: MC_MAMMONITE,       Level: 10, Rate: 7000  }
       - { SkillId: MC_CARTREVOLUTION,  Level: 1,  Rate: 6000, Condition: enemy_count_nearby, CondValue: 3 }
       - { SkillId: BS_ADRENALINE,      Level: 5,  Rate: 10000, Target: self, Condition: not_self_status, CondValue: SC_ADRENALINE }
@@ -2356,7 +2356,7 @@ Body:
   - JobId: 4072
     Skills:
 
-      - { SkillId: SC_REPRODUCE,       Level: 10, Rate: 10000 }
+      - { SkillId: SC_REPRODUCE,       Level: 10, Rate: 10000, Condition: not_self_status, CondValue: SC__REPRODUCE }
       - { SkillId: SC_FATALMENACE,     Level: 10, Rate: 10000, Condition: self_status, CondValue: SC_INVISIBILITY }
       - { SkillId: SC_FATALMENACE,     Level: 10, Rate: 10000 }
       - { SkillId: SC_TRIANGLESHOT,    Level: 10, Rate: 8000  }
@@ -2393,7 +2393,7 @@ Body:
   - JobId: 4079
     Skills:
 
-      - { SkillId: SC_REPRODUCE,       Level: 10, Rate: 10000 }
+      - { SkillId: SC_REPRODUCE,       Level: 10, Rate: 10000, Condition: not_self_status, CondValue: SC__REPRODUCE }
       - { SkillId: SC_FATALMENACE,     Level: 10, Rate: 10000, Condition: self_status, CondValue: SC_INVISIBILITY }
       - { SkillId: SC_FATALMENACE,     Level: 10, Rate: 10000 }
       - { SkillId: SC_TRIANGLESHOT,    Level: 10, Rate: 8000  }
@@ -2422,7 +2422,7 @@ Body:
 
   - JobId: 4252
     Skills:
-      - { SkillId: DK_SERVANTWEAPON, Level: 10, Rate: 10000 }
+      - { SkillId: DK_SERVANTWEAPON, Level: 10, Rate: 10000, Condition: not_self_status, CondValue: SC_SERVANTWEAPON }
       - { SkillId: DK_CHARGINGPIERCE, Level: 10, Rate: 7000, Condition: distance_above, CondValue: 3 }
       - { SkillId: DK_HACKANDSLASHER, Level: 10, Rate: 9000 }
       - { SkillId: DK_DRAGONIC_BREATH, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
@@ -2490,11 +2490,11 @@ Body:
 
   - JobId: 4254
     Skills:
-      - { SkillId: SHC_SHADOW_EXCEED, Level: 10, Rate: 9000 }
+      - { SkillId: SHC_SHADOW_EXCEED, Level: 10, Rate: 9000, Condition: not_self_status, CondValue: SC_SHADOW_EXCEED }
       - { SkillId: SHC_SAVAGE_IMPACT, Level: 10, Rate: 9000 }
       - { SkillId: SHC_ETERNAL_SLASH, Level: 10, Rate: 8000 }
       - { SkillId: SHC_DANCING_KNIFE, Level: 10, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
-      - { SkillId: SHC_POTENT_VENOM, Level: 10, Rate: 10000 }
+      - { SkillId: SHC_POTENT_VENOM, Level: 10, Rate: 10000, Condition: not_self_status, CondValue: SC_POTENT_VENOM }
       - { SkillId: ASC_BREAKER, Level: 10, Rate: 9000 }
       - { SkillId: ASC_EDP, Level: 5, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_EDP }
       - { SkillId: AS_CLOAKING, Level: 10, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_CLOAKING }
@@ -2713,9 +2713,9 @@ Body:
 
   - JobId: 4258
     Skills:
-      - { SkillId: IG_ATTACK_STANCE, Level: 10, Rate: 10000 }
+      - { SkillId: IG_ATTACK_STANCE, Level: 10, Rate: 10000, Condition: not_self_status, CondValue: SC_ATTACK_STANCE }
       - { SkillId: IG_GRAND_JUDGEMENT, Level: 10, Rate: 9000 }
-      - { SkillId: IG_REBOUND_SHIELD, Level: 10, Rate: 8000 }
+      - { SkillId: IG_REBOUND_SHIELD, Level: 10, Rate: 8000, Condition: not_self_status, CondValue: SC_REBOUND_S }
       - { SkillId: IG_HOLY_SHIELD, Level: 10, Rate: 7000, Condition: melee_attacked, CondValue: 1 }
 
       - { SkillId: AL_CURE, Level: 1, Rate: 10000, Target: self, Condition: hp_below, CondValue: 50 }
@@ -2806,9 +2806,9 @@ Body:
   - JobId: 4260
     Skills:
       - { SkillId: ABC_ABYSS_DAGGER, Level: 10, Rate: 9000 }
-      - { SkillId: ABC_ABYSS_SLAYER, Level: 10, Rate: 8000 }
+      - { SkillId: ABC_ABYSS_SLAYER, Level: 10, Rate: 8000, Condition: not_self_status, CondValue: SC_ABYSS_SLAYER }
       - { SkillId: ABC_UNLUCKY_RUSH, Level: 10, Rate: 7000 }
-      - { SkillId: ABC_FROM_THE_ABYSS, Level: 10, Rate: 8000 }
+      - { SkillId: ABC_FROM_THE_ABYSS, Level: 10, Rate: 8000, Condition: not_self_status, CondValue: SC_ABYSSFORCEWEAPON }
       - { SkillId: ABC_ABYSS_FLAME, Level: 5, Rate: 7000, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: ABC_ABYSS_SQUARE, Level: 5, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
       - { SkillId: ABC_ABYSS_STRIKE, Level: 10, Rate: 7000, AroundRange: 2, Condition: enemy_count_nearby, CondValue: 2 }
