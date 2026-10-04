@@ -195,9 +195,26 @@ What decides a sale:
 | A fake stall on the map selling it cheaper (or buying it dearer) | half as many customers, a third if it is more than 5 % better |
 | The map | Prontera in full, anywhere else 75 % |
 
-As a guide, at 100 % pace a fairly priced stack of 30 Elunium sells in about
-half a day. **Customers' pace** and **Sellers' pace** speed either up or
-slow it down.
+How often they come, at 100 % pace in Prontera and a fair price (every line
+is checked once a minute; under market more often, over it far less):
+
+| Your stall sells | Customers a day | About one every |
+|---|---|---|
+| Items fake buyers want (Elunium, Strawberry, their loot) | 12-25 | 1-2 hours |
+| Other everyday items | about 4 | 6 hours |
+| Equipment, cards | 2-3 | 8-12 hours |
+| Dear items (100k+, 1M+) | x0.6, x0.3 | slower still |
+
+| Your buying store wants | Sellers a day | About one every |
+|---|---|---|
+| Common loot (Jellopy, Sticky Mucus) | 24 | 1 hour |
+| Uncommon drops | 6-12 | 2-4 hours |
+| Rare drops | 1-2 | half a day to a day |
+| MVP-only items | never | |
+
+A customer takes 1-5 (cheap items 5-50), so a fairly priced stack of 30
+Elunium sells in about half a day. **Customers' pace** and **Sellers' pace**
+scale all of it: 200 % twice as often, 50 % half.
 
 **While you are away.** An `@autotrade` stall keeps trading. With
 **Customers come while the server is off** on, a restart also gives it the
