@@ -280,13 +280,16 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     if let Some(sys) = first_dir(&[client_dir.join("System"), client_dir.join("dll_exe/System")]) {
         for e in entries(&sys)? {
             let name = e.file_name();
-            let n = name.to_string_lossy();
+            let n = name.to_string_lossy().to_ascii_lowercase();
             // The English item and quest tables win while they are in
             // front; without them the client's own are the only copies there
             // are, and skipping them leaves the game with no item names.
+            // Matched in any case: iRO ships `iteminfo.lub`, and the client's
+            // first try, `System/itemInfo.lub`, finds it on a case-insensitive
+            // disk and never gets to the English table.
             if text.translated()
-                && (n.starts_with("itemInfo")
-                    || n.starts_with("OngoingQuestInfoList")
+                && (n.starts_with("iteminfo")
+                    || n.starts_with("ongoingquestinfolist")
                     || (n.starts_with("achievement_list") && has_achievements))
             {
                 continue;
@@ -1125,6 +1128,65 @@ mod tests {
         // A value nobody wrote is refused rather than read as the default.
         write(&cfg.state.join("settings.json"), "{\"game_text\":\"portuguese\"}");
         assert!(link(&cfg, &args).unwrap_err().contains("portuguese"));
+        fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
+    }
+
+    /// iRO's client names its tables in lower case. They are skipped all the
+    /// same while the translation is in front: the client asks for
+    /// `System/itemInfo.lub` before `itemInfo.lua`, and on Windows and macOS
+    /// that request finds `iteminfo.lub`, so the English table, and every item
+    /// only it names, was never read (standart-npc#55).
+    #[test]
+    fn the_clients_own_tables_are_skipped_in_any_case() {
+        let cfg = fixture_config("gametext-case");
+        let client = cfg.state.parent().unwrap().join("client");
+        for (path, text) in [
+            ("data.grf", "archive"),
+            ("System/iteminfo.lub", "iRO items"),
+            ("System/iteminfo_sak.lub", "iRO test items"),
+            ("System/ongoingquestinfolist_true.lub", "iRO quests"),
+            ("System/font.ttf", "font"),
+        ] {
+            write(&client.join(path), text);
+        }
+        let en = cfg.root.join("vendor/ROenglishRE/Translation");
+        write(&en.join("Renewal/data/table.txt"), "renewal table");
+        write(
+            &en.join("Renewal/SystemEN/LuaFiles514/itemInfo.lua"),
+            "English items",
+        );
+        write(
+            &en.join("Renewal/SystemEN/OngoingQuests.lub"),
+            "English quests",
+        );
+        write(
+            &cfg.root.join("config/Config.local.js"),
+            "window.ROConfigLocal = {\nrenewal: true,\nlangtype: 0,\n};\n",
+        );
+        write(&cfg.root.join("config/index.html"), "game entry");
+        let args = vec![client.join("data.grf").to_str().unwrap().to_string()];
+
+        link(&cfg, &args).unwrap();
+        let names: Vec<String> = fs::read_dir(cfg.state.join("assets/System"))
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        for gone in ["iteminfo.lub", "iteminfo_sak.lub", "ongoingquestinfolist_true.lub"] {
+            assert!(!names.iter().any(|n| n == gone), "{gone} in {names:?}");
+        }
+        assert!(names.iter().any(|n| n == "font.ttf"), "{names:?}");
+        assert_eq!(
+            fs::read_to_string(cfg.state.join("assets/System/itemInfo.lua")).unwrap(),
+            "English items"
+        );
+
+        // Without the translation they are the only tables there are.
+        write(&cfg.state.join("settings.json"), "{\"game_text\":\"client_western\"}");
+        link(&cfg, &args).unwrap();
+        assert_eq!(
+            fs::read_to_string(cfg.state.join("assets/System/iteminfo.lub")).unwrap(),
+            "iRO items"
+        );
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
     }
 
