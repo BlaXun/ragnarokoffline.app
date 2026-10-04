@@ -22,6 +22,7 @@ function fn(name) {
 test('the required state is read from the skill database and checked like castbegin does', () => {
 	const body = fn('static bool pop_skill_state_ok(');
 	assert.match(body, /switch \(skill->require\.state\)/);
+	assert.match(body, /sd->spiritball < skill->require\.spiritball\[lv - 1\]/, 'spheres or coins the skill costs');
 	for (const st of ['ST_SUNSTANCE', 'ST_MOONSTANCE', 'ST_STARSTANCE', 'ST_UNIVERSESTANCE', 'ST_SHIELD', 'ST_CART',
 		'ST_MADO', 'ST_FALCON', 'ST_WUG', 'ST_RIDINGDRAGON', 'ST_WATER', 'ST_HIDDEN'])
 		assert.match(body, new RegExp(`case ${st}:`), st);
@@ -31,5 +32,5 @@ test('the required state is read from the skill database and checked like castbe
 
 test('every skill row passes through it', () => {
 	const gate = fn('static inline bool pop_skill_cond_satisfied(');
-	assert.match(gate, /if \(!pop_skill_weapon_ok\(sd, sk\.skill_id\) \|\| !pop_skill_state_ok\(sd, sk\.skill_id\)\)\s*return false;/);
+	assert.match(gate, /if \(!pop_skill_weapon_ok\(sd, sk\.skill_id\) \|\| !pop_skill_state_ok\(sd, sk\.skill_id, sk\.skill_lv\)\)\s*return false;/);
 });

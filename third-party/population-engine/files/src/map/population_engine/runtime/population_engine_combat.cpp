@@ -949,11 +949,16 @@ static bool pop_skill_weapon_ok(map_session_data *sd, uint16 skill_id)
 /// it, so a row that does not check it was tried and refused every few seconds (a Sky Emperor in
 /// Lunar Stance had Light of Sun, Light of Star and Falling Star refused 66 times each). Mirrors
 /// that check, without its failure message.
-static bool pop_skill_state_ok(map_session_data *sd, uint16 skill_id)
+static bool pop_skill_state_ok(map_session_data *sd, uint16 skill_id, uint16 skill_lv)
 {
 	const std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
 	if (!skill)
 		return true;
+	// Spirit spheres, or a Gunslinger's coins (the same counter): a Night Watch with no coins had
+	// Adjustment, Madness Canceller, Increasing Accuracy and Magical Bullet refused 24 times each.
+	const int lv = cap_value(static_cast<int>(skill_lv), 1, MAX_SKILL_LEVEL);
+	if (skill->require.spiritball[lv - 1] > 0 && sd->spiritball < skill->require.spiritball[lv - 1])
+		return false;
 	const status_change *sc = &sd->sc;
 	switch (skill->require.state) {
 	case ST_HIDDEN:        return pc_ishiding(sd);
@@ -985,7 +990,7 @@ static bool pop_skill_state_ok(map_session_data *sd, uint16 skill_id)
 /// Templated over the skill struct type so it works for both attack and buff entries.
 template <typename SkillT>
 static inline bool pop_skill_cond_satisfied(map_session_data* sd, const SkillT& sk, block_list* target_bl) {
-	if (!pop_skill_weapon_ok(sd, sk.skill_id) || !pop_skill_state_ok(sd, sk.skill_id))
+	if (!pop_skill_weapon_ok(sd, sk.skill_id) || !pop_skill_state_ok(sd, sk.skill_id, sk.skill_lv))
 		return false;
 	// RAGNAROKMAC: enemy_count_nearby counts the whole detection range (30 cells), so a blast
 	// around the caster fired at a crowd it could not reach. Count only what the blast hits.
