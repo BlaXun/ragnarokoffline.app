@@ -2130,11 +2130,25 @@ const handlers = {
 		let names = [];
 		try { names = fs.readdirSync(modsDir, { withFileTypes: true }).filter(e => e.isDirectory() && !e.name.startsWith('.')).map(e => e.name); }
 		catch { return []; }
-		const installed = names.map(name => ({ name, dir: path.join(modsDir, name) }))
-			.filter(mod => source.readRecord(mod.dir));
-		if (!installed.length) return [];
-		const listing = await registry.list({ url: process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX });
-		return source.checkUpdates(installed, listing, sourceOptions({ fresh: !!fresh }));
+		const mods = names.map(name => ({ name, dir: path.join(modsDir, name) }));
+		// From their author's repository: the latest release, looked up.
+		const fromSource = mods.filter(mod => source.readRecord(mod.dir));
+		// Everything else in the mods folder that the mod list also carries
+		// as a reviewed folder: its version there, compared with the one in
+		// the installed mod.json. Without this, a mod installed from the list
+		// never heard of a newer version of itself.
+		const fromList = mods.filter(mod => !source.readRecord(mod.dir)).map(mod => {
+			let version = '';
+			try { version = String(JSON.parse(fs.readFileSync(path.join(mod.dir, 'mod.json'), 'utf8')).version || '').slice(0, 40); } catch { /* no version */ }
+			return { name: mod.name, version };
+		});
+		if (!fromSource.length && !fromList.length) return [];
+		const url = new URL(process.env.RAGNAROK_MOD_INDEX || registry.DEFAULT_INDEX);
+		// A check the player asked for reads today's list, as Find Mods does.
+		if (fresh) url.searchParams.set('t', String(Date.now()));
+		const listing = await registry.list({ url: url.toString() });
+		const listed = source.registryUpdates(fromList, listing, { appVersion: app.getVersion() });
+		return [...listed, ...await source.checkUpdates(fromSource, listing, sourceOptions({ fresh: !!fresh }))];
 	},
 	// A release page, opened in the player's browser. Only ever a GitHub
 	// release URL: the address came from GitHub's API, by way of the page.
