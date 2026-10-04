@@ -268,7 +268,7 @@ back to the price list:
 - **Everyone uses the moved price**: stalls price their stock at it when they
   open, buyers offer at it, and your customers judge your prices by it. A
   buyer still always pays less than a stall asks, so nothing can be flipped.
-- **You can see it**: the **market board** just north of the fountain lists
+- **You can see it**: the **market board** in Prontera (131, 218) lists
   the news and the five items rising and falling most, and stalls now and
   then shout about a big mover ("S> Elunium 9K, cheap today!"), at most once
   per map in ten minutes, through the usual shout settings.

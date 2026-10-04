@@ -18,10 +18,10 @@ OnInit:
 	end;
 }
 
-//= The market board, just north of the fountain: the news, and the five
+//= The market board in Prontera (131, 218): the news, and the five
 //= items rising and falling most. The engine writes $@pop_board_* once a
 //= minute. Move it by changing the coordinates below.
-prontera,156,133,4	script	Market Board#pv	4_BOARD3,{
+prontera,131,218,4	script	Market Board#pv	4_BOARD3,{
 	mes "[Prontera Market Board]";
 	if (!$@pop_board_on) {
 		mes "The market is quiet. Prices are what they always are.";
