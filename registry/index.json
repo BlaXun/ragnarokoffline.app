@@ -511,6 +511,40 @@
       ]
     },
     {
+      "name": "sandalphon-skill-descriptions",
+      "version": "1.0.0",
+      "author": "Sandalphon",
+      "description": "Rewritten pre-renewal skill descriptions, checked against rAthena's code: damage formulas, success chances, what each level adds, and what does and does not affect a skill. Covers every class, plus quest, item, homunculus, guild and mercenary skills. Replaces the skill description text only.",
+      "homepage": "https://rathena.org/board/topic/139880-pre-renewal-skill-translations-and-tooltips-improved-revised-re-edited-and-commented-by-sandalphon/",
+      "tags": [
+        "quality-of-life",
+        "skills",
+        "tooltips",
+        "translation"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "prerenewal",
+        "app": ""
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "f57b0c3b62402f6c9678d3ab769aa37e273836b63d0832b8f79be6d9e69673d1"
+        },
+        {
+          "path": "data/luafiles514/lua files/skillinfoz/skilldescript.lub",
+          "sha256": "d9816d863926e74c80fb4812a67f03cf86d029e6f62543cae07b823b1dab392a"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "db038041db779e816e0ad58af89aa6138d1dff25a19536ce6e84d4c2ede7cc7f"
+        }
+      ]
+    },
+    {
       "name": "standart-npc",
       "version": "",
       "author": "MondoTruth and the Ragnarok Offline community",
