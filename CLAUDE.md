@@ -69,6 +69,31 @@ server is never ported; we bring the platform it is tested on.
 - roBrowserLegacy checks files out with CRLF. A whole-file diff means something
   rewrote the line endings.
 
+### Review every change for how hard it makes the next upstream merge
+
+The forks only stay maintainable while each weekly upstream sync merges cleanly
+and our fixes can still go back upstream. So a change to rAthena or
+roBrowserLegacy, whether a fork PR or an engine patch in
+`third-party/population-engine/patches/` that edits rAthena's own files, is
+reviewed for that cost as well as for correctness. Ask before merging:
+
+- **How many upstream files does it touch?** A change spread across many of
+  them collides with every sync. Prefer one small hook in one place, with the
+  logic in a file of our own.
+- **Does it patch an upstream core function, or copy one?** A patch in
+  `vending_purchasereq` has to be re-checked on every rAthena upgrade. A copy of
+  half of `buyingstore_trade` drifts from the original without anyone noticing.
+  Both need a strong reason.
+- **Could it be contributed upstream as it stands?** A general fix written the
+  way upstream writes code can go back. One tangled with our features can't,
+  and we carry it forever.
+- **Could it live somewhere else?** In a mod, in a server extension that is off
+  by default, or in build-time generation, without touching the fork at all?
+
+Bug fixes that mirror a check rAthena already makes are the easy case. Features
+that reach into upstream code for one mod's benefit are the ones to push back
+on: ask for the smallest general hook instead.
+
 ### Server extensions: optional server behaviour, switched on from a mod
 
 When a change to how the server behaves should be optional, it goes behind a
