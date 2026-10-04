@@ -151,6 +151,9 @@ Body:
       - { Theme: prontera-vendors/sell/amatsu, Weight: 1, Max: 1 }
       - { Theme: prontera-vendors/sell/sewers, Weight: 1, Max: 1 }
       - { Theme: prontera-vendors/sell/guild_dungeon, Weight: 1, Max: 1 }
+      - { Theme: prontera-vendors/sell/carded_weapons, Weight: 1, Max: 1 }
+      - { Theme: prontera-vendors/sell/carded_armory, Weight: 1, Max: 1 }
+      - { Theme: prontera-vendors/sell/carded_accessories, Weight: 1, Max: 1 }
 
   - Market: prontera-vendors/buy/sidewalks
     Spawns:
@@ -1047,6 +1050,18 @@ Body:
       - { Item: Jur, Amount: 1, Price: [46500, 54500], Refine: 7 }
       - { Item: Jur, Amount: 1, Price: [119000, 140000], Refine: 8 }
       - { Item: Jur, Amount: 1, Price: [301000, 353500], Refine: 9 }
+      - { Item: Elven_Bow, Amount: 1, Price: [1166500, 1369500], Refine: 5, Cards: [Cruiser_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [1478000, 1735000], Refine: 7, Cards: [Hydra_Card] }
+      - { Item: Electric_Fist, Amount: 1, Price: [1441500, 1692000], Refine: 5, Cards: [Drainliar_Card, Drainliar_Card, Drainliar_Card] }
+      - { Item: Tae_Goo_Lyeon, Amount: 1, Price: [8590000, 10084000], Refine: 7, Cards: [Vadon_Card, Vadon_Card] }
+      - { Item: Scalpel, Amount: 1, Price: [1013000, 1189000], Refine: 5, Cards: [Andre_Card, Andre_Card, Andre_Card] }
+      - { Item: Lunakaligo, Amount: 1, Price: [1823500, 2140500], Refine: 5, Cards: [Minorous_Card, Minorous_Card, Minorous_Card] }
+      - { Item: Krishna, Amount: 1, Price: [660000, 775000], Refine: 5, Cards: [Zipper_Bear_Card, Andre_Card] }
+      - { Item: Imperial_Spear, Amount: 1, Price: [25771000, 30253000], Refine: 9, Cards: [Archer_Skeleton_Card] }
+      - { Item: Gladius_, Amount: 1, Price: [1060500, 1245000], Refine: 7, Cards: [Poring__Card, Poring__Card, Poring__Card] }
+      - { Item: Doom_Slayer_, Amount: 1, Price: [2523500, 2962500], Refine: 7, Cards: [Archer_Skeleton_Card] }
+      - { Item: Falken_Blitz, Amount: 1, Price: [1815000, 2130500], Refine: 7, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card] }
+      - { Item: Durga, Amount: 1, Price: [353500, 415000], Refine: 5, Cards: [Zipper_Bear_Card] }
 
   - VendorKey: prontera-vendors/sell/refined_armor
     Type: Pool
@@ -1747,6 +1762,23 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Pike_, Amount: 1, Price: [1890500, 2219000], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Skel_Worker_Card, Vadon_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [988500, 1160500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Chain_Mail_, Amount: 1, Price: [831500, 976500], Refine: 4, Cards: [Pasana_Card] }
+      - { Item: Manteau_, Amount: 1, Price: [1889000, 2217500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Shield_, Amount: 1, Price: [501500, 589000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Boots_, Amount: 1, Price: [1974500, 2317500], Refine: 4, Cards: [Verit_Card] }
+      - { Item: Rosary_, Amount: 1, Price: [502000, 589500], Cards: [Yoyo_Card] }
+      - { Item: Ring_, Amount: 1, Price: [1212500, 1423500], Cards: [Mantis_Card] }
+      - { Item: Helm_, Amount: 1, Price: [206500, 242500], Refine: 4, Cards: [Elder_Wilow_Card] }
+      - { Item: Ur_Seal, Amount: 1, Price: [549500, 645000], Cards: [Spore_Card] }
+      - { Item: Ur_Seal, Amount: 1, Price: [1648500, 1935500], Cards: [Mantis_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [1478000, 1735000], Refine: 7, Cards: [Hydra_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [371000, 435500], Refine: 4, Cards: [Hydra_Card] }
+      - { Item: Hunting_Spear, Amount: 1, Price: [845000, 992500], Refine: 4, Cards: [Goblin_Card] }
+      - { Item: Hunting_Spear, Amount: 1, Price: [371500, 436000], Refine: 4, Cards: [Hydra_Card] }
+      - { Item: Tae_Goo_Lyeon, Amount: 1, Price: [8590000, 10084000], Refine: 7, Cards: [Vadon_Card, Vadon_Card] }
+      - { Item: Rotha_Shield, Amount: 1, Price: [4659500, 5469500], Refine: 7, Cards: [Thara_Frog_Card] }
       - { Item: Ur_Seal, Amount: 1, Price: [450500, 529000] }
       - { Item: Battle_Hook, Amount: 1, Price: [22500, 26500] }
       - { Item: Ebone_Armor, Amount: 1, Price: [552000, 648000] }
@@ -1801,6 +1833,19 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Shield_, Amount: 1, Price: [501500, 589000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Glittering_Clothes, Amount: 1, Price: [1642000, 1928000], Refine: 4, Cards: [Angeling_Card] }
+      - { Item: Helm_, Amount: 1, Price: [1533000, 1800000], Refine: 4, Cards: [Cramp_Card] }
+      - { Item: Manteau_, Amount: 1, Price: [1889000, 2217500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Clip, Amount: 1, Price: [2549000, 2992000], Cards: [Zerom_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [1478000, 1735000], Refine: 7, Cards: [Hydra_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [371000, 435500], Refine: 4, Cards: [Hydra_Card] }
+      - { Item: Hunting_Spear, Amount: 1, Price: [845000, 992500], Refine: 4, Cards: [Goblin_Card] }
+      - { Item: Hunting_Spear, Amount: 1, Price: [371500, 436000], Refine: 4, Cards: [Hydra_Card] }
+      - { Item: Tae_Goo_Lyeon, Amount: 1, Price: [8590000, 10084000], Refine: 7, Cards: [Vadon_Card, Vadon_Card] }
+      - { Item: Rotha_Shield, Amount: 1, Price: [4659500, 5469500], Refine: 7, Cards: [Thara_Frog_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [1515000, 1778500], Refine: 6, Cards: [Pecopeco_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [921000, 1081000], Cards: [Pecopeco_Card] }
       - { Item: Battle_Hook, Amount: 1, Price: [22500, 26500] }
       - { Item: Ebone_Armor, Amount: 1, Price: [552000, 648000] }
       - { Item: Hell_Fire, Amount: 1, Price: [919500, 1079500] }
@@ -1855,6 +1900,22 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Vitata_Card] }
+      - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Phen_Card] }
+      - { Item: Clip, Amount: 1, Price: [2174500, 2552500], Cards: [Creamy_Card] }
+      - { Item: Muffler_, Amount: 1, Price: [1868500, 2193500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Muffler_, Amount: 1, Price: [144000, 169000], Refine: 4, Cards: [Noxious_Card] }
+      - { Item: Guard_, Amount: 1, Price: [447000, 525000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Shoes_, Amount: 1, Price: [184500, 216500], Refine: 4, Cards: [Eggyra_Card] }
+      - { Item: Shoes_, Amount: 1, Price: [1963500, 2305000], Refine: 4, Cards: [Verit_Card] }
+      - { Item: Destruction_Rod, Amount: 1, Price: [699500, 821000], Refine: 4, Cards: [Hill_Wind_Card] }
+      - { Item: Destruction_Rod, Amount: 1, Price: [747000, 877000], Refine: 4, Cards: [Necromancer_Card] }
+      - { Item: Magic_Study_Vol1, Amount: 1, Price: [937500, 1100500], Refine: 4, Cards: [Flame_Skull_Card] }
+      - { Item: Wing_Of_Eagle, Amount: 1, Price: [696000, 817000], Refine: 4, Cards: [Harpy_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1392000, 1634000], Cards: [Blood_Butterfly_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1051000, 1233500], Cards: [Zerom_Card] }
+      - { Item: Memorize_Book_, Amount: 1, Price: [1807500, 2122000], Refine: 4, Cards: [Hodremlin_Card] }
+      - { Item: Magic_Study_Vol1, Amount: 1, Price: [796000, 934500], Refine: 4, Cards: [Thara_Frog_Card] }
       - { Item: Destruction_Rod, Amount: 1, Price: [460000, 540000] }
       - { Item: Rafini_Staff, Amount: 1, Price: [71500, 84500] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
@@ -1909,6 +1970,20 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Phen_Card] }
+      - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Vitata_Card] }
+      - { Item: Muffler_, Amount: 1, Price: [499500, 586000], Refine: 4, Cards: [Whisper_Card] }
+      - { Item: Guard_, Amount: 1, Price: [447000, 525000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Shoes_, Amount: 1, Price: [184500, 216500], Refine: 4, Cards: [Eggyra_Card] }
+      - { Item: Formal_Suit, Amount: 1, Price: [1014000, 1190500], Refine: 4, Cards: [Pupa_Card] }
+      - { Item: Death_Note, Amount: 1, Price: [1610500, 1891000], Cards: [Thief_Bug_Female_Card, Thief_Bug_Female_Card] }
+      - { Item: Magic_Study_Vol1, Amount: 1, Price: [937500, 1100500], Refine: 4, Cards: [Flame_Skull_Card] }
+      - { Item: Wing_Of_Eagle, Amount: 1, Price: [696000, 817000], Refine: 4, Cards: [Harpy_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1392000, 1634000], Cards: [Blood_Butterfly_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1051000, 1233500], Cards: [Zerom_Card] }
+      - { Item: Book, Amount: 1, Price: [1532500, 1799000], Refine: 9, Cards: [Drops_Card, Drops_Card, Drops_Card] }
+      - { Item: Memorize_Book_, Amount: 1, Price: [1807500, 2122000], Refine: 4, Cards: [Hodremlin_Card] }
+      - { Item: Book_Of_Blazing_Sun_, Amount: 1, Price: [867500, 1018000], Refine: 5, Cards: [Pecopeco_Egg_Card, Pecopeco_Egg_Card, Minorous_Card] }
       - { Item: Book_Of_The_Apocalypse, Amount: 1, Price: [10000, 12000] }
       - { Item: Bible, Amount: 1, Price: [49500, 58000] }
       - { Item: Rafini_Staff, Amount: 1, Price: [71500, 84500] }
@@ -1963,6 +2038,21 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Composite_Bow_, Amount: 1, Price: [1951000, 2290500], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Vadon_Card, Vadon_Card] }
+      - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Boots_, Amount: 1, Price: [174000, 204000], Refine: 4, Cards: [Thief_Bug_Male_Card] }
+      - { Item: Muffler_, Amount: 1, Price: [499500, 586000], Refine: 4, Cards: [Whisper_Card] }
+      - { Item: Muffler_, Amount: 1, Price: [1868500, 2193500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Tights_, Amount: 1, Price: [873500, 1025500], Refine: 4, Cards: [Ghostring_Card] }
+      - { Item: Brooch_, Amount: 1, Price: [966500, 1134500], Cards: [Zerom_Card] }
+      - { Item: White_Wing_Suits, Amount: 1, Price: [994500, 1168000], Cards: [Pecopeco_Card] }
+      - { Item: White_Wing_Suits, Amount: 1, Price: [931500, 1093500], Refine: 4, Cards: [Pasana_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [1166500, 1369500], Refine: 5, Cards: [Cruiser_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [563000, 661000], Refine: 5, Cards: [Drosera_Card] }
+      - { Item: Falken_Blitz, Amount: 1, Price: [1815000, 2130500], Refine: 7, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card] }
+      - { Item: Tights_, Amount: 1, Price: [1679000, 1971000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Tights_, Amount: 1, Price: [2223500, 2610500], Refine: 7, Cards: [Pupa_Card] }
+      - { Item: Creeper_Bow, Amount: 1, Price: [6191000, 7267500], Refine: 7, Cards: [Side_Winder_Card, Metaling_Card] }
       - { Item: White_Wing_Suits, Amount: 1, Price: [138000, 162000] }
       - { Item: White_Wing_Brooch, Amount: 1, Price: [731000, 858500] }
       - { Item: Elven_Bow, Amount: 1, Price: [92000, 108000] }
@@ -2017,6 +2107,17 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Cap_, Amount: 1, Price: [697000, 818000], Refine: 4, Cards: [Wilow_Card] }
+      - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Muffler_, Amount: 1, Price: [1868500, 2193500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [1166500, 1369500], Refine: 5, Cards: [Cruiser_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [563000, 661000], Refine: 5, Cards: [Drosera_Card] }
+      - { Item: Electric_Eel, Amount: 1, Price: [2913500, 3420500], Refine: 4, Cards: [Soldier_Skeleton_Card, Soldier_Skeleton_Card] }
+      - { Item: Tights_, Amount: 1, Price: [1679000, 1971000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Tights_, Amount: 1, Price: [2223500, 2610500], Refine: 7, Cards: [Pupa_Card] }
+      - { Item: Creeper_Bow, Amount: 1, Price: [6191000, 7267500], Refine: 7, Cards: [Side_Winder_Card, Metaling_Card] }
+      - { Item: Dance_Shoes, Amount: 1, Price: [2754000, 3232500], Cards: [Merman_Card] }
+      - { Item: Gust_Bow, Amount: 1, Price: [683000, 802000], Refine: 5, Cards: [Drainliar_Card] }
       - { Item: Elven_Bow, Amount: 1, Price: [92000, 108000] }
       - { Item: Whip_Of_Red_Flame, Amount: 1, Price: [7350, 8650] }
       - { Item: Cursed_Lyre, Amount: 1, Price: [29500, 34500] }
@@ -2071,6 +2172,23 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Saint_Robe_, Amount: 1, Price: [2053500, 2410500], Refine: 7, Cards: [Pupa_Card] }
+      - { Item: Silk_Robe_, Amount: 1, Price: [145500, 171000], Refine: 4, Cards: [Desert_Wolf_Babe_Card] }
+      - { Item: Buckler_, Amount: 1, Price: [817500, 960000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Buckler_, Amount: 1, Price: [1102000, 1293500], Refine: 4, Cards: [Thief_Bug_Egg_Card] }
+      - { Item: Muffler_, Amount: 1, Price: [1868500, 2193500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Shoes_, Amount: 1, Price: [1104500, 1296500], Refine: 7, Cards: [Eggyra_Card] }
+      - { Item: Shoes_, Amount: 1, Price: [2883500, 3385000], Refine: 7, Cards: [Verit_Card] }
+      - { Item: Clip, Amount: 1, Price: [1824000, 2141000], Cards: [Alligator_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [161000, 189000], Refine: 4, Cards: [Wilow_Card] }
+      - { Item: Electric_Fist, Amount: 1, Price: [1441500, 1692000], Refine: 5, Cards: [Drainliar_Card, Drainliar_Card, Drainliar_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [161000, 189000], Refine: 4, Cards: [Elder_Wilow_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [102000, 120000], Cards: [Elder_Wilow_Card] }
+      - { Item: Lunakaligo, Amount: 1, Price: [1823500, 2140500], Refine: 5, Cards: [Minorous_Card, Minorous_Card, Minorous_Card] }
+      - { Item: Lunakaligo, Amount: 1, Price: [2245500, 2636000], Cards: [Skel_Worker_Card, Skel_Worker_Card, Skel_Worker_Card] }
+      - { Item: Death_Note, Amount: 1, Price: [1610500, 1891000], Cards: [Thief_Bug_Female_Card, Thief_Bug_Female_Card] }
+      - { Item: Bible_Of_Promise2, Amount: 1, Price: [13645000, 16018500], Cards: [Thara_Frog_Card] }
+      - { Item: Croce_Staff, Amount: 1, Price: [186000, 218500], Cards: [Fabre_Card] }
       - { Item: Light_Of_Cure, Amount: 1, Price: [2441000, 2865500] }
       - { Item: Electric_Fist, Amount: 1, Price: [73500, 86000] }
       - { Item: Ring_Of_Archbishop, Amount: 1, Price: [1171500, 1375000] }
@@ -2125,6 +2243,20 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Chain_, Amount: 1, Price: [1471500, 1727500], Refine: 7, Cards: [Minorous_Card, Minorous_Card, Minorous_Card] }
+      - { Item: Mace_, Amount: 1, Price: [1917500, 2251000], Refine: 4, Cards: [Minorous_Card, Minorous_Card, Minorous_Card, Minorous_Card] }
+      - { Item: Ring_, Amount: 1, Price: [1212500, 1423500], Cards: [Mantis_Card] }
+      - { Item: Glove_, Amount: 1, Price: [966500, 1134500], Cards: [Zerom_Card] }
+      - { Item: Shoes_, Amount: 1, Price: [1110500, 1303500], Refine: 4, Cards: [Sohee_Card] }
+      - { Item: Shoes_, Amount: 1, Price: [1963500, 2305000], Refine: 4, Cards: [Verit_Card] }
+      - { Item: Electric_Fist, Amount: 1, Price: [1441500, 1692000], Refine: 5, Cards: [Drainliar_Card, Drainliar_Card, Drainliar_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [161000, 189000], Refine: 4, Cards: [Elder_Wilow_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [102000, 120000], Cards: [Elder_Wilow_Card] }
+      - { Item: Lunakaligo, Amount: 1, Price: [1823500, 2140500], Refine: 5, Cards: [Minorous_Card, Minorous_Card, Minorous_Card] }
+      - { Item: Lunakaligo, Amount: 1, Price: [2245500, 2636000], Cards: [Skel_Worker_Card, Skel_Worker_Card, Skel_Worker_Card] }
+      - { Item: Croce_Staff, Amount: 1, Price: [186000, 218500], Cards: [Fabre_Card] }
+      - { Item: Dea_Staff, Amount: 1, Price: [2775000, 3257500], Refine: 7, Cards: [Fabre_Card] }
+      - { Item: Veteran_Hammer, Amount: 1, Price: [5012500, 5884000], Refine: 5, Cards: [Hunter_Fly_Card, Fire_Condor_Card] }
       - { Item: Electric_Fist, Amount: 1, Price: [73500, 86000] }
       - { Item: Holy_Stick, Amount: 1, Price: [7360000, 8640000] }
       - { Item: Biretta_, Amount: 1, Price: [7450, 8700] }
@@ -2179,6 +2311,25 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Jur_, Amount: 1, Price: [4367500, 5127000], Refine: 7, Cards: [Soldier_Skeleton_Card, Soldier_Skeleton_Card, Soldier_Skeleton_Card] }
+      - { Item: Jur_, Amount: 1, Price: [911500, 1070000], Refine: 4, Cards: [Hydra_Card, Hydra_Card, Hydra_Card] }
+      - { Item: Gladius_, Amount: 1, Price: [1461500, 1715500], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Hydra_Card] }
+      - { Item: Main_Gauche_, Amount: 1, Price: [1140500, 1339000], Refine: 4, Cards: [Andre_Card, Andre_Card, Andre_Card, Andre_Card] }
+      - { Item: Main_Gauche_, Amount: 1, Price: [1159500, 1361000], Refine: 4, Cards: [Hydra_Card, Hydra_Card, Hydra_Card, Hydra_Card] }
+      - { Item: Chain_Mail_, Amount: 1, Price: [974000, 1143500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Hood_, Amount: 1, Price: [1242000, 1458000], Refine: 4, Cards: [Condor_Card] }
+      - { Item: Manteau_, Amount: 1, Price: [1889000, 2217500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Brooch_, Amount: 1, Price: [587500, 689500], Cards: [Kobold_Card] }
+      - { Item: Clip, Amount: 1, Price: [2549000, 2992000], Cards: [Zerom_Card] }
+      - { Item: Nab_Cloth, Amount: 1, Price: [3798000, 4458500], Cards: [Evil_Druid_Card] }
+      - { Item: Sabah_Cloth, Amount: 1, Price: [7046000, 8271000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Sabah_Cloth, Amount: 1, Price: [6325000, 7425000], Refine: 4, Cards: [Dancing_Dragon_Card] }
+      - { Item: Krishna, Amount: 1, Price: [660000, 775000], Refine: 5, Cards: [Zipper_Bear_Card, Andre_Card] }
+      - { Item: Krishna, Amount: 1, Price: [3066000, 3599500], Refine: 4, Cards: [Soldier_Skeleton_Card, Soldier_Skeleton_Card] }
+      - { Item: Kandura, Amount: 1, Price: [1511000, 1774000], Refine: 4, Cards: [Ancient_Mimic_Card] }
+      - { Item: Kandura, Amount: 1, Price: [1980000, 2324000], Cards: [Porcellio_Card] }
+      - { Item: Wild_Beast_Claw, Amount: 1, Price: [1568000, 1841000], Refine: 4, Cards: [Soldier_Skeleton_Card] }
       - { Item: Nab_Cloth, Amount: 1, Price: [1387000, 1628500] }
       - { Item: Sabah_Cloth, Amount: 1, Price: [4600000, 5400000] }
       - { Item: Shinobi's_Sash, Amount: 1, Price: [13500, 16000] }
@@ -2233,6 +2384,18 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Gladius_, Amount: 1, Price: [1461500, 1715500], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Hydra_Card] }
+      - { Item: Composite_Bow_, Amount: 1, Price: [1193000, 1400500], Refine: 7, Cards: [Hydra_Card, Hydra_Card, Hydra_Card, Hydra_Card] }
+      - { Item: Manteau_, Amount: 1, Price: [1889000, 2217500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Gust_Bow, Amount: 1, Price: [683000, 802000], Refine: 5, Cards: [Drainliar_Card] }
+      - { Item: Gust_Bow, Amount: 1, Price: [584000, 685500], Cards: [Drainliar_Card] }
+      - { Item: Burning_Bow, Amount: 1, Price: [617000, 724000], Cards: [Archer_Skeleton_Card] }
+      - { Item: Burning_Bow, Amount: 1, Price: [1668000, 1958500], Refine: 7, Cards: [Kaho_Card] }
+      - { Item: Luna_Bow, Amount: 1, Price: [1104500, 1296500], Refine: 5, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card] }
+      - { Item: Luna_Bow, Amount: 1, Price: [1018500, 1195500], Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card] }
+      - { Item: Earth_Bow, Amount: 1, Price: [467000, 548000], Refine: 5, Cards: [Mandragora_Card] }
+      - { Item: Earth_Bow, Amount: 1, Price: [629000, 738500], Cards: [Archer_Skeleton_Card] }
       - { Item: Black_Cat, Amount: 1, Price: [101000, 118500] }
       - { Item: Black_Wing, Amount: 1, Price: [460000, 540000] }
       - { Item: Gust_Bow, Amount: 1, Price: [153000, 180000] }
@@ -2287,6 +2450,22 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Battle_Axe_, Amount: 1, Price: [1917500, 2251000], Refine: 4, Cards: [Minorous_Card, Minorous_Card, Minorous_Card, Minorous_Card] }
+      - { Item: Battle_Axe_, Amount: 1, Price: [1159500, 1361000], Refine: 4, Cards: [Hydra_Card, Hydra_Card, Hydra_Card, Hydra_Card] }
+      - { Item: Chain_Mail_, Amount: 1, Price: [2016000, 2367000], Refine: 4, Cards: [Marc_Card] }
+      - { Item: Chain_Mail_, Amount: 1, Price: [974000, 1143500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Buckler_, Amount: 1, Price: [817500, 960000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Ring_, Amount: 1, Price: [1212500, 1423500], Cards: [Mantis_Card] }
+      - { Item: Manteau_, Amount: 1, Price: [1889000, 2217500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Supplement_Part_Agi, Amount: 1, Price: [2497500, 2931500], Refine: 4, Cards: [Verit_Card] }
+      - { Item: Supplement_Part_Con, Amount: 1, Price: [1882000, 2209500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Veteran_Axe, Amount: 1, Price: [653500, 767000], Refine: 5, Cards: [Zipper_Bear_Card, Injustice_Card] }
+      - { Item: Barrier_Builder, Amount: 1, Price: [601500, 706000], Cards: [Yoyo_Card] }
+      - { Item: Shape_Shifter, Amount: 1, Price: [559000, 656000], Cards: [Yoyo_Card] }
+      - { Item: Veteran_Axe, Amount: 1, Price: [4055000, 4760500], Refine: 5, Cards: [Side_Winder_Card, Skel_Worker_Card] }
+      - { Item: Supplement_Part_Agi, Amount: 1, Price: [7370500, 8652500], Refine: 4, Cards: [Kavac_Card] }
+      - { Item: Hero_Trade_Mail, Amount: 1, Price: [4008000, 4705500], Refine: 7, Cards: [Angeling_Card] }
       - { Item: Welding_Mask, Amount: 1, Price: [46000, 54000] }
       - { Item: Veteran_Axe, Amount: 1, Price: [8250, 9700] }
       - { Item: Supplement_Part_Agi, Amount: 1, Price: [460000, 540000] }
@@ -2341,6 +2520,18 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Chain_Mail_, Amount: 1, Price: [2016000, 2367000], Refine: 4, Cards: [Marc_Card] }
+      - { Item: Buckler_, Amount: 1, Price: [817500, 960000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Manteau_, Amount: 1, Price: [1889000, 2217500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Vitata_Card] }
+      - { Item: Red_Ether_Bag, Amount: 1, Price: [896500, 1052500], Refine: 6, Cards: [Minorous_Card] }
+      - { Item: Red_Ether_Bag, Amount: 1, Price: [1076500, 1263500], Refine: 6, Cards: [Skel_Worker_Card] }
+      - { Item: Veteran_Axe, Amount: 1, Price: [653500, 767000], Refine: 5, Cards: [Zipper_Bear_Card, Injustice_Card] }
+      - { Item: Veteran_Axe, Amount: 1, Price: [4055000, 4760500], Refine: 5, Cards: [Side_Winder_Card, Skel_Worker_Card] }
+      - { Item: Hero_Trade_Mail, Amount: 1, Price: [4008000, 4705500], Refine: 7, Cards: [Angeling_Card] }
+      - { Item: War_Axe, Amount: 1, Price: [328500, 386000], Refine: 6, Cards: [Zipper_Bear_Card] }
+      - { Item: War_Axe, Amount: 1, Price: [445000, 522500], Cards: [Injustice_Card] }
       - { Item: Red_Ether_Bag, Amount: 1, Price: [138000, 162000] }
       - { Item: Azoth, Amount: 1, Price: [69000, 81000] }
       - { Item: Welding_Mask, Amount: 1, Price: [46000, 54000] }
@@ -2392,6 +2583,14 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Death_Note, Amount: 1, Price: [1610500, 1891000], Cards: [Thief_Bug_Female_Card, Thief_Bug_Female_Card] }
+      - { Item: Magic_Study_Vol1, Amount: 1, Price: [937500, 1100500], Refine: 4, Cards: [Flame_Skull_Card] }
+      - { Item: Mirror_Shield_, Amount: 1, Price: [435500, 511500], Cards: [Thara_Frog_Card] }
+      - { Item: Mirror_Shield_, Amount: 1, Price: [501500, 589000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Wing_Of_Eagle, Amount: 1, Price: [696000, 817000], Refine: 4, Cards: [Harpy_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1392000, 1634000], Cards: [Blood_Butterfly_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1051000, 1233500], Cards: [Zerom_Card] }
+      - { Item: Book, Amount: 1, Price: [1532500, 1799000], Refine: 9, Cards: [Drops_Card, Drops_Card, Drops_Card] }
       - { Item: Book_Of_The_Apocalypse, Amount: 1, Price: [10000, 12000] }
       - { Item: Bible, Amount: 1, Price: [49500, 58000] }
       - { Item: Silver_Robe_, Amount: 1, Price: [5750, 6800] }
@@ -2446,6 +2645,14 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Thief_Clothes_, Amount: 1, Price: [1669500, 1960000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Thief_Clothes_, Amount: 1, Price: [982500, 1153500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Asura_, Amount: 1, Price: [1141500, 1340000], Refine: 7, Cards: [Drops_Card, Drops_Card, Drops_Card] }
+      - { Item: Special_Ninja_Suit_, Amount: 1, Price: [1607000, 1886500], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Ninja_Suit_, Amount: 1, Price: [4054000, 4759500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Tenebris_Latitantes, Amount: 1, Price: [1607000, 1886500], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Tenebris_Latitantes, Amount: 1, Price: [920000, 1080000], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Special_Ninja_Suit_, Amount: 1, Price: [1916000, 2249500], Refine: 6, Cards: [Porcellio_Card] }
       - { Item: Shinobi's_Sash, Amount: 1, Price: [13500, 16000] }
       - { Item: Ring_Of_Rogue, Amount: 1, Price: [8250, 9700] }
       - { Item: Huuma_Calm_Mind, Amount: 1, Price: [690000, 810000] }
@@ -2500,6 +2707,14 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Lever_Action_Rifle, Amount: 1, Price: [1774500, 2083500], Refine: 8, Cards: [Drosera_Card] }
+      - { Item: Lever_Action_Rifle, Amount: 1, Price: [485000, 569500], Refine: 5, Cards: [Drosera_Card] }
+      - { Item: Long_Barrel_, Amount: 1, Price: [1237000, 1452500], Refine: 7, Cards: [Skel_Worker_Card] }
+      - { Item: Wasteland_Outlaw, Amount: 1, Price: [743000, 872500], Refine: 5, Cards: [Andre_Card, Andre_Card] }
+      - { Item: Butcher_, Amount: 1, Price: [3519000, 4131000], Refine: 5, Cards: [Side_Winder_Card] }
+      - { Item: Inferno, Amount: 1, Price: [1042500, 1223500], Refine: 7, Cards: [Skel_Worker_Card] }
+      - { Item: Long_Barrel_, Amount: 1, Price: [1875000, 2201500], Refine: 8, Cards: [Drosera_Card] }
+      - { Item: The_Garrison_, Amount: 1, Price: [612500, 719000], Refine: 6, Cards: [Andre_Card, Andre_Card] }
       - { Item: Lever_Action_Rifle, Amount: 1, Price: [26000, 30500] }
       - { Item: Long_Barrel_, Amount: 1, Price: [34000, 40000] }
       - { Item: Drifter, Amount: 1, Price: [66000, 77500] }
@@ -2554,6 +2769,14 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: Angel's_Safeguard, Amount: 1, Price: [691500, 812000], Cards: [Thief_Bug_Egg_Card] }
+      - { Item: Angel's_Safeguard, Amount: 1, Price: [407000, 478000], Cards: [Andre_Egg_Card] }
+      - { Item: Angel's_Arrival, Amount: 1, Price: [1231500, 1446000], Cards: [Sohee_Card] }
+      - { Item: Angel's_Arrival, Amount: 1, Price: [345500, 406000], Cards: [Alarm_Card] }
+      - { Item: Kiss_Of_Angel, Amount: 1, Price: [261000, 306500], Refine: 4, Cards: [Wilow_Card] }
+      - { Item: Super_Novice_Hat_, Amount: 1, Price: [2937500, 3448000], Cards: [Incubus_Card] }
+      - { Item: Angel's_Protection, Amount: 1, Price: [1590000, 1866500], Refine: 4, Cards: [Pupa_Card] }
+      - { Item: Angel's_Protection, Amount: 1, Price: [1397500, 1640500], Cards: [Pupa_Card] }
       - { Item: Angel's_Safeguard, Amount: 1, Price: [27500, 32000] }
       - { Item: Hypnotist's_Staff_, Amount: 1, Price: [46000, 54000] }
       - { Item: Angel's_Arrival, Amount: 1, Price: [184000, 216000] }
@@ -3590,6 +3813,17 @@ Body:
     Undercut: { Chance: 50, StepPct: [1, 5] }
     Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
     Pool:
+      - { Item: White_Wing_Suits, Amount: 1, Price: [994500, 1168000], Cards: [Pecopeco_Card] }
+      - { Item: White_Wing_Suits, Amount: 1, Price: [931500, 1093500], Refine: 4, Cards: [Pasana_Card] }
+      - { Item: White_Wing_Suits, Amount: 1, Price: [1245000, 1461500], Refine: 5, Cards: [Pecopeco_Card] }
+      - { Item: Stone_Buckler, Amount: 1, Price: [246000, 289000], Cards: [Petit__Card] }
+      - { Item: Stone_Buckler, Amount: 1, Price: [308000, 361500], Refine: 4, Cards: [Petit__Card] }
+      - { Item: Stone_Buckler, Amount: 1, Price: [786500, 923000], Cards: [Orc_Warrior_Card] }
+      - { Item: Nab_Cloth, Amount: 1, Price: [3798000, 4458500], Cards: [Evil_Druid_Card] }
+      - { Item: Sabah_Cloth, Amount: 1, Price: [7046000, 8271000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Leather_Of_Tendrilion, Amount: 1, Price: [1171500, 1375000], Cards: [Choco_Card] }
+      - { Item: Necktie, Amount: 1, Price: [1354500, 1590000], Cards: [Wilow_Card] }
+      - { Item: Yellow_Poring_Clip, Amount: 1, Price: [2349500, 2758000], Refine: 4, Cards: [Novice_Poring_Card] }
       - { Item: White_Wing_Suits, Amount: 1, Price: [138000, 162000] }
       - { Item: Clip, Amount: 1, Price: [1564000, 1836000] }
       - { Item: Cat_Hand_Glove, Amount: 1, Price: [3059000, 3591000] }
@@ -6240,6 +6474,290 @@ Body:
       - { Item: Spiderweb, Amount: 300, Price: [170, 230] }
       - { Item: Bear's_Foot, Amount: 20, Price: [1350, 1600] }
       - { Item: Elemental_Sword, Amount: 1, Price: [460000, 540000] }
+
+  - VendorKey: prontera-vendors/sell/carded_weapons
+    Type: Pool
+    Title: "carded weapons"
+    TitleFromPool:
+      - "carded weapons"
+      - "S> carded weps"
+      - "triple carded stuff"
+      - "{name}'s Carded Arsenal"
+      - "weapons w/ cards"
+      - "S> hydra/skel weps"
+      - "Come on"
+      - "Sell"
+      - "This looks good"
+    StockTitles:
+      - { Title: "S> {item} {price}" }
+      - { Title: "{item} {price}" }
+    PickCount: [3, 6]
+    MaxSlots: 6
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    PriceMistakeOneIn: 5000
+    Undercut: { Chance: 50, StepPct: [1, 5] }
+    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Pool:
+      - { Item: Twin_Edge_B, Amount: 1, Price: [1864500, 2188500], Refine: 4, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card, Archer_Skeleton_Card] }
+      - { Item: Twin_Edge_R, Amount: 1, Price: [1854000, 2176500], Refine: 4, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card, Archer_Skeleton_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [1166500, 1369500], Refine: 5, Cards: [Cruiser_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [563000, 661000], Refine: 5, Cards: [Drosera_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [11487000, 13485000], Refine: 9, Cards: [Drosera_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [1478000, 1735000], Refine: 7, Cards: [Hydra_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [371000, 435500], Refine: 4, Cards: [Hydra_Card] }
+      - { Item: Electric_Fist, Amount: 1, Price: [1441500, 1692000], Refine: 5, Cards: [Drainliar_Card, Drainliar_Card, Drainliar_Card] }
+      - { Item: Destruction_Rod, Amount: 1, Price: [699500, 821000], Refine: 4, Cards: [Hill_Wind_Card] }
+      - { Item: Destruction_Rod, Amount: 1, Price: [747000, 877000], Refine: 4, Cards: [Necromancer_Card] }
+      - { Item: Hunting_Spear, Amount: 1, Price: [845000, 992500], Refine: 4, Cards: [Goblin_Card] }
+      - { Item: Hunting_Spear, Amount: 1, Price: [371500, 436000], Refine: 4, Cards: [Hydra_Card] }
+      - { Item: Tae_Goo_Lyeon, Amount: 1, Price: [8590000, 10084000], Refine: 7, Cards: [Vadon_Card, Vadon_Card] }
+      - { Item: Scalpel, Amount: 1, Price: [1013000, 1189000], Refine: 5, Cards: [Andre_Card, Andre_Card, Andre_Card] }
+      - { Item: Scalpel, Amount: 1, Price: [1678500, 1970500], Refine: 7, Cards: [Orc_Skeleton_Card, Orc_Skeleton_Card, Desert_Wolf_Card] }
+      - { Item: Lunakaligo, Amount: 1, Price: [1823500, 2140500], Refine: 5, Cards: [Minorous_Card, Minorous_Card, Minorous_Card] }
+      - { Item: Lunakaligo, Amount: 1, Price: [2245500, 2636000], Cards: [Skel_Worker_Card, Skel_Worker_Card, Skel_Worker_Card] }
+      - { Item: Long_Horn, Amount: 1, Price: [448500, 526500], Refine: 4, Cards: [Poring__Card] }
+      - { Item: Death_Note, Amount: 1, Price: [1610500, 1891000], Cards: [Thief_Bug_Female_Card, Thief_Bug_Female_Card] }
+      - { Item: Krishna, Amount: 1, Price: [660000, 775000], Refine: 5, Cards: [Zipper_Bear_Card, Andre_Card] }
+      - { Item: Krishna, Amount: 1, Price: [3066000, 3599500], Refine: 4, Cards: [Soldier_Skeleton_Card, Soldier_Skeleton_Card] }
+      - { Item: Krishna, Amount: 1, Price: [4976500, 5842000], Refine: 5, Cards: [Side_Winder_Card, Hunter_Fly_Card] }
+      - { Item: Imperial_Spear, Amount: 1, Price: [25771000, 30253000], Refine: 9, Cards: [Archer_Skeleton_Card] }
+      - { Item: Imperial_Spear, Amount: 1, Price: [930000, 1092000], Refine: 5, Cards: [Archer_Skeleton_Card] }
+      - { Item: Wild_Beast_Claw, Amount: 1, Price: [1568000, 1841000], Refine: 4, Cards: [Soldier_Skeleton_Card] }
+      - { Item: Curved_Sword, Amount: 1, Price: [738500, 867000], Refine: 4, Cards: [Hydra_Card, Hydra_Card] }
+      - { Item: Curved_Sword, Amount: 1, Price: [6803000, 7986000], Refine: 4, Cards: [Side_Winder_Card, Side_Winder_Card] }
+      - { Item: Croce_Staff, Amount: 1, Price: [186000, 218500], Cards: [Fabre_Card] }
+      - { Item: Gladius_, Amount: 1, Price: [1124500, 1320000], Cards: [Sword_Fish_Card, Orc_Skeleton_Card, Orc_Skeleton_Card] }
+      - { Item: Gladius_, Amount: 1, Price: [1060500, 1245000], Refine: 7, Cards: [Poring__Card, Poring__Card, Poring__Card] }
+      - { Item: Gladius_, Amount: 1, Price: [960500, 1127500], Refine: 5, Cards: [Andre_Card, Andre_Card, Andre_Card] }
+      - { Item: Doom_Slayer_, Amount: 1, Price: [311000, 365000], Refine: 4, Cards: [Zipper_Bear_Card] }
+      - { Item: Doom_Slayer_, Amount: 1, Price: [2523500, 2962500], Refine: 7, Cards: [Archer_Skeleton_Card] }
+      - { Item: Falken_Blitz, Amount: 1, Price: [1815000, 2130500], Refine: 7, Cards: [Archer_Skeleton_Card, Archer_Skeleton_Card] }
+      - { Item: Electric_Eel, Amount: 1, Price: [2913500, 3420500], Refine: 4, Cards: [Soldier_Skeleton_Card, Soldier_Skeleton_Card] }
+      - { Item: Durga, Amount: 1, Price: [353500, 415000], Refine: 5, Cards: [Zipper_Bear_Card] }
+      - { Item: Durga, Amount: 1, Price: [1066000, 1251000], Cards: [Mobster_Card] }
+      - { Item: Durga, Amount: 1, Price: [2402500, 2820000], Refine: 7, Cards: [Soldier_Skeleton_Card] }
+      - { Item: Berdysz, Amount: 1, Price: [1636000, 1920500], Refine: 7, Cards: [Andre_Card, Andre_Card] }
+      - { Item: Creeper_Bow, Amount: 1, Price: [6191000, 7267500], Refine: 7, Cards: [Side_Winder_Card, Metaling_Card] }
+      - { Item: Giant_Axe, Amount: 1, Price: [276500, 324500], Cards: [Zipper_Bear_Card] }
+      - { Item: Giant_Axe, Amount: 1, Price: [372000, 436500], Refine: 5, Cards: [Zipper_Bear_Card] }
+      - { Item: Giant_Axe, Amount: 1, Price: [324500, 381000], Refine: 5, Cards: [Mummy_Card] }
+      - { Item: Saber_, Amount: 1, Price: [1407500, 1652000], Refine: 7, Cards: [Zipper_Bear_Card, Zipper_Bear_Card, Zipper_Bear_Card] }
+      - { Item: Lever_Action_Rifle, Amount: 1, Price: [1774500, 2083500], Refine: 8, Cards: [Drosera_Card] }
+      - { Item: Lever_Action_Rifle, Amount: 1, Price: [485000, 569500], Refine: 5, Cards: [Drosera_Card] }
+      - { Item: Mace_, Amount: 1, Price: [1384000, 1624500], Refine: 10, Cards: [Hydra_Card, Hydra_Card, Hydra_Card, Hydra_Card] }
+      - { Item: Gust_Bow, Amount: 1, Price: [683000, 802000], Refine: 5, Cards: [Drainliar_Card] }
+      - { Item: Gust_Bow, Amount: 1, Price: [584000, 685500], Cards: [Drainliar_Card] }
+      - { Item: Cardo, Amount: 1, Price: [906000, 1063500], Cards: [Archer_Skeleton_Card] }
+      - { Item: Cardo, Amount: 1, Price: [716500, 841000], Cards: [Hydra_Card] }
+      - { Item: Cardo, Amount: 1, Price: [2895500, 3399500], Refine: 6, Cards: [Archer_Skeleton_Card] }
+      - { Item: Altas_Weapon, Amount: 1, Price: [3187500, 3741500], Refine: 7, Cards: [Soldier_Skeleton_Card] }
+      - { Item: Long_Barrel_, Amount: 1, Price: [1237000, 1452500], Refine: 7, Cards: [Skel_Worker_Card] }
+      - { Item: Red_Ether_Bag, Amount: 1, Price: [896500, 1052500], Refine: 6, Cards: [Minorous_Card] }
+      - { Item: Red_Ether_Bag, Amount: 1, Price: [1076500, 1263500], Refine: 6, Cards: [Skel_Worker_Card] }
+      - { Item: Burning_Bow, Amount: 1, Price: [617000, 724000], Cards: [Archer_Skeleton_Card] }
+      - { Item: Burning_Bow, Amount: 1, Price: [1668000, 1958500], Refine: 7, Cards: [Kaho_Card] }
+      - { Item: Burning_Bow, Amount: 1, Price: [713500, 837500], Refine: 5, Cards: [Archer_Skeleton_Card] }
+      - { Item: Infiltrator_, Amount: 1, Price: [473500, 556000], Cards: [Hydra_Card] }
+      - { Item: Elven_Bow, Amount: 1, Price: [470000, 552000], Refine: 5, Cards: [Fur_Seal_Card] }
+      - { Item: Burning_Bow, Amount: 1, Price: [175500, 206000], Cards: [Lunatic_Card] }
+      - { Item: Krishna, Amount: 1, Price: [249500, 293000], Refine: 4, Cards: [Skeleton_Card] }
+      - { Item: Long_Horn, Amount: 1, Price: [579500, 680000], Refine: 5, Cards: [Mandragora_Card] }
+      - { Item: Krishna, Amount: 1, Price: [174500, 205000], Cards: [Skeleton_Card] }
+      - { Item: Falken_Blitz, Amount: 1, Price: [148500, 174500], Cards: [Savage_Babe_Card, Zenorc_Card] }
+      - { Item: Cardo, Amount: 1, Price: [3720000, 4367000], Refine: 5, Cards: [Strouf_Card] }
+      - { Item: Lever_Action_Rifle, Amount: 1, Price: [235500, 276500], Cards: [Goblin_Archer_Card] }
+      - { Item: Battle_Hook, Amount: 1, Price: [63500, 74500], Cards: [Fabre_Card] }
+      - { Item: Curved_Sword, Amount: 1, Price: [744500, 874000], Cards: [Skel_Worker_Card, Caramel_Card] }
+
+  - VendorKey: prontera-vendors/sell/carded_armory
+    Type: Pool
+    Title: "carded armor"
+    TitleFromPool:
+      - "carded armor"
+      - "S> carded armory"
+      - "armor w/ cards"
+      - "{name}'s Carded Armory"
+      - "S> thara/raydric gear"
+      - "carded gear fs"
+      - "junk shop"
+      - "Goodies"
+      - "etc"
+    StockTitles:
+      - { Title: "wts {item}" }
+      - { Title: "S> {item} {price}" }
+    PickCount: [3, 6]
+    MaxSlots: 6
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    PriceMistakeOneIn: 5000
+    Undercut: { Chance: 50, StepPct: [1, 5] }
+    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Pool:
+      - { Item: White_Wing_Suits, Amount: 1, Price: [994500, 1168000], Cards: [Pecopeco_Card] }
+      - { Item: White_Wing_Suits, Amount: 1, Price: [931500, 1093500], Refine: 4, Cards: [Pasana_Card] }
+      - { Item: White_Wing_Suits, Amount: 1, Price: [1245000, 1461500], Refine: 5, Cards: [Pecopeco_Card] }
+      - { Item: Stone_Buckler, Amount: 1, Price: [246000, 289000], Cards: [Petit__Card] }
+      - { Item: Stone_Buckler, Amount: 1, Price: [308000, 361500], Refine: 4, Cards: [Petit__Card] }
+      - { Item: Stone_Buckler, Amount: 1, Price: [786500, 923000], Cards: [Orc_Warrior_Card] }
+      - { Item: Nab_Cloth, Amount: 1, Price: [3798000, 4458500], Cards: [Evil_Druid_Card] }
+      - { Item: Sabah_Cloth, Amount: 1, Price: [7046000, 8271000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Sabah_Cloth, Amount: 1, Price: [6325000, 7425000], Refine: 4, Cards: [Dancing_Dragon_Card] }
+      - { Item: Sabah_Cloth, Amount: 1, Price: [5923000, 6953000], Refine: 4, Cards: [Venatu_Card] }
+      - { Item: Chain_Mail_, Amount: 1, Price: [908000, 1066000], Cards: [Pecopeco_Card] }
+      - { Item: Chain_Mail_, Amount: 1, Price: [974000, 1143500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Chain_Mail_, Amount: 1, Price: [1950500, 2289500], Cards: [Marc_Card] }
+      - { Item: Silk_Robe_, Amount: 1, Price: [1902000, 2232500], Cards: [Marc_Card] }
+      - { Item: Silk_Robe_, Amount: 1, Price: [1546500, 1815500], Cards: [Porcellio_Card] }
+      - { Item: Silk_Robe_, Amount: 1, Price: [1608000, 1887500], Cards: [Loli_Ruri_Card] }
+      - { Item: Valkyrie_Shoes, Amount: 1, Price: [2369000, 2781000], Cards: [Verit_Card] }
+      - { Item: Valkyrie_Shoes, Amount: 1, Price: [1502500, 1763500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Valkyrie_Shoes, Amount: 1, Price: [1374000, 1612500], Cards: [Matyr_Card] }
+      - { Item: Boots_, Amount: 1, Price: [979500, 1149500], Refine: 4, Cards: [Matyr_Card] }
+      - { Item: Boots_, Amount: 1, Price: [807000, 947000], Refine: 4, Cards: [Raggler_Card] }
+      - { Item: Boots_, Amount: 1, Price: [155000, 182000], Refine: 4, Cards: [Zombie_Card] }
+      - { Item: Valkyrie_Manteau, Amount: 1, Price: [2947500, 3460000], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Valkyrie_Manteau, Amount: 1, Price: [3516000, 4127500], Refine: 4, Cards: [Choco_Card] }
+      - { Item: Valkyrie_Manteau, Amount: 1, Price: [3736500, 4386000], Refine: 5, Cards: [Daydric_Card] }
+      - { Item: Meteo_Plate_Armor, Amount: 1, Price: [1073500, 1260500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Meteo_Plate_Armor, Amount: 1, Price: [1760500, 2067000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Meteo_Plate_Armor, Amount: 1, Price: [815000, 957000], Refine: 4, Cards: [Solider_Card] }
+      - { Item: Armor_Of_Naga, Amount: 1, Price: [1776500, 2085500], Cards: [Porcellio_Card] }
+      - { Item: Armor_Of_Naga, Amount: 1, Price: [732500, 860000], Refine: 4, Cards: [Anolian_Card] }
+      - { Item: Armor_Of_Naga, Amount: 1, Price: [1869500, 2195000], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Bone_Plate, Amount: 1, Price: [1824000, 2141000], Cards: [Deleter_Card] }
+      - { Item: Bone_Plate, Amount: 1, Price: [2060500, 2418500], Refine: 4, Cards: [Porcellio_Card] }
+      - { Item: Bone_Plate, Amount: 1, Price: [2415500, 2836000], Refine: 4, Cards: [Marc_Card] }
+      - { Item: Puente_Robe, Amount: 1, Price: [2558500, 3003000], Cards: [Evil_Druid_Card] }
+      - { Item: Sprint_Mail, Amount: 1, Price: [2061500, 2420000], Refine: 4, Cards: [Marc_Card] }
+      - { Item: Sprint_Mail, Amount: 1, Price: [947500, 1112000], Cards: [Pecopeco_Card] }
+      - { Item: Sprint_Mail, Amount: 1, Price: [1019000, 1196500], Refine: 4, Cards: [Pecopeco_Card] }
+      - { Item: Rotha_Shield, Amount: 1, Price: [4659500, 5469500], Refine: 7, Cards: [Thara_Frog_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [161000, 189000], Refine: 4, Cards: [Elder_Wilow_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [102000, 120000], Cards: [Elder_Wilow_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [102000, 120000], Cards: [Wilow_Card] }
+      - { Item: Bradium_Shield, Amount: 1, Price: [981000, 1152000], Refine: 4, Cards: [Thara_Frog_Card] }
+      - { Item: Bradium_Shield, Amount: 1, Price: [852500, 1001000], Cards: [Thara_Frog_Card] }
+      - { Item: Bradium_Shield, Amount: 1, Price: [540000, 634000], Cards: [Horn_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [1515000, 1778500], Refine: 6, Cards: [Pecopeco_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [921000, 1081000], Cards: [Pecopeco_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [2545000, 2987500], Refine: 7, Cards: [Pecopeco_Card] }
+      - { Item: Shield_Of_Naga, Amount: 1, Price: [4713000, 5532500], Refine: 4, Cards: [High_Orc_Card] }
+      - { Item: Wool_Scarf, Amount: 1, Price: [1950500, 2289500], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Wool_Scarf, Amount: 1, Price: [225500, 265000], Refine: 4, Cards: [Noxious_Card] }
+      - { Item: Wool_Scarf, Amount: 1, Price: [1880500, 2208000], Cards: [Daydric_Card] }
+      - { Item: Angel's_Safeguard, Amount: 1, Price: [691500, 812000], Cards: [Thief_Bug_Egg_Card] }
+      - { Item: Angel's_Safeguard, Amount: 1, Price: [407000, 478000], Cards: [Andre_Egg_Card] }
+      - { Item: Flame_Manteau, Amount: 1, Price: [2075000, 2436000], Refine: 4, Cards: [Daydric_Card] }
+      - { Item: Flame_Manteau, Amount: 1, Price: [454000, 533000], Cards: [Salamander_Card] }
+      - { Item: Flame_Manteau, Amount: 1, Price: [1222500, 1435000], Refine: 4, Cards: [Aliot_Card] }
+      - { Item: Kandura, Amount: 1, Price: [1511000, 1774000], Refine: 4, Cards: [Ancient_Mimic_Card] }
+      - { Item: Kandura, Amount: 1, Price: [1980000, 2324000], Cards: [Porcellio_Card] }
+      - { Item: Kandura, Amount: 1, Price: [1363500, 1600500], Refine: 4, Cards: [Sword_Fish_Card] }
+      - { Item: Meteo_Plate_Armor, Amount: 1, Price: [170000, 200000], Cards: [Thief_Bug_Card] }
+      - { Item: Biretta_, Amount: 1, Price: [50500, 59500], Cards: [Coco_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [102000, 120000], Cards: [Poring_Card] }
+      - { Item: Plate_Armor_, Amount: 1, Price: [1635500, 1920000], Refine: 4, Cards: [Sw_Roda_Frog_Card] }
+      - { Item: Boots_, Amount: 1, Price: [1109500, 1303000], Cards: [Merman_Card] }
+      - { Item: Angel's_Safeguard, Amount: 1, Price: [115500, 135500], Refine: 4, Cards: [Ambernite_Card] }
+      - { Item: Sabah_Cloth, Amount: 1, Price: [5165500, 6064000], Refine: 4, Cards: [Picky_Card] }
+      - { Item: Meteo_Plate_Armor, Amount: 1, Price: [242500, 284500], Cards: [Roda_Frog_Card] }
+      - { Item: Angel's_Safeguard, Amount: 1, Price: [375500, 441000], Cards: [Orc_Warrior_Card] }
+      - { Item: Bone_Plate, Amount: 1, Price: [1881500, 2209000], Cards: [Sw_Roda_Frog_Card] }
+
+  - VendorKey: prontera-vendors/sell/carded_accessories
+    Type: Pool
+    Title: "carded accs"
+    TitleFromPool:
+      - "carded accs"
+      - "S> clips n rings"
+      - "carded accessories"
+      - "{name}'s Jewelry Box"
+      - "S> zerom/mantis accs"
+      - "etc"
+      - "AFK-----AFK"
+      - "junk shop"
+    StockTitles:
+      - { Title: "{item} {price}" }
+      - { Title: "S> {item} {price}" }
+    PickCount: [3, 6]
+    MaxSlots: 6
+    RotationHours: 4
+    RotationJitterMinutes: 30
+    PriceMistakeOneIn: 5000
+    Undercut: { Chance: 50, StepPct: [1, 5] }
+    Callouts: { EverySeconds: [90, 270], MapGapSeconds: 6 }
+    Pool:
+      - { Item: Clip, Amount: 1, Price: [2084500, 2447000], Cards: [Phen_Card] }
+      - { Item: Clip, Amount: 1, Price: [1727500, 2028000], Cards: [Kukre_Card] }
+      - { Item: Clip, Amount: 1, Price: [2347500, 2756000], Cards: [Hell_Poodle_Card] }
+      - { Item: Cat_Hand_Glove, Amount: 1, Price: [4088500, 4800000], Cards: [Zerom_Card] }
+      - { Item: Cat_Hand_Glove, Amount: 1, Price: [3956000, 4644000], Cards: [Imp_Card] }
+      - { Item: Cat_Hand_Glove, Amount: 1, Price: [4098000, 4811000], Cards: [Siroma_Card] }
+      - { Item: Ur_Seal, Amount: 1, Price: [549500, 645000], Cards: [Spore_Card] }
+      - { Item: Ur_Seal, Amount: 1, Price: [1648500, 1935500], Cards: [Mantis_Card] }
+      - { Item: Ur_Seal, Amount: 1, Price: [938000, 1101000], Cards: [Smokie_Card] }
+      - { Item: Silversmith_Bracelet, Amount: 1, Price: [1696000, 1991000], Cards: [Zerom_Card] }
+      - { Item: Silversmith_Bracelet, Amount: 1, Price: [1942500, 2280000], Cards: [Mantis_Card] }
+      - { Item: Silversmith_Bracelet, Amount: 1, Price: [1705500, 2002000], Cards: [Mimic_Card] }
+      - { Item: Ring_, Amount: 1, Price: [1212500, 1423500], Cards: [Mantis_Card] }
+      - { Item: Ring_, Amount: 1, Price: [75500, 88500], Cards: [Tarou_Card] }
+      - { Item: Ring_, Amount: 1, Price: [502000, 589500], Cards: [Smokie_Card] }
+      - { Item: Bison_Horn, Amount: 1, Price: [945000, 1109500], Cards: [Kukre_Card] }
+      - { Item: Bison_Horn, Amount: 1, Price: [2012500, 2363000], Cards: [Mantis_Card] }
+      - { Item: Bison_Horn, Amount: 1, Price: [2534000, 2974500], Cards: [Horong_Card] }
+      - { Item: Rosary_, Amount: 1, Price: [502000, 589500], Cards: [Smokie_Card] }
+      - { Item: Rosary_, Amount: 1, Price: [241500, 283500], Cards: [Alligator_Card] }
+      - { Item: Rosary_, Amount: 1, Price: [502000, 589500], Cards: [Yoyo_Card] }
+      - { Item: Alchemy_Glove, Amount: 1, Price: [544500, 639500], Cards: [Phen_Card] }
+      - { Item: Alchemy_Glove, Amount: 1, Price: [634500, 745000], Cards: [Creamy_Card] }
+      - { Item: Alchemy_Glove, Amount: 1, Price: [876500, 1028500], Cards: [Imp_Card] }
+      - { Item: Brooch_, Amount: 1, Price: [502000, 589500], Cards: [Yoyo_Card] }
+      - { Item: Brooch_, Amount: 1, Price: [1212500, 1423500], Cards: [Mantis_Card] }
+      - { Item: Brooch_, Amount: 1, Price: [145000, 170500], Cards: [Kukre_Card] }
+      - { Item: Expert_Ring, Amount: 1, Price: [11181500, 13126000], Cards: [Horong_Card] }
+      - { Item: Expert_Ring, Amount: 1, Price: [10414000, 12225000], Cards: [Zerom_Card] }
+      - { Item: Expert_Ring, Amount: 1, Price: [9949500, 11680000], Cards: [Phen_Card] }
+      - { Item: Cursed_Hand, Amount: 1, Price: [4445500, 5218500], Cards: [Horong_Card] }
+      - { Item: Cursed_Hand, Amount: 1, Price: [3592500, 4217500], Cards: [Owl_Duke_Card] }
+      - { Item: Cursed_Hand, Amount: 1, Price: [3213500, 3772500], Cards: [Phen_Card] }
+      - { Item: Waterdrop_Brooch, Amount: 1, Price: [811500, 952500], Cards: [Alligator_Card] }
+      - { Item: Waterdrop_Brooch, Amount: 1, Price: [1162000, 1364000], Cards: [Creamy_Card] }
+      - { Item: Waterdrop_Brooch, Amount: 1, Price: [683500, 802500], Cards: [Spore_Card] }
+      - { Item: Bradium_Ring, Amount: 1, Price: [3307000, 3882000], Cards: [Kobold_Card] }
+      - { Item: Bradium_Ring, Amount: 1, Price: [3221500, 3782000], Cards: [Phen_Card] }
+      - { Item: Bradium_Ring, Amount: 1, Price: [4453500, 5228000], Cards: [Horong_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1392000, 1634000], Cards: [Blood_Butterfly_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [1051000, 1233500], Cards: [Zerom_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [586500, 688500], Cards: [Phen_Card] }
+      - { Item: Peuz_Seal, Amount: 1, Price: [1279000, 1501500], Cards: [Owl_Baron_Card] }
+      - { Item: Peuz_Seal, Amount: 1, Price: [2084500, 2447000], Cards: [Horong_Card] }
+      - { Item: Peuz_Seal, Amount: 1, Price: [938000, 1101000], Cards: [Kobold_Card] }
+      - { Item: Pinguicula_Corsage, Amount: 1, Price: [819500, 962500], Cards: [Phen_Card] }
+      - { Item: Pinguicula_Corsage, Amount: 1, Price: [431000, 506500], Cards: [Spore_Card] }
+      - { Item: Glove_, Amount: 1, Price: [966500, 1134500], Cards: [Zerom_Card] }
+      - { Item: Glove_, Amount: 1, Price: [502000, 589500], Cards: [Phen_Card] }
+      - { Item: Glove_, Amount: 1, Price: [241500, 283500], Cards: [Alligator_Card] }
+      - { Item: Body_Power_Up_Ring, Amount: 1, Price: [9466500, 11112500], Cards: [Zerom_Card] }
+      - { Item: Body_Power_Up_Ring, Amount: 1, Price: [9428500, 11068000], Cards: [Owl_Baron_Card] }
+      - { Item: Body_Power_Up_Ring, Amount: 1, Price: [9002000, 10567500], Cards: [Smokie_Card] }
+      - { Item: Ring_Of_Spell_Explosion, Amount: 1, Price: [13337000, 15657000], Cards: [Phen_Card] }
+      - { Item: Earring_, Amount: 1, Price: [502000, 589500], Cards: [Phen_Card] }
+      - { Item: Earring_, Amount: 1, Price: [966500, 1134500], Cards: [Zerom_Card] }
+      - { Item: Earring_, Amount: 1, Price: [502000, 589500], Cards: [Yoyo_Card] }
+      - { Item: Thimble_Of_Archer_, Amount: 1, Price: [946500, 1111000], Cards: [Zerom_Card] }
+      - { Item: Thimble_Of_Archer_, Amount: 1, Price: [567500, 666000], Cards: [Kobold_Card] }
+      - { Item: Thimble_Of_Archer_, Amount: 1, Price: [482000, 566000], Cards: [Phen_Card] }
+      - { Item: Thimble_Of_Archer_, Amount: 1, Price: [47000, 55000], Cards: [Poporing_Card] }
+      - { Item: Ring_, Amount: 1, Price: [65500, 76500], Cards: [Bon_Gun_Card] }
+      - { Item: Librarian_Glove, Amount: 1, Price: [364000, 427000], Cards: [Creamy_Card] }
+      - { Item: Glove_, Amount: 1, Price: [80000, 94000], Cards: [Kukre_Card] }
+      - { Item: Silversmith_Bracelet, Amount: 1, Price: [797500, 936000], Cards: [Alligator_Card] }
+      - { Item: Ring_, Amount: 1, Price: [244500, 287000], Cards: [Yoyo_Card] }
+      - { Item: Waterdrop_Brooch, Amount: 1, Price: [591000, 694000], Cards: [See_Otter_Card] }
+      - { Item: Thimble_Of_Archer_, Amount: 1, Price: [61500, 72500], Cards: [Kukre_Card] }
+      - { Item: Earring_, Amount: 1, Price: [80000, 94000], Cards: [Kukre_Card] }
+      - { Item: Ur_Seal, Amount: 1, Price: [467500, 548500], Cards: [Pirate_Skel_Card] }
 
   - VendorKey: prontera-vendors/buy/upgrade
     Type: Pool

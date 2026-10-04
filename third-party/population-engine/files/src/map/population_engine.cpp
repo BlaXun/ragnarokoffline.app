@@ -41,6 +41,7 @@
 #include "itemdb.hpp"
 #include "log.hpp"
 #include "map.hpp"
+#include "mapreg.hpp"
 #include "mob.hpp"
 #include "npc.hpp"
 #include "party.hpp"
@@ -2760,6 +2761,9 @@ static bool pop_shell_open_buyingstore(map_session_data* sd, const PopulationVen
 	return true;
 }
 
+// RAGNAROKMAC: customers for real players' stalls (opt-in; see the file).
+#include "population_engine/runtime/population_customers.cpp"
+
 /// RAGNAROKMAC: @vendorinfo. No argument: every mod stall on the GM's map.
 /// With one: a vendor theme's settings and stock, or a market's themes.
 /// A key may be given whole or by its last part ("byalan").
@@ -2771,6 +2775,14 @@ void population_engine_vendorinfo(map_session_data* sd, const char* arg) {
 	std::string q = arg ? arg : "";
 	while (!q.empty() && std::isspace(static_cast<unsigned char>(q.back()))) q.pop_back();
 	while (!q.empty() && std::isspace(static_cast<unsigned char>(q.front()))) q.erase(q.begin());
+
+	// RAGNAROKMAC: @vendorinfo customers [ff <minutes>]: players' stalls.
+	if (q.compare(0, 9, "customers") == 0) {
+		std::string rest = q.substr(9);
+		while (!rest.empty() && std::isspace(static_cast<unsigned char>(rest.front()))) rest.erase(rest.begin());
+		population_customers_info(sd, rest);
+		return;
+	}
 
 	if (q.empty()) {
 		size_t n = 0;
@@ -4780,6 +4792,8 @@ TIMER_FUNC(population_engine_vendor_rotation_timer)
 	}
 	if (released > 0)
 		ShowInfo("Population engine: rotated %zu vendor shell(s).\n", released);
+	// RAGNAROKMAC: the customers of players' stalls, on the same minute.
+	population_customers_pass();
 	return 0;
 }
 

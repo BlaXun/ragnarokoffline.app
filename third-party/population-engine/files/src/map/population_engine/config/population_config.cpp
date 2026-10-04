@@ -2384,6 +2384,7 @@ uint64 PopulationEngineDatabase::parseBodyNode(const ryml::NodeRef& node)
 // keep their YAML price. Read at load and on every reload.
 
 static std::vector<std::string> s_pop_price_files;
+std::unordered_map<std::string, std::unordered_map<t_itemid, PopMarketRow>> g_pop_market_tables;
 
 static void pop_collect_price_file(const char* path) {
 	const size_t n = strlen(path);
@@ -2404,6 +2405,7 @@ void PopulationVendorDatabase::loadingFinished() {
 	if (check_filepath(dir.c_str()) != 1)
 		return; // no mod ships a price table
 	s_pop_price_files.clear();
+	g_pop_market_tables.clear();
 	findfile(dir.c_str(), ".csv", pop_collect_price_file);
 	std::sort(s_pop_price_files.begin(), s_pop_price_files.end());
 
@@ -2418,6 +2420,7 @@ void PopulationVendorDatabase::loadingFinished() {
 			continue;
 		}
 		std::unordered_map<t_itemid, std::pair<uint32_t, uint32_t>> prices;
+		auto& market = g_pop_market_tables[prefix];
 		char buf[1024];
 		int line = 0;
 		while (fgets(buf, sizeof(buf), fp) != nullptr) {
@@ -2462,10 +2465,24 @@ void PopulationVendorDatabase::loadingFinished() {
 			}
 			const uint32_t lo = static_cast<uint32_t>(strtoul(col[2].c_str(), nullptr, 10));
 			uint32_t hi = col.size() > 3 && !col[3].empty() ? static_cast<uint32_t>(strtoul(col[3].c_str(), nullptr, 10)) : lo;
-			if (lo == 0)
+			// RAGNAROKMAC: BuyersPerDay and SellersPerDay (columns 6 and 7, after
+			// Source) are for the customers who visit players' stalls. Whole
+			// numbers, so a locale's decimal comma cannot split a row.
+			PopMarketRow mrow;
+			if (col.size() > 5 && !col[5].empty())
+				mrow.buyers_day = static_cast<int32_t>(strtol(col[5].c_str(), nullptr, 10));
+			if (col.size() > 6 && !col[6].empty())
+				mrow.sellers_day = static_cast<int32_t>(strtol(col[6].c_str(), nullptr, 10));
+			if (lo == 0) {
+				if (mrow.buyers_day >= 0 || mrow.sellers_day >= 0)
+					market[id] = mrow;
 				continue; // 0 (or empty) = no price set yet; the YAML price stands
+			}
 			if (hi < lo) hi = lo;
 			prices[id] = { std::min<uint32_t>(lo, MAX_ZENY), std::min<uint32_t>(hi, MAX_ZENY) };
+			mrow.lo = prices[id].first;
+			mrow.hi = prices[id].second;
+			market[id] = mrow;
 		}
 		fclose(fp);
 

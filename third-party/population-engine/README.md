@@ -234,6 +234,20 @@ engine's vendors spawn exactly as upstream's do.
   carries ("S> {item} {price}" reads "S> Elunium 13k"). Older builds ignore
   the key, so item names belong there, not in `TitleFromPool`; without it a
   stall picks its sign exactly as before.
+- **Customers for players' stalls** (`runtime/population_customers.cpp`):
+  once a minute, every vending stall and buying store a real player has
+  open (online or `@autotrade`) gets the customers a busy server would
+  bring, by the item's market price and demand (a mod price table's `Min`,
+  `Max`, `BuyersPerDay`, `SellersPerDay`), the asking price, cheaper fake
+  stalls on the map and how busy the map is. The sale is half of rAthena's
+  own (`vending_purchasereq`, `buyingstore_trade`): zeny, tax, cart or
+  inventory, the autotrade rows and the stock report; nobody is shown. The
+  time the server was off is caught up for restored `@autotrade` stalls (up
+  to 48 h), and what they did is mailed by RODEX. Off unless a mod sets the
+  `$@pop_customers_*` variables (the file's header lists them); with no
+  price table named it does nothing, not even its clock
+  (`$pop_customers_clock`). `@vendorinfo customers [ff <minutes>]` shows the
+  model for the player stalls on a map, or fast-forwards them.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).

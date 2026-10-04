@@ -44,6 +44,11 @@ without the mod; these are extra.
 
 ## Settings (Settings → Mods)
 
+The mod's **Settings…** button opens its own page: every setting below,
+grouped, with the customer rate tables beside the pace settings (they
+follow the pace as you change it), Save, Save and restart, and Reset to
+defaults. On an app without settings pages they show in the Mods tab.
+
 | Setting | Default | What it does |
 |---|---|---|
 | Sell shops | on | Off removes every sell stall. |
@@ -60,7 +65,7 @@ Settings take effect when the server starts.
 
 ## Sell stalls
 
-115 themes. Each time a spot gets a stall (at server start, after a rotation
+118 themes. Each time a spot gets a stall (at server start, after a rotation
 or after a sell-out) it rolls a theme, so over a session the whole range
 comes through:
 
@@ -86,6 +91,14 @@ comes through:
   daggers (forged Fire/Water/Earth/Wind, some "Very Strong"), crimson
   weapons, shadow gear, a stall that sells nothing but an Ice Pick, rare
   collectibles, a "hunter's haul" of popular drops.
+- **Carded:** carded weapons, carded armory (body, shield, garment, shoes,
+  headgear) and carded accessories: the builds iRO players really listed
+  (from ragnastats: "+7 Triple Critical Jur", "Thara Frog Guard", "Clip of
+  Zerom"), weighted by how often, plus a few messed-up cardings sold cheap.
+  Class stalls carry their guide builds (iRO wiki) and carded pieces that
+  class wears; refined-weapon and slotted-gear stalls carry some too. A
+  carded piece costs its item, refines and cards, plus a little for the
+  work. Never MVP cards.
 - **Refined:** weapons from their safe limit to three past it, armor +4 to
   +7, priced by what it costs to make, including failed attempts past the
   safe limit.
@@ -163,6 +176,62 @@ rotate; each stands at most once at a time.
 - It wants lots of cheap loot and a few of anything valuable.
 - It packs up when it has bought everything or spent its zeny.
 - Anyone can open a buying store, so buyers wear any class's sprite and gear.
+
+## Customers for your own stalls
+
+Two settings, both off by default, bring the street's customers to the
+stalls *you* open (needs the app build whose population engine has them; on
+an older one they do nothing):
+
+- **Customers buy from your stalls.** Open a vending stall as usual (a
+  Merchant-class skill, as on any server), online or on `@autotrade`, and
+  customers buy now and then. You get the zeny less the vending tax and the
+  usual "sold" message, as if a player bought.
+- **Sellers fill your buying stores.** Open a buying store and players
+  bring loot to it: common drops often, rare ones seldom.
+
+What decides a sale:
+
+| | Effect |
+|---|---|
+| Your price vs the market (the price list's range) | under an NPC's price: snapped up; under market: faster; at market: steady; 1.5x: rare; 2x: never |
+| Your buying-store offer vs the market | above market: eager; near it: steady; a lowball: rare; no more than an NPC pays: never |
+| Demand (`BuyersPerDay`, `SellersPerDay` in the price list) | what fake buyers want and quests ask for sells best; sellers come as often as monsters drop the item |
+| A fake stall on the map selling it cheaper (or buying it dearer) | half as many customers, a third if it is more than 5 % better |
+| The map | Prontera in full, anywhere else 75 % |
+
+How often they come, at 100 % pace in Prontera and a fair price (every line
+is checked once a minute; under market more often, over it far less):
+
+| Your stall sells | Customers a day | About one every |
+|---|---|---|
+| Items fake buyers want (Elunium, Strawberry, their loot) | 36-75 | 20-40 minutes |
+| Other everyday items | about 12 | 2 hours |
+| Equipment, cards | 6-9 | 3-4 hours |
+| Dear items (100k+, 1M+) | x0.6, x0.3 | slower still |
+
+| Your buying store wants | Sellers a day | About one every |
+|---|---|---|
+| Common loot (Jellopy, Sticky Mucus) | 72 | 20 minutes |
+| Uncommon drops | 18-36 | 40-80 minutes |
+| Rare drops | 3-6 | 4-8 hours |
+| MVP-only items | never | |
+
+A customer takes 1-5 (cheap items 5-50), so a fairly priced stack of 30
+Elunium sells in about three hours. The generator's `DEMAND_SCALE` sets this
+base; the pace settings scale it per server. **Customers' pace** and **Sellers' pace**
+scale all of it: 200 % twice as often, 50 % half.
+
+**While you are away.** An `@autotrade` stall keeps trading. With
+**Customers come while the server is off** on, a restart also gives it the
+customers of the time the server was down (up to 48 hours). The Merchant
+Guild mails you (RODEX) what your stall or store did while you were away:
+after a start, when it sells out or closes, and every six hours.
+
+**For GMs:** `@vendorinfo customers` lists the player stalls on your map
+with each line's market price, price factor and expected customers a day,
+and how long the last pass took; `@vendorinfo customers ff <minutes>`
+fast-forwards them.
 
 ## Prices
 
@@ -242,6 +311,8 @@ python3 registry/tools/prontera-vendors/build_vendors.py --era pre-re      # the
 python3 registry/tools/prontera-vendors/build_vendors.py --refresh-prices  # fetch iRO prices the cache lacks
 python3 registry/tools/prontera-vendors/build_vendors.py --reprice         # rebuild the price list from the data
 python3 registry/tools/prontera-vendors/scrape_ragmaya.py --workers 12     # refresh kRO prices (resumable)
+python3 registry/tools/prontera-vendors/scrape_carded.py --adjectives      # iRO's card prefixes (once)
+python3 registry/tools/prontera-vendors/scrape_carded.py                   # carded builds iRO players sold (resumable)
 ```
 
 Themes are defined in `build_vendors.py`: a hand list, a rule over the item
@@ -281,6 +352,7 @@ registry/mods/prontera-vendors/
 ├── images/                          icon and screenshot
 ├── npc/
 │   ├── prontera-vendors.txt         hands the settings to the engine
+│   ├── prontera-vendors-customers.txt  the customer settings, for the engine
 │   └── prontera-vendors-newer.txt   the settings that need app 1.4.5
 ├── db/
 │   ├── population_vendors.yml       markets + themes (generated)
@@ -293,6 +365,9 @@ registry/tools/prontera-vendors/     the generator, kept out of the mod
 ├── build_vendors.py
 ├── estimate.py                      the estimate model
 ├── scrape_ragmaya.py                kRO price fetcher
+├── scrape_carded.py                 carded builds from iRO listings (ragnastats)
+├── carded.json                      their cache: base item, refine, cards, listings
+├── card_adjectives.json             iRO's card prefixes, to read those names
 ├── prices_kro.json                  kRO price cache (RagMAYA)
 ├── prices.json                      iRO price cache (ragnastats)
 └── table_generated*.json            what it last wrote, to spot hand edits
