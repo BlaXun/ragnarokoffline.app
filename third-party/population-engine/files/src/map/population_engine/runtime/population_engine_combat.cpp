@@ -2353,8 +2353,9 @@ void population_engine_shell_reactive_cast(map_session_data *sd)
 	// RAGNAROKMAC: the hit that kills a shell fires this too, and so does every hit landing on
 	// it before the corpse is cleared. A dead caster is refused by unit_skilluse_id2 with no
 	// message; on a map too strong for its shells, dead ones tried Endure, Heal, Hiding and Back
-	// Slide hundreds of times.
-	if (pc_isdead(sd))
+	// Slide hundreds of times. It fires as the damage lands, when HP is already 0 but pc_dead has
+	// not yet set the dead flag (pc_isdead), so check HP (status_isdead) as unit_skilluse_id2 does.
+	if (pc_isdead(sd) || status_isdead(*sd))
 		return;
 	const t_tick now = gettick();
 	// --- Buff pass (Target:1 and Target:2 skills) ---
@@ -2489,7 +2490,7 @@ int population_engine_combat_per_tick(map_session_data *sd, bool do_skills)
 {
 	if (sd == nullptr)
 		return -1;
-	if (pc_isdead(sd))
+	if (pc_isdead(sd) || status_isdead(*sd))
 		return 0;
 	s_population &pe = sd->pop;
 	const bool hired_companion = sd->status.party_id > 0 && sd->status.party_id < 0x70000000

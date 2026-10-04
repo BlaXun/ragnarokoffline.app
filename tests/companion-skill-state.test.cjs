@@ -43,7 +43,8 @@ test('every skill row passes through it', () => {
 
 test('a dead shell does not react to the hit that killed it', () => {
 	const body = fn('void population_engine_shell_reactive_cast(');
-	assert.match(body, /if \(pc_isdead\(sd\)\)\s*return;/);
-	assert.ok(body.indexOf('pc_isdead(sd)') < body.indexOf('population_shell_cast_expired_self_buffs'),
+	assert.match(body, /if \(pc_isdead\(sd\) \|\| status_isdead\(\*sd\)\)\s*return;/,
+		'HP 0 before pc_dead sets the dead flag counts too');
+	assert.ok(body.indexOf('status_isdead(*sd)') < body.indexOf('population_shell_cast_expired_self_buffs'),
 		'before any cast');
 });
