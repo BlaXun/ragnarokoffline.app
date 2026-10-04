@@ -119,7 +119,9 @@ private:
 // ----------------------------------------------------------------------------
 // Numeric predicate: HP%, SP%, raw HP/SP, or distance, with comparator+value.
 // ----------------------------------------------------------------------------
-enum class NumKind : uint8_t { HpPct, SpPct, Hp, Sp, Distance };
+// Spheres: spirit spheres, or a Gunslinger's coins (rAthena keeps both in spiritball), so a row
+// that makes them can stop at a count: `self_spheres_lt5`.
+enum class NumKind : uint8_t { HpPct, SpPct, Hp, Sp, Distance, Spheres };
 
 class NumericPredicate : public ExpandedCondition {
 public:
@@ -145,6 +147,12 @@ public:
 		}
 		case NumKind::Hp:       lhs = status_get_hp(bl); break;
 		case NumKind::Sp:       lhs = status_get_sp(bl); break;
+		case NumKind::Spheres: {
+			const map_session_data* sd = BL_CAST(BL_PC, bl);
+			if (!sd) return inv_;
+			lhs = sd->spiritball;
+			break;
+		}
 		case NumKind::Distance: {
 			block_list* sbl = bag.shell ? static_cast<block_list*>(bag.shell) : nullptr;
 			if (!sbl || bl->m != sbl->m) return inv_;
@@ -162,6 +170,7 @@ public:
 		if (s == "hp")       { out = NumKind::Hp;       return true; }
 		if (s == "sp")       { out = NumKind::Sp;       return true; }
 		if (s == "distance") { out = NumKind::Distance; return true; }
+		if (s == "spheres")  { out = NumKind::Spheres;  return true; }
 		return false;
 	}
 
