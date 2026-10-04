@@ -3183,7 +3183,7 @@ Body:
       - { SkillId: NW_THE_VIGILANTE_AT_NIGHT, Level: 10, Rate: 9000 }
       - { SkillId: NW_GRENADE_FRAGMENT, Level: 10, Rate: 8000 }
       - { SkillId: NW_BASIC_GRENADE, Level: 10, Rate: 8000 }
-      - { SkillId: NW_INTENSIVE_AIM, Level: 10, Rate: 10000 }
+      - { SkillId: NW_INTENSIVE_AIM, Level: 10, Rate: 10000, Condition: not_self_status, CondValue: SC_INTENSIVE_AIM }
       - { SkillId: GS_ADJUSTMENT, Level: 1, Rate: 8000, Target: self, Condition: not_self_status, CondValue: SC_ADJUSTMENT }
       - { SkillId: GS_BULLSEYE, Level: 1, Rate: 9000 }
       - { SkillId: GS_DISARM, Level: 5, Rate: 9000 }
