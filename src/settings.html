@@ -2081,8 +2081,9 @@ function renderModList() {
     box.append(el('div', 'mgroup', `${title} · ${mods.length}`));
     for (const m of mods) box.append(modRow(m, kindBoxes, pendingNames));
   }
-  // Options of a mod that is gone now are not a change to apply.
-  for (const name of Object.keys(modSettings)) if (!isInstalled(name)) delete modSettings[name];
+  // Options without a box on screen now -- the mod is gone, or an update gave
+  // it a settings page -- are not a change to apply.
+  modSettings = ModsState.keptOptions(modSettings, modSettingsBaseline);
   paintUpdates();
   paintModsStatus();
 }
