@@ -44,6 +44,11 @@ without the mod; these are extra.
 
 ## Settings (Settings → Mods)
 
+The mod's **Settings…** button opens its own page: every setting below,
+grouped, with the customer rate tables beside the pace settings (they
+follow the pace as you change it), Save, Save and restart, and Reset to
+defaults. On an app without settings pages they show in the Mods tab.
+
 | Setting | Default | What it does |
 |---|---|---|
 | Sell shops | on | Off removes every sell stall. |

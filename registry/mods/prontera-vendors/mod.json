@@ -9,6 +9,7 @@
   "icon": "images/icon.png",
   "screenshots": ["images/prontera-vendors.png"],
   "prerenewalFolder": "pre-re",
+  "settingsPage": "settings/index.html",
   "settings": [
     { "key": "sell_shops", "type": "boolean", "default": true, "label": "Sell shops", "description": "Vending stalls selling to you. Off removes them all; the other settings stay as they are." },
     { "key": "vendors", "type": "number", "default": 30, "min": 0, "max": 100, "label": "Sell stalls", "description": "How many sell stalls stand on the inner sidewalks (x=147 and x=164) and the rows east of the fountain (y=110 and y=125). They fill one lane at a time, side by side: north sidewalks first, then south, then the eastern rows. Six staples (potions, general goods, forge supplies, healing items, common and rare cards) are always among them; the rest roll from the other themes. 0 removes them all." },
