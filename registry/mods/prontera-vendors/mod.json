@@ -1,6 +1,6 @@
 {
   "name": "prontera-vendors",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "BlaXun",
   "description": "A living player market on Prontera's main road. Fake players run real vending stalls on the inner sidewalks (cards, weapons and armor by class, refined gear, potions, gems, pet eggs, loot from every dungeon and more) and real buying stores on the outer sidewalks that buy your loot: ores, quest turn-ins, junk drops and the loot of every dungeon and leveling field. Prices follow a real server's market (kRO), stalls undercut each other and change as their owners come and go, and everything is tunable in Settings. Needs the population engine switched on.",
   "default": "off",
