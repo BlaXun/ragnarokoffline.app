@@ -1,0 +1,16 @@
+{
+  "name": "sandalphon-skill-descriptions",
+  "version": "1.0.0",
+  "author": "Sandalphon",
+  "description": "Rewritten pre-renewal skill descriptions, checked against rAthena's code: damage formulas, success chances, what each level adds, and what does and does not affect a skill. Covers every class, plus quest, item, homunculus, guild and mercenary skills. Replaces the skill description text only.",
+  "requires": {
+    "era": "prerenewal"
+  },
+  "tags": [
+    "skills",
+    "translation",
+    "tooltips",
+    "quality-of-life"
+  ],
+  "homepage": "https://rathena.org/board/topic/139880-pre-renewal-skill-translations-and-tooltips-improved-revised-re-edited-and-commented-by-sandalphon/"
+}
