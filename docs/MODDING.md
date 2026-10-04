@@ -1748,6 +1748,8 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 | `api.server.command(text)` | Sends an `@` or `#` command as if the player had typed it in chat, so the server allows exactly what the player's group allows. Anything else is refused; returns whether it was sent. |
 | `api.graphics.registerPass({ name, fragment, uniforms, enabled })` | A full-screen GLSL pass over each frame, after bloom and before anti-aliasing. Returns a function that removes it; it also goes when the plugin does. See [Graphics passes](#graphics-passes). |
 | `api.ui.window({ id, title, width, height, resizable })` | A window of the plugin's own; fill its `body`. `show`, `hide`, `toggle`, `isOpen`, `setTitle`, `onClose`. See [Windows and server requests](#windows-and-server-requests). |
+| `api.ui.scale.windows()` / `.get(window)` / `.set(window, factor)` / `.global()` / `.setGlobal(factor)` / `.supported()` | Draw the client's own windows larger or smaller: a global factor times each window's own, 0.5 to 3. Put back when the plugin goes; the plugin remembers the player's choice. See [below](#window-sizes--apiuiscale). Absent in an older app. |
+| `api.ui.menuButton({ background, hover, down, title, onClick })` | A button of the mod's own in the option menu (Escape), drawn from pictures the mod ships like the menu's own. Returns a function that takes it out; it also goes with the plugin. See [below](#a-button-in-the-option-menu--apiuimenubutton). Absent in an older app. |
 | `api.items.search(text, limit)` / `.get(id)` / `.icon(id)` | Items from the client's own tables, mods' included: `{ id, name, description, slots }`, and an icon URL for an `<img>`. |
 | `api.server.request(command, text, { timeout })` | Ask the mod's server script for something; resolves with its answer. See [Windows and server requests](#windows-and-server-requests). |
 | `api.cleanup(fn)` | Register idempotent cleanup immediately after allocating a resource. The returned function can release it early. Runs on failure, scope replacement and page teardown. |
@@ -2149,6 +2151,71 @@ call it from `init`, and it is put back when the mod is turned off. An app
 before 1.4.5 has no `api.players`, and a client without the switches answers
 `gmLookSupported()` with `false` (`gmLook` then returns `null`). It reads `Session.AdminLook` in the
 roBrowser fork. See [`mods/gm-class-look`](../mods/gm-class-look).
+
+### Window sizes — `api.ui.scale`
+
+Browser zoom (Ctrl +) makes every window larger at once and leaves the 3D view
+as it is. `api.ui.scale` goes further, one window at a time: a hotbar large
+enough to read from the couch, a chat that takes less room.
+
+```js
+if (api.ui?.scale?.supported()) {
+    const scale = api.ui.scale;
+    scale.setGlobal(api.preferences.get('all', 1));          // every window
+    scale.set('ShortCut', api.preferences.get('ShortCut', 1)); // times this one
+}
+```
+
+A window is drawn at the global factor times its own, and both are kept
+between 0.5 and 3; `set` and `setGlobal` return the factor in force (the
+client clamps), or `null` on a client that cannot scale. Setting a window to 1
+gives it the global factor back.
+
+Only the windows `windows()` names can be scaled: the hotbar (`ShortCut`,
+`ShortCuts`), the chat (`ChatBox`), `Inventory`, the status icons
+(`StatusIcons`), the HP/SP window (`BasicInfo`), `MiniMap`, the gamepad
+hotbar along the bottom (`JoystickUI`) and other windows
+the client has checked to keep dragging, resizing and scrolling at another
+size. A name it doesn't list is a `TypeError`, and so is a value that is not a
+number. A version of a window is scaled by its public name (the client's
+`InventoryV3` is `Inventory`), and every whisper window by `WhisperBox`.
+
+The client remembers nothing. Everything starts at 1, so a mod keeps the
+player's choice itself, in `api.preferences`, and sets it again in `init`,
+before the windows open. Turning the mod off puts back what it changed. The
+list and the drawing are `UI/UIScale.js` in the roBrowser fork.
+[`mods/ui-scale`](../mods/ui-scale) is a complete one: a window of sliders,
+opened from a button in the option menu.
+
+### A button in the option menu — `api.ui.menuButton`
+
+The option menu, the window Escape opens (and the basic info window's Option
+button), can carry a button of the mod's own. It comes after the menu's
+settings buttons and before Exit, and hides with them on the death menu.
+
+The menu's buttons are pictures with the label painted in, so a mod's is
+too: three of them in the client's interface folder, at rest, under the
+pointer and pressed, 221 x 20 like the menu's `esc_06a.bmp`. Ship them in the
+mod's `data/texture/ui/`:
+
+```js
+api.ui.menuButton({
+    background: 'esc_mymod_a.bmp',
+    hover: 'esc_mymod_b.bmp',
+    down: 'esc_mymod_c.bmp',
+    title: 'My Mod',               // tooltip and screen readers
+    onClick: () => win.toggle(),
+});
+```
+
+A picture is a plain relative name in that folder (`..`, a URL or anything
+but `.bmp`, `.tga`, `.png` or `.jpg` is a `TypeError`). `hover` and `down`
+are optional. Pressing the button leaves the menu open, as the settings
+buttons do. It returns a function that takes the button out, and the button
+also goes with the mod. A client without the menu hook has nowhere to put it,
+and the call does nothing. It is `UI/MenuHooks.js` in the roBrowser fork.
+[`mods/ui-scale/tools/make-menu-button.py`](../mods/ui-scale/tools/make-menu-button.py)
+letters a button of your own from the menu's Settings button.
 
 ---
 
