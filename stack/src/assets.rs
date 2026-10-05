@@ -167,6 +167,77 @@ fn translation_extras(cfg: &Config) -> Vec<(PathBuf, PathBuf)> {
         .collect()
 }
 
+/// config/TRANSLATION_LAYERS: the path prefixes taken from each Compatibility
+/// layer, and the exceptions to them. That file says why these.
+fn translation_layer_rules(cfg: &Config) -> (Vec<String>, Vec<String>) {
+    let list = fs::read_to_string(cfg.root.join("config/TRANSLATION_LAYERS")).unwrap_or_default();
+    let (mut take, mut skip) = (Vec::new(), Vec::new());
+    for line in list.lines().map(str::trim) {
+        let mut cols = line.split('\t').map(str::trim).filter(|c| !c.is_empty());
+        match (cols.next(), cols.next()) {
+            (Some("take"), Some(prefix)) => take.push(prefix.to_string()),
+            (Some("skip"), Some(prefix)) => skip.push(prefix.to_string()),
+            _ => {}
+        }
+    }
+    (take, skip)
+}
+
+/// The Compatibility layers for this packet version, oldest first: every
+/// `Compatibility/YYYY-MM-DD` dated on or before it, as ClientGenerator stacks
+/// them up to a client's date. A layer split by era gives its era's folder.
+fn translation_layers(translation: &Path, packetver: &str, era: &str) -> Result<Vec<PathBuf>, String> {
+    let root = translation.join("Compatibility");
+    if !root.is_dir() {
+        return Ok(Vec::new());
+    }
+    let mut layers = Vec::new();
+    for e in entries(&root)? {
+        let name = e.file_name().to_string_lossy().into_owned();
+        let date: String = name.chars().filter(|c| *c != '-').collect();
+        let dated = name.len() == 10 && date.len() == 8 && date.chars().all(|c| c.is_ascii_digit());
+        if !dated || !e.path().is_dir() || date.as_str() > packetver {
+            continue;
+        }
+        let split = ["Renewal", "Pre-Renewal"].iter().any(|d| e.path().join(d).is_dir());
+        if !split {
+            layers.push(e.path());
+        } else if e.path().join(era).is_dir() {
+            layers.push(e.path().join(era));
+        }
+    }
+    Ok(layers)
+}
+
+/// Copy what the rules take from one layer into the staged translation.
+fn copy_layer_files(
+    src: &Path,
+    dst: &Path,
+    rel: &str,
+    take: &[String],
+    skip: &[String],
+) -> Result<(), String> {
+    for e in entries(src)? {
+        if e.file_type().map_err(|e| e.to_string())?.is_symlink() {
+            return Err(format!("translation layer contains a link: {}", e.path().display()));
+        }
+        let name = e.file_name().to_string_lossy().into_owned();
+        let path = if rel.is_empty() { name } else { format!("{rel}/{name}") };
+        if e.path().is_dir() {
+            // Only into folders a take could still match.
+            let dir = format!("{path}/");
+            if take.iter().any(|t| t.starts_with(&dir) || dir.starts_with(t.as_str())) {
+                copy_layer_files(&e.path(), dst, &path, take, skip)?;
+            }
+        } else if take.iter().any(|t| path.starts_with(t.as_str()))
+            && !skip.iter().any(|s| path.starts_with(s.as_str()))
+        {
+            copy_file(&e.path(), &dst.join(&path))?;
+        }
+    }
+    Ok(())
+}
+
 /// The client asks for `SignBoardList.lub`, and the asset server matches the
 /// translation folder by exact case on Linux. The pre-renewal layer ships it
 /// as `signboardlist.lub`, so the request missed it and fell through to the
@@ -263,6 +334,11 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
             }
         }
         restore_signboard_name(&en.join("data/luafiles514/lua files"))?;
+        let era = if crate::cmds::is_prerenewal(cfg) { "Pre-Renewal" } else { "Renewal" };
+        let (take, skip) = translation_layer_rules(cfg);
+        for layer in translation_layers(&translation, packetver, era)? {
+            copy_layer_files(&layer, &en, "", &take, &skip)?;
+        }
         for (src, dst) in translation_extras(cfg) {
             // A pin without one of them is an older translation, not a fault.
             if translation.join(&src).is_file() {
@@ -335,9 +411,9 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
     // Bumped when how the tree is staged changes without its inputs changing
     // (v3: the signboard table's name; v4: the client's item table staged
-    // behind the English one), so a client holding the old staging in its
-    // cache drops it.
-    fnv(&mut fingerprint, b"owned-assets-v4");
+    // behind the English one; v5: the Compatibility layers stacked by packet
+    // version), so a client holding the old staging in its cache drops it.
+    fnv(&mut fingerprint, b"owned-assets-v5");
     fnv(&mut fingerprint, text.as_str().as_bytes());
     // Config.local.js carries it, and that file is an ordinary HTTP request
     // the shell only re-fetches when this fingerprint moves. Left out at the
@@ -1038,6 +1114,74 @@ mod tests {
         assert!(!cfg.state.join("assets/.translation/data/absent.txt").exists());
         assert!(!cfg.state.join("escaped.txt").exists());
         assert!(!cfg.state.join("assets/escaped.txt").exists());
+        fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
+    }
+
+    /// The Compatibility layers stack up to the chosen packet version, oldest
+    /// first and in the running era's folder, taking only what
+    /// TRANSLATION_LAYERS names; TRANSLATION_EXTRAS still has the last word.
+    #[test]
+    fn compatibility_layers_follow_the_packet_version_and_era() {
+        let cfg = fixture_config("layers");
+        let client = cfg.state.parent().unwrap().join("client");
+        write(&client.join("data.grf"), "archive");
+        let en = cfg.root.join("vendor/ROenglishRE/Translation");
+        write(&en.join("Renewal/data/table.txt"), "renewal table");
+        write(&en.join("Renewal/SystemEN/LuaFiles514/itemInfo.lua"), "English items");
+        write(&en.join("Renewal/SystemEN/OngoingQuests.lub"), "English quests");
+        let c = en.join("Compatibility");
+        write(&c.join("2017-06-14/data/texture/ui/button.bmp"), "2017 button");
+        write(&c.join("2017-06-14/data/texture/ui/narrow_tab.bmp"), "wrong size");
+        write(&c.join("2017-12-13/Renewal/data/texture/ui/era.bmp"), "renewal art");
+        write(&c.join("2017-12-13/Pre-Renewal/data/texture/ui/era.bmp"), "pre-renewal art");
+        write(&c.join("2018-06-20/Renewal/data/luafiles514/lua files/skillinfoz/skilltreeview.lub"), "older layout");
+        write(&c.join("2022-04-06/data/contentdata/repute/reputegroupdata.bson"), "English factions");
+        write(&c.join("2023-08-02/data/simplemsg/msg_emotion.csv"), "English emotions");
+        write(&c.join("2023-08-02/data/texture/ui/button.bmp"), "2023 button");
+        write(&c.join("2023-08-02/data/texture/ui/extra.bmp"), "2023 only");
+        write(&c.join("2025-12-17/data/texture/ui/future.bmp"), "too new for either");
+        write(&c.join("notes/data/texture/ui/undated.bmp"), "not a layer");
+        write(&cfg.root.join("config/TRANSLATION_LAYERS"),
+            "# comment\ntake\tdata/texture/\ntake\tdata/contentdata/repute/\n\
+             take\tdata/simplemsg/msg_emotion.csv\nskip\tdata/texture/ui/narrow_\n");
+        write(&cfg.root.join("config/TRANSLATION_EXTRAS"),
+            "Compatibility/2017-06-14/data/texture/ui/narrow_tab.bmp\tdata/texture/ui/forced.bmp\n");
+        write(&cfg.root.join("config/Config.local.js"),
+            "window.ROConfigLocal = {\npacketver: 20221005,\nrenewal: true,\n};\n");
+        write(&cfg.root.join("config/index.html"), "game entry");
+        let args = vec![client.join("data.grf").to_str().unwrap().to_string()];
+        let staged = cfg.state.join("assets/.translation");
+        let read = |p: &str| fs::read_to_string(staged.join(p)).ok();
+
+        // 20221005: up to the 2022-09-28 layer.
+        link(&cfg, &args).unwrap();
+        assert_eq!(read("data/texture/ui/button.bmp").as_deref(), Some("2017 button"));
+        assert_eq!(read("data/texture/ui/era.bmp").as_deref(), Some("renewal art"));
+        assert_eq!(read("data/contentdata/repute/reputegroupdata.bson").as_deref(), Some("English factions"));
+        assert_eq!(read("data/texture/ui/narrow_tab.bmp"), None, "skipped");
+        assert_eq!(read("data/texture/ui/forced.bmp").as_deref(), Some("wrong size"), "extras apply after");
+        assert_eq!(read("data/luafiles514/lua files/skillinfoz/skilltreeview.lub"), None, "not taken");
+        assert_eq!(read("data/simplemsg/msg_emotion.csv"), None, "2023 is after 20221005");
+        assert_eq!(read("data/texture/ui/extra.bmp"), None);
+        assert_eq!(read("data/texture/ui/future.bmp"), None);
+        assert_eq!(read("data/texture/ui/undated.bmp"), None);
+
+        // 20250402: the later layers too, a newer copy over an older one.
+        if let Some(other) = crate::packetver::all().get(1) {
+            write(&cfg.state.join("settings.json"), &format!("{{\"packetver\":\"{other}\"}}"));
+            link(&cfg, &args).unwrap();
+            assert_eq!(read("data/texture/ui/button.bmp").as_deref(), Some("2023 button"));
+            assert_eq!(read("data/texture/ui/extra.bmp").as_deref(), Some("2023 only"));
+            assert_eq!(read("data/simplemsg/msg_emotion.csv").as_deref(), Some("English emotions"));
+            assert_eq!(read("data/texture/ui/future.bmp"), None);
+        }
+
+        // Pre-renewal takes the other half of a split layer.
+        write(&en.join("Pre-Renewal/data/table.txt"), "pre-renewal table");
+        write(&cfg.state.join("prerenewal"), "true");
+        link(&cfg, &args).unwrap();
+        assert_eq!(read("data/texture/ui/era.bmp").as_deref(), Some("pre-renewal art"));
+        assert_eq!(read("data/texture/ui/button.bmp").as_deref().map(|b| b.ends_with("button")), Some(true));
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
     }
 

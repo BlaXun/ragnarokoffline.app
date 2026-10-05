@@ -296,6 +296,19 @@ function unpackTranslationData(root) {
 			appLog(`could not unpack the ${era} translation textures: ${e.message}`);
 		}
 	}
+	// The Compatibility layers' files, for every packet version and era; the
+	// supervisor picks which to stage (config/TRANSLATION_LAYERS).
+	const translation = path.join(root, 'vendor/ROenglishRE/Translation');
+	const layers = path.join(translation, 'compatibility.tar');
+	if (fs.existsSync(layers)) {
+		try {
+			fs.rmSync(path.join(translation, 'Compatibility'), { recursive: true, force: true });
+			extractTarLatin1(layers, translation);
+			fs.rmSync(layers, { force: true });
+		} catch (e) {
+			appLog(`could not unpack the translation's compatibility layers: ${e.message}`);
+		}
+	}
 }
 
 // Renewal first: it is the default era, and the fallback when a payload
