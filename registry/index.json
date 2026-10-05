@@ -285,7 +285,7 @@
         "npc",
         "quality-of-life"
       ],
-      "icon": "",
+      "icon": "images/icon.png",
       "screenshots": [
         "images/cash-shop.png"
       ],
@@ -302,6 +302,10 @@
         {
           "path": "images/cash-shop.png",
           "sha256": "59312e6a6cb77b303652bf51279aaa6e2992c43c90c59d4f3ec79fe6b39bc510"
+        },
+        {
+          "path": "images/icon.png",
+          "sha256": "b31932fe6a704db42b21a4ceee244a31be3bb1f34479277cb22acca19d24354d"
         }
       ]
     },
@@ -798,7 +802,7 @@
         "mvp",
         "npc"
       ],
-      "icon": "",
+      "icon": "images/icon.png",
       "screenshots": [],
       "requires": {
         "mods": [],
@@ -809,7 +813,12 @@
         "github": "LilArt420/royalnightmare",
         "asset": "royal-nightmare-*.zip"
       },
-      "files": []
+      "files": [
+        {
+          "path": "images/icon.png",
+          "sha256": "680a9d2920038ab63a2e11ce9f7c3c2c2458b327a7b47a5ce0e1ab0d2d15fab1"
+        }
+      ]
     },
     {
       "name": "standart-npc",

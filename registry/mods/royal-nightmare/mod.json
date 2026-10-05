@@ -9,6 +9,7 @@
     "endgame",
     "npc"
   ],
+  "icon": "images/icon.png",
   "homepage": "https://github.com/LilArt420/royalnightmare",
   "requires": {
     "era": "renewal"
