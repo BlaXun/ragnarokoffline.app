@@ -568,11 +568,16 @@ Body:
             Cast: AL_HEAL
             Target: { Ally: attacked }
             When: ally_hp_pct_lt80
-          - Name: wall_attacked        # stops Phreeoni's melee hits
+          # Stops Phreeoni's melee hits. Its effect lasts only while the member stands on
+          # the wall, and they move: so not where a party wall already stands, and not
+          # more often than every 6 s.
+          - Name: wall_attacked
             Priority: 88
             Cast: MG_SAFETYWALL
             Target: { Ally: attacked }
             When: not_ally_safetywall
+            Field: { Skill: MG_SAFETYWALL, Owner: party, At: target, Range: 0, Below: 1 }
+            Cooldown: 6000
           - Name: kyrie_attacked
             Priority: 87
             Cast: PR_KYRIE
