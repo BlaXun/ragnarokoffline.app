@@ -497,6 +497,18 @@ every key, how the headcount is divided between maps, which tables are still
 unreachable, and the two ways this data fails without the server saying
 anything.
 
+### Directing an AI character from a script
+
+A script can take one AI character away from the engine for a while and drive
+it with the stock `unitwalk`, `unittalk`, `emotion` and `unitskilluseid`
+commands: a shell that says "gz" when you level, a wizard that walls off a
+gate, a rival who turns up while you grind. Eight `population_*` commands find
+shells, hold and release them, spawn a particular one, remove one and route
+its whispers to your script.
+
+**[docs/mods/shell-control.md](mods/shell-control.md)** is the reference, and
+[examples/mods/shell-gz](../examples/mods/shell-gz) is a working start.
+
 ## Making new things: items, monsters, and how they look
 
 A mod can add items and monsters that exist in no client and no server, with

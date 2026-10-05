@@ -1,0 +1,96 @@
+'use strict';
+// The shell control API (patch 0027): script commands a mod uses to take a
+// population shell away from the engine's AI and drive it. These read the
+// sources, as the other engine tests do; the C++ is compiled by images.yml.
+const assert = require('node:assert');
+const fs = require('node:fs');
+const path = require('node:path');
+const { test } = require('node:test');
+
+const ROOT = path.join(__dirname, '..');
+const read = rel => fs.readFileSync(path.join(ROOT, rel), 'utf8').replace(/\r\n/g, '\n');
+const engine = read('third-party/population-engine/files/src/map/population_engine.cpp');
+const header = read('third-party/population-engine/files/src/map/population_engine.hpp');
+const wander = read('third-party/population-engine/files/src/map/population_engine/runtime/population_engine_path.cpp');
+const patch = read('third-party/population-engine/patches/0027-shell-control-api.patch');
+const doc = read('docs/mods/shell-control.md');
+
+const COMMANDS = [
+	'population_isshell', 'population_shells', 'population_hold', 'population_unhold',
+	'population_spawn', 'population_despawn', 'population_whisperevent', 'population_whisper',
+];
+
+const body = (src, start, end) => {
+	const a = src.indexOf(start);
+	assert.ok(a >= 0, `missing ${start}`);
+	const b = src.indexOf(end, a + start.length);
+	assert.ok(b > a, `missing ${end} after ${start}`);
+	return src.slice(a, b);
+};
+
+test('every command is defined, registered and documented', () => {
+	for (const name of COMMANDS) {
+		assert.match(patch, new RegExp(`^\\+BUILDIN_FUNC\\(${name}\\)$`, 'm'), `${name} body`);
+		assert.match(patch, new RegExp(`^\\+BUILDIN_DEF\\(${name}, "`, 'm'), `${name} registered`);
+		assert.match(doc, new RegExp(`### \`${name}\\(`), `${name} documented`);
+	}
+	// The patch touches only rAthena's custom-command includes; the engine is in files/.
+	const touched = [...patch.matchAll(/^\+\+\+ b\/(\S+)/gm)].map(m => m[1]).sort();
+	assert.deepStrictEqual(touched, ['src/custom/script.inc', 'src/custom/script_def.inc']);
+});
+
+test('the hold belongs to an NPC, the script runs it by its own id', () => {
+	assert.match(patch, /population_engine_shell_hold\(script_getnum\(st, 2\), st->oid, ms\)/);
+	assert.match(patch, /population_engine_shell_unhold\(script_getnum\(st, 2\), st->oid\)/);
+	assert.match(patch, /population_engine_shell_spawn\(st->oid, m,/);
+	const hold = body(engine, 'bool population_engine_shell_hold(', '\n}\n');
+	assert.match(hold, /population_engine_shell_kind\(gid\) != POP_SHELL_AMBIENT/, 'never a companion or a vendor');
+	assert.match(hold, /population_engine_shell_is_held\(sd\) && sd->pop\.hold_npc != npc_id\)\n\t\treturn false;/, 'another NPC\'s live hold wins');
+	assert.match(hold, /cap_value\(ms > 0 \? ms : POP_HOLD_DEFAULT_MS, POP_HOLD_MIN_MS, POP_HOLD_MAX_MS\)/, 'bounded');
+	const unhold = body(engine, 'bool population_engine_shell_unhold(', '\n}\n');
+	assert.match(unhold, /sd->pop\.hold_npc != npc_id/, 'only the holder releases');
+});
+
+test('the engine leaves a held shell alone everywhere it acts on one', () => {
+	const gates = [
+		['combat tick', body(engine, 'static int32 pop_combat_tick_bot_in_range(', 'population_engine_combat_per_tick(sd, true);')],
+		['reactive cast on damage', body(engine, 'void population_engine_on_shell_damaged(', 'population_engine_shell_reactive_cast(sd);')],
+		['ambient chat', body(engine, 'TIMER_FUNC(population_engine_chat_timer)', 'population_engine_db_for_shell(raw_sd)')],
+		['name mentions', body(engine, 'void population_engine_on_global_chat_mention(', 'population_engine_deliver_chat_reply_locked(bot, nullptr);')],
+		['whispers', body(engine, 'void population_engine_on_whisper_to_population_pc(', 'const bool has_msg')],
+		['wander sweep', body(wander, 'for (int ci = 0; ci < max_iterate; ++ci)', 'population_engine_map_has_real_players(sd->m)')],
+	];
+	for (const [where, src] of gates)
+		assert.match(src, /population_engine_shell_is_held\((sd|raw_sd|bot|bot_sd)\)/, where);
+	const drift = body(engine, 'std::vector<DriftEntry> drift_candidates;', 'drift_candidates.push_back(');
+	assert.match(drift, /if \(sd->pop\.hold_npc != 0\)\n\t\t\tcontinue;/, 'drift check');
+});
+
+test('holds end by themselves, and a script actor does not linger', () => {
+	const timer = body(engine, 'TIMER_FUNC(population_engine_global_combat_timer)', '// Goal 2: gear re-snapshot poll');
+	assert.match(timer, /pop_shell_control_sweep\(\);/, 'swept from the combat timer');
+	const sweep = body(engine, 'static void pop_shell_control_sweep()\n{', '\n}\n');
+	assert.match(sweep, /!population_engine_shell_is_held\(sd\) \|\| map_id2nd\(sd->pop\.hold_npc\) == nullptr/, 'lapsed, or its NPC is gone');
+	const end = body(engine, 'static void pop_shell_end_hold(', '\n}\n');
+	assert.match(end, /\(sd->pop\.script_spawned && !sd->pop\.script_keep\)/, 'a spawned actor logs out unless kept');
+	assert.match(end, /sd->m != sd->pop\.spawn_map_id/, 'so does a shell left on another map');
+	assert.match(end, /sd->pop\.whisper_event\.clear\(\);/);
+});
+
+test('removal is deferred and only removes what was asked for', () => {
+	const despawn = body(engine, 'bool population_engine_shell_despawn(', '\n}\n');
+	assert.match(despawn, /add_timer\(gettick\(\) \+ 1, pop_shell_despawn_timer, gid,/);
+	assert.doesNotMatch(despawn, /population_engine_shell_release\(/, 'never frees the shell inside the script run');
+	const timer = body(engine, 'static TIMER_FUNC(pop_shell_despawn_timer)\n{', '\n}\n');
+	assert.match(timer, /!sd->pop\.despawn_pending/, 'an id reused meanwhile is left alone');
+	assert.match(timer, /pop_is_companion\(sd\)/, 'never a companion');
+});
+
+test('a spawned actor is outside the map quotas', () => {
+	assert.match(body(engine, 'static size_t population_engine_count_shells_on_map(', '\n}\n'), /!sd->pop\.script_spawned/);
+	assert.match(body(engine, 'static size_t population_engine_count_shells_on_map_for_profile(', '\n}\n'), /sd->pop\.script_spawned\) continue;/);
+	const spawn = body(engine, 'int32_t population_engine_shell_spawn(', '\n}\n');
+	assert.match(spawn, /g_pop_draft_level = 0;/, 'the level override does not leak into the next spawn');
+	assert.match(spawn, /population_engine_shell_close_stall\(sd\);/, 'an actor is not a shop');
+	assert.match(header, /int32_t population_engine_shell_spawn\(int32_t npc_id,/);
+});

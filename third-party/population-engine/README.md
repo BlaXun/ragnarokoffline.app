@@ -318,6 +318,29 @@ engine's vendors spawn exactly as upstream's do.
 `registry/mods/prontera-vendors` is the worked example (its generator is in
 `registry/tools/prontera-vendors`).
 
+### Shell control for mods
+
+`patches/0027-shell-control-api.patch` adds eight script commands
+(`src/custom/script.inc`) and the engine side is in `population_engine.cpp`,
+under "shell control API". They let a mod's NPC script find shells
+(`population_isshell`, `population_shells`), take one from the AI for a while
+(`population_hold`, `population_unhold`), make or remove one
+(`population_spawn`, `population_despawn`), and handle whispers to it
+(`population_whisperevent`, `population_whisper`). Everything else a script
+does with a shell is stock: it is a real character, so `unitwalk`,
+`unittalk`, `emotion`, `unitattack` and `unitskilluseid` already work on it.
+
+A hold is a pair on `sd->pop` (`hold_npc`, `hold_until`) that the combat
+tick, reactive casts, wander sweep, ambient chat, name-mention replies,
+whisper handler and drift check all skip on. It belongs to the NPC that took
+it, is bounded (30 minutes at most), and ends by itself when it lapses or its
+NPC is unloaded (`pop_shell_control_sweep`, from the combat timer). A shell
+`population_spawn` made is marked `script_spawned` and left out of the map
+quota counts. Companions and vendors are never handed out. Nothing changes
+until a script calls one of the commands.
+
+The player-facing reference is [docs/mods/shell-control.md](../../docs/mods/shell-control.md).
+
 ## Measured cost
 
 Alpine/musl, arm64, packetver 20221005, map server only, 4 GiB guest:

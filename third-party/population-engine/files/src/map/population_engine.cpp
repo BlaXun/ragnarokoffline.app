@@ -439,6 +439,9 @@ TIMER_FUNC(population_engine_chat_timer) {
 			continue;
 		if (map_id2bl(raw_sd->id) != raw_sd)
 			continue;
+		// RAGNAROKMAC (shell control API): a held shell says what its script says.
+		if (population_engine_shell_is_held(raw_sd))
+			continue;
 
 		std::shared_ptr<PopulationEngine> equipment = population_engine_db_for_shell(raw_sd).find(raw_sd->status.class_);
 
@@ -848,7 +851,8 @@ static void population_engine_destroy_failed_spawn(map_session_data* sd);
 static size_t population_engine_count_shells_on_map(int16_t map_id, uint16_t job_id = UINT16_MAX) {
     size_t count = 0;
     for (map_session_data* sd : g_population_engine_pcs) {
-        if (sd && sd->m == map_id) {
+        // RAGNAROKMAC: a script's population_spawn actor is outside every quota.
+        if (sd && sd->m == map_id && !sd->pop.script_spawned) {
             if (job_id == UINT16_MAX || sd->status.class_ == job_id)
                 count++;
         }
@@ -864,7 +868,7 @@ static size_t population_engine_count_shells_on_map_for_profile(
 {
     size_t count = 0;
     for (map_session_data* sd : g_population_engine_pcs) {
-        if (!sd || sd->m != map_id) continue;
+        if (!sd || sd->m != map_id || sd->pop.script_spawned) continue;
         const uint16_t c = static_cast<uint16_t>(sd->status.class_);
         for (uint16_t j : jobs) {
             if (c == j) { ++count; break; }
@@ -3080,6 +3084,10 @@ TIMER_FUNC(population_engine_autosummon_timer)
 			continue;
 		if (pop_is_companion(sd))
 			continue;
+		// RAGNAROKMAC (shell control API): a script may walk or warp its shell
+		// anywhere; ending the hold settles where it lives (pop_shell_end_hold).
+		if (sd->pop.hold_npc != 0)
+			continue;
 		if (sd->pop.spawn_map_id < 0 || sd->m == sd->pop.spawn_map_id)
 			continue;
 		struct map_data *mapdata = map_getmapdata(sd->pop.spawn_map_id);
@@ -3347,6 +3355,9 @@ static int32 pop_combat_tick_bot_in_range(block_list *bl, va_list ap)
 		if (!pop_is_companion(sd))
 			pop_companion_set_owner(sd, nullptr);
 	}
+	// RAGNAROKMAC (shell control API): a held shell does what its script says.
+	if (population_engine_shell_is_held(sd))
+		return 0;
 	// Dedupe across multiple real-PC viewers.
 	if (!ctx->ticked.insert(sd->id).second)
 		return 0;
@@ -4542,6 +4553,9 @@ void population_engine_companion_terms(map_session_data *owner, int fd)
 /// Global combat timer: proximity-driven (mirrors mob_ai_hard).
 /// Only bots within view of a real PC tick. Bots on empty maps cost ~zero,
 /// so the engine scales by real-player count, not by total bot count.
+static void pop_shell_control_sweep();
+static TIMER_FUNC(pop_shell_despawn_timer);
+
 TIMER_FUNC(population_engine_global_combat_timer)
 {
 	PE_PERF_SCOPE("timer.combat");
@@ -4550,6 +4564,7 @@ TIMER_FUNC(population_engine_global_combat_timer)
 		for (auto *s : stale)
 			population_engine_shell_release(s);
 	}
+	pop_shell_control_sweep();
 
 	// Goal 2: gear re-snapshot poll — companions whose equipped items changed
 	// since last tick get their persistence row updated (debounced by the hash).
@@ -4916,6 +4931,7 @@ void do_init_population_engine() {
 	add_timer_func_list(population_engine_autosummon_timer, "population_engine_autosummon_timer");
 	add_timer_func_list(population_engine_chat_timer, "population_engine_chat_timer");
 	add_timer_func_list(population_engine_global_combat_timer, "population_engine_global_combat_timer");
+	add_timer_func_list(pop_shell_despawn_timer, "pop_shell_despawn_timer");
 	add_timer_func_list(population_engine_respawn_shell_timer, "population_engine_respawn_shell_timer");
 	add_timer_func_list(population_engine_vendor_rotation_timer, "population_engine_vendor_rotation_timer");
 	population_engine_path_register_timer_funcs();
@@ -9122,7 +9138,10 @@ void population_engine_on_shell_damaged(map_session_data *sd, struct block_list 
 	// mob_skill_db closedattacked / longrangeattacked event-driven semantics.
 	// SelfTargeted / MeleeAttacked / RangeAttacked conditions are satisfied right
 	// now (last_attacked_tick is fresh), so don't wait for the next poll tick.
-	population_engine_shell_reactive_cast(sd);
+	// RAGNAROKMAC (shell control API): a held shell does not fight back; a mob
+	// train has to stay a train.
+	if (!population_engine_shell_is_held(sd))
+		population_engine_shell_reactive_cast(sd);
 }
 
 void population_engine_combat_shell_stop(map_session_data *sd)
@@ -9315,6 +9334,8 @@ void population_engine_on_party_chat(map_session_data *from_sd, const char *mess
 	}
 }
 
+static void pop_shell_held_whisper(map_session_data *from_sd, map_session_data *bot_sd, const char *message);
+
 void population_engine_on_whisper_to_population_pc(map_session_data* from_sd, map_session_data* bot_sd, const char* message)
 {
 	if (!from_sd || !bot_sd || !message)
@@ -9323,6 +9344,12 @@ void population_engine_on_whisper_to_population_pc(map_session_data* from_sd, ma
 		return;
 	if (!population_engine_is_population_pc(bot_sd->id))
 		return;
+	// RAGNAROKMAC (shell control API): a held shell belongs to its script, which
+	// answers through its whisper event; no canned reply, no party recruiting.
+	if (population_engine_shell_is_held(bot_sd)) {
+		pop_shell_held_whisper(from_sd, bot_sd, message);
+		return;
+	}
 
 	// Party request: if the player whispers a party-related keyword the shell accepts or
 	// creates a party and invites the player back (mirrors autocombat accept_party_request).
@@ -9423,10 +9450,300 @@ void population_engine_on_global_chat_mention(map_session_data* from_sd, const c
 			continue;
 		if (!bot->status.name[0])
 			continue;
+		if (population_engine_shell_is_held(bot))
+			continue;
 		if (stristr(message, bot->status.name) == nullptr)
 			continue;
 		population_engine_deliver_chat_reply_locked(bot, nullptr);
 	}
+}
+
+// ============================================================
+// RAGNAROKMAC: shell control API
+//
+// What a mod's NPC script cannot do with stock commands: find shells, take one
+// away from the engine's AI for a while, make one, and remove one. Everything
+// else (walking, talking, emotes, skills, sitting) is stock -- a shell is a real
+// map_session_data, so unitwalk/unittalk/emotion/unitskilluseid/sit work on it
+// by unit id or name. Script commands: src/custom/script.inc.
+// ============================================================
+
+/// Bounds of a hold, so a script cannot freeze a shell for good by mistake.
+static constexpr int64_t POP_HOLD_DEFAULT_MS = 60000;
+static constexpr int64_t POP_HOLD_MIN_MS     = 1000;
+static constexpr int64_t POP_HOLD_MAX_MS     = 30 * 60 * 1000;
+
+static bool pop_shell_is_vendor(const map_session_data *sd)
+{
+	return sd->state.vending || sd->state.buyingstore || !sd->pop.vendor_key.empty()
+		|| sd->pop.behavior == static_cast<uint8_t>(PopulationBehavior::Vendor);
+}
+
+int population_engine_shell_kind(int32_t gid)
+{
+	if (!population_engine_is_population_pc(gid))
+		return POP_SHELL_NONE;
+	const map_session_data *sd = map_id2sd(gid);
+	if (sd == nullptr)
+		return POP_SHELL_NONE;
+	// companion_owner_account is also set while a player's party invitation is
+	// pending, which is exactly when a script must not take the shell either.
+	if (pop_is_companion(sd) || sd->pop.companion_owner_account != 0)
+		return POP_SHELL_COMPANION;
+	if (pop_shell_is_vendor(sd))
+		return POP_SHELL_VENDOR;
+	return POP_SHELL_AMBIENT;
+}
+
+bool population_engine_shell_is_held(const map_session_data *sd)
+{
+	return sd != nullptr && sd->pop.hold_npc != 0 && DIFF_TICK(sd->pop.hold_until, gettick()) > 0;
+}
+
+size_t population_engine_find_shells(int16_t m, int16_t x, int16_t y, int range, int flags,
+	std::vector<int32_t> &out)
+{
+	std::vector<std::pair<int, int32_t>> found;
+	for (map_session_data *sd : g_population_engine_pcs) {
+		if (sd == nullptr || !sd->state.active || sd->prev == nullptr || sd->m != m)
+			continue;
+		if (map_id2bl(sd->id) != sd || sd->pop.despawn_pending)
+			continue;
+		const int d = std::max(std::abs(sd->x - x), std::abs(sd->y - y));
+		if (range >= 0 && d > range)
+			continue;
+		const int kind = population_engine_shell_kind(sd->id);
+		if (kind == POP_SHELL_COMPANION)
+			continue;
+		if (kind == POP_SHELL_VENDOR && !(flags & POP_FIND_VENDORS))
+			continue;
+		// hold_npc rather than shell_is_held: a lapsed hold the sweep has not ended
+		// yet still belongs to its script for that moment.
+		if (sd->pop.hold_npc != 0 && !(flags & POP_FIND_HELD))
+			continue;
+		if (pc_isdead(sd) && !(flags & POP_FIND_DEAD))
+			continue;
+		found.emplace_back(d, sd->id);
+	}
+	std::sort(found.begin(), found.end());
+	out.clear();
+	out.reserve(found.size());
+	for (const auto &f : found)
+		out.push_back(f.second);
+	return out.size();
+}
+
+/// Stop whatever the AI had the shell doing, so the script starts from rest.
+static void pop_shell_stop_ai_action(map_session_data *sd)
+{
+	population_shell_target_change(sd, 0);
+	sd->pop.sticky_target_id = 0;
+	sd->pop.sticky_until = 0;
+	unit_skillcastcancel(sd, 0);
+	unit_stop_attack(sd);
+	unit_stop_walking(sd, USW_FIXPOS);
+}
+
+bool population_engine_shell_hold(int32_t gid, int32_t npc_id, int64_t ms)
+{
+	if (npc_id == 0 || population_engine_shell_kind(gid) != POP_SHELL_AMBIENT)
+		return false;
+	map_session_data *sd = map_id2sd(gid);
+	if (sd->pop.despawn_pending)
+		return false;
+	if (population_engine_shell_is_held(sd) && sd->pop.hold_npc != npc_id)
+		return false;
+	const bool fresh = sd->pop.hold_npc != npc_id;
+	if (fresh && sd->pop.hold_npc != 0) {
+		// Another script's hold lapsed and the sweep has not ended it yet: its
+		// whisper event is not this script's.
+		sd->pop.whisper_event.clear();
+	}
+	sd->pop.hold_npc = npc_id;
+	sd->pop.hold_until = gettick() + cap_value(ms > 0 ? ms : POP_HOLD_DEFAULT_MS, POP_HOLD_MIN_MS, POP_HOLD_MAX_MS);
+	if (fresh)
+		pop_shell_stop_ai_action(sd);
+	return true;
+}
+
+/// End a hold and hand the shell back to the engine. An actor population_spawn
+/// made logs out unless it was spawned to stay, and so does a shell a script
+/// took to another map: the drift check would otherwise drag it home in plain view.
+static void pop_shell_end_hold(map_session_data *sd)
+{
+	sd->pop.hold_npc = 0;
+	sd->pop.hold_until = 0;
+	sd->pop.whisper_event.clear();
+	unit_stop_attack(sd);
+	unit_stop_walking(sd, USW_FIXPOS);
+	if ((sd->pop.script_spawned && !sd->pop.script_keep)
+		|| (sd->pop.spawn_map_id >= 0 && sd->m != sd->pop.spawn_map_id)) {
+		population_engine_shell_despawn(sd->id, POP_DESPAWN_LOGOUT);
+		return;
+	}
+	// A script may have sat it down, and the ambient AI cannot walk a sitting shell.
+	if (pc_issit(sd) && sd->pop.behavior != static_cast<uint8_t>(PopulationBehavior::Sit)
+		&& pc_setstand(sd, false)) {
+		skill_sit(sd, 0);
+		clif_standing(*sd);
+	}
+}
+
+bool population_engine_shell_unhold(int32_t gid, int32_t npc_id)
+{
+	if (!population_engine_is_population_pc(gid))
+		return false;
+	map_session_data *sd = map_id2sd(gid);
+	if (sd == nullptr || npc_id == 0 || sd->pop.hold_npc != npc_id || sd->pop.despawn_pending)
+		return false;
+	pop_shell_end_hold(sd);
+	return true;
+}
+
+/// Ends the holds that lapsed, and those of NPCs that no longer exist (a script
+/// reload), so a script that stops caring never leaves a frozen shell behind.
+/// Runs from the combat timer.
+static void pop_shell_control_sweep()
+{
+	for (map_session_data *sd : g_population_engine_pcs) {
+		if (sd == nullptr || sd->pop.hold_npc == 0 || sd->pop.despawn_pending)
+			continue;
+		if (!population_engine_shell_is_held(sd) || map_id2nd(sd->pop.hold_npc) == nullptr)
+			pop_shell_end_hold(sd);
+	}
+}
+
+int32_t population_engine_shell_spawn(int32_t npc_id, int16_t m, int16_t x, int16_t y,
+	uint16_t job, int base_level, const char *name, int sex, int flags)
+{
+	if (!battle_config.population_engine_enable || npc_id == 0 || m < 0)
+		return 0;
+	if (g_population_engine_count.load() >= static_cast<size_t>(battle_config.population_engine_max_count))
+		return 0;
+	if (!job_db.exists(job))
+		return 0;
+	// The job's profile supplies gear, stats and skills, as for an ambient spawn.
+	std::shared_ptr<PopulationEngine> prof = population_engine_db().find(job);
+	if (prof == nullptr) {
+		ShowWarning("population_spawn: job %u has no population profile to inherit.\n", job);
+		return 0;
+	}
+	// A name is how players and later commands address the shell, so it must be free.
+	if (name != nullptr && name[0] != '\0') {
+		if (strlen(name) >= NAME_LENGTH || map_nick2sd(name, false) != nullptr)
+			return 0;
+	}
+	if (x == 0 && y == 0) {
+		if (!map_search_freecell(nullptr, m, &x, &y, -1, -1, 1))
+			return 0;
+	} else if (!map_getcell(m, x, y, CELL_CHKPASS)) {
+		if (!map_search_freecell(nullptr, m, &x, &y, 3, 3, 1))
+			return 0;
+	}
+	const uint32_t index = population_engine_allocate_index();
+	if (index == 0)
+		return 0;
+
+	char sx = get_job_required_sex(job);
+	if (sx == '\0' && (sex == SEX_MALE || sex == SEX_FEMALE))
+		sx = (sex == SEX_MALE) ? 'M' : 'F';
+	if (sx == '\0')
+		sx = prof->sex_override >= 0 ? (prof->sex_override ? 'M' : 'F') : ((rnd() % 2) ? 'M' : 'F');
+	auto pick = [](const std::vector<uint16_t> &pool) -> uint16_t {
+		return pool.empty() ? 0 : pool[rnd() % pool.size()];
+	};
+	const uint8_t map_category = map_getmapflag(m, MF_TOWN) ? 1 : 2;
+
+	// g_pop_draft_level is how spawn_shell takes a level it did not roll itself;
+	// it still clamps it to the profile's band.
+	g_pop_draft_level = static_cast<int16_t>(base_level > 0 ? cap_value(base_level, 1, MAX_LEVEL) : 0);
+	map_session_data *sd = population_engine_spawn_shell(
+		m, x, y, index, job, sx,
+		static_cast<uint8_t>(population_roll_closed_range(MIN_HAIR_STYLE, MAX_HAIR_STYLE)),
+		static_cast<uint16_t>(population_roll_closed_range(MIN_HAIR_COLOR, MAX_HAIR_COLOR)),
+		pick(prof->weapon_pool), pick(prof->shield_pool),
+		pick(prof->head_top_pool), pick(prof->head_mid_pool), pick(prof->head_bottom_pool),
+		0, static_cast<uint16_t>(population_roll_closed_range(MIN_CLOTH_COLOR, MAX_CLOTH_COLOR)),
+		pick(prof->garment_pool), prof->script, false, prof.get(), map_category, PopulationDbSource::Main);
+	g_pop_draft_level = 0;
+	if (sd == nullptr) {
+		g_population_engine_stats.errors++;
+		return 0;
+	}
+	g_population_engine_pcs.push_back(sd);
+	g_population_engine_count++;
+	g_population_engine_stats.total_created++;
+	g_population_engine_stats.active_units++;
+
+	// A town merchant's profile opens a stall at spawn. An actor is not a shop.
+	if (pop_shell_is_vendor(sd)) {
+		population_engine_shell_close_stall(sd);
+		sd->pop.behavior = sd->pop.behavior_base = static_cast<uint8_t>(PopulationBehavior::Wander);
+	}
+	if (name != nullptr && name[0] != '\0') {
+		safestrncpy(sd->status.name, name, NAME_LENGTH);
+		clif_name_area(sd);
+	}
+	sd->pop.script_spawned = true;
+	sd->pop.script_keep = (flags & POP_SPAWN_KEEP) != 0;
+	sd->pop.hold_npc = npc_id;
+	sd->pop.hold_until = gettick() + POP_HOLD_DEFAULT_MS;
+	pop_shell_stop_ai_action(sd);
+	return sd->id;
+}
+
+static TIMER_FUNC(pop_shell_despawn_timer)
+{
+	map_session_data *sd = map_id2sd(static_cast<int32>(id));
+	// despawn_pending: the shell may have gone another way in the meantime, and
+	// whatever holds its id now was not what the script meant.
+	if (sd == nullptr || !population_engine_is_population_pc(sd->id) || pop_is_companion(sd)
+		|| !sd->pop.despawn_pending)
+		return 0;
+	if (data == POP_DESPAWN_FLYWING && sd->prev != nullptr)
+		clif_clearunit_area(*sd, CLR_TELEPORT);
+	population_engine_shell_release(sd);
+	return 0;
+}
+
+bool population_engine_shell_despawn(int32_t gid, int style)
+{
+	if (!population_engine_is_population_pc(gid))
+		return false;
+	map_session_data *sd = map_id2sd(gid);
+	if (sd == nullptr || pop_is_companion(sd))
+		return false;
+	if (sd->pop.despawn_pending)
+		return true;
+	// Deferred one tick: the script that asked may still be using the shell in
+	// the same run, and releasing frees it.
+	sd->pop.despawn_pending = true;
+	pop_shell_stop_ai_action(sd);
+	add_timer(gettick() + 1, pop_shell_despawn_timer, gid,
+		style == POP_DESPAWN_FLYWING ? POP_DESPAWN_FLYWING : POP_DESPAWN_LOGOUT);
+	return true;
+}
+
+bool population_engine_shell_set_whisper_event(int32_t gid, int32_t npc_id, const char *event)
+{
+	if (!population_engine_is_population_pc(gid))
+		return false;
+	map_session_data *sd = map_id2sd(gid);
+	if (sd == nullptr || npc_id == 0 || sd->pop.hold_npc != npc_id || !population_engine_shell_is_held(sd))
+		return false;
+	sd->pop.whisper_event = (event != nullptr) ? event : "";
+	return true;
+}
+
+/// A whisper to a held shell: the holding script's event if it set one, else
+/// silence -- a script's actor does not answer with an ambient canned line.
+static void pop_shell_held_whisper(map_session_data *from_sd, map_session_data *bot_sd, const char *message)
+{
+	if (bot_sd->pop.whisper_event.empty())
+		return;
+	pc_setreg(from_sd, add_str("@shell_gid"), bot_sd->id);
+	pc_setregstr(from_sd, add_str("@shell_msg$"), message);
+	npc_event(from_sd, bot_sd->pop.whisper_event.c_str(), 0);
 }
 
 void do_final_population_engine() {

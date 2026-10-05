@@ -201,6 +201,10 @@ TIMER_FUNC(population_engine_wander_timer)
 		if (map_id2bl(sd->id) != sd) {
 			continue;
 		}
+		// RAGNAROKMAC (shell control API): a held shell goes where its script sends it.
+		if (population_engine_shell_is_held(sd)) {
+			continue;
+		}
 		// Stay put while a player has a live one-shot invitation permission.
 		// Once the 60-second window expires, normal ambient movement resumes.
 		if (sd->pop.accept_party_request && now <= sd->pop.party_request_until) {

@@ -218,6 +218,16 @@ struct s_population {
 	// RAGNAROKMAC: this mod vendor runs a buying store, not a vending stall.
 	bool vendor_buying = false;
 
+	// RAGNAROKMAC (shell control API): a mod's NPC script has taken this shell
+	// over with population_hold or population_spawn. Until hold_until passes,
+	// the engine's own AI leaves it alone (population_engine_shell_is_held) and
+	// stock unit* script commands drive it.
+	int32_t     hold_npc       = 0;     ///< NPC block id holding the shell; 0 = free
+	t_tick      hold_until     = 0;     ///< gettick() at which the hold lapses
+	bool        script_spawned = false; ///< made by population_spawn: outside every map quota
+	bool        script_keep    = false; ///< population_spawn flag: stays as an ambient shell once released
+	bool        despawn_pending = false; ///< population_despawn has scheduled its removal
+	std::string whisper_event;          ///< "<npc>::<label>" a whisper runs while the shell is held
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.
 	uint32_t party_request_account = 0; ///< Player who requested this one-shot invitation.
