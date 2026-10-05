@@ -5,7 +5,7 @@
 //   spawn#Priest{#50#Name}  make a shell beside you and take it (job, level, name)
 //   grab                    take the nearest free ambient shell
 //   come                    the taken shell walks to you          (unitwalk)
-//   follow / stop           it follows you, or stops              (pcfollow)
+//   follow / stop           it follows you, through portals too   (pcfollow)
 //   attack{#name}           it attacks the monster nearest to it,  (unitattack)
 //                           or the nearest named like that
 //   warp{#map#x#y}          it warps beside you, or to that spot  (unitwarp)
@@ -16,7 +16,8 @@
 // The bench holds one shell at a time: taking another (spawn or grab) releases
 // the one before, so a spawned shell logs out and a grabbed one goes back to
 // the AI. While taken, whispering the shell itself runs OnShellWhisper below,
-// which answers through population_whisper. Each take lasts ten minutes.
+// which answers through population_whisper, and a follow that loses you runs
+// OnShellLost, which whispers why. Each take lasts ten minutes.
 
 -	script	shelltest	-1,{
 OnWhisperGlobal:
@@ -107,11 +108,19 @@ S_Take:
 	if (.last != 0 && .last != .@gid && population_unhold(.last))
 		dispbottom "shelltest: released the previous shell.";
 	population_whisperevent .@gid, strnpcinfo(3) + "::OnShellWhisper";
+	population_lostevent .@gid, strnpcinfo(3) + "::OnShellLost";
 	.last = .@gid;
 	dispbottom "shelltest: took " + rid2name(.@gid) + " (" + .@gid + ") for ten minutes.";
 	return;
 
 OnShellWhisper:
 	population_whisper @shell_gid, "You said: " + @shell_msg$;
+	end;
+
+// It was following you and lost you; through a portal it just follows.
+OnShellLost:
+	setarray .@why$, "", "where'd you go? (teleported)", "lost you (left the map)",
+		"couldn't make it to the portal", "can't get to where you are";
+	population_whisper @shell_gid, .@why$[@shell_lost];
 	end;
 }

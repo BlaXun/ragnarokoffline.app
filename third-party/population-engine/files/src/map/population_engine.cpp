@@ -9470,6 +9470,8 @@ void population_engine_on_global_chat_mention(map_session_data* from_sd, const c
 // by unit id or name. Script commands: src/custom/script.inc.
 // ============================================================
 
+static void pop_shell_follow_reset(map_session_data *sd);
+
 /// Bounds of a hold, so a script cannot freeze a shell for good by mistake.
 static constexpr int64_t POP_HOLD_DEFAULT_MS = 60000;
 static constexpr int64_t POP_HOLD_MIN_MS     = 1000;
@@ -9577,10 +9579,12 @@ static void pop_shell_end_hold(map_session_data *sd)
 	sd->pop.hold_npc = 0;
 	sd->pop.hold_until = 0;
 	sd->pop.whisper_event.clear();
+	sd->pop.lost_event.clear();
 	unit_stop_attack(sd);
 	// pcfollow runs its own timer, which would keep walking the shell after
 	// whoever the script had it follow.
 	pc_stop_following(sd);
+	pop_shell_follow_reset(sd);
 	unit_stop_walking(sd, USW_FIXPOS);
 	if ((sd->pop.script_spawned && !sd->pop.script_keep)
 		|| (sd->pop.spawn_map_id >= 0 && sd->m != sd->pop.spawn_map_id)) {
@@ -9641,12 +9645,137 @@ static void pop_shell_chase_attack(map_session_data *sd)
 		unit_stop_attack(sd); // unreachable: give the order up rather than retry forever
 }
 
+TIMER_FUNC(pc_follow_timer); // pc.cpp; no header declares it
+
+/// Why a held shell lost whoever it followed: @shell_lost in its lost event.
+enum PopulationShellLostReason : int {
+	POP_LOST_TELEPORTED    = 1, ///< vanished from this map without a portal (fly wing, a skill)
+	POP_LOST_LEFT_MAP      = 2, ///< left the map without a portal (butterfly wing, Kafra, Warp Portal)
+	POP_LOST_PORTAL_FAILED = 3, ///< left by a portal the shell could not reach in time
+	POP_LOST_OUT_OF_REACH  = 4, ///< walked somewhere the shell cannot path to
+};
+
+static void pop_shell_follow_reset(map_session_data *sd)
+{
+	sd->pop.follow_seen_m = -1;
+	sd->pop.follow_portal = 0;
+	sd->pop.follow_portal_until = 0;
+}
+
+/// The warp near (x, y) on map m that leads to dest_mapindex, if any. The cell
+/// a target was last seen on is a step or two short of the warp it took.
+static npc_data *pop_find_warp_near(int16_t m, int16_t x, int16_t y, uint16_t dest_mapindex)
+{
+	map_data *mapdata = map_getmapdata(m);
+	if (mapdata == nullptr)
+		return nullptr;
+	for (int32 i = 0; i < mapdata->npc_num; ++i) {
+		npc_data *nd = mapdata->npc[i];
+		if (nd == nullptr || nd->subtype != NPCTYPE_WARP || nd->is_invisible || nd->u.warp.mapindex != dest_mapindex)
+			continue;
+		if (std::abs(nd->x - x) <= nd->u.warp.xs + 2 && std::abs(nd->y - y) <= nd->u.warp.ys + 2)
+			return nd;
+	}
+	return nullptr;
+}
+
+/// One tick of a held shell's follow. Same map and in reach: walk after the
+/// target as rAthena's follow does. Gone through a portal: walk into that
+/// portal, which warps the shell as it warps a player. Gone any other way:
+/// the follow ends, and the reason is returned for the lost event (0 = still
+/// following).
+static int pop_shell_follow_step(map_session_data *sd, t_tick now)
+{
+	s_population &p = sd->pop;
+	block_list *tbl = map_id2bl(sd->followtarget);
+	if (tbl == nullptr) {
+		// Logged out or gone: nobody to tell.
+		pc_stop_following(sd);
+		pop_shell_follow_reset(sd);
+		return 0;
+	}
+	if (sd->prev == nullptr || tbl->prev == nullptr || pc_isdead(sd))
+		return 0; // one of them is between maps; look again next tick
+	const bool can_walk = !unit_is_walking(sd) && DIFF_TICK(now, p.follow_next_walk) >= 0
+		&& sd->ud.skilltimer == INVALID_TIMER && sd->ud.attacktimer == INVALID_TIMER;
+	const bool reachable = tbl->m == sd->m && unit_can_reach_bl(sd, tbl, AREA_SIZE, 0, nullptr, nullptr);
+
+	if (p.follow_portal != 0) {
+		if (reachable) {
+			pop_shell_follow_reset(sd); // through, or the target came back
+		} else {
+			npc_data *nd = map_id2nd(p.follow_portal);
+			if (nd == nullptr || nd->m != sd->m || DIFF_TICK(now, p.follow_portal_until) > 0)
+				return POP_LOST_PORTAL_FAILED;
+			if (can_walk) {
+				p.follow_next_walk = now + 500;
+				if (!unit_walktoxy(sd, nd->x, nd->y, 0))
+					return POP_LOST_PORTAL_FAILED;
+			}
+			return 0;
+		}
+	}
+
+	const bool seen_here = p.follow_seen_m == sd->m;
+	if (tbl->m == sd->m) {
+		// Walking moves a few cells between ticks; a fly wing or a portal moves many.
+		const bool jumped = seen_here && distance_xy(p.follow_seen_x, p.follow_seen_y, tbl->x, tbl->y) > 6;
+		if (reachable || !jumped) {
+			p.follow_seen_m = sd->m;
+			p.follow_seen_x = tbl->x;
+			p.follow_seen_y = tbl->y;
+			if (can_walk && !check_distance_bl(sd, tbl, 5)) {
+				p.follow_next_walk = now + 500;
+				const bool walking = reachable ? unit_walktobl(sd, tbl, 5, 0) : unit_walktoxy(sd, tbl->x, tbl->y, 0);
+				if (!walking && !reachable)
+					return POP_LOST_OUT_OF_REACH;
+			}
+			return 0;
+		}
+	}
+	// Gone out of reach at a jump, on this map or to another: a portal near
+	// where it was last seen, leading where it went, is one the shell can take.
+	if (seen_here) {
+		npc_data *nd = pop_find_warp_near(sd->m, p.follow_seen_x, p.follow_seen_y, map_id2index(tbl->m));
+		if (nd != nullptr) {
+			p.follow_portal = nd->id;
+			p.follow_portal_until = now + 15000;
+			// A follower notices a moment later, then walks the few cells it
+			// trailed by: through the portal a second or two after the target.
+			p.follow_next_walk = now + 400 + rnd() % 800;
+			return 0;
+		}
+	}
+	return tbl->m == sd->m ? POP_LOST_TELEPORTED : POP_LOST_LEFT_MAP;
+}
+
+/// End a held shell's follow and run its lost event, with the followed player
+/// attached. Called after the sweep's loop: the event's script may spawn shells,
+/// which would invalidate the loop over g_population_engine_pcs.
+static void pop_shell_follow_lost(int32_t shell_id, int32_t target_id, int reason)
+{
+	map_session_data *sd = map_id2sd(shell_id);
+	if (sd == nullptr || !population_engine_is_population_pc(shell_id))
+		return;
+	pc_stop_following(sd);
+	pop_shell_follow_reset(sd);
+	map_session_data *tsd = map_id2sd(target_id);
+	if (sd->pop.lost_event.empty() || tsd == nullptr || population_engine_is_population_pc(tsd->id))
+		return;
+	pc_setreg(tsd, add_str("@shell_gid"), sd->id);
+	pc_setreg(tsd, add_str("@shell_lost"), reason);
+	npc_event(tsd, sd->pop.lost_event.c_str(), 0);
+}
+
 /// The engine's part in a hold, from the combat timer before its stale sweep:
 /// finishes warps, chases attack orders, and ends the holds that lapsed or whose
 /// NPC no longer exists (a script reload), so a script that stops caring never
 /// leaves a frozen shell behind.
 static void pop_shell_control_sweep()
 {
+	struct Lost { int32_t shell, target; int reason; };
+	std::vector<Lost> lost;
+	const t_tick now = gettick();
 	for (map_session_data *sd : g_population_engine_pcs) {
 		if (sd == nullptr || sd->pop.hold_npc == 0 || sd->pop.despawn_pending)
 			continue;
@@ -9655,8 +9784,23 @@ static void pop_shell_control_sweep()
 			pop_shell_end_hold(sd);
 			continue;
 		}
+		// pcfollow: take the follow over from rAthena's timer, which would
+		// teleport the shell after a target it cannot reach.
+		if (sd->followtimer != INVALID_TIMER) {
+			delete_timer(sd->followtimer, pc_follow_timer);
+			sd->followtimer = INVALID_TIMER;
+		}
+		if (sd->followtarget > 0) {
+			const int reason = pop_shell_follow_step(sd, now);
+			if (reason != 0)
+				lost.push_back({ sd->id, sd->followtarget, reason });
+		} else if (sd->pop.follow_seen_m >= 0 || sd->pop.follow_portal != 0) {
+			pop_shell_follow_reset(sd); // pcstopfollow
+		}
 		pop_shell_chase_attack(sd);
 	}
+	for (const Lost &l : lost)
+		pop_shell_follow_lost(l.shell, l.target, l.reason);
 }
 
 int32_t population_engine_shell_spawn(int32_t npc_id, int16_t m, int16_t x, int16_t y,
@@ -9785,6 +9929,17 @@ bool population_engine_shell_set_whisper_event(int32_t gid, int32_t npc_id, cons
 	if (sd == nullptr || npc_id == 0 || sd->pop.hold_npc != npc_id || !population_engine_shell_is_held(sd))
 		return false;
 	sd->pop.whisper_event = (event != nullptr) ? event : "";
+	return true;
+}
+
+bool population_engine_shell_set_lost_event(int32_t gid, int32_t npc_id, const char *event)
+{
+	if (!population_engine_is_population_pc(gid))
+		return false;
+	map_session_data *sd = map_id2sd(gid);
+	if (sd == nullptr || npc_id == 0 || sd->pop.hold_npc != npc_id || !population_engine_shell_is_held(sd))
+		return false;
+	sd->pop.lost_event = (event != nullptr) ? event : "";
 	return true;
 }
 

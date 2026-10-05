@@ -7,7 +7,7 @@ drag a mob train to you — takes it away from the engine for a while and
 drives it from an NPC script.
 
 [Making mods](../MODDING.md) is the general guide. This page is the reference
-for the eight `population_*` commands that make the hand-over possible. The
+for the nine `population_*` commands that make the hand-over possible. The
 [shell-gz example](../../examples/mods/shell-gz) uses them, and its
 `npc:shelltest` NPC lets a GM try each one in game.
 
@@ -20,7 +20,7 @@ player, so the stock commands that take a unit id already work on it:
 |---|---|
 | walk to a cell | `unitwalk <gid>, <x>, <y>{, "<npc>::<label>"}` — the label runs when it arrives |
 | walk to someone | `unitwalkto <gid>, <target gid>` |
-| follow someone | `pcfollow <gid>, <target gid>` / `pcstopfollow <gid>` — through warps too |
+| follow someone | `pcfollow <gid>, <target gid>` / `pcstopfollow <gid>` — through portals too; see below |
 | attack | `unitattack <gid>, <target gid>, 1` — 1 keeps attacking; it walks into range first |
 | cast | `unitskilluseid <gid>, "<skill>", <level>{, <target gid>}` / `unitskillusepos` |
 | say something | `unittalk <gid>, rid2name(<gid>) + " : text"` |
@@ -38,10 +38,22 @@ shell has none, so **the engine does that part for a shell you hold**:
 - `unitattack` only swings at a target already in reach; for anything further
   the server asks the client to walk over. A held shell is walked into range
   instead, and keeps chasing a target that moves.
-- `unitwarp`, and `pcfollow` when its target leaves through a warp, move the
-  character and wait for the client to say the new map has loaded. A held
-  shell's warp is finished within a tenth of a second instead. On a shell
-  nobody holds, they leave it off the map and the engine clears it away.
+- `unitwarp` moves the character and waits for the client to say the new map
+  has loaded. A held shell's warp is finished within a tenth of a second
+  instead. On a shell nobody holds, it leaves the shell off the map and the
+  engine clears it away.
+- `pcfollow` follows the way a player can. rAthena's own follow teleports a
+  follower onto a target it cannot reach, which no player can do after a fly
+  wing, so for a held shell the engine runs the follow itself:
+  - **through a portal**, the shell notices a moment later, walks into the same
+    portal and comes out where you did, a second or two behind you;
+  - **any other way out** — a fly wing, a butterfly wing, a Kafra, a Warp
+    Portal — the follow ends where it is, and `population_lostevent` tells
+    your script so it can react.
+
+  One gap: `pcfollow` takes its first step at once, through rAthena, so a
+  target already out of reach when you call it gets the old teleport. Start
+  a follow with the target nearby.
 
 **But the engine is driving it too.** Without a hold, the shell's own AI
 overrides your `unitwalk` on its next tick. That is what the commands below
@@ -157,6 +169,23 @@ whispers at all. Releasing the hold clears it.
 ### `population_whisper(<gid>, "<message>")`
 
 The shell whispers `<message>` to the attached player. Any shell, held or not.
+
+### `population_lostevent(<gid>, "<npc>::<label>")`
+
+While your NPC holds the shell, the label runs when its `pcfollow` loses the
+player it follows, with that player attached and two variables set:
+
+| | |
+|---|---|
+| `@shell_gid` | the shell |
+| `@shell_lost` | why: `1` they vanished from the map without a portal (fly wing, a skill); `2` they left the map without one (butterfly wing, Kafra, Warp Portal); `3` they took a portal the shell did not reach within 15 seconds; `4` they went somewhere it cannot walk to |
+
+A portal is not a loss: the shell follows through it. The follow has ended
+by the time the label runs, and the shell stands where it is, still held, so
+the script decides what comes next — a whisper ("where'd you go?"), a walk,
+waiting, or `population_despawn`. Nothing runs for a follow you stopped
+yourself, or when the player logs out. `""` turns it off; releasing the hold
+clears it.
 
 ## A scene, start to finish
 

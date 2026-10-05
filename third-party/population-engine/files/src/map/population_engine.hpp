@@ -270,6 +270,10 @@ bool population_engine_shell_despawn(int32_t gid, int style);
 /// While NPC `npc_id` holds the shell, a whisper to it runs `event` ("<npc>::<label>")
 /// with the whisperer attached, instead of the canned reply. Empty clears it.
 bool population_engine_shell_set_whisper_event(int32_t gid, int32_t npc_id, const char *event);
+/// While NPC `npc_id` holds the shell, run `event` with the followed player attached
+/// when the shell loses whoever it follows (pcfollow): @shell_gid, @shell_lost
+/// (1 teleported, 2 left the map, 3 portal not reached, 4 out of reach). Empty clears it.
+bool population_engine_shell_set_lost_event(int32_t gid, int32_t npc_id, const char *event);
 
 struct block_list;
 /// Arena PvP: classify the relation between two block_list entities so that

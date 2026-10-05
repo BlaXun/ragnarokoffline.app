@@ -2,17 +2,18 @@ From 0000000000000000000000000000000000000027
 Subject: [PATCH] Shell control API: script commands for mods that stage scenes with shells
 
 population_isshell, population_shells, population_hold, population_unhold,
-population_spawn, population_despawn, population_whisperevent and
-population_whisper. They let a mod's NPC script find shells, take one away
-from the engine's AI for a while, make one and remove one; stock unit*
-commands do the rest. The engine side is in files/src/map/population_engine.cpp
-(search "shell control API"). Nothing changes until a script calls them.
+population_spawn, population_despawn, population_whisperevent,
+population_whisper and population_lostevent. They let a mod's NPC script find
+shells, take one away from the engine's AI for a while, make one and remove
+one; stock unit* commands do the rest. The engine side is in
+files/src/map/population_engine.cpp (search "shell control API"). Nothing
+changes until a script calls them.
 
 diff --git a/src/custom/script.inc b/src/custom/script.inc
-index 3bc5a2c0a..72098dd40 100644
+index 3bc5a2c0a..9b910a2e6 100644
 --- a/src/custom/script.inc
 +++ b/src/custom/script.inc
-@@ -351,3 +351,153 @@ BUILDIN_FUNC(companion_hire)
+@@ -351,3 +351,166 @@ BUILDIN_FUNC(companion_hire)
  	script_pushint(st, made != 0 ? 1 : 0);
  	return SCRIPT_CMD_SUCCESS;
  }
@@ -62,6 +63,13 @@ index 3bc5a2c0a..72098dd40 100644
 + *   Without one, a held shell does not answer whispers at all.
 + * population_whisper(<gid>, "<message>")
 + *   The shell whispers <message> to the attached player.
++ * population_lostevent(<gid>, "<npc>::<label>")
++ *   While this NPC holds the shell, the label runs when it loses whoever it
++ *   follows (pcfollow), with that player attached, @shell_gid and @shell_lost
++ *   set: 1 teleported away on the map (fly wing), 2 left the map without a
++ *   portal (butterfly wing, Kafra), 3 left by a portal the shell did not reach
++ *   in time, 4 went somewhere it cannot walk to. Through a portal it simply
++ *   follows: it walks into the same portal a moment later. "" turns it off.
 + *------------------------------------------*/
 +BUILDIN_FUNC(population_isshell)
 +{
@@ -148,6 +156,12 @@ index 3bc5a2c0a..72098dd40 100644
 +	return SCRIPT_CMD_SUCCESS;
 +}
 +
++BUILDIN_FUNC(population_lostevent)
++{
++	script_pushint(st, population_engine_shell_set_lost_event(script_getnum(st, 2), st->oid, script_getstr(st, 3)) ? 1 : 0);
++	return SCRIPT_CMD_SUCCESS;
++}
++
 +BUILDIN_FUNC(population_whisper)
 +{
 +	map_session_data *sd;
@@ -167,10 +181,10 @@ index 3bc5a2c0a..72098dd40 100644
 +	return SCRIPT_CMD_SUCCESS;
 +}
 diff --git a/src/custom/script_def.inc b/src/custom/script_def.inc
-index 0e698134b..d526bf175 100644
+index 0e698134b..bf7343099 100644
 --- a/src/custom/script_def.inc
 +++ b/src/custom/script_def.inc
-@@ -27,3 +27,11 @@ BUILDIN_DEF(population_vendor_price, "si"),
+@@ -27,3 +27,12 @@ BUILDIN_DEF(population_vendor_price, "si"),
  BUILDIN_DEF(companion_hire_jobs, ""),
  BUILDIN_DEF(companion_hire_fee, ""),
  BUILDIN_DEF(companion_hire, "s"),
@@ -182,3 +196,4 @@ index 0e698134b..d526bf175 100644
 +BUILDIN_DEF(population_despawn, "i?"),
 +BUILDIN_DEF(population_whisperevent, "is"),
 +BUILDIN_DEF(population_whisper, "is"),
++BUILDIN_DEF(population_lostevent, "is"),

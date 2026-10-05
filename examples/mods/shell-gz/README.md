@@ -39,7 +39,7 @@ The full reference is [docs/mods/shell-control.md](../../../docs/mods/shell-cont
 | `spawn#Priest#50#Name` | makes a shell beside you and takes it (level and name optional) |
 | `grab` | takes the nearest free shell |
 | `come` | it walks to you (`unitwalk`) |
-| `follow` / `stop` | it follows you, or stops (`pcfollow`) |
+| `follow` / `stop` | it follows you, through portals too, or stops (`pcfollow`). If you fly-wing, butterfly-wing or Kafra away it loses you and whispers why (`population_lostevent`) |
 | `attack` / `attack#Dummy` | it attacks the monster nearest to it, or the nearest whose name contains the word, walking into range first; says which, how far, and whether the order was accepted (`unitattack`) |
 | `warp` / `warp#prt_fild08#150#200` | it warps beside you, or to that spot (`unitwarp`) |
 | `say#hello` | it talks (`unittalk`) |

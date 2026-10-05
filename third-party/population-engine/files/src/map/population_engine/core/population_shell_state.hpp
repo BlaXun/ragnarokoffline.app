@@ -228,6 +228,17 @@ struct s_population {
 	bool        script_keep    = false; ///< population_spawn flag: stays as an ambient shell once released
 	bool        despawn_pending = false; ///< population_despawn has scheduled its removal
 	std::string whisper_event;          ///< "<npc>::<label>" a whisper runs while the shell is held
+	std::string lost_event;             ///< "<npc>::<label>" run when a held shell loses whoever it follows
+	// A held shell's pcfollow, which the engine runs in place of rAthena's
+	// follow timer: that one teleports a follower it cannot reach, and no
+	// player can follow a fly wing. Where the target was last seen on the
+	// shell's map tells a portal (walk to it, come through) from a teleport.
+	int16_t     follow_seen_m  = -1;
+	int16_t     follow_seen_x  = 0;
+	int16_t     follow_seen_y  = 0;
+	int32_t     follow_portal  = 0;     ///< warp NPC the shell is walking to after its target
+	t_tick      follow_portal_until = 0;
+	t_tick      follow_next_walk = 0;
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.
 	uint32_t party_request_account = 0; ///< Player who requested this one-shot invitation.

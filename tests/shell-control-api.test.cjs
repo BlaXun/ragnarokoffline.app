@@ -18,6 +18,7 @@ const doc = read('docs/mods/shell-control.md');
 const COMMANDS = [
 	'population_isshell', 'population_shells', 'population_hold', 'population_unhold',
 	'population_spawn', 'population_despawn', 'population_whisperevent', 'population_whisper',
+	'population_lostevent',
 ];
 
 const body = (src, start, end) => {
@@ -92,6 +93,25 @@ test('the engine does a client\'s part of stock commands for a held shell', () =
 	assert.match(chase, /ud\.attacktimer != INVALID_TIMER/, 'leaves an attack in progress alone');
 	const end = body(engine, 'static void pop_shell_end_hold(', '\n}\n');
 	assert.match(end, /pc_stop_following\(sd\);/, 'a released shell stops following');
+});
+
+test('a held shell follows through portals and never teleports after its target', () => {
+	const sweep = body(engine, 'static void pop_shell_control_sweep()\n{', '\n}\n');
+	assert.match(sweep, /delete_timer\(sd->followtimer, pc_follow_timer\);/, 'rAthena\'s follow timer, which teleports, is taken over');
+	assert.match(sweep, /pop_shell_follow_step\(sd, now\)/);
+	const fire = sweep.indexOf('pop_shell_follow_lost(l.shell, l.target, l.reason);');
+	const loopEnd = sweep.lastIndexOf('pop_shell_chase_attack(sd);');
+	assert.ok(fire > loopEnd, 'lost events run after the loop, whose vector a script could grow');
+	const step = body(engine, 'static int pop_shell_follow_step(', '\n}\n');
+	assert.doesNotMatch(step, /pc_setpos/, 'no teleport: a portal is walked into');
+	assert.match(step, /pop_find_warp_near\(sd->m, p\.follow_seen_x, p\.follow_seen_y, map_id2index\(tbl->m\)\)/, 'a portal near the last sighting, leading where the target went');
+	assert.match(step, /p\.follow_next_walk = now \+ 400 \+ rnd\(\) % 800;/, 'a short pause before following through');
+	assert.match(step, /return tbl->m == sd->m \? POP_LOST_TELEPORTED : POP_LOST_LEFT_MAP;/);
+	const lost = body(engine, 'static void pop_shell_follow_lost(', '\n}\n');
+	assert.match(lost, /population_engine_is_population_pc\(tsd->id\)/, 'only a real player is attached');
+	const end = body(engine, 'static void pop_shell_end_hold(', '\n}\n');
+	assert.match(end, /sd->pop\.lost_event\.clear\(\);/);
+	assert.match(end, /pop_shell_follow_reset\(sd\);/);
 });
 
 test('removal is deferred and only removes what was asked for', () => {
