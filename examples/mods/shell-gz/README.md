@@ -42,6 +42,10 @@ The full reference is [docs/mods/shell-control.md](../../../docs/mods/shell-cont
 | `free` | gives it back (`population_unhold`) |
 | `bye` / `bye#fly` | it logs out, or fly-wings away (`population_despawn`) |
 
+The bench holds one shell at a time. Taking another with `spawn` or `grab`
+releases the one before: a spawned shell logs out, a grabbed one goes back to
+the AI.
+
 While you hold it, whisper the shell itself: the bench answers through
 `population_whisperevent` and `population_whisper`.
 

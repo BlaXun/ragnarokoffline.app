@@ -12,8 +12,10 @@
 //   free                    give it back to the engine            (population_unhold)
 //   bye{#fly}               it logs out, or fly-wings away        (population_despawn)
 //
-// While taken, whispering the shell itself runs OnShellWhisper below, which
-// answers through population_whisper. Each take lasts ten minutes.
+// The bench holds one shell at a time: taking another (spawn or grab) releases
+// the one before, so a spawned shell logs out and a grabbed one goes back to
+// the AI. While taken, whispering the shell itself runs OnShellWhisper below,
+// which answers through population_whisper. Each take lasts ten minutes.
 
 -	script	shelltest	-1,{
 OnWhisperGlobal:
@@ -86,6 +88,9 @@ S_Take:
 		dispbottom "shelltest: could not take " + .@gid + ".";
 		return;
 	}
+	// One at a time: hand the previous one back (0 when it is already gone).
+	if (.last != 0 && .last != .@gid && population_unhold(.last))
+		dispbottom "shelltest: released the previous shell.";
 	population_whisperevent .@gid, strnpcinfo(3) + "::OnShellWhisper";
 	.last = .@gid;
 	dispbottom "shelltest: took " + rid2name(.@gid) + " (" + .@gid + ") for ten minutes.";
