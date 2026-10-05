@@ -443,14 +443,17 @@ Body:
             Absent: { Ally: nearest, Job: Priest }
             Say: "Our healer is down! Falling back to {owner}."
             OnePerParty: true
-          # It hides below 20 %, and heals while hidden: find it at once.
+          # It hides below 20 %, and heals while hidden: find it at once. Only the boss
+          # (its Hodes burrow, which is hiding too), and only within reach: Ruwach shows
+          # 2 cells around the caster, Sight 3.
           - Name: reveal_ruwach
             Priority: 100
-            When: enemy_hidden
+            Count: { Enemy: hidden, Boss: true, Range: 2, AtLeast: 1 }
             Cast: AL_RUWACH
           - Name: reveal_sight
             Priority: 99
-            When: [enemy_hidden, not_self_sight]
+            Count: { Enemy: hidden, Boss: true, Range: 3, AtLeast: 1 }
+            When: not_self_sight
             Cast: MG_SIGHT
           # Wide Stone Curse cannot be dodged; undo it.
           - Name: unstone
@@ -559,19 +562,53 @@ Body:
       # so besides the shared rules above this is all they cast; between casts they hit.
       - Job: Priest
         Rules:
-          - Name: stay_back            # out of its reach, still within Heal's range
+          # Whoever the monsters are on (Phreeoni counts most) comes first.
+          - Name: heal_attacked
+            Priority: 92
+            Cast: AL_HEAL
+            Target: { Ally: attacked }
+            When: ally_hp_pct_lt80
+          - Name: wall_attacked        # stops Phreeoni's melee hits
+            Priority: 88
+            Cast: MG_SAFETYWALL
+            Target: { Ally: attacked }
+            When: not_ally_safetywall
+          - Name: kyrie_attacked
+            Priority: 87
+            Cast: PR_KYRIE
+            Target: { Ally: attacked }
+            When: not_ally_kyrie
+          - Name: stay_back            # out of its reach, within Heal's (9 cells)
             Priority: 86
             Target: { Enemy: boss, Range: 14 }
-            KeepDistance: 7
+            KeepDistance: { Min: 6, Max: 8 }
+          # Buffs. Its Hold below ends every turn, so the engine's own buffing never
+          # comes round: what it should keep up is named here.
+          - Name: blessing
+            Priority: 50
+            Cast: AL_BLESSING
+            Target: { Ally: missing, Status: SC_BLESSING }
+          - Name: increase_agi
+            Priority: 49
+            Cast: AL_INCAGI
+            Target: { Ally: missing, Status: SC_INCREASEAGI }
+          - Name: impositio
+            Priority: 48
+            Cast: PR_IMPOSITIO
+            Target: { Ally: missing, Status: SC_IMPOSITIO, Role: attacker }
+          - Name: magnificat
+            Priority: 47
+            When: [self_sp_pct_lt50, not_self_magnificat]
+            Cast: PR_MAGNIFICAT
           - Name: no_melee             # nothing to cast: stand, rather than walk up and hit it
             Priority: 1
             Hold: true
       - Job: Wizard
         Rules:
-          - Name: stay_back
+          - Name: stay_back            # out of its reach, within Fire Bolt's (9 cells)
             Priority: 86
             Target: { Enemy: boss, Range: 14 }
-            KeepDistance: 6
+            KeepDistance: { Min: 6, Max: 8 }
           - Name: fire_bolt            # the slaves are earth: fire hurts them most
             Priority: 30
             When: self_sp_pct_ge25
@@ -581,6 +618,17 @@ Body:
             Hold: true
       - Job: Assassin
         Rules:
+          # Low on HP: a few cells out and wait for the Priest's heals. Without this the
+          # engine's own flee runs it away from its target below 30 %.
+          - Name: step_out
+            Priority: 60
+            When: self_hp_pct_lt30
+            Target: { Enemy: boss, Range: 14 }
+            KeepDistance: 5
+          - Name: wait_for_heal
+            Priority: 59
+            When: self_hp_pct_lt30
+            Hold: true
           - Name: enchant_poison
             Priority: 40
             When: not_self_encpoison

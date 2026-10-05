@@ -105,6 +105,7 @@ And then does one thing:
 | `MoveTo: event_cell` | Walks to where an `On: casts` spell will land, while it is still being cast: onto a party Land Protector before it is down. |
 | `MoveTo: { Field, Owner, Within }` | Walks onto the nearest cell of that ground field within `Within` cells (default 8). Already standing on one: the rule passes. |
 | `Leave: { Field, Owner, Within }` | Standing on a ground unit placed by `Owner` (default `enemy`: anyone outside the party, monsters included): walks to the nearest free cell within `Within` (default 8). `Field` narrows it to one skill; without it, any unit counts. Not standing on one: the rule passes. `Leave: true` is the same with every default. |
+| `KeepDistance: { Min, Max }` | A band: closer than `Min`, step out; further than `Max`, come back in (to stay within a spell's range). Within it, the rule passes. |
 | `KeepDistance: n` | Closer than `n` cells to the monster: walks to the nearest open cell at least `n` away. Already that far: the rule passes, and the next rule (a cast) runs. |
 | `Hold: true` | Stands still, without chasing or walking to the target. Without it, a turn no rule took is an ordinary turn, and an ordinary turn walks up to the target. |
 | `Say:` text, `Channel: party` / `area` | Speaks. `{name}` `{owner}` `{target}` `{ally}` `{skill}` `{hp}` are filled in. A `Say` rule without an event waits 10 s between lines unless it has a `Cooldown`. |
@@ -133,7 +134,12 @@ buffs and resurrection are not part of the rotation and keep running.
 A caster under such a plan still takes ordinary turns whenever no rule acts, and
 an ordinary turn walks up to its target and hits it. End a caster's rules with
 the lowest-priority `Hold: true`: with nothing to cast, it stands. Its other rules
-outrank it and still fire.
+outrank it and still fire. But `Hold` ends the turn, and the engine's own buffing
+and healing come later in it, so name the buffs it should keep up as rules
+(`Target: { Ally: missing, Status: SC_BLESSING }`).
+
+Shells also flee on their own below 30 % HP (the engine's FleeOnLowHP). A rule
+that acts at low HP, such as stepping out and holding for heals, comes first.
 
 ### Choosing who: selectors
 
@@ -147,8 +153,8 @@ whose selector finds nobody does not apply.
 |---|---|
 | `{ Enemy: attacking, Who, NotSelf, Prefer }` | a monster attacking `Who` (`party` by default; `owner`, `self`, `tank`, `support`, `attacker`, `any`). `NotSelf: true` leaves out the ones attacking the companion itself; `Prefer` puts those on one member first. |
 | `{ Enemy: target_of, Who }` | the monster `Who` is fighting (`owner` by default): assisting. |
-| `{ Enemy: nearest \| lowest_hp \| boss \| slaves \| casting }` | the nearest, the most hurt, a boss, a summoned slave, one that is casting. |
-| `{ Ally: lowest_hp \| nearest \| missing \| having, Role, Job, Status, NotSelf }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, or the nearest with it (Status Recovery on the petrified); only those with that `Role` or `Job` (its own or base class). |
+| `{ Enemy: nearest \| lowest_hp \| boss \| slaves \| casting \| hidden }` | the nearest, the most hurt, a boss, a summoned slave, one that is casting, one that is hidden (Hiding, Cloaking, a Hode's burrow). `Boss: true` on any Enemy selector or `Count` keeps to bosses. |
+| `{ Ally: lowest_hp \| nearest \| missing \| having \| attacked, Role, Job, Status, NotSelf }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, the nearest with it (Status Recovery on the petrified), or the one the monsters in sight are on (a boss counts three times); only those with that `Role` or `Job` (its own or base class). |
 
 With an `Enemy` selector, `When`'s `enemy_*` tokens ask about the chosen monster,
 so `not_enemy_provoke` means "that one is not provoked yet". With an `Ally`
