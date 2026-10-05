@@ -417,6 +417,91 @@
       ]
     },
     {
+      "name": "friendlier-refine",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Refining without the dread. A failed refine no longer destroys your equipment (a setting brings breaking back), and choose from which refine level a failure takes the item down one level instead. Works with the refine window every town blacksmith opens and with the Advanced Refiners Suhnbi (Payon) and Holink (Malangdo, renewal), in renewal and pre-renewal. The success chance of every refine, and how many levels a failure takes off, are rAthena's own values and can be changed by editing renewal/db/refine.yml or pre-renewal/db/refine.yml in the mod's folder (Windows %APPDATA%\\Ragnarok Offline\\state\\mods\\friendlier-refine, macOS ~/Library/Application Support/Ragnarok Offline/state/mods/friendlier-refine, Linux ~/.local/share/Ragnarok Offline/state/mods/friendlier-refine). Rate is the chance of success out of 10000 (6000 is 60%); DowngradeAmount is the levels a failure takes off. While a \"Revert from\" option is ticked, its own file under db/when/ sets the levels lost instead. The server reads these files only when it starts, so restart it after an edit (Apply in Settings, or quit and start the game again). An update of this mod replaces them, so keep a copy of your changes. Refines inside quests are left as they are: Vestri (Mjolnir seal) and the Novice Academy's refining machine use your edited success rates but still break the item on failure, and the Kagerou/Oboro job quest's tool keeps its own chances and always drops one level. The README has the details.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/friendlier-refine",
+      "tags": [
+        "equipment",
+        "quality-of-life",
+        "refine"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "any",
+        "app": ">=1.4.3"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "56c5f62caae4c0f4a588d08eac547d761de4ce05467e8ceb37771c5d7b038235"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "7a70bfbad2f365f72cd8f0ed7608fedef6d7fc2a90930ac263d3a181695d4e6b"
+        },
+        {
+          "path": "npc/functions.txt",
+          "sha256": "82a68458e644d5eea039c24aa50db9ce159458ae1018f7fe6b0e7344b1cfae22"
+        },
+        {
+          "path": "npc/suhnbi.txt",
+          "sha256": "7a9d642e78bc9f513f59a64d20ba0687b2c2f1c61514df4f03ea543e7ea26ade"
+        },
+        {
+          "path": "pre-renewal/db/refine.yml",
+          "sha256": "943ab813796d5963f1c799c9b2346c9e0a55d08e62faa3a80b26959506722d4f"
+        },
+        {
+          "path": "pre-renewal/db/when/allow_break/refine.yml",
+          "sha256": "78a73c600b41f3f075912cbc801bae6e0b27f85912f9570581974f8ae4937575"
+        },
+        {
+          "path": "pre-renewal/db/when/revert_from_05/refine.yml",
+          "sha256": "9f2dd8c19d3c83728cebccd55720779028377e1e09c80b7ce43c16e71030ff20"
+        },
+        {
+          "path": "pre-renewal/db/when/revert_from_07/refine.yml",
+          "sha256": "1eae11661081faf44bda3fae418d512b0a7e432b5654d48fef89a96644d8c5a8"
+        },
+        {
+          "path": "pre-renewal/db/when/revert_from_09/refine.yml",
+          "sha256": "5bf4e0b4d81a2e824abd740545f549e306b5a0331c6c55c704ef8c675e0d7e47"
+        },
+        {
+          "path": "renewal/db/refine.yml",
+          "sha256": "4dbaf83194090c377bb1e5f94e9b6572c2b1c6097d1771115948924b134d3cf7"
+        },
+        {
+          "path": "renewal/db/when/allow_break/refine.yml",
+          "sha256": "8d74a18712066f7fee9affc79c39b2888511d308d0300a01e4538293113469ed"
+        },
+        {
+          "path": "renewal/db/when/revert_from_05/refine.yml",
+          "sha256": "9b9c6f90e2296eff40dcdce7fe5a0f8c73c2cd17daf177a2ec954eb08300e526"
+        },
+        {
+          "path": "renewal/db/when/revert_from_07/refine.yml",
+          "sha256": "2c3b64bd552aff8197a9ea5de6858ad94de7ca93a1e02e8566f61337d68922df"
+        },
+        {
+          "path": "renewal/db/when/revert_from_09/refine.yml",
+          "sha256": "e7b786f58f058fc3960e2526122dbe1a874778b9e95e54470cffca3badbb2f3b"
+        },
+        {
+          "path": "renewal/db/when/revert_from_11/refine.yml",
+          "sha256": "e7b9581e7d1d063a86a36a6288c4704fdc27776b68fba3ecb650ba8d1f5b571d"
+        },
+        {
+          "path": "renewal/npc/holink.txt",
+          "sha256": "cc18a0b7886355ecfb1f083629cf16fe85c098722b14aeede837221c5781bdd8"
+        }
+      ]
+    },
+    {
       "name": "map-spawn-rate",
       "version": "1.0.0",
       "author": "BlaXun",
