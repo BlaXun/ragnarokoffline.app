@@ -248,13 +248,52 @@
   @media (prefers-reduced-motion: reduce) { .sw span, .sw span::after, .mname::before { transition: none; } }
 
   /* Updates: what is waiting, and when the app last asked. */
-  .updrow { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  /* Top-aligned: under the name there can be a screenful of release notes,
+     and the buttons belong next to the name, not halfway down them. */
+  .updrow { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 10px; align-items: start;
     padding: 10px 0; border-bottom: 1px solid var(--line); }
   .updrow:last-child { border-bottom: 0; }
   .updrow .modicon { width: 36px; height: 36px; font-size: 14px; }
   .updrow .mname::before { content: none; }
-  .updrow .acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  .updrow .acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; align-items: center; }
   .updrow .acts button { font-size: 12px; padding: 4px 12px; }
+  /* What's new: a release's notes under its update, a few lines and the rest
+     a click away. Text only -- the author's markdown headings and bullets are
+     recognised by their first characters, nothing is parsed as HTML. */
+  .notes { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-hi); padding: 8px 10px 6px; }
+  .notes h5 { margin: 0 0 4px; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--dim); font-weight: 600; }
+  .notes .body { color: var(--text-2); font-size: 12px; line-height: 1.5; overflow: hidden; position: relative; overflow-wrap: anywhere; }
+  .notes.clip .body { max-height: 6.2em; }
+  .notes.clip .body::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2.2em;
+    background: linear-gradient(transparent, var(--panel-hi)); }
+  .notes .body p { margin: 0; white-space: pre-wrap; }
+  .notes .body .h2 { color: var(--text); font-weight: 600; }
+  .notes .body .h3 { color: var(--dim); font-weight: 600; margin-top: 4px; }
+  .notes .body .li { padding-left: 14px; text-indent: -10px; }
+  .notes .body .li::before { content: "•"; display: inline-block; width: 10px; text-indent: 0; color: var(--dim); }
+  .notes .more { background: none; border: 0; padding: 4px 0 0; color: var(--accent-hi); font-weight: 600; font-size: 12px; }
+  .notes .more:hover:not(:disabled) { background: none; text-decoration: underline; }
+  .notes .more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* The Mods tab's own questions -- Remove, and folder or archive -- in this
+     window's style rather than the system's. An update from GitHub still asks
+     in a native box: see installFromSource in electron/main.js for why. */
+  #mods-ask { background: var(--panel); color: var(--text); border: 1px solid var(--line);
+    border-radius: 10px; padding: 18px 20px; width: min(540px, 92vw); }
+  #mods-ask::backdrop { background: rgba(0, 0, 0, 0.55); }
+  #mods-ask h3 { margin: 0; font-size: 15px; }
+  #mods-ask .ask-text { margin: 8px 0 0; color: var(--text-2); font-size: 12.5px; }
+  #mods-ask .ask-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  #mods-ask button.ask-choice { display: grid; gap: 4px; text-align: left; padding: 12px 14px; border-radius: 8px;
+    background: var(--panel-hi); border: 1px solid var(--line); color: var(--text); font-weight: 400; }
+  #mods-ask button.ask-choice b { font-size: 13px; font-weight: 600; }
+  #mods-ask button.ask-choice span { color: var(--text-2); font-size: 12px; line-height: 1.45; }
+  #mods-ask button.ask-choice:hover:not(:disabled), #mods-ask button.ask-choice:focus-visible { background: var(--panel-hi); border-color: var(--accent); outline: none; }
+  #mods-ask .actions { margin-top: 14px; justify-content: flex-end; }
+  /* Remove is the button that loses something: filled red, never the default. */
+  #mods-ask .actions button.danger { background: #c97a7a; color: #0d0f15; border: 0; }
+  #mods-ask .actions button.danger:hover:not(:disabled) { background: #d99494; }
+  @media (max-width: 520px) { #mods-ask .ask-choices { grid-template-columns: 1fr; } }
 
   /* Find Mods: the most used tags, as filters over the search box. */
   .tagbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 6px; }
@@ -721,6 +760,15 @@
   </div>
 
   <div class="tabpanel" id="panel-mods" role="tabpanel" aria-labelledby="tab-mods" hidden>
+  <!-- One question at a time for the Mods tab: askInWindow fills it. -->
+  <dialog id="mods-ask" aria-labelledby="mods-ask-title">
+    <form method="dialog">
+      <h3 id="mods-ask-title"></h3>
+      <p class="ask-text" id="mods-ask-text" hidden></p>
+      <div class="ask-choices" id="mods-ask-choices" hidden></div>
+      <div class="actions" id="mods-ask-buttons"></div>
+    </form>
+  </dialog>
   <!-- Pinned under the section tabs while the lists scroll: the three lists on
        the left, the ways to add a mod by hand on the right. Apply lives in the
        bar at the bottom, with what it is waiting for. -->
@@ -2123,8 +2171,16 @@ function modRow(m, kindBoxes, pendingNames) {
     const remove = el('button', 'danger', 'Remove…');
     remove.type = 'button';
     remove.onclick = async () => {
+      // Asked here, Cancel first; remove_mod then skips its native box. The
+      // text is the one that box shows (REMOVE_DETAIL, electron/main.js).
+      const sure = await askInWindow({
+        title: `Remove ${m.name}?`,
+        text: 'Its folder goes to the trash, and its on/off choice and options are forgotten. Characters and items are not touched.',
+        buttons: [{ value: 'cancel', label: 'Cancel', focus: true }, { value: 'remove', label: 'Remove', className: 'danger' }],
+      });
+      if (!sure) return;
       remove.disabled = true;
-      try { log(await invoke('remove_mod', { name: m.name })); }
+      try { log(await invoke('remove_mod', { name: m.name, asked: true })); }
       catch (e) { log('error: ' + e); }
       await refreshMods();
     };
@@ -2177,6 +2233,89 @@ function renderModList() {
   paintModsStatus();
 }
 
+// A question for the Mods tab, asked in this window: a title, a line of text,
+// choice cards and buttons, each { value, label } (a choice also takes
+// `detail`, a button `className` and `focus`). Resolves to the value picked,
+// or null for Cancel or Escape. Never for an update from GitHub: that one
+// stays a native box (installFromSource, electron/main.js).
+function askInWindow({ title, text = '', choices = [], buttons = [] }) {
+  const dialog = $('mods-ask');
+  $('mods-ask-title').textContent = title;
+  $('mods-ask-text').textContent = text;
+  $('mods-ask-text').hidden = !text;
+  const cards = $('mods-ask-choices');
+  cards.replaceChildren();
+  cards.hidden = !choices.length;
+  for (const c of choices) {
+    const card = el('button', 'ask-choice');
+    card.value = c.value;
+    card.append(el('b', '', c.label), el('span', '', c.detail || ''));
+    cards.append(card);
+  }
+  const row = $('mods-ask-buttons');
+  row.replaceChildren();
+  let first = cards.firstChild;
+  for (const b of buttons) {
+    const button = el('button', b.className || 'ghost', b.label);
+    button.value = b.value;
+    row.append(button);
+    if (b.focus) first = button;
+  }
+  return new Promise(resolve => {
+    dialog.onclose = () => resolve(dialog.returnValue && dialog.returnValue !== 'cancel' ? dialog.returnValue : null);
+    dialog.returnValue = '';
+    dialog.showModal();
+    if (first) first.focus();
+  });
+}
+
+// Where a mod comes from when added by hand. macOS's own open dialog takes a
+// folder or a file at once, so only elsewhere is it asked first.
+async function askModSource(title) {
+  if (/Mac/.test(navigator.userAgent)) return 'any';
+  return askInWindow({
+    title,
+    choices: [
+      { value: 'folder', label: 'A folder…', detail: 'A mod you unpacked yourself: the folder with its mod.json.' },
+      { value: 'archive', label: 'A .zip or .rar…', detail: 'The file as you downloaded it; it is unpacked for you.' },
+    ],
+    buttons: [{ value: 'cancel', label: 'Cancel' }],
+  });
+}
+
+// A release's notes as text: `##`/`###` headings and `-`/`*` bullets get a
+// class by their first characters, everything else is shown as written, and
+// none of it is ever HTML. A few lines show; "Show all" opens the rest, and
+// notes that fit get no button.
+function notesBlock(text, title = "What's new") {
+  const box = el('div', 'notes clip');
+  const body = el('div', 'body');
+  for (const line of String(text).trim().split(/\r?\n/)) {
+    if (/^##\s/.test(line)) body.append(el('p', 'h2', line.replace(/^##\s*/, '')));
+    else if (/^###\s/.test(line)) body.append(el('p', 'h3', line.replace(/^###\s*/, '')));
+    else if (/^[-*]\s/.test(line)) body.append(el('p', 'li', line.replace(/^[-*]\s*/, '')));
+    else body.append(el('p', '', line || ' '));
+  }
+  const more = el('button', 'more', '▸ Show all');
+  more.type = 'button';
+  more.onclick = () => {
+    const open = !box.classList.toggle('clip');
+    more.textContent = open ? '▾ Show less' : '▸ Show all';
+  };
+  // Measured once the block has a size: the Updates list is often drawn while
+  // its tab is hidden. The whole text against the clipped height (6.2em).
+  const fit = () => {
+    if (!body.offsetParent) return;
+    const short = body.scrollHeight <= parseFloat(getComputedStyle(body).fontSize) * 6.2 + 2;
+    more.hidden = short;
+    if (short) box.classList.remove('clip');
+    else if (more.textContent.startsWith('▸')) box.classList.add('clip');
+  };
+  new ResizeObserver(fit).observe(body);
+  box.append(el('h5', '', title), body, more);
+  return box;
+}
+
 // Updates for mods installed from their author's own repository. Looked up
 // when this window opens (for the number on the Mods tab), when the Mods tab
 // opens and when asked -- never in the background -- and only ever offered:
@@ -2224,6 +2363,8 @@ function paintUpdates() {
     const head = el('div', 'mhead');
     head.append(el('span', 'mname', m.name), el('span', 'pill upd', `${u.installed} → ${u.latest}`));
     text.append(head, el('div', 'mone', m.source ? `from github.com/${m.source.repo}` : 'from the mod list'));
+    // A GitHub release's notes, here rather than in the Update… box.
+    if (u.notes && u.notes.trim()) text.append(notesBlock(u.notes));
     const acts = el('div', 'acts');
     const button = el('button', '', updateLabel(u));
     button.type = 'button';
@@ -2817,8 +2958,14 @@ if (!$('panel-mods').hidden && modsSub === 'find') loadCatalogue();
   if (window.ResizeObserver) new ResizeObserver(measure).observe(bar);
 }
 
-$('mods-install').onclick = () => withButton('mods-install', 'Installing…', 'Add mod from folder…', async () => {
-  const msg = await invoke('install_mod');
+// Folder or archive is asked here first (askModSource); the open dialog after
+// it is the system's.
+$('mods-install').onclick = async () => {
+  const kind = await askModSource('Install a mod from…');
+  if (kind) await installModFromDisk(kind);
+};
+const installModFromDisk = kind => withButton('mods-install', 'Installing…', 'Add mod from folder…', async () => {
+  const msg = await invoke('install_mod', kind === 'any' ? {} : { kind });
   // A reinstall over a mod already here replaces files the running server
   // still has the old copy of, as an update from Find Mods does.
   const name = /^Installed ([A-Za-z0-9_.-]+)\./.exec(String(msg || ''))?.[1];
@@ -2827,8 +2974,12 @@ $('mods-install').onclick = () => withButton('mods-install', 'Installing…', 'A
   return msg;
 });
 
-$('mods-install-skin').onclick = () => withButton('mods-install-skin', 'Installing…', 'Add UI skin…', async () => {
-  const msg = await invoke('install_skin');
+$('mods-install-skin').onclick = async () => {
+  const kind = await askModSource('Install a UI skin or cursor pack from…');
+  if (kind) await installSkinFromDisk(kind);
+};
+const installSkinFromDisk = kind => withButton('mods-install-skin', 'Installing…', 'Add UI skin…', async () => {
+  const msg = await invoke('install_skin', kind === 'any' ? {} : { kind });
   await refreshMods();
   // The skin installer switches its mod on, and any other of its kind off,
   // and rebuilds the client files itself -- nothing there waits for Apply.
