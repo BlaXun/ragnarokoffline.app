@@ -9,7 +9,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const lib = name => import(path.join(__dirname, '..', 'tools', 'map-editor', 'lib', name));
+const { pathToFileURL } = require('node:url');
+// A file URL: import() takes no bare Windows paths.
+const lib = name => import(pathToFileURL(path.join(__dirname, '..', 'tools', 'map-editor', 'lib', name)).href);
 const EXAMPLE = path.join(__dirname, '..', 'examples', 'mods', 'custom-map', 'data');
 const read = f => new Uint8Array(fs.readFileSync(f));
 

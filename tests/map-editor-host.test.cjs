@@ -12,7 +12,9 @@ const http = require('node:http');
 const { execFile, spawn } = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..', 'tools', 'map-editor');
-const mod = name => import(path.join(ROOT, name));
+const { pathToFileURL } = require('node:url');
+// A file URL: import() takes no bare Windows paths.
+const mod = name => import(pathToFileURL(path.join(ROOT, name)).href);
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'map-editor-'));
 
 /** A stand-in asset server: one file, and the search route. */
