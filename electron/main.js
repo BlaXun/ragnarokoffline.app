@@ -1338,6 +1338,13 @@ async function saveSettings(settings) {
 		await assetsStart();
 		appLog('settings applied: asset server restarted');
 	}
+	// The relink changed what the client is handed (the era's item tables and
+	// signboards), and the client keeps its own copy of every file it has
+	// fetched. Nothing else clears that until the next game launch, so with the
+	// window closed do it now. An open window is left alone, as in
+	// launch_game: clearing under a running client is a race, and the stamp
+	// still differs, so reopening the game clears it.
+	if (!(windows.game && !windows.game.isDestroyed())) await dropStaleClientCache();
 
 	return out;
 }

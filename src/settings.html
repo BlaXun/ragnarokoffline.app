@@ -1302,7 +1302,12 @@ async function chooseEra(pre) {
     const s = await invoke('get_settings');
     const out = await invoke('save_settings', { settings: { ...s, prerenewal: pre } });
     clearInterval(ticking);
-    show(`Switched to ${label} in ${elapsed()}s. Log in again — your character list is the ${label} one.`);
+    // The open game keeps the item and sign text it already loaded, so logging
+    // in again is not enough: it has to be reopened to show the new era.
+    const gameOpen = await invoke('game_status').then(g => g.open, () => false);
+    show(`Switched to ${label} in ${elapsed()}s. ` + (gameOpen
+      ? `Reopen the game to see ${label} items and signs, then log in — your character list is the ${label} one.`
+      : `Log in again — your character list is the ${label} one.`));
     // Internet hosting credentials are per era, so an era that was never
     // prepared for friends starts in Local mode. The supervisor says so; say
     // it here as well, because the player asked for a different era, not for
