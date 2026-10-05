@@ -320,33 +320,42 @@ engine's vendors spawn exactly as upstream's do.
 
 ### Shell control for mods
 
-`patches/0027-shell-control-api.patch` adds eight script commands
-(`src/custom/script.inc`) and the engine side is in `population_engine.cpp`,
-under "shell control API". They let a mod's NPC script find shells
-(`population_isshell`, `population_shells`), take one from the AI for a while
-(`population_hold`, `population_unhold`), make or remove one
-(`population_spawn`, `population_despawn`), handle whispers to it
-(`population_whisperevent`, `population_whisper`), and hear when its follow
-loses someone (`population_lostevent`). Everything else a script
-does with a shell is stock: it is a real character, so `unitwalk`,
-`unittalk`, `emotion`, `unitattack` and `unitskilluseid` already work on it.
+Nine script commands let a mod's NPC script find shells (`population_isshell`,
+`population_shells`), take one from the AI for a while (`population_hold`,
+`population_unhold`), make or remove one (`population_spawn`,
+`population_despawn`), handle whispers to it (`population_whisperevent`,
+`population_whisper`), and hear when its follow loses someone
+(`population_lostevent`). Everything else a script does with a shell is stock:
+it is a real character, so `unitwalk`, `unittalk`, `emotion`, `unitattack` and
+`unitskilluseid` already work on it.
 
-A hold is a pair on `sd->pop` (`hold_npc`, `hold_until`) that the combat
-tick, reactive casts, wander sweep, ambient chat, name-mention replies,
-whisper handler and drift check all skip on. It belongs to the NPC that took
-it, is bounded (30 minutes at most), and ends by itself when it lapses or its
-NPC is unloaded (`pop_shell_control_sweep`, from the combat timer). The same
-sweep does the part of three stock commands a player's client would: it puts a
-held shell that `pc_setpos` took off the map back on it (`unitwarp`, and
-`pcfollow` through a warp), which is why it runs before the stale sweep, and it
-walks a held shell with an attack order into range (`unitattack`). It also
-runs a held shell's `pcfollow` in place of rAthena's follow timer, which would
-teleport the shell onto a target it cannot reach: a target that left by a
-portal is followed into that portal after a short pause, and one that left
-any other way ends the follow and runs the lost event. A shell
-`population_spawn` made is marked `script_spawned` and left out of the map
-quota counts. Companions and vendors are never handed out. Nothing changes
-until a script calls one of the commands.
+It is kept out of the engine's own files, so an engine update merges around it:
+
+| | |
+|---|---|
+| `patches/0027-shell-control-api.patch` | the script commands, in rAthena's `src/custom/script.inc` and `script_def.inc` only |
+| `files/src/map/population_engine/runtime/population_shell_control.cpp` | all of the engine side; `population_engine.cpp` includes it, as it does `population_customers.cpp` |
+| `files/src/map/population_engine/population_shell_control.hpp` | its declarations |
+| `files/src/map/population_engine/core/population_shell_hold.hpp` | the per-shell state, one member (`hold`) on `s_population` |
+
+What remains in the engine's own files are one-line hooks, each marked
+`RAGNAROKMAC`: the combat tick, reactive casts, wander sweep, ambient chat and
+name-mention replies skip a held shell (`population_engine_shell_is_held`); the
+whisper handler asks `population_shell_control_whisper` first; the drift check
+and the two map-quota counts skip `sd->pop.hold`; and the combat timer calls
+`population_shell_control_sweep` before its stale sweep.
+
+A hold belongs to the NPC that took it, is bounded (30 minutes at most), and
+ends by itself when it lapses or its NPC is unloaded. The sweep also does the
+part of three stock commands a player's client would: it puts a held shell
+that `pc_setpos` took off the map back on it (`unitwarp`), walks one with an
+attack order into range (`unitattack`), and runs its `pcfollow` in place of
+rAthena's follow timer, which would teleport it onto a target it cannot reach:
+a target that left by a portal is followed into that portal after a short
+pause, and one that left any other way ends the follow and runs the lost
+event. A shell `population_spawn` made is left out of the map quota counts.
+Companions and vendors are never handed out. Nothing changes until a script
+calls one of the commands.
 
 The player-facing reference is [docs/mods/shell-control.md](../../docs/mods/shell-control.md).
 

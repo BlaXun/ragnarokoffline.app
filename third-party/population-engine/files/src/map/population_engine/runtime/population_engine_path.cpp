@@ -19,6 +19,7 @@
 #include "../../path.hpp"
 #include "../../pc.hpp"
 #include "../../population_engine.hpp"
+#include "../population_shell_control.hpp" // RAGNAROKMAC
 #include "../core/population_engine_core.hpp"
 #include "population_engine_combat.hpp"
 #include "../../status.hpp"

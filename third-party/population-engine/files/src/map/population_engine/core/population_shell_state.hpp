@@ -18,6 +18,7 @@
 #include <common/timer.hpp> // t_tick
 
 #include "population_engine_core.hpp"
+#include "population_shell_hold.hpp" // RAGNAROKMAC
 
 namespace expanded_ai { class ExpandedCondition; }
 
@@ -218,27 +219,7 @@ struct s_population {
 	// RAGNAROKMAC: this mod vendor runs a buying store, not a vending stall.
 	bool vendor_buying = false;
 
-	// RAGNAROKMAC (shell control API): a mod's NPC script has taken this shell
-	// over with population_hold or population_spawn. Until hold_until passes,
-	// the engine's own AI leaves it alone (population_engine_shell_is_held) and
-	// stock unit* script commands drive it.
-	int32_t     hold_npc       = 0;     ///< NPC block id holding the shell; 0 = free
-	t_tick      hold_until     = 0;     ///< gettick() at which the hold lapses
-	bool        script_spawned = false; ///< made by population_spawn: outside every map quota
-	bool        script_keep    = false; ///< population_spawn flag: stays as an ambient shell once released
-	bool        despawn_pending = false; ///< population_despawn has scheduled its removal
-	std::string whisper_event;          ///< "<npc>::<label>" a whisper runs while the shell is held
-	std::string lost_event;             ///< "<npc>::<label>" run when a held shell loses whoever it follows
-	// A held shell's pcfollow, which the engine runs in place of rAthena's
-	// follow timer: that one teleports a follower it cannot reach, and no
-	// player can follow a fly wing. Where the target was last seen on the
-	// shell's map tells a portal (walk to it, come through) from a teleport.
-	int16_t     follow_seen_m  = -1;
-	int16_t     follow_seen_x  = 0;
-	int16_t     follow_seen_y  = 0;
-	int32_t     follow_portal  = 0;     ///< warp NPC the shell is walking to after its target
-	t_tick      follow_portal_until = 0;
-	t_tick      follow_next_walk = 0;
+	s_pop_hold hold; ///< RAGNAROKMAC: a script's hold on the shell (shell control API)
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.
 	uint32_t party_request_account = 0; ///< Player who requested this one-shot invitation.

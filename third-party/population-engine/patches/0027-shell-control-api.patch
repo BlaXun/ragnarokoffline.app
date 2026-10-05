@@ -5,18 +5,21 @@ population_isshell, population_shells, population_hold, population_unhold,
 population_spawn, population_despawn, population_whisperevent,
 population_whisper and population_lostevent. They let a mod's NPC script find
 shells, take one away from the engine's AI for a while, make one and remove
-one; stock unit* commands do the rest. The engine side is in
-files/src/map/population_engine.cpp (search "shell control API"). Nothing
+one; stock unit* commands do the rest. Only rAthena's custom-command files
+are touched; the engine side is
+files/src/map/population_engine/runtime/population_shell_control.cpp. Nothing
 changes until a script calls them.
 
 diff --git a/src/custom/script.inc b/src/custom/script.inc
-index 3bc5a2c0a..9b910a2e6 100644
+index 3bc5a2c0a..7cc565451 100644
 --- a/src/custom/script.inc
 +++ b/src/custom/script.inc
-@@ -351,3 +351,166 @@ BUILDIN_FUNC(companion_hire)
+@@ -351,3 +351,168 @@ BUILDIN_FUNC(companion_hire)
  	script_pushint(st, made != 0 ? 1 : 0);
  	return SCRIPT_CMD_SUCCESS;
  }
++
++#include "../map/population_engine/population_shell_control.hpp"
 +
 +/*==========================================
 + * Shell control, for mods that stage scenes with population shells (see
