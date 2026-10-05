@@ -430,6 +430,19 @@ Body:
         Ban: [MG_FIREWALL]            # Fire Wall sets off Heaven's Drive and Helm Break
         Start: opening
         Rules:                        # every phase
+          # The healer died and none is left: fall back to the owner instead of fighting on
+          # without support. One of them says so.
+          - Name: healer_down
+            Priority: 102
+            On: party_member_died
+            Absent: { Ally: nearest, Job: Priest }
+            Switch: fallback
+          - Name: healer_down_say
+            Priority: 101
+            On: party_member_died
+            Absent: { Ally: nearest, Job: Priest }
+            Say: "Our healer is down! Falling back to {owner}."
+            OnePerParty: true
           # It hides below 20 %, and heals while hidden: find it at once.
           - Name: reveal_ruwach
             Priority: 100
@@ -528,6 +541,56 @@ Body:
                 Cast: PR_KYRIE
                 Target: { Ally: lowest_hp }
                 When: not_ally_kyrie
+
+          - Name: fallback            # no healer: stay with the owner, fight nothing
+            Rules:
+              - Name: healer_back     # a Priest is up again: back in, and the HP rules
+                Priority: 100         # carry it on to the right phase the same turn
+                Target: { Ally: nearest, Job: Priest }
+                Switch: opening
+              - Name: to_owner
+                Priority: 99
+                Retreat: owner
+              - Name: stand
+                Priority: 98
+                Hold: true
+
+      # Each job's own part. A plan about a monster turns the normal skill rotation off,
+      # so besides the shared rules above this is all they cast; between casts they hit.
+      - Job: Priest
+        Rules:
+          - Name: stay_back            # out of its reach, still within Heal's range
+            Priority: 86
+            Target: { Enemy: boss, Range: 14 }
+            KeepDistance: 7
+          - Name: no_melee             # nothing to cast: stand, rather than walk up and hit it
+            Priority: 1
+            Hold: true
+      - Job: Wizard
+        Rules:
+          - Name: stay_back
+            Priority: 86
+            Target: { Enemy: boss, Range: 14 }
+            KeepDistance: 6
+          - Name: fire_bolt            # the slaves are earth: fire hurts them most
+            Priority: 30
+            When: self_sp_pct_ge25
+            Cast: MG_FIREBOLT
+          - Name: no_melee
+            Priority: 1
+            Hold: true
+      - Job: Assassin
+        Rules:
+          - Name: enchant_poison
+            Priority: 40
+            When: not_self_encpoison
+            Cast: AS_ENCHANTPOISON
+            Target: self
+          - Name: sonic_blow           # at the boss, with SP to spare; plain hits on the slaves
+            Priority: 30
+            Enemy: { Boss: true }
+            When: self_sp_pct_ge40
+            Cast: AS_SONICBLOW
 
   # --- Trash: plain hits only, no SP spent -------------------------------------
   - Mobs: [PORING, DROPS, POPORING, MARIN, FABRE, PUPA]

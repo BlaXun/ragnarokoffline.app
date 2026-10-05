@@ -44,7 +44,9 @@
 #                     use the entry. Entries without Build apply to every build.
 #       Remove:       Delete what earlier files gave this monster and job.
 #       Reset:        Start this monster and job over from this entry.
-#       Rotation:     false: no skills from the normal rotation against this monster.
+#       Rotation:     The normal skill rotation. Default: off under a plan about a monster
+#                     (it casts what the plan says), on under Mob: All. Heals, buffs and
+#                     resurrection are not the rotation and keep running.
 #       Ban:          Skills the normal rotation must not use against it.
 #       Start:        The strategy active when a fight with it begins.
 #       Rules:        Rules that apply whatever strategy is active.
@@ -79,6 +81,7 @@
 #                (default), party, monster, enemy or anyone.
 #   Count:       { Enemy: any|attacking|boss|slaves|casting, Who, Around: self|target, Range: 5,
 #                Below: n | AtLeast: n } -- monsters near the companion or the rule's target.
+#   Absent:      { Ally: nearest, Job: Priest } -- only while that selector finds nobody.
 #   Reach:       false -- only while the monster could not fight back against the companion
 #                where it stands (what makes a boss teleport); true -- only while it could.
 #   Enemy:       { Element: [Holy], Race: Demon, Size: Large, Boss: true } -- the monster the

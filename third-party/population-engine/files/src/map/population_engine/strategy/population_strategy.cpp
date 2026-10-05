@@ -147,6 +147,7 @@ struct Rule {
 	uint16 cast_lv = 0;          ///< 0 = the level the companion knows
 	Target target = Target::Enemy;
 	Selector sel;                ///< overrides target when sel.kind != None
+	Selector absent;             ///< Absent: the rule applies only while this finds nobody
 	bool set_target = false;     ///< make the chosen monster the companion's combat target
 	std::string say;
 	bool say_area = false;
@@ -191,8 +192,11 @@ struct Plan {
 	std::map<std::string, Strategy> strategies;
 	std::string start;
 	std::vector<uint16> ban;
-	bool rotation = true;
+	/// The normal skill rotation: -1 = the default, which is off for a plan about a monster (the
+	/// plan says what to cast) and on for a Mob: All plan (general behaviour); 0/1 = set.
+	int8 rotation = -1;
 };
+
 
 struct Targeting {
 	int32 priority = 0;
@@ -212,6 +216,12 @@ constexpr uint32 kAllMobs = 0;
 constexpr int32 kAllJobs = -1;
 /// (mob id or kAllMobs, job id or kAllJobs, build name or "" for every build)
 using PlanKey = std::tuple<uint32, int32, std::string>;
+
+/// Whether the normal skill rotation runs under this plan (before its active strategy's say).
+static bool plan_rotation(const PlanKey &key, const Plan &plan)
+{
+	return plan.rotation >= 0 ? plan.rotation != 0 : std::get<0>(key) == kAllMobs;
+}
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -713,7 +723,7 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		return nullptr;
 	}
 	this->warn_unknown_keys(node, { "Name", "Priority", "Remove", "Requires", "On", "When", "Charges", "Field",
-		"Enemy", "Count", "Reach", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "KeepDistance", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
+		"Enemy", "Count", "Reach", "Absent", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "KeepDistance", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
 		"OnePerParty" }, "a rule");
 
 	auto rule = std::make_shared<Rule>();
@@ -842,6 +852,11 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		if (!threshold(c, rule->count_below, rule->count_atleast))
 			return nullptr;
 		rule->has_count = true;
+	}
+	if (this->nodeExists(node, "Absent")) {
+		// "No Priest alive any more": a selector that must find nobody.
+		if (!node["Absent"].is_map() || !this->parse_selector(node["Absent"], rule->absent))
+			return nullptr;
 	}
 	if (this->nodeExists(node, "Reach")) {
 		bool reach = false;
@@ -1145,8 +1160,11 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 		if (has_audience)
 			plan.audience = audience;
 
-		if (this->nodeExists(node, "Rotation"))
-			this->asBool(node, "Rotation", plan.rotation);
+		if (this->nodeExists(node, "Rotation")) {
+			bool rotation = true;
+			if (this->asBool(node, "Rotation", rotation))
+				plan.rotation = rotation ? 1 : 0;
+		}
 		if (this->nodeExists(node, "Start"))
 			this->asString(node, "Start", plan.start);
 		if (this->nodeExists(node, "Ban")) {
@@ -1289,7 +1307,7 @@ void StrategyDatabase::loadingFinished()
 			for (const RulePtr &r : s.second.rules)
 				note(r);
 		}
-		if (!plan.rotation || !plan.ban.empty())
+		if (!plan_rotation(entry.first, plan) || !plan.ban.empty())
 			this->limits_rotation = true;
 		if (plan.audience != Audience::Companions)
 			this->for_shells = true;
@@ -1478,6 +1496,8 @@ static void trace(map_session_data *sd, ShellState &st, t_tick tick, const char 
 	char line[CHAT_SIZE_MAX + NAME_LENGTH + 8];
 	safesnprintf(line, sizeof(line), "[%s] %s", sd->status.name, body);
 	clif_displaymessage(owner->fd, line);
+	// The same line in the map-server log, with a prefix to filter on.
+	ShowInfo("[strategy] %s\n", line);
 }
 
 static int hp_pct(const block_list *bl)
@@ -2234,6 +2254,10 @@ static const char *cast(Turn &t, const Rule &rule, block_list *target)
 static const char *retreat(Turn &t, const Rule &rule, const RuleState &rs)
 {
 	map_session_data *sd = t.sd;
+	// unit_walktoxy itself does not ask whether the unit may move: a petrified, frozen or
+	// stunned shell was walked away. Players and monsters are checked before it; so are rules.
+	if (!unit_can_move(sd))
+		return nullptr;
 	if (unit_is_walking(sd))
 		return ""; // already on its way; let it arrive
 	if (rule.retreat == Retreat::Owner) {
@@ -2270,13 +2294,19 @@ static const char *retreat(Turn &t, const Rule &rule, const RuleState &rs)
 /// KeepDistance: nullptr when already far enough (the rule passes and the next one runs),
 /// "" when it set off, or why it could not. Goes to the nearest open cell at least `keep`
 /// cells from the monster, preferring the cells closest to where it stands.
-static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, bool &far_enough)
+static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, block_list *about, bool &far_enough)
 {
 	map_session_data *sd = t.sd;
 	far_enough = false;
+	// unit_walktoxy itself does not ask whether the unit may move: a petrified, frozen or
+	// stunned shell was walked away. Players and monsters are checked before it; so are rules.
+	if (!unit_can_move(sd))
+		return nullptr;
+	// From an event's caster, else the rule's own monster (Target: { Enemy: boss } keeps a healer
+	// away from the boss even with no target of its own), else the current target.
 	block_list *from = same_map_bl(sd, rs.source);
 	if (from == nullptr)
-		from = t.enemy;
+		from = about;
 	if (from == nullptr || distance_bl(sd, from) >= rule.keep_distance) {
 		far_enough = true;
 		return "";
@@ -2316,6 +2346,10 @@ static const char *move_to(Turn &t, const Rule &rule, const RuleState &rs, block
 {
 	map_session_data *sd = t.sd;
 	there = false;
+	// unit_walktoxy itself does not ask whether the unit may move: a petrified, frozen or
+	// stunned shell was walked away. Players and monsters are checked before it; so are rules.
+	if (!unit_can_move(sd))
+		return nullptr;
 	if (rule.move == Move::Reachable) {
 		// To the nearest cell the monster could fight back from, so hitting it there does not
 		// make it teleport. A few dozen cells at most, nearest first.
@@ -2377,7 +2411,7 @@ static const char *move_to(Turn &t, const Rule &rule, const RuleState &rs, block
 	} else {
 		field_units(sd, rule.move_skill, rule.move_owner, rule.move_within, &cells);
 		if (cells.empty())
-			return "no such field nearby";
+			return nullptr; // no such field right now: nothing to do, not a failure to report
 	}
 	if (std::any_of(cells.begin(), cells.end(), [&](const auto &c) { return c.first == sd->x && c.second == sd->y; })) {
 		there = true;
@@ -2404,6 +2438,10 @@ static const char *leave_ground(Turn &t, const Rule &rule, bool &clear)
 {
 	map_session_data *sd = t.sd;
 	clear = false;
+	// unit_walktoxy itself does not ask whether the unit may move: a petrified, frozen or
+	// stunned shell was walked away. Players and monsters are checked before it; so are rules.
+	if (!unit_can_move(sd))
+		return nullptr;
 	std::vector<std::pair<int16, int16>> units;
 	// A little wider than the search, so a cell just past it is not taken for a free one.
 	field_units(sd, rule.leave_skill, rule.leave_owner, static_cast<int16>(rule.leave_within + 2), &units);
@@ -2511,6 +2549,13 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 				rule.field_below, rule.field_atleast))
 			return Outcome::Skipped;
 	}
+	if (rule.absent.kind != Selector::Kind::None) {
+		const int r = rule.absent.range > 0 ? rule.absent.range : AREA_SIZE;
+		const block_list *found = rule.absent.kind == Selector::Kind::Ally ? select_ally(t, rule.absent, r)
+			: select_enemy(t, rule.absent, r);
+		if (found != nullptr)
+			return Outcome::Skipped;
+	}
 	if (rule.has_count) {
 		block_list *center = rule.count_around_target ? (target != nullptr ? target : about) : sd;
 		if (center == nullptr || !threshold_ok(count_enemies(t, rule.count_sel, center, rule.count_range),
@@ -2607,7 +2652,7 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		acted = true;
 	} else if (rule.keep_distance > 0) {
 		bool far_enough = false;
-		const char *why = keep_away(t, rule, rs, far_enough);
+		const char *why = keep_away(t, rule, rs, about, far_enough);
 		if (far_enough || why == nullptr)
 			return Outcome::Skipped;
 		if (*why != '\0') {
@@ -2935,7 +2980,7 @@ bool population_strategy_rotation_allows(map_session_data *sd, block_list *targe
 	}
 	const auto st = g_shells.find(sd->id);
 	for (const PlanRef &p : cached) {
-		bool rotation = p.plan->rotation;
+		bool rotation = plan_rotation(p.key, *p.plan);
 		const Strategy *active = nullptr;
 		if (st != g_shells.end() && st->second.char_id == sd->status.char_id) {
 			const auto ps = st->second.plans.find(p.key);

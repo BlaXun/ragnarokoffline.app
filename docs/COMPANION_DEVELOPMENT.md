@@ -177,7 +177,7 @@ reaches it from these lines, each marked `RAGNAROKMAC (companion strategies)`:
 | `population_engine.cpp` | `pop_companion_follow_owner`: the leash | a rule holding its ground gets the leash a fight in the owner's sight gets (`AREA_SIZE + 2`), so holding wins over the leash, never over the warps |
 | `population_engine.cpp` | companion loop: the idle stop-walking and `pop_companion_update_formation` | an idle companion's rule-started walk and spot are kept |
 | `population_engine_combat.cpp` | include of the header | |
-| `population_engine_combat.cpp` | top of `population_shell_combat_process_tick`, before party resurrection | the companion's turn |
+| `population_engine_combat.cpp` | `population_shell_combat_process_tick`, right after party resurrection | the companion's turn: resurrection outranks every rule |
 | `population_engine_combat.cpp` | rotation loop of `population_shell_pick_attack_skill`, and the sphere chain's `pick` | `Ban:` and `Rotation: false` |
 
 Re-vendoring upstream means re-applying exactly these. Every entry point returns

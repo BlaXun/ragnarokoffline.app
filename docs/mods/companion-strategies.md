@@ -29,7 +29,7 @@ Body:
       - Job: Monk                 # Monk, High_Priest, JOB_NINJA, 15, or All
         Build: combo              # optional: one way to play the job
         Requires: { Skills: [MO_CHAINCOMBO], Lacks: [MO_EXTREMITYFIST] }
-        Rotation: false           # optional: no rotation skills against it
+        Rotation: false           # optional: the normal skill rotation (see below)
         Ban: [MO_FINGEROFFENSIVE] # optional: these rotation skills not against it
         Start: approach           # the strategy each new fight starts in
         Rules: [...]              # rules for every strategy
@@ -87,6 +87,7 @@ A rule applies when all of the following hold:
 | `Charges: { Status, Below \| AtLeast, Value }` | while a status's counter is in range. Cicada Skin Shed keeps its blocks left in its second value (the default), so `{ Status: SC_UTSUSEMI, Below: 2 }` is "1 or 0 left". No status counts as 0. |
 | `Field: { Skill, Below \| AtLeast, Range, Owner, At }` | while that many ground units of the skill stand within `Range` cells (default 5; `0` is the cell itself) of the companion, or with `At: target` of the rule's target (the boss in its own Pneuma). `Owner` says whose: `self` (default: Blaze Shield's pillars, its own Fire Wall), `party` (a Sage's Land Protector), `monster`, `enemy`, `anyone`. |
 | `Count: { Enemy, Who, Around, Range, Below \| AtLeast }` | while that many monsters stand within `Range` cells (default 5) of the companion, or with `Around: target` of the rule's target. `Enemy`: `any` (default), `attacking` (with `Who`, `NotSelf`), `boss`, `slaves`, `casting`. "Three slaves around the boss": `{ Enemy: slaves, Around: target, AtLeast: 3 }` with `Target: { Enemy: boss }`. |
+| `Absent: { Ally \| Enemy: ..., ... }` | while a [selector](#choosing-who-selectors) finds **nobody**: `Absent: { Ally: nearest, Job: Priest }` is "no living Priest within sight", the moment to fall back. |
 | `Reach: false` / `true` | while the monster the rule is about could not (or could) fight back against the companion where it stands. rAthena teleports a boss hit by someone it can neither hit back from where it stands nor walk to within its chase range; a monster held in place (Ankle Snare, Spider Web) cannot walk at all. `Reach` asks the same question. |
 | `Enemy: { Element, Race, Size, Boss }` | while the monster the rule is about (its selector's, or the current target) is one of those: `Element: [Holy, Ghost]`, `Race: Demon`, `Size: Large`, `Boss: true`. Names as rAthena writes them without `ELE_` / `RC_`. For a boss that changes element. |
 | `Cooldown:` | when it has not fired in that many ms. |
@@ -111,11 +112,28 @@ And then does one thing:
 | `Switch:` strategy | Makes another strategy of the same plan active. |
 | `Signal:` name | Tells the party's other companions, who react with `On: { Event: signal, Name }`. A signal rule without an event waits 5 s between sends unless it has a `Cooldown`. |
 
+A companion that cannot move (petrified, frozen, stunned: whatever rAthena's
+`unit_can_move` refuses) skips every movement rule; it does not walk away while
+turned to stone.
+
 `Cast`, `Retreat`, `KeepDistance`, `MoveTo`, `Leave` and `Hold` end the companion's turn; only one
 of them is allowed per rule. `Say`, `Switch` and `Signal` do not end it and can
 come with any of them, after it has succeeded. When no rule acts, the companion takes its
-ordinary turn: the built-in resurrection, heals, buffs and the skill rotation
-(minus anything `Ban` or `Rotation: false` takes away).
+ordinary turn: heals, buffs and the skill rotation (minus anything `Ban` or
+`Rotation` takes away). The built-in Party Resurrection comes before all rules:
+a dead party member is revived first.
+
+**The normal skill rotation is off under a plan about a monster.** A plan for
+`Mob: PHREEONI` (or its encounter) says what to cast, and the companion casts
+that and plain-attacks, nothing else from its class's rotation. `Mob: All` plans
+are general behaviour and leave the rotation on. Either default can be
+overridden with `Rotation: true` or `false` on the job entry. The built-in heals,
+buffs and resurrection are not part of the rotation and keep running.
+
+A caster under such a plan still takes ordinary turns whenever no rule acts, and
+an ordinary turn walks up to its target and hits it. End a caster's rules with
+the lowest-priority `Hold: true`: with nothing to cast, it stands. Its other rules
+outrank it and still fire.
 
 ### Choosing who: selectors
 
