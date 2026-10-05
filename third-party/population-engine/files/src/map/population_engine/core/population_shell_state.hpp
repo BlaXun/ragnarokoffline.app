@@ -18,6 +18,7 @@
 #include <common/timer.hpp> // t_tick
 
 #include "population_engine_core.hpp"
+#include "population_shell_hold.hpp" // RAGNAROKMAC
 
 namespace expanded_ai { class ExpandedCondition; }
 
@@ -231,6 +232,7 @@ struct s_population {
 	// RAGNAROKMAC: this mod vendor runs a buying store, not a vending stall.
 	bool vendor_buying = false;
 
+	s_pop_hold hold; ///< RAGNAROKMAC: a script's hold on the shell (shell control API)
 	// --- Party invite auto-accept flag ---
 	bool   accept_party_request = false; ///< When true, bot auto-accepts the next party invite it receives.
 	uint32_t party_request_account = 0; ///< Player who requested this one-shot invitation.

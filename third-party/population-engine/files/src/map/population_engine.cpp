@@ -6,6 +6,7 @@
 // Includes wander AI, combat AI, ambient chat, and YAML-driven equipment/skill profiles.
 
 #include "population_engine.hpp"
+#include "population_engine/population_shell_control.hpp" // RAGNAROKMAC
 
 #include "population_engine/runtime/population_engine_combat.hpp"
 #include "population_engine/runtime/population_shell_ammo.hpp"
@@ -440,6 +441,9 @@ TIMER_FUNC(population_engine_chat_timer) {
 			continue;
 		if (map_id2bl(raw_sd->id) != raw_sd)
 			continue;
+		// RAGNAROKMAC (shell control API): a held shell says what its script says.
+		if (population_engine_shell_is_held(raw_sd))
+			continue;
 
 		std::shared_ptr<PopulationEngine> equipment = population_engine_db_for_shell(raw_sd).find(raw_sd->status.class_);
 
@@ -849,7 +853,8 @@ static void population_engine_destroy_failed_spawn(map_session_data* sd);
 static size_t population_engine_count_shells_on_map(int16_t map_id, uint16_t job_id = UINT16_MAX) {
     size_t count = 0;
     for (map_session_data* sd : g_population_engine_pcs) {
-        if (sd && sd->m == map_id) {
+        // RAGNAROKMAC: a script's population_spawn actor is outside every quota.
+        if (sd && sd->m == map_id && !sd->pop.hold.spawned) {
             if (job_id == UINT16_MAX || sd->status.class_ == job_id)
                 count++;
         }
@@ -865,7 +870,7 @@ static size_t population_engine_count_shells_on_map_for_profile(
 {
     size_t count = 0;
     for (map_session_data* sd : g_population_engine_pcs) {
-        if (!sd || sd->m != map_id) continue;
+        if (!sd || sd->m != map_id || sd->pop.hold.spawned) continue; // RAGNAROKMAC
         const uint16_t c = static_cast<uint16_t>(sd->status.class_);
         for (uint16_t j : jobs) {
             if (c == j) { ++count; break; }
@@ -3081,6 +3086,10 @@ TIMER_FUNC(population_engine_autosummon_timer)
 			continue;
 		if (pop_is_companion(sd))
 			continue;
+		// RAGNAROKMAC (shell control API): a script may walk or warp its shell
+		// anywhere; ending the hold settles where it lives.
+		if (sd->pop.hold.npc != 0)
+			continue;
 		if (sd->pop.spawn_map_id < 0 || sd->m == sd->pop.spawn_map_id)
 			continue;
 		struct map_data *mapdata = map_getmapdata(sd->pop.spawn_map_id);
@@ -3348,6 +3357,9 @@ static int32 pop_combat_tick_bot_in_range(block_list *bl, va_list ap)
 		if (!pop_is_companion(sd))
 			pop_companion_set_owner(sd, nullptr);
 	}
+	// RAGNAROKMAC (shell control API): a held shell does what its script says.
+	if (population_engine_shell_is_held(sd))
+		return 0;
 	// Dedupe across multiple real-PC viewers.
 	if (!ctx->ticked.insert(sd->id).second)
 		return 0;
@@ -4546,6 +4558,9 @@ void population_engine_companion_terms(map_session_data *owner, int fd)
 TIMER_FUNC(population_engine_global_combat_timer)
 {
 	PE_PERF_SCOPE("timer.combat");
+	// RAGNAROKMAC (shell control API): first, so a held shell a script warped is
+	// back on the map before the stale sweep would take it for gone.
+	population_shell_control_sweep();
 	{
 		auto stale = population_engine_collect_stale_shells();
 		for (auto *s : stale)
@@ -9124,7 +9139,10 @@ void population_engine_on_shell_damaged(map_session_data *sd, struct block_list 
 	// mob_skill_db closedattacked / longrangeattacked event-driven semantics.
 	// SelfTargeted / MeleeAttacked / RangeAttacked conditions are satisfied right
 	// now (last_attacked_tick is fresh), so don't wait for the next poll tick.
-	population_engine_shell_reactive_cast(sd);
+	// RAGNAROKMAC (shell control API): a held shell does not fight back; a mob
+	// train has to stay a train.
+	if (!population_engine_shell_is_held(sd))
+		population_engine_shell_reactive_cast(sd);
 }
 
 void population_engine_combat_shell_stop(map_session_data *sd)
@@ -9325,6 +9343,9 @@ void population_engine_on_whisper_to_population_pc(map_session_data* from_sd, ma
 		return;
 	if (!population_engine_is_population_pc(bot_sd->id))
 		return;
+	// RAGNAROKMAC (shell control API): a held shell answers through its script.
+	if (population_shell_control_whisper(from_sd, bot_sd, message))
+		return;
 
 	// Party request: if the player whispers a party-related keyword the shell accepts or
 	// creates a party and invites the player back (mirrors autocombat accept_party_request).
@@ -9425,11 +9446,16 @@ void population_engine_on_global_chat_mention(map_session_data* from_sd, const c
 			continue;
 		if (!bot->status.name[0])
 			continue;
+		if (population_engine_shell_is_held(bot))
+			continue;
 		if (stristr(message, bot->status.name) == nullptr)
 			continue;
 		population_engine_deliver_chat_reply_locked(bot, nullptr);
 	}
 }
+
+// RAGNAROKMAC: shell control API for mods' NPC scripts (see the file).
+#include "population_engine/runtime/population_shell_control.cpp"
 
 void do_final_population_engine() {
 	// Stop first so shells are released while all DB shared_ptrs are still valid.
