@@ -1,7 +1,8 @@
 # The mod store: data a mod keeps for itself
 
 A mod can keep its own data between server starts: **key/value storage** with
-three scopes, used from NPC scripts and Lua hooks.
+three scopes. NPC scripts and Lua hooks read and write it; the mod's client
+UI can read what the mod puts under `client`.
 - **Writes** go through the store, never through SQL. Mods' `query_sql` and
   `query_logsql` are read-only.
 - **Isolation:** a mod only ever sees its own store.
@@ -24,6 +25,10 @@ three scopes, used from NPC scripts and Lua hooks.
   - Non-integer numbers are refused.
 - **Dots are only for grouping:** they let you list or rank everything under a
   prefix. A key with no dots is plain key/value.
+- **It's a tree:** a path holds a value *or* entries under it, never both.
+  With `season.name` set, setting `season` is refused, and with `season` set,
+  so is `season.name`: delete one first. That's what lets Lua and the client
+  read `season` back as a table.
 
 ## From an NPC script
 
@@ -65,12 +70,19 @@ for _, row in ipairs(store.top("board", 10)) do
   log(row.name .. ": " .. row.value)
 end
 
+local season = store.get("season")                  -- { name = "Autumn", week = 3 }
+store.set("recent", { "Alice", "Bob" })
+store.get("recent")                                 -- { "Alice", "Bob" }: integer keys come back as integers
+
 local ok, why = store.set("x", 1.5)                 -- nil, "numbers in the store are integers"
 local l = store.limits()                            -- l.global, l.account, l.char, l.value, l.depth
 ```
 
 The functions are `get`, `set`, `inc`, `delete`, `exists`, `keys`, `count`,
 `top` and `used`. `store` also has `limits`, `char` and `account`.
+
+- **`get` on a path with entries under it** returns them as a table, the
+  same shape `set` wrote. `get()` with no path returns the whole document.
 
 - **Errors are returned, not raised:** a write that fails returns `nil` and a
   reason.
@@ -80,6 +92,28 @@ The functions are `get`, `set`, `inc`, `delete`, `exists`, `keys`, `count`,
 
 A mod's scripts and its Lua share one store, so a script can set something a
 hook reads, and the other way round.
+
+## From the mod's client UI
+
+A client plugin reads with `api.store.get(scope, path)`. It resolves with a
+number, a string, an object of them, or `null` if nothing is there:
+
+```js
+const board = await api.store.get('global', 'client.board');   // { Alice: 30, Bob: 50 }
+const mine  = await api.store.get('char', 'client.bounty');    // this character's
+```
+
+- **Only paths under `client`.** A mod keeps what its UI may show there, and
+  everything else stays on the server. Keep a copy under `client` of anything
+  the window needs: `modstore_set "client.board." + .@name$, .@kills;`.
+- **The player's own data:** `account` and `char` are the logged-in player's.
+- **Not secret:** what's under `client` can be read by the player, and by any
+  plugin, so don't keep anything there a player shouldn't see.
+- **It asks the map server** (the `@modstore` command, as a server request),
+  so it works only in game, and an answer over about 36 KB is refused: read a
+  smaller path.
+- **Read-only:** a client changes the store through the mod's own server
+  script, with `api.server.request` or `api.server.command`.
 
 ## Querying
 
@@ -119,7 +153,8 @@ The app sets these each start (`MOD_STORE_LIMITS` in `stack/src/cmds.rs`), so
 ## Where it's kept
 
 The map server keeps each document in memory. It saves changes:
-- every minute;
+- every minute, so a crash loses at most the last minute (rAthena saves its
+  own `$` variables and characters every five);
 - when a player logs out (their account and char data);
 - when the server stops.
 
