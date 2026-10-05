@@ -214,6 +214,50 @@ engine. It now skips shells whose map holds no real player. A shell standing
 still on an empty map is indistinguishable from one wandering there, and it
 starts moving again the moment somebody arrives.
 
+### Shells pick up their loot
+
+Upstream shells never pick anything up: with `item_auto_get` off, as it is by
+default, every kill leaves its drops lying until they expire, which no real
+player does. `population_engine_loot_enable` (off by default; Settings ->
+Population -> Loot, which sets every knob below) lets an ambient shell walk over
+and take the drops of its own kills, those it holds first loot priority on,
+through stock `pc_takeitem`, so the client sees the pickup and `picklog` records
+it under the shell's char_id (95000000 and up). The logic is in
+`runtime/population_shell_loot.cpp`, run from the combat tick before target
+selection; `patches/0026-shell-looting.patch` registers the settings.
+
+It loots the way a player does. Each drop is decided once, when the shell
+notices it:
+
+- **Rare drops are very likely, not certain.** A card, or a drop whose base
+  rate in the monster's table is at most `population_engine_loot_rare_rate`
+  (per 10000, default 100 = 1%), is wanted with
+  `population_engine_loot_rare_pickup_pct` chance (default 95).
+- **Common drops at a base rate.** Anything else is wanted with
+  `population_engine_loot_common_pickup_pct` chance (default 70); the rest it
+  walks past.
+
+And then fetched with a player's priorities:
+
+- **Rare first.** A rare drop is fetched even while monsters attack the shell,
+  unless its HP is below `population_engine_loot_hp_abort_pct` (default 30).
+- **Fight first, otherwise.** A common drop waits until nothing is attacking or
+  targeting the shell; a hit on the way there sends it back to the fight. A
+  drop a fight held back is forgotten with `population_engine_loot_forget_pct`
+  chance (default 10) once the fight is over.
+- **Not forever.** A drop not reached within
+  `population_engine_loot_timeout_ms` (default 15000; twice that for rare ones)
+  is given up.
+- A short reaction delay before going for a fresh drop, and a pause between
+  pickups, so it does not vacuum the screen in one frame.
+
+It looks `population_engine_loot_radius` cells (default 9) around itself.
+Recruited companions are left out: their loot priority already belongs to their
+owner (0003). The shell's inventory is runtime-only, so what it picks up is gone
+when it despawns; a pickup that fails (overweight, full bag) gives the item up.
+Settings writes all of them (`electron/population-conf.js`, `shellLoot`); a mod
+can still change any of them at runtime with `setbattleflag`.
+
 ### Vendors a mod can add
 
 Upstream places vendors per map with one `VendorPlacement` each, and picks the

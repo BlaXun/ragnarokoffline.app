@@ -1051,6 +1051,17 @@ const SETTINGS_DEFAULTS = {
 	// a companion whose gear does not fit a skill (a performer's default bow
 	// and its songs) skips it until it is given the right weapon.
 	population_skill_weapon_check: false,
+	// Whether ambient shells pick up the drops of their own kills, the way a
+	// player would, and how (see population-conf.js shellLoot). Off keeps the
+	// historic behaviour: every drop stays on the ground until it expires.
+	population_loot_enable: false,
+	population_loot_rare_pct: 1,
+	population_loot_rare_pickup_pct: 95,
+	population_loot_common_pickup_pct: 70,
+	population_loot_forget_pct: 10,
+	population_loot_timeout_s: 15,
+	population_loot_radius: 9,
+	population_loot_hp_abort_pct: 30,
 	// How many shells one player may recruit into their party at once. The
 	// server enforces this per recruiter (not per map), and rAthena's MAX_PARTY
 	// of 12 leaves a slot for real players, which is why the UI tops out at 11.
