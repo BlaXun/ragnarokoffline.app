@@ -890,6 +890,91 @@ picked in its settings window.
 
 See [`examples/mods/quest-npc`](../examples/mods/quest-npc).
 
+### Knowing what players did: rAthena's logs
+
+A script can react to some things as they happen: `OnPCLoginEvent`,
+`OnPCKillEvent`, `OnNPCKillEvent`, `OnPCDieEvent` and the other event labels
+in `vendor/rathena/doc/script_commands.txt`. Most item movements have
+no event, including someone buying from a vending stall, selling into a buying
+store or trading. rAthena **writes all of those to log tables** in the same
+database, and a script can read them with `query_logsql`.
+
+The stock `conf/log_athena.conf` is what every install runs, and mods cannot
+change it (`conf/` is an [allowlist](#conf--a-few-server-settings)). So you
+can rely on these tables, and not on the others:
+
+| Table | Logged by default? | Holds |
+|---|---|---|
+| `picklog` | **yes, every item, every type** | one row per item gained or lost: `char_id`, `type`, `nameid`, `amount`, `refine`, cards, `map`, `time` |
+| `cashlog` | yes | cash point changes |
+| `atcommandlog` | yes, for groups with `log_commands` | `@` commands |
+| `npclog` | yes | what scripts write with `logmes` |
+| `loginlog` | yes, by the login server | logins and failed logins |
+| `zenylog`, `chatlog`, `mvplog`, `branchlog` | **no**, so they stay empty | |
+
+`picklog.type` is one letter. These are the useful ones, and the full list is
+at the top of `vendor/rathena/conf/log_athena.conf`:
+
+| | |
+|---|---|
+| `V` | vending: the stall owner and the buyer each get a row |
+| `B` | buying store: both sides again |
+| `T` | trade window |
+| `S` | NPC shop buy/sell |
+| `N` | a script gave or took it (quests, `getitem`, `delitem`) |
+| `P` / `M` / `L` | picked up or dropped by a player / dropped by a monster / looted by a monster |
+| `C` | used up (potions, ammunition, skill catalysts) |
+| `R` / `G` / `E` | storage, guild storage, mail |
+
+`amount` is signed. It is positive for the side that gained the item and
+negative for the side that lost it. So a vending sale is a `V` row with
+`-3` on the stall owner and `+3` on the buyer. For `M` and `L` rows,
+`char_id` holds the monster's id instead.
+
+**Read it on a timer and remember where you got to.** `query_logsql` blocks
+the map server while it runs. `picklog` grows with every potion drunk, and only
+`id` and `type` are indexed. The pattern that works is to keep the last `id`
+you handled in a `$` variable. When the variable is unset, start from the
+current maximum rather than the server's whole history. Then read in limited
+batches:
+
+```
+// my-mod/npc/watch-trades.txt
+-	script	MyModTrades	-1,{
+OnInit:
+	if ($mymod_lastlog <= 0) {
+		query_logsql("SELECT COALESCE(MAX(id), 0) FROM picklog", .@max);
+		$mymod_lastlog = .@max;
+	}
+	initnpctimer;
+	end;
+
+OnTimer60000:
+	.@n = query_logsql("SELECT id, char_id, nameid, amount FROM picklog WHERE id > " + $mymod_lastlog + " AND type = 'V' ORDER BY id LIMIT 500", .@id, .@char, .@item, .@amount);
+	for (.@i = 0; .@i < .@n; .@i++) {
+		$mymod_lastlog = .@id[.@i];
+		if (.@amount[.@i] > 0)
+			debugmes "char " + .@char[.@i] + " bought " + .@amount[.@i] + " x " + getitemname(.@item[.@i]);
+	}
+	initnpctimer;
+	end;
+}
+```
+
+The AI characters' trades are logged too, and their `char_id` has no row in
+`char`. To count only real players, `LEFT JOIN` the `char` table on `char_id`
+and skip the rows that found no match.
+[prontera-vendors](../registry/mods/prontera-vendors)'s dynamic market
+(`npc/prontera-vendors-market.txt`) works this way, and is a full example.
+
+Use `query_logsql` for these tables and `query_sql` for the rest. Both reach
+the same database here, but rAthena lets the logs live elsewhere, and the two
+commands are how a script says which it means.
+
+To see what the rows actually look like before writing the query, open
+**Settings → Tools → Database** and pick `picklog`. Then do the thing in game
+and sort by `id`, descending. See [DATABASE.md](DATABASE.md#the-database-tool).
+
 ## lua/ — changing how a skill or item works
 
 `db/` changes a skill's or item's numbers: cast time, cooldown, SP cost,
