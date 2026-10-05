@@ -497,6 +497,13 @@ The other eight population databases — chat lines, names, gear sets, vendor
 placement — are **not** wired this way yet. A mod's copy of those still lands
 in a directory nothing opens.
 
+**How recruited companions fight** is a table a mod can ship as well:
+`db/population_strategy.yml` gives them per-monster, per-job and per-build rules,
+with strategies they switch between.
+[docs/mods/companion-strategies.md](mods/companion-strategies.md) is its
+reference, and [`examples/mods/companion-tactics`](../examples/mods/companion-tactics)
+a working set.
+
 **[docs/mods/ai-characters.md](mods/ai-characters.md)** is the full reference:
 every key, how the headcount is divided between maps, which tables are still
 unreachable, and the two ways this data fails without the server saying

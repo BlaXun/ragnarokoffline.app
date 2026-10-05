@@ -42,6 +42,7 @@
 #include "../../skill.hpp"
 #include "../../status.hpp"
 #include "../../unit.hpp"
+#include "../strategy/population_strategy.hpp" // RAGNAROKMAC (companion strategies)
 
 using namespace rathena;
 
@@ -204,6 +205,9 @@ static bool population_shell_pick_sphere_chain_skill(map_session_data *sd, uint1
 	// unconfigured companion behaves exactly as before.
 	auto pick = [&](uint16 id, uint16 lv) {
 		if (!population_shell_skill_selected(sd, id))
+			return false;
+		// RAGNAROKMAC (companion strategies): Ban: and Rotation: false bind the chain as well.
+		if (!population_strategy_rotation_allows(sd, map_id2bl(sd->pop.target_id), id))
 			return false;
 		if (!skill_isNotOk(id, *sd) && sd->battle_status.sp >= static_cast<uint32>(skill_get_sp(id, lv))) {
 			out_id = id; out_lv = lv; return true;
@@ -1381,6 +1385,9 @@ static void population_shell_pick_attack_skill(map_session_data *sd, uint16 &ski
 		if (!pop_skill_cond_satisfied(sd, sk, target_bl)) {
 			continue;
 		}
+		// RAGNAROKMAC (companion strategies): Ban: and Rotation: false for this monster.
+		if (!population_strategy_rotation_allows(sd, target_bl, sk.skill_id))
+			continue;
 		if (skill_isNotOk(sk.skill_id, *sd)) {
 			continue;
 		}
@@ -1846,6 +1853,10 @@ static void population_shell_combat_process_tick(map_session_data *sd, t_tick cu
 	const bool flag_skill_only  = (sd->pop.flags & PSF::SkillOnly)  != 0;
 	const PopulationRoleType shell_role = static_cast<PopulationRoleType>(sd->pop.role);
 	const int32 pai = battle_config.population_engine_ai;
+
+	// RAGNAROKMAC (companion strategies): a companion's rules go first; one that acts ends the turn.
+	if (population_strategy_turn(sd, current_tick, do_skills, flag_attack_only))
+		return;
 
 	// Party resurrection outranks ordinary role behaviour.  This intentionally
 	// also applies to a priest assigned Tank, Attacker, or None: class capability

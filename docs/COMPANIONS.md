@@ -96,6 +96,24 @@ its Population Engine profile, or `None` when no profile role exists.
 Combat modes and roles are independent: the mode decides *when* the group
 engages, while each role decides *how* that companion behaves once involved.
 
+## Strategies from mods
+
+A mod can give companions a plan for a particular monster, job and build: which
+skills to open with, when to step back, what to say. The table is
+`db/population_strategy.yml`, and
+[docs/mods/companion-strategies.md](mods/companion-strategies.md) describes it.
+Without such a mod, companions fight as described above.
+
+To see what a companion's plan makes it do, type its name and `trace` in party
+chat. Only its owner can do this:
+
+```text
+Seraphina trace
+```
+
+It then tells you each rule it acts on and why a cast failed. Type the same line
+again to stop.
+
 ## Death and resurrection
 
 A defeated companion stays in the party as a corpse while its owner remains on

@@ -153,11 +153,35 @@ listed above.
 | `third-party/population-engine/files/db/population_skill_db.yml` | Configurable skill lists and conditions |
 | `third-party/population-engine/files/db/population_gear_sets.yml` | Configurable equipment sets |
 | `third-party/population-engine/files/db/population_chat.yml` | Ambient chat categories and messages |
+| `third-party/population-engine/files/src/map/population_engine/strategy/` | Companion strategies: `db/population_strategy.yml` (per-monster, per-job and per-build rules, strategies as a state machine, events, `<name> trace`). Self-contained; the engine calls it from thirteen marked places (see below). Reference: [docs/mods/companion-strategies.md](mods/companion-strategies.md) |
+| `third-party/population-engine/files/db/population_strategy.yml` | Companion strategies table; ships empty, mods add to it through `db/import/` |
 
 The Population Engine is vendored as its own files plus patches against pinned
 rAthena. Do not edit `vendor/rathena` as the source of truth. Regenerate or
 update files under `third-party/population-engine`, then prove they apply to a
 clean pin.
+
+### Companion strategies: where the engine calls in
+
+What is still to build, and in which order: [COMPANION_STRATEGY_ROADMAP.md](COMPANION_STRATEGY_ROADMAP.md).
+
+`strategy/population_strategy.{hpp,cpp}` holds the whole feature. The engine
+reaches it from these lines, each marked `RAGNAROKMAC (companion strategies)`:
+
+| File | Line | Why |
+|---|---|---|
+| `population_engine_factory.cpp` | `#include "strategy/population_strategy.cpp"`, **last** | it uses the combat file's internal checks (`pop_skill_weapon_ok`, `pop_skill_state_ok`, `population_shell_resolve_sc_name`), visible only after it in the unity build |
+| `population_engine.cpp` | load, reload, final | beside `population_skill_db()` |
+| `population_engine.cpp` | `population_engine_on_party_chat` | every real player's party line, before the leader check |
+| `population_engine.cpp` | companion loop: `population_strategy_target(...)` around `pop_companion_combat_target` | `Targeting:` |
+| `population_engine.cpp` | `pop_companion_follow_owner`: the leash | a rule holding its ground gets the leash a fight in the owner's sight gets (`AREA_SIZE + 2`), so holding wins over the leash, never over the warps |
+| `population_engine.cpp` | companion loop: the idle stop-walking and `pop_companion_update_formation` | an idle companion's rule-started walk and spot are kept |
+| `population_engine_combat.cpp` | include of the header | |
+| `population_engine_combat.cpp` | top of `population_shell_combat_process_tick`, before party resurrection | the companion's turn |
+| `population_engine_combat.cpp` | rotation loop of `population_shell_pick_attack_skill`, and the sphere chain's `pick` | `Ban:` and `Rotation: false` |
+
+Re-vendoring upstream means re-applying exactly these. Every entry point returns
+at once when no rules are loaded or the shell is not a recruited companion.
 
 ## Invariants that must not regress
 
@@ -181,6 +205,9 @@ clean pin.
     contain parallel `s_population` layouts and must remain synchronised.
 12. Local binaries, Docker images, app payloads, runtime files, GRFs, logs, and
     test archives must never enter Git.
+13. Companion strategies run for recruited companions only, never for ambient
+    shells, and an empty `population_strategy.yml` changes nothing. Their state
+    lives in the strategy module, not in `s_population`.
 
 ## Verification record for PR #128
 
@@ -239,6 +266,12 @@ idempotent application, and a clean Population Engine data validation.
   always consent if the party has room.
 - Behaviour coverage is only as good as each class's generated resources and
   configured skill lists.
+- Shells and companions have no inventory of their own yet: nothing stocks one,
+  the owner cannot see or manage it, and it is lost with the shell. What a
+  companion holds is what the engine hands it (gear, virtual ammunition).
+  Inventories will be added later. Until then companions use no items, switch no
+  gear, and pay no catalysts (see
+  [COMPANION_STRATEGY_ROADMAP.md](COMPANION_STRATEGY_ROADMAP.md#4-items-and-gear-postponed)).
 
 ## Planned fixes and features
 
