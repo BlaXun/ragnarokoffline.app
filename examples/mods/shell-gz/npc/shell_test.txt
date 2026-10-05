@@ -29,7 +29,7 @@ OnWhisperGlobal:
 		.@n = population_shells(.@map$, .@x, .@y, 14, .@gid, 1|2|4);
 		dispbottom "shelltest: " + .@n + " shell(s) within 14 cells, vendors, held and dead included. Kind: 1 ambient, 2 vendor, 3 companion.";
 		for (.@i = 0; .@i < .@n && .@i < 15; .@i++)
-			dispbottom "  " + .@gid[.@i] + "  kind " + population_isshell(.@gid[.@i]) + "  " + rid2name(.@gid[.@i]);
+			dispbottom "  " + .@gid[.@i] + "  kind " + population_is_shell(.@gid[.@i]) + "  " + rid2name(.@gid[.@i]);
 		end;
 	}
 	if (.@cmd$ == "spawn") {
@@ -50,7 +50,7 @@ OnWhisperGlobal:
 		callsub S_Take, .@gid[0];
 		end;
 	}
-	if (.last == 0 || !population_isshell(.last)) {
+	if (.last == 0 || !population_is_shell(.last)) {
 		dispbottom "shelltest: take a shell first (spawn or grab).";
 		end;
 	}
@@ -107,8 +107,8 @@ S_Take:
 	// One at a time: hand the previous one back (0 when it is already gone).
 	if (.last != 0 && .last != .@gid && population_unhold(.last))
 		dispbottom "shelltest: released the previous shell.";
-	population_whisperevent .@gid, strnpcinfo(3) + "::OnShellWhisper";
-	population_lostevent .@gid, strnpcinfo(3) + "::OnShellLost";
+	population_whisper_event .@gid, strnpcinfo(3) + "::OnShellWhisper";
+	population_lost_event .@gid, strnpcinfo(3) + "::OnShellLost";
 	.last = .@gid;
 	dispbottom "shelltest: took " + rid2name(.@gid) + " (" + .@gid + ") for ten minutes.";
 	return;

@@ -20,9 +20,9 @@ const patch = read('third-party/population-engine/patches/0027-shell-control-api
 const doc = read('docs/mods/shell-control.md');
 
 const COMMANDS = [
-	'population_isshell', 'population_shells', 'population_hold', 'population_unhold',
-	'population_spawn', 'population_despawn', 'population_whisperevent', 'population_whisper',
-	'population_lostevent',
+	'population_is_shell', 'population_shells', 'population_hold', 'population_unhold',
+	'population_spawn', 'population_despawn', 'population_whisper_event', 'population_whisper',
+	'population_lost_event',
 ];
 
 const body = (src, start, end) => {
@@ -149,4 +149,34 @@ test('a spawned actor is outside the map quotas, standing and not a shop', () =>
 	assert.match(spawn, /population_engine_shell_close_stall\(sd\);/, 'an actor is not a shop');
 	assert.match(spawn, /if \(pc_issit\(sd\) && pc_setstand\(sd, false\)\)/, 'and arrives standing, so it can walk');
 	assert.match(header, /int32_t population_engine_shell_spawn\(int32_t npc_id,/);
+});
+
+test('the commands name their words apart, like the other population and companion commands', () => {
+	const defs = [...patch.matchAll(/^\+BUILDIN_DEF\((\w+), "/gm)].map(m => m[1]);
+	assert.deepStrictEqual(defs.sort(), [...COMMANDS].sort());
+	// population_vendor_price, companion_hire_jobs: words joined by "_", never run together.
+	for (const name of ['population_isshell', 'population_whisperevent', 'population_lostevent']) {
+		assert.ok(!patch.includes(name) && !doc.includes(name), `${name} is spelled with its words apart`);
+	}
+});
+
+test('a job name population_spawn does not know is refused, not taken as Novice', () => {
+	const spawn = body(patch, '+BUILDIN_FUNC(population_spawn)', '+BUILDIN_FUNC(population_despawn)');
+	// population_engine_job_id_from_name answers 0 for an unknown name, and 0 is Novice.
+	assert.match(spawn, /if \(job == 0 && strcmpi\(script_getstr\(st, 5\), "Novice"\) != 0\) \{/);
+	assert.match(spawn, /Unknown job '%s'/);
+	assert.match(spawn, /script_pushint\(st, 0\);\n\+\t\t\treturn SCRIPT_CMD_SUCCESS;/);
+});
+
+test('population_despawn removes only what the calling NPC may: its own actor or a free ambient shell', () => {
+	const cmd = body(patch, '+BUILDIN_FUNC(population_despawn)', '+BUILDIN_FUNC(population_whisper_event)');
+	assert.match(cmd, /population_engine_shell_despawn_for\(script_getnum\(st, 2\), st->oid, style\)/,
+		'the script command goes through the checked call, with its own NPC id');
+	const fn = body(control, 'bool population_engine_shell_despawn_for(', '\n}\n');
+	assert.match(fn, /if \(npc_id == 0 \|\| !population_engine_is_population_pc\(gid\)\)\s*return false;/);
+	assert.match(fn, /const bool own = sd->pop\.hold\.npc == npc_id;/);
+	// Free and ambient: nobody's actor, not a vendor mid-trade, not a companion.
+	assert.match(fn, /const bool free_ambient = sd->pop\.hold\.npc == 0 && population_engine_shell_kind\(gid\) == POP_SHELL_AMBIENT;/);
+	assert.match(fn, /if \(!own && !free_ambient\)\s*return false;/);
+	assert.match(doc, /never a\s+vendor[\s\S]*?a\s+shell\s+another\s+NPC\s+holds/, 'documented');
 });

@@ -48,7 +48,7 @@ shell has none, so **the engine does that part for a shell you hold**:
   - **through a portal**, the shell notices a moment later, walks into the same
     portal and comes out where you did, a second or two behind you;
   - **any other way out** — a fly wing, a butterfly wing, a Kafra, a Warp
-    Portal — the follow ends where it is, and `population_lostevent` tells
+    Portal — the follow ends where it is, and `population_lost_event` tells
     your script so it can react.
 
   One gap: `pcfollow` takes its first step at once, through rAthena, so a
@@ -63,7 +63,7 @@ are for.
 
 Flags and kinds are plain numbers; there are no named constants for them.
 
-### `population_isshell(<gid>)`
+### `population_is_shell(<gid>)`
 
 `0` not a shell (a real player, or nothing), `1` ambient, `2` vendor (a
 vending stall or buying store), `3` companion (recruited into a player's
@@ -98,7 +98,7 @@ hold ends the engine does not:
 - fight, or fight back when hit
 - wander
 - say ambient chat lines, or reply to someone mentioning its name
-- answer whispers (see `population_whisperevent`)
+- answer whispers (see `population_whisper_event`)
 - warp it back to its own map
 
 Calling it again from the same NPC extends the hold. Returns 1 when held, and
@@ -130,13 +130,17 @@ Makes one shell, for a character that has to be a particular someone: a
 rival, a card hunter, a mentor. `<job>` is an id or a name (`"Wizard"`,
 `"High Priest"`); its gear, stats and skills come from that job's population
 profile, exactly as an ambient spawn's do, so a job with no profile is
-refused.
+refused. So is a name it does not know (`"Wizzard"`), with a warning in the
+map server's log, rather than spawning a Novice.
 
 - `(0, 0)` picks a random cell on the map; a blocked cell moves to a free one
   nearby.
 - `<base level>` 0 keeps the profile's roll. Any other level is clamped to the
   profile's band.
 - `"<name>"` must not belong to anyone online. `""` keeps a generated one.
+  Only characters online are checked: a player who is offline can still have
+  that name, and whispers to it reach whichever of the two is found first once
+  they log in, so pick names no player would.
 - `<sex>` is `SEX_FEMALE`, `SEX_MALE`, or `-1` (the default) to choose. A Bard
   is male whatever you ask.
 - Flag `1` keeps it as an ordinary ambient shell once released, instead of
@@ -149,11 +153,13 @@ map's own headcount. Returns its unit id, or 0.
 ### `population_despawn(<gid>{, <style>})`
 
 Takes a shell out of the world on the next tick: style `0` as a logout (it
-just goes), `1` with the teleport-out effect of a fly or butterfly wing. Any
-shell but a companion, held or not. Returns 1, or 0 when it is not a shell or
-is a companion.
+just goes), `1` with the teleport-out effect of a fly or butterfly wing.
 
-### `population_whisperevent(<gid>, "<npc>::<label>")`
+Only a shell this NPC holds (its own actor), or a free ambient one: never a
+vendor (a player may be trading at its stall), a companion, or a shell another
+NPC holds for its own scene. Returns 1 when the shell goes, 0 otherwise.
+
+### `population_whisper_event(<gid>, "<npc>::<label>")`
 
 While your NPC holds the shell, a whisper to it runs that label instead of a
 canned reply, with the whisperer attached and two variables set:
@@ -170,7 +176,7 @@ whispers at all. Releasing the hold clears it.
 
 The shell whispers `<message>` to the attached player. Any shell, held or not.
 
-### `population_lostevent(<gid>, "<npc>::<label>")`
+### `population_lost_event(<gid>, "<npc>::<label>")`
 
 While your NPC holds the shell, the label runs when its `pcfollow` loses the
 player it follows, with that player attached and two variables set:

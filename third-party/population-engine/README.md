@@ -381,12 +381,12 @@ engine's vendors spawn exactly as upstream's do.
 
 ### Shell control for mods
 
-Nine script commands let a mod's NPC script find shells (`population_isshell`,
+Nine script commands let a mod's NPC script find shells (`population_is_shell`,
 `population_shells`), take one from the AI for a while (`population_hold`,
 `population_unhold`), make or remove one (`population_spawn`,
-`population_despawn`), handle whispers to it (`population_whisperevent`,
+`population_despawn`), handle whispers to it (`population_whisper_event`,
 `population_whisper`), and hear when its follow loses someone
-(`population_lostevent`). Everything else a script does with a shell is stock:
+(`population_lost_event`). Everything else a script does with a shell is stock:
 it is a real character, so `unitwalk`, `unittalk`, `emotion`, `unitattack` and
 `unitskilluseid` already work on it.
 

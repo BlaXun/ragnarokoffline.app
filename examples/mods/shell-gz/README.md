@@ -39,7 +39,7 @@ The full reference is [docs/mods/shell-control.md](../../../docs/mods/shell-cont
 | `spawn#Priest#50#Name` | makes a shell beside you and takes it (level and name optional) |
 | `grab` | takes the nearest free shell |
 | `come` | it walks to you (`unitwalk`) |
-| `follow` / `stop` | it follows you, through portals too, or stops (`pcfollow`). If you fly-wing, butterfly-wing or Kafra away it loses you and whispers why (`population_lostevent`) |
+| `follow` / `stop` | it follows you, through portals too, or stops (`pcfollow`). If you fly-wing, butterfly-wing or Kafra away it loses you and whispers why (`population_lost_event`) |
 | `attack` / `attack#Dummy` | it attacks the monster nearest to it, or the nearest whose name contains the word, walking into range first; says which, how far, and whether the order was accepted (`unitattack`) |
 | `warp` / `warp#prt_fild08#150#200` | it warps beside you, or to that spot (`unitwarp`) |
 | `say#hello` | it talks (`unittalk`) |
@@ -51,7 +51,7 @@ releases the one before: a spawned shell logs out, a grabbed one goes back to
 the AI.
 
 While you hold it, whisper the shell itself: the bench answers through
-`population_whisperevent` and `population_whisper`.
+`population_whisper_event` and `population_whisper`.
 
 `follow`, `attack` and `warp` are stock commands written for players. A
 player's client does part of their work (walking into range, finishing a

@@ -11,7 +11,7 @@
 -	script	shell_gz	-1,{
 OnPCBaseLvUpEvent:
 	// Recruited companions level up too, and they are characters as well.
-	if (population_isshell(getcharid(3)))
+	if (population_is_shell(getcharid(3)))
 		end;
 	getmapxy(.@map$, .@x, .@y);
 	.@n = population_shells(.@map$, .@x, .@y, 9, .@gid);

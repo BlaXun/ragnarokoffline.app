@@ -57,7 +57,12 @@ bool population_engine_shell_unhold(int32_t gid, int32_t npc_id);
 int32_t population_engine_shell_spawn(int32_t npc_id, int16_t m, int16_t x, int16_t y,
 	uint16_t job, int base_level, const char *name, int sex, int flags);
 /// Take a shell out of the world on the next timer tick. Not for companions.
+/// The engine's own call: a hold ending, whoever asked.
 bool population_engine_shell_despawn(int32_t gid, int style);
+/// population_despawn: the same, for NPC `npc_id`, which may remove only a shell
+/// it holds or a free ambient one -- never a vendor (a player may be trading at
+/// its stall) or a shell another NPC holds for its own scene.
+bool population_engine_shell_despawn_for(int32_t gid, int32_t npc_id, int style);
 /// While NPC `npc_id` holds the shell, a whisper to it runs `event` ("<npc>::<label>")
 /// with the whisperer attached, instead of the canned reply. Empty clears it.
 bool population_engine_shell_set_whisper_event(int32_t gid, int32_t npc_id, const char *event);

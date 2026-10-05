@@ -472,6 +472,23 @@ bool population_engine_shell_despawn(int32_t gid, int style)
 	return true;
 }
 
+bool population_engine_shell_despawn_for(int32_t gid, int32_t npc_id, int style)
+{
+	if (npc_id == 0 || !population_engine_is_population_pc(gid))
+		return false;
+	const map_session_data *sd = map_id2sd(gid);
+	if (sd == nullptr)
+		return false;
+	// Its own actor, held or lapsed but not yet swept: this NPC's to remove.
+	const bool own = sd->pop.hold.npc == npc_id;
+	// Anything else only when nobody holds it and it is an ordinary ambient
+	// shell: not a vendor mid-trade, not a companion, not another scene's actor.
+	const bool free_ambient = sd->pop.hold.npc == 0 && population_engine_shell_kind(gid) == POP_SHELL_AMBIENT;
+	if (!own && !free_ambient)
+		return false;
+	return population_engine_shell_despawn(gid, style);
+}
+
 bool population_engine_shell_set_whisper_event(int32_t gid, int32_t npc_id, const char *event)
 {
 	if (!population_engine_is_population_pc(gid))

@@ -1,9 +1,9 @@
 From 0000000000000000000000000000000000000027
 Subject: [PATCH] Shell control API: script commands for mods that stage scenes with shells
 
-population_isshell, population_shells, population_hold, population_unhold,
-population_spawn, population_despawn, population_whisperevent,
-population_whisper and population_lostevent. They let a mod's NPC script find
+population_is_shell, population_shells, population_hold, population_unhold,
+population_spawn, population_despawn, population_whisper_event,
+population_whisper and population_lost_event. They let a mod's NPC script find
 shells, take one away from the engine's AI for a while, make one and remove
 one; stock unit* commands do the rest. Only rAthena's custom-command files
 are touched; the engine side is
@@ -14,7 +14,7 @@ diff --git a/src/custom/script.inc b/src/custom/script.inc
 index 3bc5a2c0a..7cc565451 100644
 --- a/src/custom/script.inc
 +++ b/src/custom/script.inc
-@@ -351,3 +351,168 @@ BUILDIN_FUNC(companion_hire)
+@@ -351,3 +351,179 @@ BUILDIN_FUNC(companion_hire)
  	script_pushint(st, made != 0 ? 1 : 0);
  	return SCRIPT_CMD_SUCCESS;
  }
@@ -30,7 +30,7 @@ index 3bc5a2c0a..7cc565451 100644
 + * unitattack, sit/stand rid2name(<gid>). What these add is finding shells,
 + * taking one away from the engine's AI, making one and removing one.
 + *
-+ * population_isshell(<gid>)
++ * population_is_shell(<gid>)
 + *   0 not a shell, 1 ambient, 2 vendor (stall or buying store), 3 companion.
 + * population_shells("<map>", <x>, <y>, <range>, <array>{, <flags>})
 + *   Fills <array> with the unit ids of the shells within <range> cells of
@@ -58,15 +58,16 @@ index 3bc5a2c0a..7cc565451 100644
 + *   toward the population limit and not toward the map's quota.
 + * population_despawn(<gid>{, <style>})
 + *   Takes a shell out of the world on the next tick: style 0 as a logout,
-+ *   1 with the teleport-out effect of a fly or butterfly wing. Not for
-+ *   companions.
-+ * population_whisperevent(<gid>, "<npc>::<label>")
++ *   1 with the teleport-out effect of a fly or butterfly wing. Only a shell
++ *   this NPC holds, or a free ambient one: never a vendor, a companion or a
++ *   shell another NPC holds. 1 when it goes, 0 otherwise.
++ * population_whisper_event(<gid>, "<npc>::<label>")
 + *   While this NPC holds the shell, a whisper to it runs the label with the
 + *   whisperer attached, @shell_gid and @shell_msg$ set. "" turns it off.
 + *   Without one, a held shell does not answer whispers at all.
 + * population_whisper(<gid>, "<message>")
 + *   The shell whispers <message> to the attached player.
-+ * population_lostevent(<gid>, "<npc>::<label>")
++ * population_lost_event(<gid>, "<npc>::<label>")
 + *   While this NPC holds the shell, the label runs when it loses whoever it
 + *   follows (pcfollow), with that player attached, @shell_gid and @shell_lost
 + *   set: 1 teleported away on the map (fly wing), 2 left the map without a
@@ -74,7 +75,7 @@ index 3bc5a2c0a..7cc565451 100644
 + *   in time, 4 went somewhere it cannot walk to. Through a portal it simply
 + *   follows: it walks into the same portal a moment later. "" turns it off.
 + *------------------------------------------*/
-+BUILDIN_FUNC(population_isshell)
++BUILDIN_FUNC(population_is_shell)
 +{
 +	script_pushint(st, population_engine_shell_kind(script_getnum(st, 2)));
 +	return SCRIPT_CMD_SUCCESS;
@@ -134,9 +135,19 @@ index 3bc5a2c0a..7cc565451 100644
 +		script_pushint(st, 0);
 +		return SCRIPT_CMD_SUCCESS;
 +	}
-+	const uint16 job = script_isstring(st, 5)
-+		? population_engine_job_id_from_name(script_getstr(st, 5))
-+		: static_cast<uint16>(script_getnum(st, 5));
++	uint16 job;
++	if (script_isstring(st, 5)) {
++		// An unknown name comes back as 0, which is a real job (Novice): a typo
++		// must not quietly spawn one.
++		job = population_engine_job_id_from_name(script_getstr(st, 5));
++		if (job == 0 && strcmpi(script_getstr(st, 5), "Novice") != 0) {
++			ShowWarning("buildin_population_spawn: Unknown job '%s'.\n", script_getstr(st, 5));
++			script_pushint(st, 0);
++			return SCRIPT_CMD_SUCCESS;
++		}
++	} else {
++		job = static_cast<uint16>(script_getnum(st, 5));
++	}
 +	const int lv = script_hasdata(st, 6) ? script_getnum(st, 6) : 0;
 +	const char *name = script_hasdata(st, 7) ? script_getstr(st, 7) : "";
 +	const int sex = script_hasdata(st, 8) ? script_getnum(st, 8) : -1;
@@ -149,17 +160,17 @@ index 3bc5a2c0a..7cc565451 100644
 +BUILDIN_FUNC(population_despawn)
 +{
 +	const int style = script_hasdata(st, 3) ? script_getnum(st, 3) : POP_DESPAWN_LOGOUT;
-+	script_pushint(st, population_engine_shell_despawn(script_getnum(st, 2), style) ? 1 : 0);
++	script_pushint(st, population_engine_shell_despawn_for(script_getnum(st, 2), st->oid, style) ? 1 : 0);
 +	return SCRIPT_CMD_SUCCESS;
 +}
 +
-+BUILDIN_FUNC(population_whisperevent)
++BUILDIN_FUNC(population_whisper_event)
 +{
 +	script_pushint(st, population_engine_shell_set_whisper_event(script_getnum(st, 2), st->oid, script_getstr(st, 3)) ? 1 : 0);
 +	return SCRIPT_CMD_SUCCESS;
 +}
 +
-+BUILDIN_FUNC(population_lostevent)
++BUILDIN_FUNC(population_lost_event)
 +{
 +	script_pushint(st, population_engine_shell_set_lost_event(script_getnum(st, 2), st->oid, script_getstr(st, 3)) ? 1 : 0);
 +	return SCRIPT_CMD_SUCCESS;
@@ -191,12 +202,12 @@ index 0e698134b..bf7343099 100644
  BUILDIN_DEF(companion_hire_jobs, ""),
  BUILDIN_DEF(companion_hire_fee, ""),
  BUILDIN_DEF(companion_hire, "s"),
-+BUILDIN_DEF(population_isshell, "i"),
++BUILDIN_DEF(population_is_shell, "i"),
 +BUILDIN_DEF(population_shells, "siiir?"),
 +BUILDIN_DEF(population_hold, "i?"),
 +BUILDIN_DEF(population_unhold, "i"),
 +BUILDIN_DEF(population_spawn, "siiv????"),
 +BUILDIN_DEF(population_despawn, "i?"),
-+BUILDIN_DEF(population_whisperevent, "is"),
++BUILDIN_DEF(population_whisper_event, "is"),
 +BUILDIN_DEF(population_whisper, "is"),
-+BUILDIN_DEF(population_lostevent, "is"),
++BUILDIN_DEF(population_lost_event, "is"),
