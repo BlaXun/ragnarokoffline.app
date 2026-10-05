@@ -2337,7 +2337,8 @@ static const char *retreat(Turn &t, const Rule &rule, const RuleState &rs)
 /// KeepDistance: nullptr when already far enough (the rule passes and the next one runs),
 /// "" when it set off, or why it could not. Goes to the nearest open cell at least `keep`
 /// cells from the monster, preferring the cells closest to where it stands.
-static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, block_list *about, bool &far_enough)
+static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, block_list *about, block_list *target,
+	bool &far_enough)
 {
 	map_session_data *sd = t.sd;
 	far_enough = false;
@@ -2345,11 +2346,12 @@ static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, blo
 	// stunned shell was walked away. Players and monsters are checked before it; so are rules.
 	if (!unit_can_move(sd))
 		return nullptr;
-	// From an event's caster, else the rule's own monster (Target: { Enemy: boss } keeps a healer
-	// away from the boss even with no target of its own), else the current target.
+	// From an event's caster; else the rule's own pick (Target: { Enemy: boss } keeps a healer
+	// away from the boss, Target: { Ally: attacked } keeps it within reach of whoever is hit);
+	// else the current target.
 	block_list *from = same_map_bl(sd, rs.source);
 	if (from == nullptr)
-		from = about;
+		from = rule.sel.kind != Selector::Kind::None ? target : about;
 	const int now_d = from != nullptr ? distance_bl(sd, from) : 0;
 	const bool too_far = from != nullptr && rule.keep_max > 0 && now_d > rule.keep_max;
 	if (from == nullptr || (now_d >= rule.keep_distance && !too_far)) {
@@ -2700,7 +2702,7 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		acted = true;
 	} else if (rule.keep_distance > 0) {
 		bool far_enough = false;
-		const char *why = keep_away(t, rule, rs, about, far_enough);
+		const char *why = keep_away(t, rule, rs, about, target, far_enough);
 		if (far_enough || why == nullptr)
 			return Outcome::Skipped;
 		if (*why != '\0') {

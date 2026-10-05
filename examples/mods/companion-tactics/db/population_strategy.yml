@@ -464,7 +464,7 @@ Body:
             Priority: 90
             Cast: AL_HEAL
             Target: { Ally: lowest_hp }
-            When: ally_hp_pct_lt55
+            When: [ally_hp_pct_lt55, self_sp_pct_ge10]
           # New slaves: AoE them on the boss as they arrive. Fire hurts earth Sandmen most.
           - Name: meteor_the_slaves
             Priority: 85
@@ -495,7 +495,7 @@ Body:
             Priority: 40
             Cast: PR_LEXAETERNA
             Target: { Enemy: boss }
-            When: not_enemy_aeterna
+            When: [not_enemy_aeterna, self_sp_pct_ge20]
             OnePerParty: true
         Strategies:
           - Name: opening             # above 80 %
@@ -504,7 +504,7 @@ Body:
                 Priority: 60
                 Cast: PR_KYRIE
                 Target: { Ally: lowest_hp }
-                When: [ally_hp_pct_lt85, not_ally_kyrie]
+                When: [ally_hp_pct_lt85, not_ally_kyrie, self_sp_pct_ge20]
               - Name: to_stone
                 Target: { Enemy: boss }
                 When: enemy_hp_pct_lt80
@@ -521,7 +521,7 @@ Body:
                 Priority: 60
                 Cast: PR_KYRIE
                 Target: { Ally: lowest_hp }
-                When: [ally_hp_pct_lt85, not_ally_kyrie]
+                When: [ally_hp_pct_lt85, not_ally_kyrie, self_sp_pct_ge20]
               - Name: to_last
                 Target: { Enemy: boss }
                 When: enemy_hp_pct_lt30
@@ -538,12 +538,12 @@ Body:
                 Priority: 65
                 Cast: HP_ASSUMPTIO
                 Target: { Ally: lowest_hp }
-                When: not_ally_assumptio
+                When: [not_ally_assumptio, self_sp_pct_ge20]
               - Name: kyrie_the_hurt
                 Priority: 60
                 Cast: PR_KYRIE
                 Target: { Ally: lowest_hp }
-                When: not_ally_kyrie
+                When: [not_ally_kyrie, self_sp_pct_ge20]
 
           - Name: fallback            # no healer: stay with the owner, fight nothing
             Rules:
@@ -562,40 +562,67 @@ Body:
       # so besides the shared rules above this is all they cast; between casts they hit.
       - Job: Priest
         Rules:
-          # Whoever the monsters are on (Phreeoni counts most) comes first.
+          # Someone died: the engine's own Resurrection comes before every rule, but it
+          # reaches 9 cells and never walks. So walk to the body while it lies further away.
+          - Name: go_to_the_fallen
+            Priority: 103
+            On: { Event: party_member_died, Within: 30000 }
+            Target: event
+            When: ally_distance_gt8
+            MoveTo: event
+          # Whoever the monsters are on (Phreeoni counts most) comes first. Heals stop at
+          # 10 % SP and everything else at 20 %: Resurrection needs 60.
           - Name: heal_attacked
             Priority: 92
             Cast: AL_HEAL
             Target: { Ally: attacked }
-            When: ally_hp_pct_lt80
-          - Name: wall_attacked        # stops Phreeoni's melee hits
+            When: [ally_hp_pct_lt80, self_sp_pct_ge10]
+          # Stops Phreeoni's melee hits. Its effect lasts only while the member stands on
+          # the wall, and they move: so not where a party wall already stands, and not
+          # more often than every 6 s.
+          - Name: wall_attacked
             Priority: 88
             Cast: MG_SAFETYWALL
             Target: { Ally: attacked }
-            When: not_ally_safetywall
+            When: [not_ally_safetywall, self_sp_pct_ge20]
+            Field: { Skill: MG_SAFETYWALL, Owner: party, At: target, Range: 0, Below: 1 }
+            Cooldown: 6000
           - Name: kyrie_attacked
             Priority: 87
             Cast: PR_KYRIE
             Target: { Ally: attacked }
-            When: not_ally_kyrie
-          - Name: stay_back            # out of its reach, within Heal's (9 cells)
+            When: [not_ally_kyrie, self_sp_pct_ge20]
+          # Where to stand: out of Phreeoni's melee, and within Heal's reach (9 cells) of
+          # whoever is being hit -- or, with nobody hit, of the nearest member.
+          - Name: stay_back
             Priority: 86
             Target: { Enemy: boss, Range: 14 }
-            KeepDistance: { Min: 6, Max: 8 }
+            KeepDistance: 5
+          - Name: stay_near_the_hit
+            Priority: 85
+            Target: { Ally: attacked, NotSelf: true, Range: 14 }
+            KeepDistance: { Min: 1, Max: 7 }
+          - Name: stay_with_the_party
+            Priority: 84
+            Target: { Ally: nearest, NotSelf: true, Range: 14 }
+            KeepDistance: { Min: 1, Max: 7 }
           # Buffs. Its Hold below ends every turn, so the engine's own buffing never
           # comes round: what it should keep up is named here.
           - Name: blessing
             Priority: 50
             Cast: AL_BLESSING
             Target: { Ally: missing, Status: SC_BLESSING }
+            When: self_sp_pct_ge20
           - Name: increase_agi
             Priority: 49
             Cast: AL_INCAGI
             Target: { Ally: missing, Status: SC_INCREASEAGI }
+            When: self_sp_pct_ge20
           - Name: impositio
             Priority: 48
             Cast: PR_IMPOSITIO
             Target: { Ally: missing, Status: SC_IMPOSITIO, Role: attacker }
+            When: self_sp_pct_ge20
           - Name: magnificat
             Priority: 47
             When: [self_sp_pct_lt50, not_self_magnificat]
@@ -609,10 +636,19 @@ Body:
             Priority: 86
             Target: { Enemy: boss, Range: 14 }
             KeepDistance: { Min: 6, Max: 8 }
-          - Name: fire_bolt            # the slaves are earth: fire hurts them most
+          # At what is within Fire Bolt's reach (9 cells), not at whatever its target is:
+          # a selector only looks within the skill's range. Phreeoni first, else the
+          # nearest slave (earth: fire hurts them most).
+          - Name: fire_bolt_boss
+            Priority: 31
+            When: self_sp_pct_ge25
+            Cast: MG_FIREBOLT
+            Target: { Enemy: boss }
+          - Name: fire_bolt
             Priority: 30
             When: self_sp_pct_ge25
             Cast: MG_FIREBOLT
+            Target: { Enemy: nearest }
           - Name: no_melee
             Priority: 1
             Hold: true
