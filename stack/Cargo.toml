@@ -15,6 +15,11 @@ description = "Bring the Ragnarok Offline server stack up or down inside nebula'
 name = "ragnarok-stack"
 path = "src/main.rs"
 
+# Tests run the app's own SHA-256, PBKDF2 and zlib, which are many times
+# slower unoptimised. Level 1 costs a few seconds of compile and saves more.
+[profile.test]
+opt-level = 1
+
 [profile.release]
 opt-level = "z"
 lto = true
