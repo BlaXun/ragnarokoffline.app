@@ -12,12 +12,21 @@ use std::path::{Path, PathBuf};
 const ERROR: &str = "Managed service credentials are missing or damaged. Preserve the credential directory and database backup; restore them together before starting.";
 pub const CONTAINER_DIR: &str = "/run/ragnarok-private";
 
+/// The SQL login mods' scripts use (`query_sql`, `query_logsql`): SELECT only,
+/// on every table but `login`. See `crate::cmds::grant_mod_reader`.
+pub const MOD_READER: &str = "ragnarok_mods";
+/// Its password, beside the journal rather than in it: the journal is immutable,
+/// and installs from before the mod reader get one on their next start.
+const MOD_READER_FILE: &str = "mod-reader.secret";
+
 pub struct Credentials {
     pub directory: PathBuf,
     pub root: String,
     pub database: String,
     pub interserver: String,
     pub ready: bool,
+    /// Empty until `ensure_mod_reader` makes one.
+    pub mod_reader: String,
 }
 
 pub fn era(cfg: &Config) -> &'static str {
@@ -83,7 +92,9 @@ pub fn load(state: &Path, era: &str) -> Result<Option<Credentials>, String> {
         database: hex(value.str("database"), 64)?,
         interserver: token(value.str("interserver"))?,
         ready,
-    }))
+        mod_reader: String::new(),
+    }
+    .with_mod_reader()?))
 }
 
 pub fn prepare(cfg: &Config) -> Result<Credentials, String> {
@@ -122,6 +133,7 @@ pub fn prepare(cfg: &Config) -> Result<Credentials, String> {
         database,
         interserver,
         ready: false,
+        mod_reader: String::new(),
     };
     credentials.write_files()?;
     fs::rename(&staging, &dir).map_err(|_| {
@@ -164,6 +176,25 @@ impl Credentials {
         Ok(())
     }
 
+    fn with_mod_reader(mut self) -> Result<Self, String> {
+        let path = self.directory.join(MOD_READER_FILE);
+        if fs::symlink_metadata(&path).is_ok() {
+            self.mod_reader = hex(Some(private_fs::read(&path, 128)?.trim()), 64)?;
+        }
+        Ok(self)
+    }
+
+    /// The mod reader's password, made on first use. Its own file, so it can be
+    /// added to a journal that is already published and ready.
+    pub fn ensure_mod_reader(&mut self) -> Result<(), String> {
+        if self.mod_reader.is_empty() {
+            let password = private_fs::random_hex(32)?;
+            private_fs::create(&self.directory.join(MOD_READER_FILE), password.as_bytes())?;
+            self.mod_reader = password;
+        }
+        Ok(())
+    }
+
     pub fn mark_ready(&self) -> Result<(), String> {
         self.file("ready", "v1\n")
     }
@@ -179,6 +210,14 @@ impl Credentials {
         ]
         .iter()
         .map(|prefix| format!("{prefix}_pw: {}\n", self.database))
+        .chain((!self.mod_reader.is_empty()).then(|| {
+            // Scripts' SQL (mods' query_sql / query_logsql) logs in as the
+            // read-only mod reader; the servers keep their own login.
+            format!(
+                "map_query_server_id: {MOD_READER}\nmap_query_server_pw: {pw}\nlog_query_db_id: {MOD_READER}\nlog_query_db_pw: {pw}\n",
+                pw = self.mod_reader
+            )
+        }))
         .collect()
     }
 }
@@ -207,6 +246,22 @@ mod tests {
         credentials.mark_ready().unwrap();
         assert!(load(&state, "renewal").unwrap().unwrap().ready);
         assert_eq!(credentials.inter_config().lines().count(), 6);
+        // The mod reader: added to a ready journal, kept across loads, and
+        // handed to script SQL only.
+        let mut credentials = load(&state, "renewal").unwrap().unwrap();
+        assert!(credentials.mod_reader.is_empty());
+        credentials.ensure_mod_reader().unwrap();
+        let reader = credentials.mod_reader.clone();
+        assert_eq!(reader.len(), 64);
+        let config = credentials.inter_config();
+        assert_eq!(config.lines().count(), 10);
+        assert!(config.contains(&format!("map_query_server_id: {MOD_READER}\nmap_query_server_pw: {reader}\n")));
+        assert!(config.contains(&format!("log_query_db_id: {MOD_READER}\nlog_query_db_pw: {reader}\n")));
+        assert!(config.contains(&format!("map_server_pw: {}\n", credentials.database)));
+        let mut again = load(&state, "renewal").unwrap().unwrap();
+        assert_eq!(again.mod_reader, reader);
+        again.ensure_mod_reader().unwrap();
+        assert_eq!(again.mod_reader, reader, "an existing password is never replaced");
         fs::write(dir.join("root.cnf"), "damaged").unwrap();
         assert!(credentials.write_files().is_err());
         fs::remove_dir_all(state).unwrap();

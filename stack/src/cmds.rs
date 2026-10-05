@@ -1561,6 +1561,54 @@ fn audit_service_accounts(dk: &Docker, legacy: bool) -> Result<(), String> {
     Ok(())
 }
 
+/// Tables the mod reader never sees: `login` holds every account's password
+/// hash, e-mail and web token.
+const MOD_READER_HIDDEN: [&str; 1] = ["login"];
+
+/// Statements that create the mod reader (or reset its password to the one on
+/// disk) and take back whatever it was granted before.
+fn mod_reader_setup_sql(password: &str) -> String {
+    let user = format!("'{}'@'%'", crate::service_credentials::MOD_READER);
+    format!(
+        "CREATE USER IF NOT EXISTS {user} IDENTIFIED BY '{password}'; \
+         ALTER USER {user} IDENTIFIED BY '{password}'; \
+         REVOKE ALL PRIVILEGES, GRANT OPTION FROM {user};"
+    )
+}
+
+/// One `GRANT SELECT` per table in `tables` (one name per line, as
+/// information_schema lists them), skipping the hidden ones and any name that
+/// isn't a plain identifier. Batched so a large schema stays under the SQL
+/// input limit.
+fn mod_reader_grant_sql(tables: &str) -> Vec<String> {
+    let user = format!("'{}'@'%'", crate::service_credentials::MOD_READER);
+    let grants: Vec<String> = tables
+        .lines()
+        .map(str::trim)
+        .filter(|t| !t.is_empty() && t.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_'))
+        .filter(|t| !MOD_READER_HIDDEN.contains(t))
+        .map(|t| format!("GRANT SELECT ON `ragnarok`.`{t}` TO {user};"))
+        .collect();
+    grants.chunks(100).map(|c| c.join(" ")).collect()
+}
+
+/// The login mods' scripts query as (rathena's map_query_server_id and
+/// log_query_db_id): SELECT on every table but the hidden ones, and nothing
+/// else -- no writes, no DDL, no FILE. Redone on every start, so tables added
+/// since the last one are readable and the grants never drift.
+fn grant_mod_reader(dk: &Docker, credentials: &crate::service_credentials::Credentials) -> Result<(), String> {
+    dk.root_sql(&mod_reader_setup_sql(&credentials.mod_reader), false)
+        .map_err(|_| "could not create the read-only login")?;
+    let tables = dk.root_sql(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE';",
+        false,
+    )?;
+    for batch in mod_reader_grant_sql(&tables) {
+        dk.root_sql(&batch, false).map_err(|_| "could not grant it read access")?;
+    }
+    Ok(())
+}
+
 fn migrate_service_credentials(dk: &Docker, credentials: &crate::service_credentials::Credentials) -> Result<(), String> {
     // Pending journals may be retried after any individual ALTER succeeds.
     // Ready journals never fall back to the published legacy root password.
@@ -1621,7 +1669,10 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
         println!("{notice}");
     }
     let lan = scope.lan();
-    let credentials = crate::service_credentials::load(&cfg.state, crate::service_credentials::era(cfg))?;
+    let mut credentials = crate::service_credentials::load(&cfg.state, crate::service_credentials::era(cfg))?;
+    if let Some(credentials) = credentials.as_mut() {
+        credentials.ensure_mod_reader()?;
+    }
     let conf = cfg.state.join("conf");
     for d in ["conf", "sql", "backups"] {
         fs::create_dir_all(cfg.state.join(d)).map_err(|e| format!("creating {d}: {e}"))?;
@@ -1713,6 +1764,14 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     phase(cfg, "Starting the database…");
     if let Some(credentials) = &credentials { migrate_service_credentials(dk, credentials)?; }
     wait_for_db(dk)?;
+    if let Some(credentials) = credentials.as_mut() {
+        // Never a reason not to start: without the reader, scripts' SQL keeps
+        // the map server's own login, as before this existed, and the log says so.
+        if let Err(error) = grant_mod_reader(dk, credentials) {
+            eprintln!("warning: mods' database access is not read-only this time: {error}");
+            credentials.mod_reader.clear();
+        }
+    }
     // The login server turns plain-text passwords into salted hashes the
     // first time it starts on a world from before 1.4.0, and that can't be
     // undone: an earlier release can no longer log those accounts in. Keep a
@@ -3115,5 +3174,31 @@ mod tests {
         assert_eq!(sql.matches("ALTER TABLE").count(), 1, "one ALTER, not one call per column");
         assert_eq!(sql.matches("ADD COLUMN IF NOT EXISTS").count(), COMPANION_COLUMNS.len());
         assert!(!sql.contains("REPLACE") && !sql.contains("DROP"), "only new objects, nothing one-way");
+    }
+
+    #[test]
+    fn the_mod_reader_reads_every_table_but_login_and_nothing_more() {
+        let setup = mod_reader_setup_sql(&"a".repeat(64));
+        assert!(setup.contains("CREATE USER IF NOT EXISTS 'ragnarok_mods'@'%'"));
+        assert!(setup.contains("ALTER USER 'ragnarok_mods'@'%' IDENTIFIED BY"), "an existing login gets the password on disk");
+        assert!(setup.contains("REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'ragnarok_mods'@'%'"), "grants are rebuilt, never accumulated");
+        assert!(!setup.contains("GRANT ALL") && !setup.contains("WITH GRANT OPTION"));
+
+        let tables = "char\nlogin\npicklog\nmapreg\n\nweird`name\nbad name\n";
+        let batches = mod_reader_grant_sql(tables);
+        assert_eq!(batches.len(), 1);
+        let sql = &batches[0];
+        for table in ["char", "picklog", "mapreg"] {
+            assert!(sql.contains(&format!("GRANT SELECT ON `ragnarok`.`{table}` TO 'ragnarok_mods'@'%';")), "{table}");
+        }
+        assert!(!sql.contains("`login`"), "account passwords stay hidden");
+        assert!(!sql.contains("weird") && !sql.contains("bad name"), "only plain identifiers");
+        assert_eq!(sql.matches("GRANT ").count(), 3);
+        assert!(!sql.contains("INSERT") && !sql.contains("UPDATE") && !sql.contains("ALL"));
+
+        let many: String = (0..250).map(|i| format!("t{i}\n")).collect();
+        let batches = mod_reader_grant_sql(&many);
+        assert_eq!(batches.len(), 3, "batched under the SQL input limit");
+        assert!(batches.iter().all(|b| b.len() < crate::docker::SQL_INPUT_LIMIT));
     }
 }
