@@ -188,3 +188,23 @@ test('the agent guide documents every command it names', async () => {
 		assert.ok(known.has(`${m[1]}.${m[2]}`), `AGENTS.md names ${m[1]}.${m[2]}, which is not a command`);
 	}
 });
+
+test('the client\'s maps are read again when the asset server was not answering the first time', async () => {
+	const state = tmp();
+	let up = false;
+	const server = http.createServer((req, res) => {
+		if (!up) { res.statusCode = 503; res.end('starting'); return; }
+		if (req.method === 'POST' && req.url === '/search') { res.end('data\\prontera.rsw\ndata\\payon.rsw'); return; }
+		res.statusCode = 404; res.end('no');
+	});
+	await new Promise(r => server.listen(0, '127.0.0.1', r));
+	try {
+		const b = await bridgeFor(state, { base: `http://127.0.0.1:${server.address().port}` });
+		const maps = async () => JSON.parse(Buffer.from((await b.handle({ method: 'GET', path: 'api/maps', query: new URLSearchParams(), body: null })).body).toString());
+		assert.deepEqual(await maps(), []);
+		up = true;
+		assert.deepEqual((await maps()).map(m => m.map), ['payon', 'prontera']);
+	} finally {
+		server.close();
+	}
+});

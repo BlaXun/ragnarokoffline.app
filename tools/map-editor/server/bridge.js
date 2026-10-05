@@ -113,12 +113,22 @@ export function createBridge(host) {
 		return assetFromServer(rel);
 	}
 
-	async function search(filter) {
-		let names = [];
+	// The asset server's file names matching `filter`, or null when it did not
+	// answer (not started yet, restarting): not the same as "no such files",
+	// so a table built from it is not kept.
+	async function serverSearch(filter) {
 		try {
 			const res = await host.fetch(`${host.assetBase()}/search`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ filter }) });
-			if (res.ok) names = (await res.text()).split('\n').filter(Boolean);
-		} catch { /* no asset server: only the mod's own files */ }
+			if (res.ok) return (await res.text()).split('\n').filter(Boolean);
+			host.log(`map editor: the asset server's search answered ${res.status}`);
+		} catch (e) {
+			host.log(`map editor: the asset server's search failed: ${e.message}`);
+		}
+		return null;
+	}
+
+	async function search(filter) {
+		const names = (await serverSearch(filter)) || [];
 		if (openMod) {
 			const re = new RegExp(filter, 'i');
 			const root = modDir(openMod);
@@ -218,13 +228,14 @@ export function createBridge(host) {
 
 	async function maps() {
 		if (cache.has('maps')) return cache.get('maps');
-		const names = (await search('^data\\\\[^\\\\]+\\.rsw$')).map(n => n.replace(/^data\\/i, '').replace(/\.rsw$/i, '').toLowerCase());
+		const found = await serverSearch('^data\\\\[^\\\\]+\\.rsw$');
+		const names = (found || []).map(n => n.replace(/^data\\/i, '').replace(/\.rsw$/i, '').toLowerCase());
 		const table = await clientText('data/mapnametable.txt');
 		const display = {};
 		for (const m of table.matchAll(/^([^#\r\n]+?)\.rsw#([^#\r\n]*)#/gim)) display[m[1].toLowerCase()] = m[2];
 		const mods = listProjects().flatMap(p => p.maps.map(map => ({ map, mod: p.mod })));
 		const out = [...new Set([...names, ...mods.map(m => m.map)])].sort().map(map => ({ map, name: display[map] || '', mod: (mods.find(m => m.map === map) || {}).mod || null }));
-		cache.set('maps', out);
+		if (found && found.length) cache.set('maps', out);
 		return out;
 	}
 
@@ -330,12 +341,13 @@ export function createBridge(host) {
 			if ((n > 44 && n < 1000) || n >= 10000) if (!byName.has(name)) byName.set(name, n);
 		}
 		// Sprites in data/sprite/npc the table does not name (mods', newer clients').
-		for (const f of await search('^data\\\\sprite\\\\npc\\\\[^\\\\]+\\.spr$')) {
+		const found = await search('^data\\\\sprite\\\\npc\\\\[^\\\\]+\\.spr$');
+		for (const f of found) {
 			const name = f.replace(/^.*\\/, '').replace(/\.spr$/i, '');
 			if (![...byName.keys()].some(k => k.toLowerCase() === name.toLowerCase())) byName.set(name.toUpperCase(), null);
 		}
 		const out = [...byName].map(([name, id]) => ({ name, id })).sort((a, b) => a.name.localeCompare(b.name));
-		cache.set('npcs', out);
+		if (found.length) cache.set('npcs', out);
 		return out;
 	}
 
