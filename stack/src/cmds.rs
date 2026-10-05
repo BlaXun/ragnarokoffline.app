@@ -1596,15 +1596,15 @@ fn mod_reader_grant_sql(tables: &str) -> Vec<String> {
 /// log_query_db_id): SELECT on every table but the hidden ones, and nothing
 /// else -- no writes, no DDL, no FILE. Redone on every start, so tables added
 /// since the last one are readable and the grants never drift.
-fn grant_mod_reader(dk: &Docker, credentials: &crate::service_credentials::Credentials) -> Result<(), String> {
-    dk.root_sql(&mod_reader_setup_sql(&credentials.mod_reader), false)
+fn grant_mod_reader(dk: &Docker, password: &str, legacy_root: bool) -> Result<(), String> {
+    dk.root_sql(&mod_reader_setup_sql(password), legacy_root)
         .map_err(|_| "could not create the read-only login")?;
     let tables = dk.root_sql(
         "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE';",
-        false,
+        legacy_root,
     )?;
     for batch in mod_reader_grant_sql(&tables) {
-        dk.root_sql(&batch, false).map_err(|_| "could not grant it read access")?;
+        dk.root_sql(&batch, legacy_root).map_err(|_| "could not grant it read access")?;
     }
     Ok(())
 }
@@ -1669,10 +1669,12 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
         println!("{notice}");
     }
     let lan = scope.lan();
-    let mut credentials = crate::service_credentials::load(&cfg.state, crate::service_credentials::era(cfg))?;
-    if let Some(credentials) = credentials.as_mut() {
-        credentials.ensure_mod_reader()?;
-    }
+    let credentials = crate::service_credentials::load(&cfg.state, crate::service_credentials::era(cfg))?;
+    // Every install's mods query as the read-only mod reader, managed
+    // credentials or not. A password that can't be made is logged, not fatal.
+    let mut mod_reader = crate::service_credentials::mod_reader_password(&cfg.state, crate::service_credentials::era(cfg))
+        .map_err(|error| eprintln!("warning: mods' database access is not read-only this time: {error}"))
+        .ok();
     let conf = cfg.state.join("conf");
     for d in ["conf", "sql", "backups"] {
         fs::create_dir_all(cfg.state.join(d)).map_err(|e| format!("creating {d}: {e}"))?;
@@ -1764,12 +1766,17 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     phase(cfg, "Starting the database…");
     if let Some(credentials) = &credentials { migrate_service_credentials(dk, credentials)?; }
     wait_for_db(dk)?;
-    if let Some(credentials) = credentials.as_mut() {
-        // Never a reason not to start: without the reader, scripts' SQL keeps
-        // the map server's own login, as before this existed, and the log says so.
-        if let Err(error) = grant_mod_reader(dk, credentials) {
-            eprintln!("warning: mods' database access is not read-only this time: {error}");
-            credentials.mod_reader.clear();
+    if let Some(password) = mod_reader.as_deref() {
+        // Root's login: the managed one once migrated, else the install's
+        // default. Never a reason not to start: without the reader, scripts'
+        // SQL keeps the map server's own login, as before, and the log says so.
+        let legacy_root = credentials.is_none();
+        match grant_mod_reader(dk, password, legacy_root) {
+            Ok(()) => println!("Mods read the database as {}: SELECT only, never `login`.", crate::service_credentials::MOD_READER),
+            Err(error) => {
+                eprintln!("warning: mods' database access is not read-only this time: {error}");
+                mod_reader = None;
+            }
         }
     }
     // The login server turns plain-text passwords into salted hashes the
@@ -1843,6 +1850,11 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
         let file = conf.join("inter_conf.txt");
         let existing = fs::read_to_string(&file).map_err(|_| "Cannot read generated SQL configuration")?;
         write_conf(&conf, "inter_conf.txt", &format!("{existing}{}", credentials.inter_config()))?;
+    }
+    if let Some(password) = &mod_reader {
+        let file = conf.join("inter_conf.txt");
+        let existing = fs::read_to_string(&file).map_err(|_| "Cannot read generated SQL configuration")?;
+        write_conf(&conf, "inter_conf.txt", &format!("{existing}{}", crate::service_credentials::mod_reader_config(password)))?;
     }
     // The address char and map hand the client to reconnect to. This is the
     // one that actually decides whether a LAN player can play: everything can

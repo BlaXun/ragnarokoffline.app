@@ -15,9 +15,32 @@ pub const CONTAINER_DIR: &str = "/run/ragnarok-private";
 /// The SQL login mods' scripts use (`query_sql`, `query_logsql`): SELECT only,
 /// on every table but `login`. See `crate::cmds::grant_mod_reader`.
 pub const MOD_READER: &str = "ragnarok_mods";
-/// Its password, beside the journal rather than in it: the journal is immutable,
-/// and installs from before the mod reader get one on their next start.
-const MOD_READER_FILE: &str = "mod-reader.secret";
+
+/// The mod reader's password for `era`, made on first use. Kept apart from
+/// the managed service credentials: most installs never create those (only
+/// sharing does), and every install's mods should be read-only.
+pub fn mod_reader_password(state: &Path, era: &str) -> Result<String, String> {
+    private_fs::directory(state)?;
+    let dir = state.join("private");
+    private_fs::directory(&dir)?;
+    let dir = dir.join("mod-reader");
+    private_fs::directory(&dir)?;
+    let path = dir.join(format!("{era}.secret"));
+    if fs::symlink_metadata(&path).is_ok() {
+        return hex(Some(private_fs::read(&path, 128)?.trim()), 64);
+    }
+    let password = private_fs::random_hex(32)?;
+    private_fs::create(&path, password.as_bytes())?;
+    Ok(password)
+}
+
+/// rathena settings that make scripts' SQL (mods' query_sql and query_logsql)
+/// log in as the mod reader. The servers keep their own login.
+pub fn mod_reader_config(password: &str) -> String {
+    format!(
+        "map_query_server_id: {MOD_READER}\nmap_query_server_pw: {password}\nlog_query_db_id: {MOD_READER}\nlog_query_db_pw: {password}\n"
+    )
+}
 
 pub struct Credentials {
     pub directory: PathBuf,
@@ -25,8 +48,6 @@ pub struct Credentials {
     pub database: String,
     pub interserver: String,
     pub ready: bool,
-    /// Empty until `ensure_mod_reader` makes one.
-    pub mod_reader: String,
 }
 
 pub fn era(cfg: &Config) -> &'static str {
@@ -92,9 +113,7 @@ pub fn load(state: &Path, era: &str) -> Result<Option<Credentials>, String> {
         database: hex(value.str("database"), 64)?,
         interserver: token(value.str("interserver"))?,
         ready,
-        mod_reader: String::new(),
-    }
-    .with_mod_reader()?))
+    }))
 }
 
 pub fn prepare(cfg: &Config) -> Result<Credentials, String> {
@@ -133,7 +152,6 @@ pub fn prepare(cfg: &Config) -> Result<Credentials, String> {
         database,
         interserver,
         ready: false,
-        mod_reader: String::new(),
     };
     credentials.write_files()?;
     fs::rename(&staging, &dir).map_err(|_| {
@@ -176,25 +194,6 @@ impl Credentials {
         Ok(())
     }
 
-    fn with_mod_reader(mut self) -> Result<Self, String> {
-        let path = self.directory.join(MOD_READER_FILE);
-        if fs::symlink_metadata(&path).is_ok() {
-            self.mod_reader = hex(Some(private_fs::read(&path, 128)?.trim()), 64)?;
-        }
-        Ok(self)
-    }
-
-    /// The mod reader's password, made on first use. Its own file, so it can be
-    /// added to a journal that is already published and ready.
-    pub fn ensure_mod_reader(&mut self) -> Result<(), String> {
-        if self.mod_reader.is_empty() {
-            let password = private_fs::random_hex(32)?;
-            private_fs::create(&self.directory.join(MOD_READER_FILE), password.as_bytes())?;
-            self.mod_reader = password;
-        }
-        Ok(())
-    }
-
     pub fn mark_ready(&self) -> Result<(), String> {
         self.file("ready", "v1\n")
     }
@@ -210,14 +209,6 @@ impl Credentials {
         ]
         .iter()
         .map(|prefix| format!("{prefix}_pw: {}\n", self.database))
-        .chain((!self.mod_reader.is_empty()).then(|| {
-            // Scripts' SQL (mods' query_sql / query_logsql) logs in as the
-            // read-only mod reader; the servers keep their own login.
-            format!(
-                "map_query_server_id: {MOD_READER}\nmap_query_server_pw: {pw}\nlog_query_db_id: {MOD_READER}\nlog_query_db_pw: {pw}\n",
-                pw = self.mod_reader
-            )
-        }))
         .collect()
     }
 }
@@ -246,24 +237,24 @@ mod tests {
         credentials.mark_ready().unwrap();
         assert!(load(&state, "renewal").unwrap().unwrap().ready);
         assert_eq!(credentials.inter_config().lines().count(), 6);
-        // The mod reader: added to a ready journal, kept across loads, and
-        // handed to script SQL only.
-        let mut credentials = load(&state, "renewal").unwrap().unwrap();
-        assert!(credentials.mod_reader.is_empty());
-        credentials.ensure_mod_reader().unwrap();
-        let reader = credentials.mod_reader.clone();
-        assert_eq!(reader.len(), 64);
-        let config = credentials.inter_config();
-        assert_eq!(config.lines().count(), 10);
-        assert!(config.contains(&format!("map_query_server_id: {MOD_READER}\nmap_query_server_pw: {reader}\n")));
-        assert!(config.contains(&format!("log_query_db_id: {MOD_READER}\nlog_query_db_pw: {reader}\n")));
-        assert!(config.contains(&format!("map_server_pw: {}\n", credentials.database)));
-        let mut again = load(&state, "renewal").unwrap().unwrap();
-        assert_eq!(again.mod_reader, reader);
-        again.ensure_mod_reader().unwrap();
-        assert_eq!(again.mod_reader, reader, "an existing password is never replaced");
         fs::write(dir.join("root.cnf"), "damaged").unwrap();
         assert!(credentials.write_files().is_err());
+        fs::remove_dir_all(state).unwrap();
+    }
+
+    #[test]
+    fn the_mod_reader_password_is_per_era_and_kept() {
+        let state = std::env::temp_dir().join(format!("ro-mod-reader-{}", private_fs::random_hex(12).unwrap()));
+        let renewal = mod_reader_password(&state, "renewal").unwrap();
+        assert_eq!(renewal.len(), 64);
+        assert_eq!(mod_reader_password(&state, "renewal").unwrap(), renewal, "never replaced once made");
+        assert_ne!(mod_reader_password(&state, "prerenewal").unwrap(), renewal, "each era's database has its own");
+        let config = mod_reader_config(&renewal);
+        assert_eq!(config.lines().count(), 4);
+        assert!(config.contains(&format!("map_query_server_id: {MOD_READER}\nmap_query_server_pw: {renewal}\n")));
+        assert!(config.contains(&format!("log_query_db_id: {MOD_READER}\nlog_query_db_pw: {renewal}\n")));
+        fs::write(state.join("private/mod-reader/renewal.secret"), "damaged").unwrap();
+        assert!(mod_reader_password(&state, "renewal").is_err(), "a damaged file is an error, not a new password");
         fs::remove_dir_all(state).unwrap();
     }
 }
