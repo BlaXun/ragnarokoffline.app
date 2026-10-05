@@ -175,7 +175,7 @@ export function buildModFiles(doc, project, { minimap = null, author } = {}) {
 
 	// mod.json.
 	const manifest = mergeManifest(project?.manifest, mod, doc, { author });
-	files['mod.json'] = { text: JSON.stringify(manifest, null, 2) + '\n' };
+	files['mod.json'] = { text: manifestText(manifest) };
 
 	const notes = structuredClone(project?.notes || {});
 	notes.maps = notes.maps || {};
@@ -188,6 +188,11 @@ export function buildModFiles(doc, project, { minimap = null, author } = {}) {
 		source: doc.source || null,
 	};
 	return { files, notes, summary };
+}
+
+/** mod.json as people write it: two-space indent, colours on one line. */
+export function manifestText(manifest) {
+	return JSON.stringify(manifest, null, 2).replace(/\[\s+(-?[\d.]+(?:,\s+-?[\d.]+)*)\s+\]/g, (_, inner) => `[${inner.split(/,\s+/).join(', ')}]`) + '\n';
 }
 
 /** The payload the bridge's api/save takes. */

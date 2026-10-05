@@ -99,8 +99,9 @@ export function createBridge(host) {
 
 	async function assetFromServer(rel) {
 		const url = `${host.assetBase()}/${rel.split('/').filter(Boolean).map(encodeURIComponent).join('/')}`;
-		const res = await host.fetch(url);
-		if (!res.ok) return null;
+		// No asset server (the game not started yet) is the same as no such file.
+		const res = await host.fetch(url).catch(() => null);
+		if (!res || !res.ok) return null;
 		return Buffer.from(await res.arrayBuffer());
 	}
 

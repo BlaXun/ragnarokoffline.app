@@ -136,7 +136,7 @@ function multiInspector(E, idx) {
 }
 
 async function savePrefab(E, idx) {
-	const name = prompt('Name this prefab (a group of objects you can stamp on any map):', 'house');
+	const name = await app.ask({ title: 'Save as a prefab', text: 'A prefab is a group of objects you can stamp on any map. Name it:', input: 'house', ok: 'Save' });
 	if (!name) return;
 	const clip = app.run('object.copy', { indexes: idx });
 	const { get, post } = await import('./host.js');

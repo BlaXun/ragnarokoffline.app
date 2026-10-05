@@ -28,13 +28,13 @@ export function pageCommands() {
 			const E = app.E;
 			return E.doc ? { map: E.doc.name, mod: E.mod, cells: [E.doc.gat.width, E.doc.gat.height], dirty: E.dirty, tool: E.tool, selection: [...E.sel], camera: camera(E), undo: E.history.undoStack.map(s => s.label).slice(-10) } : { map: null };
 		},
-		'map.open': async a => { await app.openMap({ mod: a.mod, map: a.map, as: a.as }); return run.status(); },
+		'map.open': async a => { await app.openMap({ mod: a.mod, map: a.map, as: a.as, discard: !!a.discard, remote: true }); return run.status(); },
 		'map.new': async a => {
-			await app.newMap({ mod: a.mod, name: a.name, width: Number(a.width || 80), height: Number(a.height || 80) });
+			await app.newMap({ mod: a.mod, name: a.name, width: Number(a.width || 80), height: Number(a.height || 80), discard: !!a.discard, remote: true });
 			if (a.texture) app.run('texture.paint', { texture: a.texture, x0: 0, y0: 0, x1: app.E.doc.gat.width - 1, y1: app.E.doc.gat.height - 1 });
 			return run.status();
 		},
-		'map.save': async () => { need(); return app.save(); },
+		'map.save': async a => { need(); return app.save({ mod: a.mod || null, override: !!a.override, remote: true }); },
 		'map.check': async a => { need(); const issues = await app.check({ quick: !!a.quick }); return { errors: issues.filter(i => i.level === 'error').length, issues }; },
 		'map.test': async a => { need(); return app.testInGame({ x: a.x, y: a.y, char: a.char }); },
 		'map.set_start': a => { const E = need(); E.doc.testPoint = { x: Number(a.x), y: Number(a.y) }; app.setDirty(); app.rebuildMarkers(); return E.doc.testPoint; },

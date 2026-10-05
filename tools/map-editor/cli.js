@@ -228,8 +228,8 @@ async function startHeadless(opts, { mod, map } = {}) {
 async function offline(opts, cmd, args) {
 	const { openMap, createMap } = await import('./lib/map.js');
 	const { runCommand, COMMANDS } = await import('./lib/commands.js');
-	const { attachProject, buildModFiles, savePayload, incomingWarps, minimapTextures } = await import('./lib/project.js');
-	const { renderMinimap } = await import('./lib/minimap.js');
+	const { attachProject, buildModFiles, savePayload, incomingWarps } = await import('./lib/project.js');
+	const { renderMinimap, minimapTextures } = await import('./lib/minimap.js');
 	const { encodeBmp, decodeImage } = await import('./lib/image.js');
 	const { validate } = await import('./lib/validate.js');
 	const { bakeLightmaps } = await import('./lib/lightmap.js');
@@ -263,7 +263,12 @@ async function offline(opts, cmd, args) {
 		return { ...out, summary: built.summary };
 	};
 	if (cmd === 'map.new' || cmd === 'map.save' || cmd === 'map.open') result = await save();
-	else if (cmd === 'map.check') result = await validate(doc, { incoming: incomingWarps(doc.name, project.scripts), exists: async p => !!(await bridge.asset(p)) });
+	else if (cmd === 'map.check') {
+		// Files can only be checked against the client through its asset server.
+		const up = await fetch(`${assetBase(opts)}/api/health`).then(r => r.ok, () => false);
+		result = await validate(doc, { incoming: incomingWarps(doc.name, project.scripts), exists: up ? async p => !!(await bridge.asset(p)) : null });
+		if (!up) result.push({ level: 'note', code: 'files-unchecked', message: 'The game\'s asset server is not running, so the textures, models and sounds were not checked against your client. Start the game once and check again.' });
+	}
 	else if (cmd === 'lightmap.bake') { result = bakeLightmaps(doc, { shadows: true, samples: Number(args.samples || 1) }); result.saved = await save(); result.note = 'Offline baking casts shadows from the hills only; bake in the editor for the models\' shadows.'; }
 	else if (cmd === 'batch') {
 		const steps = Array.isArray(args.steps) ? args.steps : JSON.parse(fs.readFileSync(args.file, 'utf8'));

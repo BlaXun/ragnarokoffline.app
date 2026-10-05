@@ -181,8 +181,11 @@ async function fetchMapFile(map, ext) {
  * this name (an official map made into your own) -- without it, an official
  * map saved into a mod overrides the original for everyone with the mod on.
  */
-export async function openMap({ mod, map, as } = {}) {
-	if (E.dirty && !confirm(`Discard the unsaved changes to ${E.doc.name}?`)) return null;
+export async function openMap({ mod, map, as, discard = false, remote = false } = {}) {
+	if (E.dirty && !discard) {
+		if (remote) throw new Error(`${E.doc.name} has unsaved changes: map.save first, or pass discard: true.`);
+		if (!(await ask({ title: 'Unsaved changes', text: `Discard the unsaved changes to ${E.doc.name}?`, ok: 'Discard' }))) return null;
+	}
 	map = String(map || '').toLowerCase().replace(/\.(rsw|gnd|gat)$/, '');
 	if (!map) throw new Error('which map?');
 	const project = mod ? await get(`api/project?mod=${encodeURIComponent(mod)}`) : null;
@@ -202,8 +205,12 @@ export async function openMap({ mod, map, as } = {}) {
 	return E.doc;
 }
 
-export async function newMap({ mod, name, width = 80, height = 80, texture } = {}) {
-	if (E.dirty && !confirm(`Discard the unsaved changes to ${E.doc.name}?`)) return null;
+export async function newMap({ mod, name, width = 80, height = 80, texture, discard = false, remote = false } = {}) {
+	void texture;
+	if (E.dirty && !discard) {
+		if (remote) throw new Error(`${E.doc.name} has unsaved changes: map.save first, or pass discard: true.`);
+		if (!(await ask({ title: 'Unsaved changes', text: `Discard the unsaved changes to ${E.doc.name}?`, ok: 'Discard' }))) return null;
+	}
 	if (!mod) throw new Error('A new map needs a mod to live in: give it a name (letters, digits, - and _).');
 	const project = await get(`api/project?mod=${encodeURIComponent(mod)}`);
 	E.assets.forget();
@@ -262,18 +269,26 @@ async function checkOtherMaps() {
 	return out;
 }
 
-export async function save({ silent = false } = {}) {
+export async function save({ silent = false, mod = null, override = false, remote = false } = {}) {
 	if (!E.doc) throw new Error('No map is open.');
-	if (!E.mod) {
-		const mod = prompt('Save into which mod? (a new folder in your mods: letters, digits, - and _)', `${E.doc.name.replace(/_/g, '-')}-map`);
-		if (!mod) return null;
+	if (mod && mod !== E.mod) {
+		if (!/^[A-Za-z0-9_-]{1,64}$/.test(mod)) throw new Error('A mod name is letters, digits, - and _.');
 		E.mod = mod;
 		E.project = await get(`api/project?mod=${encodeURIComponent(mod)}`);
 	}
-	if (E.doc.source && E.doc.source.kind === 'client' && E.doc.name === E.doc.source.map && !E.overrideOk) {
-		if (!confirm(`${E.doc.name} is an official map. Saving it into ${E.mod} replaces it for everyone with the mod switched on — its ground, and its map cache on the server. Rename it (Map → Name) to make a new map instead.\n\nSave as an override?`)) return null;
-		E.overrideOk = true;
+	if (!E.mod) {
+		if (remote) throw new Error('This map is in no mod yet: map.save with mod: "<folder name>".');
+		const name = await ask({ title: 'Save into a mod', text: 'Which mod should this map go in? A new folder in your mods is made for it.', input: `${E.doc.name.replace(/_/g, '-')}-map`, ok: 'Save', pattern: /^[A-Za-z0-9_-]{1,64}$/, invalid: 'Letters, digits, - and _.' });
+		if (!name) return null;
+		E.mod = name;
+		E.project = await get(`api/project?mod=${encodeURIComponent(name)}`);
 	}
+	if (E.doc.source && E.doc.source.kind === 'client' && E.doc.name === E.doc.source.map && !E.overrideOk && !override) {
+		const why = `${E.doc.name} is an official map. Saving it into ${E.mod} replaces it for everyone with the mod switched on — its ground, and its map cache on the server. Rename it (Map → Name) to make a new map instead.`;
+		if (remote) throw new Error(`${why} Pass override: true to save it as an override anyway, or map.rename first.`);
+		if (!(await ask({ title: 'Override an official map?', text: why, ok: 'Save as an override' }))) return null;
+	}
+	if (override || E.doc.source?.kind === 'client') E.overrideOk = true;
 	const { bmp } = renderMinimap(512);
 	const built = buildModFiles(E.doc, E.project, { minimap: bmp });
 	const answer = await post('api/save', savePayload(E.mod, built));
@@ -311,6 +326,37 @@ export async function testInGame({ x, y, char } = {}) {
 	return result;
 }
 
+/**
+ * A question in the page's own dialog (Electron has no window.prompt):
+ * resolves with true/false, or with the text typed when `input` is given.
+ */
+export function ask({ title, text, input = null, ok = 'OK', pattern = null, invalid = '' }) {
+	return new Promise(resolve => {
+		const dlg = $('dialog'), form = $('dialog-form');
+		const field = input !== null ? Object.assign(document.createElement('input'), { value: input, style: 'width:100%' }) : null;
+		const note = document.createElement('p'); note.className = 'hint';
+		const done = value => { dlg.close(); resolve(value); };
+		const okBtn = Object.assign(document.createElement('button'), { type: 'button', className: 'btn primary', textContent: ok });
+		okBtn.onclick = () => {
+			if (!field) return done(true);
+			const v = field.value.trim();
+			if (!v || (pattern && !pattern.test(v))) { note.textContent = invalid || 'That will not do.'; return; }
+			done(v);
+		};
+		const cancel = Object.assign(document.createElement('button'), { type: 'button', className: 'btn', textContent: 'Cancel', onclick: () => done(field ? null : false) });
+		const head = document.createElement('div'); head.className = 'dh'; head.innerHTML = '<h2></h2>'; head.firstChild.textContent = title;
+		const body = document.createElement('div'); body.className = 'db';
+		const p = document.createElement('p'); p.textContent = text;
+		body.append(p); if (field) body.append(field, note);
+		const foot = document.createElement('div'); foot.className = 'df'; foot.append(cancel, okBtn);
+		form.replaceChildren(head, body, foot);
+		dlg.oncancel = () => resolve(field ? null : false);
+		if (!dlg.open) dlg.showModal();
+		(field || okBtn).focus();
+		if (field) field.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); okBtn.click(); } };
+	});
+}
+
 // ---- Recovery: an unsaved map survives a crash or a closed window
 
 const RECOVERY = 'map-editor:recovery';
@@ -344,7 +390,7 @@ async function offerRecovery() {
 	let r = null;
 	try { r = await kv('get', RECOVERY); } catch { return; }
 	if (!r || Date.now() - r.at > 14 * 864e5) return;
-	if (!confirm(`There is an unsaved copy of ${r.name}${r.mod ? ` (mod ${r.mod})` : ''} from ${new Date(r.at).toLocaleString()}. Restore it?`)) { clearRecovery(); return; }
+	if (!(await ask({ title: 'Restore unsaved work?', text: `There is an unsaved copy of ${r.name}${r.mod ? ` (mod ${r.mod})` : ''} from ${new Date(r.at).toLocaleString()}.`, ok: 'Restore' }))) { clearRecovery(); return; }
 	const doc = openDoc({ name: r.name, gnd: r.files[`${r.name}.gnd`], rsw: r.files[`${r.name}.rsw`], gat: r.files[`${r.name}.gat`], source: r.source });
 	doc.gameplay = r.gameplay; doc.props = r.props; doc.testPoint = r.testPoint;
 	const project = r.mod ? await get(`api/project?mod=${encodeURIComponent(r.mod)}`).catch(() => null) : null;

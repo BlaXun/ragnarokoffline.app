@@ -169,8 +169,9 @@ export function generateEntry(obj, map) {
 	}
 	if (SPAWN_KINDS.includes(obj.kind) || obj.kind === 'spawn') {
 		const type = obj.kind === 'spawn' ? 'monster' : obj.kind;
-		const tail = [obj.mob, obj.amount | 0 || 1, obj.delay1 | 0, obj.delay2 | 0];
-		if (obj.event || obj.size || obj.ai) tail.push(obj.event || '', obj.size || '', obj.ai || '');
+		const tail = [obj.mob, obj.amount | 0 || 1, obj.delay1 | 0, obj.delay2 | 0, obj.event || '', obj.size || '', obj.ai || ''];
+		// Optional fields only as far as the last one given.
+		while (tail.length > 4 && tail[tail.length - 1] === '') tail.pop();
 		return `${pos},${obj.xs | 0},${obj.ys | 0}\t${type}\t${obj.name}\t${tail.join(',')}`;
 	}
 	const head = `${pos},${obj.dir | 0}`;
@@ -210,13 +211,15 @@ export function generateEntry(obj, map) {
 /** The whole generated block for a map. */
 export function generateBlock(map, gameplay) {
 	const out = [BEGIN(map)];
-	const add = obj => { if (obj.handwritten) return; out.push(metaLine(obj), generateEntry(obj, map)); };
-	if (gameplay.npcs.length) out.push('// NPCs');
-	gameplay.npcs.forEach(add);
-	if (gameplay.warps.length) out.push('// Warps');
-	gameplay.warps.forEach(add);
-	if (gameplay.spawns.length) out.push('// Monsters');
-	gameplay.spawns.forEach(add);
+	const section = (title, list) => {
+		const mine = list.filter(o => !o.handwritten);
+		if (!mine.length) return;
+		out.push(title);
+		for (const obj of mine) out.push(metaLine(obj), generateEntry(obj, map));
+	};
+	section('// NPCs', gameplay.npcs);
+	section('// Warps', gameplay.warps);
+	section('// Monsters', gameplay.spawns);
 	const external = (gameplay.external || []).filter(w => w.map !== map);
 	if (external.length) out.push('// The way back, on other maps');
 	for (const w of external) out.push(generateEntry({ ...w, kind: 'warp' }, w.map));
