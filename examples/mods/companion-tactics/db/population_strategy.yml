@@ -609,10 +609,19 @@ Body:
             Priority: 86
             Target: { Enemy: boss, Range: 14 }
             KeepDistance: { Min: 6, Max: 8 }
-          - Name: fire_bolt            # the slaves are earth: fire hurts them most
+          # At what is within Fire Bolt's reach (9 cells), not at whatever its target is:
+          # a selector only looks within the skill's range. Phreeoni first, else the
+          # nearest slave (earth: fire hurts them most).
+          - Name: fire_bolt_boss
+            Priority: 31
+            When: self_sp_pct_ge25
+            Cast: MG_FIREBOLT
+            Target: { Enemy: boss }
+          - Name: fire_bolt
             Priority: 30
             When: self_sp_pct_ge25
             Cast: MG_FIREBOLT
+            Target: { Enemy: nearest }
           - Name: no_melee
             Priority: 1
             Hold: true
