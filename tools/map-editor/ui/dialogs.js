@@ -76,7 +76,8 @@ export async function openDialog(E, tab = 'mine') {
 	const view = h('button.btn', { type: 'button', onclick: async () => { if (!picked) return; close(); try { await app.openMap({ map: picked.map }); app.toast('Opened to look at. Save puts it in a mod.'); } catch (e) { app.toast(e.message, true); } } }, 'Just look');
 	show('Open a map', body, [view, go]);
 	let maps = E.tables.maps;
-	if (!maps || !maps.length) { try { maps = E.tables.maps = await get('api/maps'); } catch (e) { list.replaceChildren(h('div.li', e.message)); return; } }
+	// A list with no client maps in it was read while the asset server was down: read it again.
+	if (!maps || !maps.some(m => !m.mod)) { try { maps = E.tables.maps = await get('api/maps'); } catch (e) { list.replaceChildren(h('div.li', e.message)); return; } }
 	const paint = () => {
 		const q = input.value.trim().toLowerCase();
 		const rows = maps.filter(m => !q || m.map.includes(q) || (m.name || '').toLowerCase().includes(q)).slice(0, 300);

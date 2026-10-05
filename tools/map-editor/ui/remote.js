@@ -80,7 +80,7 @@ export function pageCommands() {
 		'view.minimap': () => { need(); const { bmp, image } = app.renderMinimap(512); void bmp; const c = document.createElement('canvas'); c.width = image.width; c.height = image.height; c.getContext('2d').putImageData(new ImageData(image.data, image.width, image.height), 0, 0); return { png: c.toDataURL('image/png').split(',')[1] }; },
 		'lightmap.bake': async a => { need(); return app.bake({ shadows: a.shadows !== false, lights: a.lights !== false, samples: Number(a.samples || 1) }); },
 		'projects.list': () => get('api/projects'),
-		'maps.search': async a => search(app.E.tables.maps || (app.E.tables.maps = await get('api/maps')), a.query, ['map', 'name', 'mod'], Number(a.limit || 50)),
+		'maps.search': async a => search((app.E.tables.maps || []).some(m => !m.mod) ? app.E.tables.maps : (app.E.tables.maps = await get('api/maps')), a.query, ['map', 'name', 'mod'], Number(a.limit || 50)),
 		'models.search': async a => {
 			const all = app.E._models || (app.E._models = (await post('api/search', { filter: '^data\\\\model\\\\.*\\.rsm2?$' })).map(n => n.replace(/^data\\model\\/i, '')));
 			const q = String(a.query || '').toLowerCase();

@@ -37,6 +37,20 @@ function shellQuote(s) { return `'${String(s).replace(/'/g, `'\\''`)}'`; }
  *   windowOpen() -> bool
  *   execPath                       the app binary, for the CLI launcher
  */
+/**
+ * Copy a folder out of the app. fs.cpSync cannot: it opens the folder with
+ * opendir, which Electron's asar support does not cover (ENOTDIR), while
+ * readdir and readFile work inside the archive.
+ */
+function copyOut(from, to) {
+	fs.mkdirSync(to, { recursive: true });
+	for (const d of fs.readdirSync(from, { withFileTypes: true })) {
+		const src = path.join(from, d.name), dst = path.join(to, d.name);
+		if (d.isDirectory()) copyOut(src, dst);
+		else if (d.isFile()) fs.writeFileSync(dst, fs.readFileSync(src));
+	}
+}
+
 function createMapEditor(deps) {
 	let bridge = null;
 	let control = null;
@@ -108,7 +122,7 @@ function createMapEditor(deps) {
 		const cliDir = path.join(dir(), 'cli');
 		// The editor's folder, copied out of the app (asar) so plain Node can read it.
 		fs.rmSync(cliDir, { recursive: true, force: true });
-		fs.cpSync(ROOT, cliDir, { recursive: true });
+		copyOut(ROOT, cliDir);
 		const cli = path.join(cliDir, 'cli.js');
 		const bin = deps.execPath;
 		if (process.platform === 'win32') {
