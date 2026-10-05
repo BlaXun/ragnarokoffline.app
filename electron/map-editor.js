@@ -36,6 +36,8 @@ function shellQuote(s) { return `'${String(s).replace(/'/g, `'\\''`)}'`; }
  *   openWindow(query, { show })   open (or focus) the editor window
  *   windowOpen() -> bool
  *   execPath                       the app binary, for the CLI launcher
+ *   addRoute(route, { preferredPort }) -> Promise<{ port, remove }>
+ *                                  a route on the app's local API for agents
  */
 /**
  * Copy a folder out of the app. fs.cpSync cannot: it opens the folder with
@@ -136,16 +138,24 @@ function createMapEditor(deps) {
 		return file;
 	}
 
-	/** The control server agents talk to, started once per session. */
+	const connectionFile = () => path.join(dir(), 'connection.json');
+	const readConnection = () => { try { return JSON.parse(fs.readFileSync(connectionFile(), 'utf8')); } catch { return null; } };
+
+	/**
+	 * The map editor's routes on the app's local API for agents (the listener
+	 * the game agent's /mcp is on, agent-play.js): MCP at /mcp/map, and the
+	 * command line's control calls at /map/control/. Their token is the map
+	 * editor's own, in connection.json; registered once per session.
+	 */
 	async function ensureControl() {
 		if (control) return control;
 		control = (async () => {
 			const b = await getBridge();
-			const { startServer, writePrivate } = await importEsm('server/http.js');
+			const { controlCalls } = await importEsm('server/http.js');
+			const { createMcp } = await importEsm('server/mcp.js');
+			const { mcpBody } = require('./agent-api');
 			fs.mkdirSync(dir(), { recursive: true });
-			const file = path.join(dir(), 'connection.json');
-			let previous = null;
-			try { previous = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* first time */ }
+			const previous = readConnection();
 			const token = previous && previous.app && /^[0-9a-f]{64}$/.test(previous.token || '') ? previous.token : crypto.randomBytes(32).toString('hex');
 			const commands = {
 				// Open the editor window for an agent, shown or not.
@@ -157,28 +167,75 @@ function createMapEditor(deps) {
 					return { opened: true };
 				},
 			};
-			let server;
-			for (const port of [previous && previous.app ? previous.port : null, 7491, 0].filter(p => p !== null && p !== undefined)) {
-				try { server = await startServer({ bridge: null, remote: b.remote, root: ROOT, token, port, log: deps.log, commands }); break; } catch { /* taken */ }
-			}
-			if (!server) throw new Error('could not open a local port for the map editor');
+			let registered = null;
+			const calls = controlCalls({ remote: b.remote, log: deps.log, commands, port: () => (registered ? registered.port : null) });
+			// An MCP tool with no editor open opens one first, as the command line does.
+			const mcp = createMcp({
+				run: async (cmd, args) => {
+					if (!b.remote.connected()) {
+						await commands['editor.open']({ mod: args.mod, map: args.map });
+						const until = Date.now() + 60000;
+						while (!b.remote.connected()) {
+							if (Date.now() > until) throw new Error('the map editor window did not come up');
+							await new Promise(r => setTimeout(r, 300));
+						}
+					}
+					return b.remote.run(cmd, args);
+				},
+			});
+			registered = await deps.addRoute({
+				match: p => p === '/mcp/map' || p.startsWith('/map/control/'),
+				token: () => token,
+				// A batch of edits is bigger than a game command.
+				limit: 8 * 1024 * 1024,
+				handle: async ({ method, path: p, body }) => {
+					if (p === '/mcp/map') {
+						if (method !== 'POST') return { status: 405, body: { error: 'POST /mcp/map' } };
+						let message;
+						try { message = JSON.parse(body.toString('utf8') || '{}'); } catch { return { status: 400, body: { error: 'not JSON' } }; }
+						return mcpBody(message, mcp);
+					}
+					return calls({ method, what: p.slice('/map/control/'.length), body });
+				},
+			}, { preferredPort: previous && previous.base === '/map' ? previous.port : null });
 			let command = null;
 			try { command = writeLauncher(); } catch (e) { deps.log(`map editor: could not write the launcher: ${e.message}`); }
 			try { fs.copyFileSync(path.join(ROOT, 'AGENTS.md'), path.join(dir(), 'AGENTS.md')); } catch (e) { deps.log(`map editor: could not write AGENTS.md: ${e.message}`); }
-			writePrivate(file, JSON.stringify({ app: true, port: server.port, token, command, guide: path.join(dir(), 'AGENTS.md'), mcp: command ? { command, args: ['mcp'] } : null }, null, 2) + '\n');
-			deps.log(`map editor: agents can connect on 127.0.0.1:${server.port} (${file})`);
-			return server;
+			const mcpUrl = `http://127.0.0.1:${registered.port}/mcp/map`;
+			const { writePrivate } = await importEsm('server/http.js');
+			writePrivate(connectionFile(), JSON.stringify({ app: true, port: registered.port, base: '/map', token, mcp: mcpUrl, command, guide: path.join(dir(), 'AGENTS.md') }, null, 2) + '\n');
+			deps.log(`map editor: agents can connect at ${mcpUrl} (${connectionFile()})`);
+			return registered;
 		})();
 		try { return await control; } catch (e) { control = null; throw e; }
 	}
 
+	/**
+	 * At start-up: put the routes back when the editor was set up before, so an
+	 * MCP client added once keeps working without the editor being opened first.
+	 */
+	function resume() {
+		const c = readConnection();
+		if (c && c.app && c.base === '/map') ensureControl().catch(e => deps.log(`map editor: ${e.message}`));
+	}
+
+	/** For Settings: how an agent connects to the map editor, once it is set up. */
+	function agentInfo() {
+		const c = readConnection();
+		if (!c || !c.app || c.base !== '/map') return null;
+		return {
+			mcp: c.mcp, connection: connectionFile(), command: c.command, guide: c.guide,
+			claudeCommand: `claude mcp add --transport http ragnarok-map ${c.mcp} --header "Authorization: Bearer ${c.token}"`,
+		};
+	}
+
 	async function shutdown() {
 		if (!control) return;
-		try { const s = await control; await s.close(); } catch { /* never started */ }
+		try { const r = await control; await r.remove(); } catch { /* never started */ }
 		control = null;
 	}
 
-	return { route, ensureControl, shutdown, getBridge };
+	return { route, ensureControl, resume, agentInfo, shutdown, getBridge };
 }
 
 module.exports = { createMapEditor, MAP_EDITOR_ROOT: ROOT };

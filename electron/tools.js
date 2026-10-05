@@ -268,6 +268,10 @@ function createTools(deps) {
 			return deps.mapEditorTest(request);
 		},
 		openWindow: (query, { show } = {}) => open('map-editor', { query, show }),
+		addRoute: (route, options) => {
+			if (!deps.addAgentRoute) throw new Error('This copy of the app has no local API for agents.');
+			return deps.addAgentRoute(route, options);
+		},
 	});
 	const cpBridge = require('./cp-bridge').createCpBridge(deps);
 	// Parsed once per window: the item tables are megabytes.

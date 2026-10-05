@@ -1140,6 +1140,8 @@ function toolsInstance() {
 		toolsSingleton = require('./tools').createTools({
 			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
 			assetPort: () => gamePorts().asset,
+			// The map editor's MCP and command line, on the AI agent's listener.
+			addAgentRoute: (route, options) => agentPlay().addRoute(route, options),
 			// The Control panel (#230). Its writes wait in the same queue as
 			// every other server operation; one that stops the game (a delete)
 			// stops sharing on the way in and offers it back afterwards, as an
@@ -3098,13 +3100,13 @@ const handlers = {
 	open_tool: ({ id }) => toolsInstance().open(String(id)),
 	// Let an AI agent play (#187). Saved and applied at once, like the app
 	// preferences above: nothing about the server changes.
-	agent_status: () => { const s = getSettings(); return { ...agentPlay().info(), enabled: !!s.agent_play, show: s.agent_window !== false, count: s.agent_count || 1 }; },
+	agent_status: () => { const s = getSettings(); return { ...agentPlay().info(), enabled: !!s.agent_play, show: s.agent_window !== false, count: s.agent_count || 1, mapEditor: toolsInstance().mapEditor.agentInfo() }; },
 	agent_set: async ({ enabled, show, count }) => {
 		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
 			{ agent_play: !!enabled, agent_window: show !== false, agent_count: Math.max(1, Math.min(4, Number(count) || 1)) }, SETTINGS_DEFAULTS);
 		if (settings.agent_play) await agentPlay().start({ show: settings.agent_window, agents: settings.agent_count });
 		else if (agentPlay().running()) await agentPlay().stop();
-		return { ...agentPlay().info(), enabled: settings.agent_play, show: settings.agent_window, count: settings.agent_count };
+		return { ...agentPlay().info(), enabled: settings.agent_play, show: settings.agent_window, count: settings.agent_count, mapEditor: toolsInstance().mapEditor.agentInfo() };
 	},
 	agent_open_guide: async () => {
 		const guide = agentPlay().info().guide;
@@ -3115,7 +3117,7 @@ const handlers = {
 	agent_replace_token: async () => {
 		if (!getSettings().agent_play) throw new Error('Turn the AI agent on first.');
 		await agentPlay().replaceToken();
-		return { ...agentPlay().info(), enabled: true, show: getSettings().agent_window !== false, count: getSettings().agent_count || 1 };
+		return { ...agentPlay().info(), enabled: true, show: getSettings().agent_window !== false, count: getSettings().agent_count || 1, mapEditor: toolsInstance().mapEditor.agentInfo() };
 	},
 
 	// Windows
@@ -3834,6 +3836,8 @@ app.whenReady().then(() => {
 	try {
 		const s = getSettings();
 		if (s.agent_play) agentPlay().start({ show: s.agent_window !== false, agents: s.agent_count || 1 }).catch(e => appLog(`agent play: ${e.message}`));
+		// The map editor's MCP route, when it was set up on a run before.
+		if (fs.existsSync(path.join(stateDir(), 'map-editor', 'connection.json'))) toolsInstance().mapEditor.resume();
 	} catch (e) { appLog(`agent play: ${e.message}`); }
 
 	if (HEADLESS) {

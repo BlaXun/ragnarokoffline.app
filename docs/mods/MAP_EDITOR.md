@@ -285,17 +285,24 @@ The first time you open the editor, the app writes `state/map-editor/`:
 | | |
 |---|---|
 | `ragnarok-map` (`.cmd` on Windows) | the command line: `ragnarok-map <command> --arg value`, one JSON answer per call |
-| `connection.json` | the local control server's port and token, readable only by you |
+| `connection.json` | the MCP address, port and token, readable only by you |
 | `AGENTS.md` | the guide an agent is pointed at: coordinates, commands, the traps |
 
-For Claude Code:
+The map editor's MCP is on the app's local API for AI agents: the same
+listener as the game agent's `/mcp` (Settings → Play with an AI agent), at
+its own path, `/mcp/map`, with its own token. It answers whether or not the
+game agent is on, from the first time you open the editor, and again at every
+start after that. Settings → Play with an AI agent shows the command; for
+Claude Code it is:
 
 ```
-claude mcp add ragnarok-map -- "<state>/map-editor/ragnarok-map" mcp
+claude mcp add --transport http ragnarok-map http://127.0.0.1:7490/mcp/map --header "Authorization: Bearer <token from connection.json>"
 ```
 
-and every command is an MCP tool (`map.open` is `map_open`); screenshots come
-back as images. Some examples:
+Every command is an MCP tool (`map.open` is `map_open`); screenshots come back
+as images. A tool called with no editor open opens one. `ragnarok-map mcp`
+is the same tools on stdio, for a client that only runs commands, or a source
+checkout with no app running. Some command-line examples:
 
 ```sh
 ragnarok-map map.new --mod my-isle --name my_isle --width 80 --height 80 --texture '필드바닥\prt_초원01.bmp'
@@ -338,8 +345,9 @@ guide.
   run these, with one undo history.
 - **The app's half** ([`electron/map-editor.js`](../../electron/map-editor.js)):
   the page's host (files, mods, the server's tables), Test in game, and the
-  control server for agents. `ragnarok-map serve` is the same host without the
-  app.
+  routes agents use on the app's local API: `/mcp/map` and the command line's
+  `/map/control/`. `ragnarok-map serve` is the same host without the app, on a
+  server of its own.
 
 ## What it does not do yet
 

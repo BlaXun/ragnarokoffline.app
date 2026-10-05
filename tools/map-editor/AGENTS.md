@@ -12,10 +12,12 @@ the command is `node tools/map-editor/cli.js`.
 
 ## Connecting
 
-- **MCP** (Claude Code, Codex, other MCP clients): run `ragnarok-map mcp` as a
-  stdio server. For Claude Code:
-  `claude mcp add ragnarok-map -- "<state>/map-editor/ragnarok-map" mcp`.
-  Every command below is a tool, with `.` replaced by `_` (`map.open` is
+- **MCP** (Claude Code, Codex, other MCP clients): the app serves it over
+  HTTP at `http://127.0.0.1:<port>/mcp/map` (usually 7490, the same address as
+  the game agent's `/mcp`), with `Authorization: Bearer <token>`; the address
+  and token are in `connection.json` here, and Settings → Play with an AI agent
+  shows the `claude mcp add` command. `ragnarok-map mcp` is the same tools on
+  stdio. Every command below is a tool, with `.` replaced by `_` (`map.open` is
   `map_open`). Screenshots come back as images.
 - **Command line**: `ragnarok-map <command> --arg value ...`, one JSON answer
   per call. `ragnarok-map help` lists every command with its arguments.
