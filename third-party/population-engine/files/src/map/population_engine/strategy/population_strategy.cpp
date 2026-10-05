@@ -83,7 +83,9 @@ enum class Member : uint8 { Any, Party, Owner, Self, Tank, Support, Attacker };
 /// Target: { Enemy: ... } / { Ally: ... }: the monster or party member a rule picks for itself.
 struct Selector {
 	enum class Kind : uint8 { None, Enemy, Ally } kind = Kind::None;
-	enum class Pick : uint8 { Attacking, TargetOf, Nearest, LowestHp, Boss, Slaves, Casting, Missing, Having } pick = Pick::Nearest;
+	enum class Pick : uint8 { Attacking, TargetOf, Nearest, LowestHp, Boss, Slaves, Casting, Missing, Having, Hidden,
+		Attacked } pick = Pick::Nearest;
+	bool boss_only = false;      ///< Enemy selectors and Count: bosses only
 	Member who = Member::Party;  ///< Enemy attacking/target_of: whose attacker or whose target
 	bool not_self = false;       ///< leave the companion itself out
 	Member prefer = Member::Any; ///< Enemy attacking: monsters on this member first
@@ -157,6 +159,7 @@ struct Rule {
 	std::string signal;          ///< tell the party's companions (On: signal), lower-case
 	bool hold = false;           ///< stand still and end the turn
 	int16 keep_distance = 0;     ///< step out to at least this many cells from the monster (0 = off)
+	int16 keep_max = 0;          ///< and back in to at most this many (0 = no limit): stay in range of it
 	// Leave: step off ground units of leave_skill (0 = any) placed by leave_owner.
 	bool leave = false;
 	uint16 leave_skill = 0;
@@ -630,18 +633,19 @@ bool StrategyDatabase::parse_requires(const ryml::NodeRef &node, Requirements &r
 /// Target: { Ally: lowest_hp | nearest | missing, Role, Job, Status, NotSelf, Range }
 bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 {
-	this->warn_unknown_keys(node, { "Enemy", "Ally", "Who", "NotSelf", "Prefer", "Role", "Job", "Status", "Range" }, "Target");
+	this->warn_unknown_keys(node, { "Enemy", "Ally", "Who", "NotSelf", "Prefer", "Role", "Job", "Status", "Range", "Boss" }, "Target");
 	std::string pick;
 	if (this->nodeExists(node, "Enemy")) {
 		static const std::map<std::string, Selector::Pick> picks = {
 			{ "attacking", Selector::Pick::Attacking }, { "target_of", Selector::Pick::TargetOf },
 			{ "nearest", Selector::Pick::Nearest }, { "lowest_hp", Selector::Pick::LowestHp },
 			{ "boss", Selector::Pick::Boss }, { "slaves", Selector::Pick::Slaves }, { "casting", Selector::Pick::Casting },
+			{ "hidden", Selector::Pick::Hidden },
 		};
 		this->asString(node, "Enemy", pick);
 		const auto it = picks.find(lower(pick));
 		if (it == picks.end()) {
-			this->invalidWarning(node["Enemy"], "Enemy is attacking, target_of, nearest, lowest_hp, boss, slaves or casting; the rule is skipped.\n");
+			this->invalidWarning(node["Enemy"], "Enemy is attacking, target_of, nearest, lowest_hp, boss, slaves, casting or hidden; the rule is skipped.\n");
 			return false;
 		}
 		sel.kind = Selector::Kind::Enemy;
@@ -652,11 +656,12 @@ bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 		static const std::map<std::string, Selector::Pick> picks = {
 			{ "lowest_hp", Selector::Pick::LowestHp }, { "nearest", Selector::Pick::Nearest },
 			{ "missing", Selector::Pick::Missing }, { "having", Selector::Pick::Having },
+			{ "attacked", Selector::Pick::Attacked },
 		};
 		this->asString(node, "Ally", pick);
 		const auto it = picks.find(lower(pick));
 		if (it == picks.end()) {
-			this->invalidWarning(node["Ally"], "Ally is lowest_hp, nearest, missing or having; the rule is skipped.\n");
+			this->invalidWarning(node["Ally"], "Ally is lowest_hp, nearest, missing, having or attacked; the rule is skipped.\n");
 			return false;
 		}
 		sel.kind = Selector::Kind::Ally;
@@ -680,6 +685,8 @@ bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 		return false;
 	if (this->nodeExists(node, "NotSelf"))
 		this->asBool(node, "NotSelf", sel.not_self);
+	if (this->nodeExists(node, "Boss"))
+		this->asBool(node, "Boss", sel.boss_only);
 	if (this->nodeExists(node, "Role")) {
 		std::string role;
 		this->asString(node, "Role", role);
@@ -811,17 +818,18 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 
 	if (this->nodeExists(node, "Count")) {
 		const ryml::NodeRef c = node["Count"];
-		this->warn_unknown_keys(c, { "Enemy", "Who", "NotSelf", "Around", "Range", "Below", "AtLeast" }, "Count");
+		this->warn_unknown_keys(c, { "Enemy", "Who", "NotSelf", "Boss", "Around", "Range", "Below", "AtLeast" }, "Count");
 		static const std::map<std::string, Selector::Pick> picks = {
 			{ "any", Selector::Pick::Nearest }, { "attacking", Selector::Pick::Attacking },
 			{ "boss", Selector::Pick::Boss }, { "slaves", Selector::Pick::Slaves }, { "casting", Selector::Pick::Casting },
+			{ "hidden", Selector::Pick::Hidden },
 		};
 		std::string pick = "any";
 		if (this->nodeExists(c, "Enemy"))
 			this->asString(c, "Enemy", pick);
 		const auto it = picks.find(lower(pick));
 		if (it == picks.end()) {
-			this->invalidWarning(c, "Count's Enemy is any, attacking, boss, slaves or casting; the rule is skipped.\n");
+			this->invalidWarning(c, "Count's Enemy is any, attacking, boss, slaves, casting or hidden; the rule is skipped.\n");
 			return nullptr;
 		}
 		rule->count_sel.kind = Selector::Kind::Enemy;
@@ -836,6 +844,8 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		}
 		if (this->nodeExists(c, "NotSelf"))
 			this->asBool(c, "NotSelf", rule->count_sel.not_self);
+		if (this->nodeExists(c, "Boss"))
+			this->asBool(c, "Boss", rule->count_sel.boss_only);
 		if (this->nodeExists(c, "Around")) {
 			std::string around;
 			this->asString(c, "Around", around);
@@ -1024,8 +1034,23 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		}
 	}
 	if (this->nodeExists(node, "KeepDistance")) {
-		this->asInt16(node, "KeepDistance", rule->keep_distance);
+		const ryml::NodeRef k = node["KeepDistance"];
+		if (k.is_map()) {
+			// { Min, Max }: a band. Too close: step out; too far: come back within reach.
+			this->warn_unknown_keys(k, { "Min", "Max" }, "KeepDistance");
+			if (this->nodeExists(k, "Min"))
+				this->asInt16(k, "Min", rule->keep_distance);
+			if (this->nodeExists(k, "Max"))
+				this->asInt16(k, "Max", rule->keep_max);
+		} else {
+			this->asInt16(node, "KeepDistance", rule->keep_distance);
+		}
 		rule->keep_distance = static_cast<int16>(cap_value(static_cast<int>(rule->keep_distance), 0, 14));
+		rule->keep_max = static_cast<int16>(cap_value(static_cast<int>(rule->keep_max), 0, AREA_SIZE));
+		if (rule->keep_distance <= 0 || (rule->keep_max > 0 && rule->keep_max < rule->keep_distance)) {
+			this->invalidWarning(k, "KeepDistance needs Min above 0, and Max at least Min; the rule is skipped.\n");
+			return nullptr;
+		}
 	}
 	if (this->nodeExists(node, "Switch"))
 		this->asString(node, "Switch", rule->switch_to);
@@ -2027,6 +2052,8 @@ static bool enemy_matches(Turn &t, const Selector &sel, const mob_data *md, int 
 {
 	map_session_data *sd = t.sd;
 	rank = 0;
+	if (sel.boss_only && status_get_class_(md) != CLASS_BOSS)
+		return false;
 	switch (sel.pick) {
 	case Selector::Pick::Attacking:
 		if (md->target_id == 0 || !member_is(t, md->target_id, sel.who) || (sel.not_self && md->target_id == sd->id))
@@ -2037,6 +2064,8 @@ static bool enemy_matches(Turn &t, const Selector &sel, const mob_data *md, int 
 	case Selector::Pick::Boss:     return status_get_class_(md) == CLASS_BOSS;
 	case Selector::Pick::Slaves:   return md->master_id != 0;
 	case Selector::Pick::Casting:  return md->ud.skilltimer != INVALID_TIMER;
+	// Hiding, Cloaking, Chase Walk -- and a Hode's burrow, which is Hiding too.
+	case Selector::Pick::Hidden:   return (md->sc.option & (OPTION_HIDE | OPTION_CLOAK | OPTION_CHASEWALK)) != 0;
 	default:                       return true;
 	}
 }
@@ -2100,6 +2129,15 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 static block_list *select_ally(Turn &t, const Selector &sel, int range)
 {
 	map_session_data *sd = t.sd;
+	// Ally: attacked -- who the monsters in sight are on; a boss counts three times.
+	std::unordered_map<int32, int> threat;
+	if (sel.pick == Selector::Pick::Attacked) {
+		MobScan scan;
+		map_foreachinrange(mob_scan_cb, sd, AREA_SIZE, BL_MOB, &scan);
+		for (const mob_data *md : scan.mobs)
+			if (md->target_id != 0)
+				threat[md->target_id] += status_get_class_(md) == CLASS_BOSS ? 3 : 1;
+	}
 	std::vector<map_session_data *> members = party_members(sd);
 	if (!sel.not_self)
 		members.push_back(sd);
@@ -2121,6 +2159,11 @@ static block_list *select_ally(Turn &t, const Selector &sel, int range)
 			continue;
 		} else if (sel.pick == Selector::Pick::Having && m->sc.getSCE(static_cast<sc_type>(sel.status)) == nullptr) {
 			continue;
+		} else if (sel.pick == Selector::Pick::Attacked) {
+			const auto it = threat.find(m->id);
+			if (it == threat.end())
+				continue;
+			rank = -it->second; // the most threatened first
 		}
 		const auto key = std::make_tuple(rank, distance_bl(sd, m), m->id);
 		if (best == nullptr || key < best_key) {
@@ -2307,7 +2350,9 @@ static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, blo
 	block_list *from = same_map_bl(sd, rs.source);
 	if (from == nullptr)
 		from = about;
-	if (from == nullptr || distance_bl(sd, from) >= rule.keep_distance) {
+	const int now_d = from != nullptr ? distance_bl(sd, from) : 0;
+	const bool too_far = from != nullptr && rule.keep_max > 0 && now_d > rule.keep_max;
+	if (from == nullptr || (now_d >= rule.keep_distance && !too_far)) {
 		far_enough = true;
 		return "";
 	}
@@ -2317,7 +2362,10 @@ static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, blo
 	if (md == nullptr)
 		return "no map";
 	std::vector<std::tuple<int, int16, int16>> cells; // (distance from the shell, x, y)
-	for (int r = rule.keep_distance; r <= rule.keep_distance + 2; ++r) {
+	// Too close: the rings just past Min. Too far: the rings from Max down to Min.
+	const int r_lo = rule.keep_distance;
+	const int r_hi = rule.keep_max > 0 ? rule.keep_max : rule.keep_distance + 2;
+	for (int r = r_lo; r <= r_hi; ++r) {
 		for (int dx = -r; dx <= r; ++dx) {
 			for (int dy = -r; dy <= r; ++dy) {
 				if (std::max(std::abs(dx), std::abs(dy)) != r)
@@ -2659,7 +2707,10 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 			trace(sd, *t.st, t.tick, "rule %s: cannot keep distance (%s)", name, why);
 			return Outcome::Skipped;
 		}
-		trace(sd, *t.st, t.tick, "rule %s: keeping %d cells away", name, rule.keep_distance);
+		if (rule.keep_max > 0)
+			trace(sd, *t.st, t.tick, "rule %s: keeping %d to %d cells away", name, rule.keep_distance, rule.keep_max);
+		else
+			trace(sd, *t.st, t.tick, "rule %s: keeping %d cells away", name, rule.keep_distance);
 		acted = true;
 	} else if (rule.hold) {
 		// Stand still: no chase, no walk toward the target. A continuous attack command

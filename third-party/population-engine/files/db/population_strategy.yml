@@ -89,9 +89,9 @@
 #   Cast:        A skill. Level: (default: the level it knows).
 #                Target: enemy (default), self, owner, event, source, ally_lowest_hp, dead_ally,
 #                or a selector the rule picks itself:
-#                  { Enemy: attacking|target_of|nearest|lowest_hp|boss|slaves|casting,
+#                  { Enemy: attacking|target_of|nearest|lowest_hp|boss|slaves|casting|hidden, Boss,
 #                    Who: party|owner|self|tank|support|attacker|any, NotSelf, Prefer, Range }
-#                  { Ally: lowest_hp|nearest|missing|having, Role, Job, Status, NotSelf, Range }
+#                  { Ally: lowest_hp|nearest|missing|having|attacked, Role, Job, Status, NotSelf, Range }
 #                With an Enemy selector, When's enemy_* tokens ask about the chosen monster.
 #                Consume: true -- the cast should pay its catalyst (ItemCost). Not paid yet:
 #                companions have no inventory of their own, so it casts as if paid. With
@@ -109,6 +109,7 @@
 #                they put it: following its owner waits (warps to another map do not).
 #   KeepDistance: n -- closer than n cells to the monster: walk to the nearest open cell
 #                at least n away. Already that far: the rule passes and the next one runs.
+#                { Min: n, Max: m }: a band; further than m, it comes back within m.
 #   Say:         Text; {name} {owner} {target} {ally} {skill} {hp}. Channel: party (default) | area.
 #   Switch:      Make another strategy of this monster and job active.
 #   SetTarget:   true -- make the chosen monster the companion's combat target (renewed
