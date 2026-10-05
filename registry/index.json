@@ -281,6 +281,35 @@
       ]
     },
     {
+      "name": "droprate-penalty-remover",
+      "version": "1.0.1",
+      "author": "Leptis",
+      "description": "Remove the renewal drop rate penalty based on the level difference between you and the monster. Every monster drops at its full rate, whatever your level.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/droprate-penalty-remover",
+      "tags": [
+        "drops",
+        "quality-of-life",
+        "renewal"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "renewal",
+        "app": ">=1.3.0"
+      },
+      "files": [
+        {
+          "path": "db/level_penalty.yml",
+          "sha256": "c5ccd5c1499da0bf0348fe7b2082f7688ae880d71f7944d5cba574755e813f63"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "e6333ffb39131a458f15decbbe3de4688f725a13cc87f07f3fdbaed23a464f4a"
+        }
+      ]
+    },
+    {
       "name": "exp-card",
       "version": "1.1.0",
       "author": "BlaXun",
@@ -329,6 +358,36 @@
         {
           "path": "npc/exp_card.txt",
           "sha256": "e06490d46d57710a922eb67fffdb3f584e98725fb8bebb1a4264d8b0536bd774"
+        }
+      ]
+    },
+    {
+      "name": "exprate-penalty-remover",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Remove the renewal EXP penalty for killing monsters far below or far above your level. The bonus for monsters 3-15 levels above you is kept.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/exprate-penalty-remover",
+      "tags": [
+        "experience",
+        "leveling",
+        "quality-of-life",
+        "renewal"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "renewal",
+        "app": ">=1.3.0"
+      },
+      "files": [
+        {
+          "path": "db/level_penalty.yml",
+          "sha256": "f474fbb694a1ce33978c88b88e02c4658e596a9d72d2cb7b8c9f3262f21cfa97"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "8622efccd7bd9a92495e5c6de67fa6e83d0b0ec97c09093d31fc384a3ee93402"
         }
       ]
     },
