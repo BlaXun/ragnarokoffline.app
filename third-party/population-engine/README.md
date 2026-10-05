@@ -141,7 +141,7 @@ hold still, speak and switch strategy. `docs/mods/companion-strategies.md` is th
 reference, and `examples/mods/companion-tactics` a worked set.
 
 It is built to stay out of upstream's way. The whole feature is
-`src/map/population_engine/strategy/`, and the engine calls it from fourteen
+`src/map/population_engine/strategy/`, and the engine calls it from thirteen
 marked places in three of its own files (listed in `docs/COMPANION_DEVELOPMENT.md`).
 It needs no patch against rAthena. It runs for recruited companions only.
 The table ships empty, and every entry point returns at once when no rules are

@@ -153,7 +153,7 @@ listed above.
 | `third-party/population-engine/files/db/population_skill_db.yml` | Configurable skill lists and conditions |
 | `third-party/population-engine/files/db/population_gear_sets.yml` | Configurable equipment sets |
 | `third-party/population-engine/files/db/population_chat.yml` | Ambient chat categories and messages |
-| `third-party/population-engine/files/src/map/population_engine/strategy/` | Companion strategies: `db/population_strategy.yml` (per-monster, per-job and per-build rules, strategies as a state machine, events, `<name> trace`). Self-contained; the engine calls it from fourteen marked places (see below). Reference: [docs/mods/companion-strategies.md](mods/companion-strategies.md) |
+| `third-party/population-engine/files/src/map/population_engine/strategy/` | Companion strategies: `db/population_strategy.yml` (per-monster, per-job and per-build rules, strategies as a state machine, events, `<name> trace`). Self-contained; the engine calls it from thirteen marked places (see below). Reference: [docs/mods/companion-strategies.md](mods/companion-strategies.md) |
 | `third-party/population-engine/files/db/population_strategy.yml` | Companion strategies table; ships empty, mods add to it through `db/import/` |
 
 The Population Engine is vendored as its own files plus patches against pinned
@@ -174,7 +174,7 @@ reaches it from these lines, each marked `RAGNAROKMAC (companion strategies)`:
 | `population_engine.cpp` | load, reload, final | beside `population_skill_db()` |
 | `population_engine.cpp` | `population_engine_on_party_chat` | every real player's party line, before the leader check |
 | `population_engine.cpp` | companion loop: `population_strategy_target(...)` around `pop_companion_combat_target` | `Targeting:` |
-| `population_engine.cpp` | `pop_companion_follow_owner`: the throttled return and the leash walk | holding position wins over the leash, never over the warps |
+| `population_engine.cpp` | `pop_companion_follow_owner`: the leash | a rule holding its ground gets the leash a fight in the owner's sight gets (`AREA_SIZE + 2`), so holding wins over the leash, never over the warps |
 | `population_engine.cpp` | companion loop: the idle stop-walking and `pop_companion_update_formation` | an idle companion's rule-started walk and spot are kept |
 | `population_engine_combat.cpp` | include of the header | |
 | `population_engine_combat.cpp` | top of `population_shell_combat_process_tick`, before party resurrection | the companion's turn |

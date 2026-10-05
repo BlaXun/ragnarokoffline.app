@@ -2224,10 +2224,13 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		    && check_distance_bl(owner, target, AREA_SIZE))
 			leash = AREA_SIZE + 2;
 	}
+	// RAGNAROKMAC (companion strategies): a rule holding its ground gets the same leash as a fight in
+	// the owner's sight; the warps below still apply.
+	if (population_strategy_holds_position(sd, now))
+		leash = AREA_SIZE + 2;
 
-	// RAGNAROKMAC (companion strategies): a rule holding its ground lets it stay past the leash.
 	if (now < sd->pop.companion_follow_next)
-		return sd->m == owner->m && (check_distance_bl(sd, owner, leash) || population_strategy_holds_position(sd, now));
+		return sd->m == owner->m && check_distance_bl(sd, owner, leash);
 	sd->pop.companion_follow_next = now + 400;
 
 	if (sd->m != owner->m) {
@@ -2242,9 +2245,6 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		warp_near_owner();
 		return false;
 	}
-	// RAGNAROKMAC (companion strategies): ...and past it here; the warps above still apply.
-	if (owner_distance > leash && population_strategy_holds_position(sd, now))
-		return true;
 	if (owner_distance > leash) {
 		population_shell_target_change(sd, 0);
 		unit_stop_attack(sd);
