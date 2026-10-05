@@ -109,5 +109,6 @@ test('a spawned actor is outside the map quotas', () => {
 	const spawn = body(engine, 'int32_t population_engine_shell_spawn(', '\n}\n');
 	assert.match(spawn, /g_pop_draft_level = 0;/, 'the level override does not leak into the next spawn');
 	assert.match(spawn, /population_engine_shell_close_stall\(sd\);/, 'an actor is not a shop');
+	assert.match(spawn, /if \(pc_issit\(sd\) && pc_setstand\(sd, false\)\)/, 'and arrives standing, so it can walk');
 	assert.match(header, /int32_t population_engine_shell_spawn\(int32_t npc_id,/);
 });

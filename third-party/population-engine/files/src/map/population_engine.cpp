@@ -9726,6 +9726,13 @@ int32_t population_engine_shell_spawn(int32_t npc_id, int16_t m, int16_t x, int1
 		population_engine_shell_close_stall(sd);
 		sd->pop.behavior = sd->pop.behavior_base = static_cast<uint8_t>(PopulationBehavior::Wander);
 	}
+	// Sit and Vendor profiles sit their shell down at spawn, and a sitting
+	// character cannot walk, follow or attack. An actor arrives standing; the
+	// script sits it down if the scene wants that.
+	if (pc_issit(sd) && pc_setstand(sd, false)) {
+		skill_sit(sd, 0);
+		clif_standing(*sd);
+	}
 	if (name != nullptr && name[0] != '\0') {
 		safestrncpy(sd->status.name, name, NAME_LENGTH);
 		clif_name_area(sd);
