@@ -12,8 +12,8 @@
 //   population_engine_combat.cpp   the companion's turn; the skill rotation's filter
 //
 // With no rules loaded (the shipped table is empty) every hook returns at once and
-// the engine behaves exactly as it did without it. Ambient shells are never
-// touched: everything here is for companions only.
+// the engine behaves exactly as it did without it. Regular shells are touched only
+// by plans a mod marks For: shells or For: all; the rest is for companions.
 #pragma once
 
 #include <common/cbasetypes.hpp>

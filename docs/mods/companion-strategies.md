@@ -10,9 +10,10 @@ This page is the reference for that table.
 working set of plans: two Monk builds and a Ninja against the Stalactic Golem, a
 Priest who walls party members about to be stunned, and plain hits on Porings.
 
-Only **recruited companions** use these rules. Ambient AI characters never read
-the table, and with no rules loaded the engine behaves exactly as it did before.
-The engine ships the table empty.
+By default only **recruited companions** use these rules. A plan marked
+`For: shells` or `For: all` is used by the regular AI characters around the world
+as well ([Regular shells](#regular-shells)). With no rules loaded the engine
+behaves exactly as it did before. The engine ships the table empty.
 
 ## The shape
 
@@ -149,6 +150,44 @@ A tank that peels:
 ```
 
 Provoke fails on status-immune monsters, bosses among them, and on Undead.
+
+### Regular shells
+
+The AI characters walking the world pick their skills from a rotation too, and
+cast whatever comes next at whatever they fight. A plan marked `For: shells` is
+theirs (`For: all`: theirs and companions'; `For: companions` is the default):
+
+```yaml
+- Mob: All
+  Jobs:
+    - Job: Wizard
+      Build: shells_aoe           # a Build of its own, apart from the companions' Wizard plan
+      For: shells
+      Start: single
+      Strategies:
+        - Name: single            # one monster: no area spells
+          Ban: [WZ_STORMGUST, WZ_METEOR, WZ_VERMILION, WZ_HEAVENDRIVE]
+          Rules:
+            - { Name: pack, Count: { Around: target, Range: 4, AtLeast: 3 }, Switch: pack }
+        - Name: pack
+          Rules:
+            - { Name: no_pack, Count: { Around: target, Range: 4, Below: 3 }, Switch: single }
+```
+
+What differs for them:
+- They have no owner, so rules about the owner (`Target: owner`,
+  `Retreat: owner`, `master_*`, `owner_hp_below`) never apply.
+- Their party is the synthetic one every shell on a map shares: for them, party
+  members are the shells of it within sight, and a `Signal` reaches every shell
+  of the map's crowd.
+- `Targeting` (Priority, Ignore, MaxAttackers) and holding position against
+  following are companion things; regular shells choose targets the way they
+  always did, and a rule's `SetTarget` changes the current one.
+- Trace one by typing its name and `trace` in your party chat while it is in
+  sight; the trace comes to you.
+
+The ambient crowd only takes combat turns while a player has it in view, but that
+is still dozens of shells on a busy map: keep their plans short.
 
 ### Holding position
 

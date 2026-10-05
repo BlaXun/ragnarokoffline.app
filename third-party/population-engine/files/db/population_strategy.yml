@@ -19,9 +19,9 @@
 # Population Engine Companion Strategies (RAGNAROKMAC)
 ###########################################################################
 #
-# How recruited companions fight, per monster and per job. Ambient shells
-# never read this table. It ships empty: with no rules, companions behave
-# exactly as they do without it. Mods add rules through
+# How recruited companions fight, per monster and per job, and (plans marked
+# For: shells or all) the regular AI characters too. It ships empty: with no
+# rules, everyone behaves exactly as without it. Mods add rules through
 # db/import/population_strategy.yml (a mod ships db/population_strategy.yml).
 # The full reference is docs/mods/companion-strategies.md in the app.
 #
@@ -37,6 +37,8 @@
 #   Jobs:
 #     - Job:          Priest, High_Priest, JOB_PRIEST, 8 or All. A job also uses its
 #                     base class's rules, then All's.
+#       For:          companions (default), shells (the regular AI characters in the world)
+#                     or all. A shells plan wants its own Build name, apart from companions'.
 #       Build:        A name for one way to play the job (combo, asura, magic...). With
 #       Requires:     { Skills, Lacks, Items, BaseLevel }, only companions that meet it
 #                     use the entry. Entries without Build apply to every build.
