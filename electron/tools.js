@@ -241,7 +241,7 @@ const schemePrivileges = { scheme: SCHEME, privileges: { standard: true, secure:
 
 /**
  * @param {object} deps
- *   BrowserWindow, session, net, shell, stackBin(), stackEnv(), stateDir(), runtimeDir(), log(text), icon
+ *   BrowserWindow, session, net, shell, dialog, stackBin(), stackEnv(), stateDir(), runtimeDir(), log(text), icon
  *   and, for the log viewer: nebulaLogsDir(), redact(text), openGameDevTools()
  */
 // The asset origin the tool pages name (ASSET_ORIGIN in tools/*/*.html). A
@@ -516,6 +516,24 @@ function createTools(deps) {
 			if (id === 'log-viewer' && logStreams) logStreams.stopAll();
 		});
 		win.on('page-title-updated', e => e.preventDefault());
+		// A page that asks before it is left (the map editor, with changes not
+		// saved to a mod) gets no question from Electron: the close is just
+		// cancelled, and the window's close button does nothing. Ask here. The
+		// window stays until the answer; Close destroys it, which skips the
+		// page's handler.
+		win.webContents.on('will-prevent-unload', () => {
+			if (!deps.dialog) return;
+			deps.dialog.showMessageBox(win, {
+				type: 'question',
+				buttons: ['Close', 'Keep editing'],
+				defaultId: 1,
+				cancelId: 1,
+				message: `Close ${tool.name}?`,
+				detail: id === 'map-editor'
+					? 'This map has changes that are not saved to a mod. The editor keeps a copy, and offers to restore it the next time you open it.'
+					: 'This page has changes it has not saved.',
+			}).then(({ response }) => { if (response === 0 && !win.isDestroyed()) win.destroy(); }, () => {});
+		});
 		win.webContents.setWindowOpenHandler(({ url }) => {
 			// Links out (rAthena docs, GitHub) open in the browser, not here.
 			if (/^https?:\/\//.test(url)) deps.shell.openExternal(url);

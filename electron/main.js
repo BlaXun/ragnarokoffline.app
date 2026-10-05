@@ -1138,7 +1138,7 @@ let toolsSingleton = null;
 function toolsInstance() {
 	if (!toolsSingleton) {
 		toolsSingleton = require('./tools').createTools({
-			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
+			BrowserWindow, session, net, shell, dialog, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
 			assetPort: () => gamePorts().asset,
 			// The Control panel (#230). Its writes wait in the same queue as
 			// every other server operation; one that stops the game (a delete)
