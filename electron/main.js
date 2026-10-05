@@ -1163,6 +1163,29 @@ function toolsInstance() {
 				if (!game || game.isDestroyed()) throw new Error('The game window is not open. Press Play first.');
 				game.webContents.openDevTools({ mode: 'detach' });
 			},
+			// The map editor's Test in game (#414): what Apply in Settings does
+			// for one mod -- switch it on, restart the server through the same
+			// queue -- then put a character on the map the way the Control panel
+			// moves one, and reopen the game.
+			mapEditorTest: async ({ mod, map, x, y, char }) => {
+				if (getClientPaths().mode !== 'host') throw new Error('Test in game needs your own server: you are joining someone else\'s.');
+				appLog(`map editor: testing ${map} from mods/${mod}`);
+				await handlers.set_mod_enabled({ name: mod, enabled: true });
+				await queueServerOperation(async () => {
+					if (sharing) await sharing.stop();
+					return handlers.stack_up();
+				});
+				resumeSharing('after the map editor applied a mod');
+				let moved = null;
+				if (char) {
+					const { runCp } = require('./cp-bridge');
+					moved = await runCp({ stackBin, stackEnv }, { action: 'reset-position', char_id: String(char), target: { map, x, y } }, 60000)
+						.catch(e => ({ error: e.message }));
+				}
+				handlers.open_game();
+				if (moved && moved.error) return { message: `The map is on, but the character was not moved: ${moved.error}`, moved };
+				return { message: char ? `The map is on. Log in with that character and you arrive on ${map} at ${x}, ${y}.` : `The map is on. As a GM: @warp ${map} ${x} ${y}.`, moved };
+			},
 		});
 	}
 	return toolsSingleton;

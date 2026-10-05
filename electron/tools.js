@@ -24,6 +24,8 @@
 //   ro-tool://control-panel/item-names.json?ids=..  names and icons of items
 //   ro-tool://control-panel/asset/data/sprite/...   a player sprite or
 //                                            palette, from the asset server
+//   ro-tool://map-editor/asset/..., api/...  the map editor's bridge, see
+//                                            map-editor.js
 //
 // The tables come with the mods' db/import laid over them, so a mod's
 // monsters and items show up too. Each window has its own session and no
@@ -204,6 +206,25 @@ const TOOLS = [
 		needsServer: true,
 	},
 	{
+		id: 'map-editor',
+		name: 'Map editor',
+		description: 'Make a map, or change one of the client\'s, and turn it into a mod: the ground, its textures, walkability, water and light, the models on it, its NPCs, warps and monsters, its sky, weather and music. Test in game in one click. AI agents can use it too (ragnarok-map, MCP).',
+		page: 'map-editor.html',
+		author: 'Ragnarok Offline',
+		needsServer: true,
+		width: 1440, height: 900,
+	},
+	{
+		id: 'music-browser',
+		name: 'Music browser',
+		description: 'Every music track in your client and your mods, which maps play each one, and a play button: for picking a map\'s music.',
+		page: 'music.html',
+		// The map editor's page and bridge.
+		dir: 'map-editor',
+		author: 'Ragnarok Offline',
+		needsServer: true,
+	},
+	{
 		id: 'control-panel',
 		name: 'Control panel',
 		description: 'Every account and character on your server: how they look, their level, zeny, equipment and where they are. Move a stuck character to its save point, delete a character the way the game does, or make an account.',
@@ -237,6 +258,17 @@ function createTools(deps) {
 	const pngCache = new Map();
 	let handlersReady = false;
 	const dbBridge = require('./db-bridge').createDbBridge(deps);
+	// The map editor (#414): its bridge, Test in game, and the agents' control server.
+	const mapEditor = require('./map-editor').createMapEditor({
+		stateDir: deps.stateDir, runtimeDir: deps.runtimeDir, assetPort: () => (deps.assetPort ? deps.assetPort() : 3338),
+		net: deps.net, shell: deps.shell, log: deps.log, stackBin: deps.stackBin, stackEnv: deps.stackEnv,
+		execPath: process.execPath,
+		test: request => {
+			if (!deps.mapEditorTest) throw new Error('Test in game is not available in this copy of the app.');
+			return deps.mapEditorTest(request);
+		},
+		openWindow: (query, { show } = {}) => open('map-editor', { query, show }),
+	});
 	const cpBridge = require('./cp-bridge').createCpBridge(deps);
 	// Parsed once per window: the item tables are megabytes.
 	let itemNames = null;
@@ -368,6 +400,10 @@ function createTools(deps) {
 				if (answer) return answer;
 			}
 			if (tool.id === 'db-browser' && name.startsWith('api/')) return await dbBridge(request, name.slice(4));
+			if (tool.id === 'map-editor' || tool.dir === 'map-editor') {
+				const answer = await mapEditor.route(name, url, request);
+				if (answer) return answer;
+			}
 			if (tool.id === 'control-panel') {
 				const answer = await controlPanelRoute(name, url, request);
 				if (answer) return answer;
@@ -387,7 +423,7 @@ function createTools(deps) {
 				return respond(Buffer.from(await res.arrayBuffer()), 'application/octet-stream');
 			}
 			// The tool's own files, and nothing outside its folder.
-			const dir = path.join(ROOT, tool.id);
+			const dir = path.join(ROOT, tool.dir || tool.id);
 			const file = path.resolve(dir, name || tool.page);
 			if (!file.startsWith(dir + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return respond('not found', 'text/plain', 404);
 			return respond(fs.readFileSync(file), TYPES[path.extname(file)] || 'application/octet-stream');
@@ -445,19 +481,30 @@ function createTools(deps) {
 		handlersReady = true;
 	}
 
-	async function open(id) {
+	// `query` and `show` are the map editor's: a map to open, and whether an
+	// agent's editor window is shown.
+	async function open(id, { query = '', show = true } = {}) {
 		const tool = TOOLS.find(t => t.id === id);
 		if (!tool) throw new Error(`No tool called ${id}`);
 		const existing = windows.get(id);
-		if (existing && !existing.isDestroyed()) { existing.focus(); return; }
+		if (existing && !existing.isDestroyed()) {
+			if (show) { existing.show(); existing.focus(); }
+			if (id === 'map-editor' && query) {
+				const q = new URLSearchParams(query);
+				if (q.get('map')) await (await mapEditor.getBridge()).remote.run('map.open', { mod: q.get('mod') || undefined, map: q.get('map') }).catch(e => deps.log(`tools: map editor: ${e.message}`));
+			}
+			return;
+		}
 		setupSession();
 		const ses = deps.session.fromPartition(PARTITION);
 		// The pages cache what they parsed and restore it before looking for
-		// anything newer. Start them clean, so a mod added since shows up.
-		await ses.clearStorageData({ storages: ['indexdb'] }).catch(() => {});
+		// anything newer. Start them clean, so a mod added since shows up. Not
+		// the map editor's: its store is the unsaved map it can recover.
+		if (id !== 'map-editor') await ses.clearStorageData({ storages: ['indexdb'] }).catch(() => {});
 		if (id === 'control-panel') itemNames = null;
+		if (id === 'map-editor') mapEditor.ensureControl().catch(e => deps.log(`tools: map editor: ${e.message}`));
 		const win = new deps.BrowserWindow({
-			width: 1280, height: 860,
+			width: tool.width || 1280, height: tool.height || 860, show,
 			title: `${tool.name} — Ragnarok Offline`,
 			icon: deps.icon,
 			webPreferences: { partition: PARTITION, contextIsolation: true, nodeIntegration: false, sandbox: true },
@@ -477,7 +524,7 @@ function createTools(deps) {
 		win.webContents.on('will-navigate', event => {
 			if (!event.url.startsWith(`${SCHEME}://${id}/`)) event.preventDefault();
 		});
-		await win.loadURL(`${SCHEME}://${id}/${tool.page}`);
+		await win.loadURL(`${SCHEME}://${id}/${tool.page}${query ? `?${query}` : ''}`);
 	}
 
 	return {
@@ -485,6 +532,7 @@ function createTools(deps) {
 		asset,
 		list: () => TOOLS.map(({ id, name, description, author, needsServer }) => ({ id, name, description, author, needsServer: !!needsServer })),
 		open,
+		mapEditor,
 	};
 }
 

@@ -1651,6 +1651,9 @@ separate tool for). A `"maps"` entry in `mod.json` gives it a sky, clouds,
 weather and music; without one, the background behind a custom map is black and
 it plays the default track.
 
+**Settings → Tools → Map editor** makes one for you, as a mod: see
+[The map editor](mods/MAP_EDITOR.md).
+
 [Custom maps](mods/CUSTOM_MAPS.md) is the whole of it: the files, making the
 geometry, the sky and weather, getting players there, and what to check when a
 map does not show. See [`examples/mods/custom-map`](../examples/mods/custom-map)
