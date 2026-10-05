@@ -168,3 +168,27 @@ test('a picture whose bytes were swapped is refused', async () => {
     registry.image('tidy-mod', 'icon.png', { url: INDEX, fetch: fakeRegistry({ 'icon.png': 'swapped' }, body) }),
     /does not match the reviewed copy/);
 });
+
+test('a CHANGELOG.md is fetched alone, verified, and cached by its digest', async () => {
+  const text = '## 1.1.0\n- Faster.\n\n## 1.0.0\n- First.\n';
+  const body = catalogue([{ path: 'mod.json', sha256: sha('m') }, { path: 'CHANGELOG.md', sha256: sha(text) }]);
+  const fetched = [];
+  const inner = fakeRegistry({ 'CHANGELOG.md': text }, body);
+  const fetch = async (url, limit) => { fetched.push(url); return inner(url, limit); };
+  const cache = new Map();
+  assert.strictEqual(await registry.changelog('tidy-mod', { url: INDEX, fetch, cache }), text);
+  assert.strictEqual(await registry.changelog('tidy-mod', { url: INDEX, fetch, cache }), text);
+  // The index each time (no listing was passed in), the file once, mod.json never.
+  assert.deepStrictEqual(fetched.filter(u => u !== INDEX),
+    ['https://raw.githubusercontent.com/example/mods/main/mods/tidy-mod/CHANGELOG.md']);
+});
+
+test('a mod without a CHANGELOG.md has no notes, and a swapped one is refused', async () => {
+  const none = catalogue([{ path: 'mod.json', sha256: sha('m') }]);
+  assert.strictEqual(await registry.changelog('tidy-mod', { url: INDEX, fetch: fakeRegistry({}, none) }), '');
+  assert.strictEqual(await registry.changelog('other-mod', { url: INDEX, fetch: fakeRegistry({}, none) }), '');
+  const swapped = catalogue([{ path: 'mod.json', sha256: sha('m') }, { path: 'CHANGELOG.md', sha256: sha('expected') }]);
+  await assert.rejects(
+    registry.changelog('tidy-mod', { url: INDEX, fetch: fakeRegistry({ 'CHANGELOG.md': 'swapped' }, swapped) }),
+    /does not match the reviewed copy/);
+});

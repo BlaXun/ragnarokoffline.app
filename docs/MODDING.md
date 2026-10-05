@@ -350,6 +350,13 @@ A UI skin or a cursor pack in the official client's format is not a mod yet;
 A mod adds scripts and tables to your server and can run JavaScript in the game
 window. Installing one is running somebody's code — install ones you trust.
 
+A mod installed from Find Mods is offered its updates on Settings → Mods →
+Updates, with what changed: for a mod in the mod list, the sections of its
+`CHANGELOG.md` for every version since the installed one; for a mod from its
+own GitHub repository, the notes of every release since then. See
+[CHANGELOG.md](MOD_REGISTRY.md#changelogmd-what-each-version-changed) and
+[How updates reach players](MOD_REGISTRY.md#how-updates-reach-players).
+
 ## Turning mods off
 
 Settings → Mods → Installed lists what is installed with a switch each. Under the hood
