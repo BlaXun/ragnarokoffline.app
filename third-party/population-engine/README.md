@@ -129,6 +129,32 @@ stack after map changes, and stops stocking before the shell becomes
 overweight. All ammo uses normal `pc_isequip`/`pc_equipitem` validation;
 invalid items are never forced into the equipment slot.
 
+### Companion strategies
+
+`db/population_strategy.yml` gives recruited companions plans: rules per
+monster, job and build, grouped into named strategies that each plan switches
+between (a small state machine per plan). Rules react to events (a monster
+starting a cast, a party-chat line, a party member dying), to the engine's own
+`population_skill_db.yml` conditions, and to a few of their own (status charges,
+the companion's own ground units). They cast, step back, keep their distance,
+hold still, speak and switch strategy. `docs/mods/companion-strategies.md` is the
+reference, and `examples/mods/companion-tactics` a worked set.
+
+It is built to stay out of upstream's way. The whole feature is
+`src/map/population_engine/strategy/`, and the engine calls it from fourteen
+marked places in three of its own files (listed in `docs/COMPANION_DEVELOPMENT.md`).
+It needs no patch against rAthena. It runs for recruited companions only.
+The table ships empty, and every entry point returns at once when no rules are
+loaded, so with no mod the engine behaves exactly as before. Decisions are
+deterministic: no `rnd()` in the rule path.
+
+Two things it changes in how a companion casts, both only for rules:
+
+- A rule never casts a skill the companion has not learned. The rotation's
+  rows may.
+- A combo step (Chain Combo, Combo Finish, ...) may be cast during the previous
+  step's after-cast delay, which is when rAthena accepts it.
+
 ### Appearance, names, and ambient chat
 
 Hair and clothes now use rAthena's client-supported palette constants instead

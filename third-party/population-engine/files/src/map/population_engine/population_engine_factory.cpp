@@ -18,3 +18,5 @@
 // Expanded conditions parser MUST come after combat.cpp so the LegacyPredicate
 // forward declaration in predicates.hpp can resolve population_shell_skill_condition_ok.
 #include "expanded_ai/expanded_parser.cpp"
+// RAGNAROKMAC (companion strategies): last, because it reuses checks the combat file keeps to itself.
+#include "strategy/population_strategy.cpp"

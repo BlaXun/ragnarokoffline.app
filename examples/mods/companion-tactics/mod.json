@@ -1,0 +1,7 @@
+{
+  "name": "companion-tactics",
+  "version": "1.0.0",
+  "author": "Ragnarok Offline",
+  "description": "Recruited companions fight by plan: per-monster, per-job and per-build rules, with strategies they switch between.",
+  "requires": { "app": ">=1.6.0", "era": "any" }
+}

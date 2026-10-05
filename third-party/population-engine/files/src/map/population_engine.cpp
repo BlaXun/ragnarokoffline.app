@@ -2225,8 +2225,9 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 			leash = AREA_SIZE + 2;
 	}
 
+	// RAGNAROKMAC (companion strategies): a rule holding its ground lets it stay past the leash.
 	if (now < sd->pop.companion_follow_next)
-		return sd->m == owner->m && check_distance_bl(sd, owner, leash);
+		return sd->m == owner->m && (check_distance_bl(sd, owner, leash) || population_strategy_holds_position(sd, now));
 	sd->pop.companion_follow_next = now + 400;
 
 	if (sd->m != owner->m) {
@@ -2241,6 +2242,9 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		warp_near_owner();
 		return false;
 	}
+	// RAGNAROKMAC (companion strategies): ...and past it here; the warps above still apply.
+	if (owner_distance > leash && population_strategy_holds_position(sd, now))
+		return true;
 	if (owner_distance > leash) {
 		population_shell_target_change(sd, 0);
 		unit_stop_attack(sd);
@@ -4653,7 +4657,8 @@ TIMER_FUNC(population_engine_global_combat_timer)
 		// Party modes make their target decision before the normal combat tick, so
 		// refresh the tracker here as well. Its internal interval keeps this cheap.
 		population_shell_update_mob_tracker(sd);
-		const uint32 desired_target = pop_companion_combat_target(sd, owner, now);
+		// RAGNAROKMAC (companion strategies): Targeting: Priority and Ignore have the last word.
+		const uint32 desired_target = population_strategy_target(sd, owner, pop_companion_combat_target(sd, owner, now));
 		if (static_cast<uint32>(sd->pop.target_id) != desired_target)
 			population_shell_target_change(sd, static_cast<int>(desired_target));
 		if (desired_target != 0 && sd->pop.companion_formation_active) {
@@ -4669,13 +4674,14 @@ TIMER_FUNC(population_engine_global_combat_timer)
 			// a chase to drop. Halting it once the companion was within 4 cells, with the owner
 			// still moving, made it stop, snap in place and set off again 400 ms later; the faster
 			// the companion (a mounted Lord Knight), the more often it caught up and stuttered.
+			// RAGNAROKMAC (companion strategies): nor a walk a rule started (MoveTo, Leave, ...).
 			if (unit_is_walking(sd) && !sd->pop.companion_formation_active &&
-				sd->ud.target_to != owner->id)
+				sd->ud.target_to != owner->id && !population_strategy_holds_position(sd, now))
 				unit_stop_walking(sd, USW_FIXPOS);
 		}
 		if (sd->state.population_combat)
 			population_engine_combat_per_tick(sd, true);
-		if (desired_target == 0)
+		if (desired_target == 0 && !population_strategy_holds_position(sd, now)) // RAGNAROKMAC (companion strategies)
 			pop_companion_update_formation(sd, owner);
 	}
 	map_foreachpc(pop_combat_tick_per_real_pc, &ctx);
@@ -4939,6 +4945,9 @@ void do_init_population_engine_load_databases() {
 		ShowWarning("Population engine: population_chat.yml missing or invalid; chat disabled until fixed.\n");
 	if (!population_skill_db().load())
 		ShowWarning("Population engine: population_skill_db.yml missing or invalid; no per-job skill overrides loaded.\n");
+	// RAGNAROKMAC (companion strategies): after mob, job, item and skill data, which its rules name.
+	if (!population_strategy_load())
+		ShowWarning("Population engine: population_strategy.yml missing or invalid; companions use no strategy rules.\n");
 	// Shared templates DB MUST load before the three job DBs so GearSet/Profile
 	// references in the job files can resolve via fallback lookup.
 	if (!population_shared_db().load())
@@ -5063,6 +5072,12 @@ bool population_engine_reload_equipment(uint32_t *out_entry_count)
 		ShowStatus("Population engine: population_skill_db.yml reloaded (%zu jobs).\n", population_skill_db().job_count());
 	else
 		ShowWarning("Population engine: population_skill_db.yml reload failed (missing or invalid).\n");
+
+	// RAGNAROKMAC (companion strategies)
+	if (population_strategy_reload())
+		ShowStatus("Population engine: population_strategy.yml reloaded (%zu rules).\n", population_strategy_rule_count());
+	else
+		ShowWarning("Population engine: population_strategy.yml reload failed (missing or invalid).\n");
 
 	const bool chat_re = population_chat_db().reload();
 	if (chat_re)
@@ -9176,6 +9191,8 @@ void population_engine_on_party_chat(map_session_data *from_sd, const char *mess
 		return;
 	if (population_engine_is_population_pc(from_sd->id) || from_sd->status.party_id == 0)
 		return;
+	// RAGNAROKMAC (companion strategies): every member's line, for On: party_chat rules and "<name> trace".
+	population_strategy_on_party_chat(from_sd, message);
 	// Leadership is resolved at command time. A transferred party immediately
 	// transfers command authority without rewriting companion ownership.
 	if (!party_isleader(from_sd))
@@ -9443,6 +9460,7 @@ void do_final_population_engine() {
 	population_spawn_db().clear();
 	population_names_db().clear();
 	population_skill_db().clear();
+	population_strategy_final(); // RAGNAROKMAC (companion strategies)
 }
 
 // ============================================================
