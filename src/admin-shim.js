@@ -138,8 +138,55 @@
 
 	// --- the calls ------------------------------------------------------------
 
+	// A mod's own settings page, in a frame it cannot climb out of: sandboxed
+	// with scripts but without allow-same-origin, so it has an origin of its
+	// own, sends no cookie, and can reach nothing of the admin page's. Its
+	// modSettings calls arrive here by postMessage; which mod they are for is
+	// the ticket this page was given when it opened the frame, never anything
+	// the frame says.
+	async function openModPage(name) {
+		const { ticket, url } = await invoke('mod_page_open', { name });
+		modal((box, close) => {
+			box.style.maxWidth = '640px';
+			text(box, 'div', `${name} — settings`, 'font-weight:600;margin-bottom:8px');
+			const frame = document.createElement('iframe');
+			frame.setAttribute('sandbox', 'allow-scripts');
+			frame.setAttribute('referrerpolicy', 'no-referrer');
+			frame.src = url;
+			frame.style.cssText = 'width:100%;height:70vh;border:1px solid #445;border-radius:4px;background:#fff';
+			box.appendChild(frame);
+			const onMessage = async e => {
+				if (e.source !== frame.contentWindow || !e.data || e.data.roModSettings !== 'call') return;
+				const { id, op, values } = e.data;
+				let reply;
+				try {
+					reply = { ok: true, value: await invoke('mod_page_call', { ticket, op: String(op), values }) };
+				} catch (error) {
+					reply = { ok: false, error: (error && error.message) || String(error) };
+				}
+				// The frame's origin is opaque, so it cannot be named; the message
+				// goes to that one window only.
+				frame.contentWindow && frame.contentWindow.postMessage({ roModSettings: 'reply', id, ...reply }, '*');
+			};
+			window.addEventListener('message', onMessage);
+			const row = document.createElement('div');
+			button(row, 'Close', () => {
+				window.removeEventListener('message', onMessage);
+				invoke('mod_page_close', { ticket }).catch(() => {});
+				close();
+			}, true);
+			box.appendChild(row);
+		});
+		return `Opened ${name} settings.`;
+	}
+
 	// Calls that mean something in the browser rather than on the server.
 	const local = {
+		// Settings -> Tools: our own pages, in a tab of their own.
+		open_tool: async ({ id }) => {
+			window.open(`/tools/${encodeURIComponent(String(id))}/`, '_blank', 'noopener');
+		},
+		open_mod_settings: async ({ name }) => openModPage(String(name)),
 		copy_text: async ({ text: t }) => navigator.clipboard.writeText(String(t || '')),
 		// Setup (where the client's files are) is a page of its own here, not a window.
 		open_setup: async () => { location.href = '/setup'; },

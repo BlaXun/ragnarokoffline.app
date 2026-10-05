@@ -3625,7 +3625,29 @@ const HEADLESS_OVERRIDES = {
 	copy_diagnostics: async () => saveHeadlessDiagnostics(),
 	report_issue: async () => `${await saveHeadlessDiagnostics()} Attach it to a new issue at ${SOURCE_URL}/issues/new.`,
 	sharing_token_help: () => 'Create a token at https://dash.cloudflare.com/profile/api-tokens',
+	// A mod's own settings page, in a sandboxed frame of the admin page
+	// (electron/headless/admin-server.js). The ticket names the mod; the page's
+	// three calls come back here with it and go to the same code as the
+	// settings window's (mod-settings-window.js).
+	mod_page_open: async ({ name }) => {
+		const { root, file } = await modSettingsWindows().page(String(name));
+		appLog(`opened the settings page of mod ${name} (headless)`);
+		return headlessAdmin.openModPage(String(name), root, file);
+	},
+	mod_page_call: async ({ ticket, op, values }) => {
+		const name = headlessAdmin.modPageOwner(ticket);
+		if (!name) throw new Error('This settings page has been closed. Open it again from the Mods tab.');
+		const mods = modSettingsWindows();
+		if (op === 'get') return mods.get(name);
+		if (op === 'set') return mods.set(name, values, 'its settings page (headless)');
+		if (op === 'apply') return mods.apply(name, 'its settings page (headless)');
+		throw new Error(`modSettings has no ${op}.`);
+	},
+	mod_page_close: ({ ticket }) => { headlessAdmin.closeModPage(ticket); },
 };
+
+// The running admin server, for the calls above that issue its tickets.
+let headlessAdmin = null;
 
 async function saveHeadlessDiagnostics() {
 	const file = path.join(stateDir(), 'logs', `diagnostics-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`);
@@ -3637,7 +3659,7 @@ async function saveHeadlessDiagnostics() {
 // A call from the admin page: through the same queue and the same handlers
 // as one from the Settings window.
 async function headlessInvoke(name, args) {
-	if (!HEADLESS_PAGE_HANDLERS.has(name) || !(name in handlers)) {
+	if (!HEADLESS_OVERRIDES[name] && (!HEADLESS_PAGE_HANDLERS.has(name) || !(name in handlers))) {
 		throw new Error(`${name} is not available in headless mode.`);
 	}
 	try {
@@ -3668,15 +3690,22 @@ async function startHeadless() {
 		host, port, dialogs,
 		srcDir: path.join(__dirname, '..', 'src'),
 		invoke: headlessInvoke,
+		// Settings -> Tools, served at /tools/<id>/ by the same code as their windows.
+		tools: toolsInstance(),
 		info: () => ({ gameUrl: gameUrl(), version: app.getVersion() }),
 		log: appLog,
 	});
+	headlessAdmin = admin;
 	// The one place the address is, for a host who did not see it scroll past
 	// -- and on Windows, where a windowed app's output reaches no terminal.
 	const urlFile = path.join(stateDir(), 'headless-admin.url');
 	fs.mkdirSync(stateDir(), { recursive: true });
 	fs.writeFileSync(urlFile, `${admin.url}\n`, { mode: 0o600 });
+	const game = gameUrl();
+	const local = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(game);
 	process.stdout.write(`\nRagnarok Offline ${app.getVersion()}, headless.\n` +
+		`  Game:     ${game}\n` +
+		(local ? '            (this machine only; turn on LAN in Settings -> Multiplayer for others)\n' : '') +
 		`  Settings: ${admin.url}\n` +
 		'            (this address signs you in; it changes every start)\n' +
 		(host === '127.0.0.1' ? '            from another machine: ssh -L ' + admin.port + ':127.0.0.1:' + admin.port + ' <this host>\n' : '') +

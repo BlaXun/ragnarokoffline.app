@@ -50,6 +50,8 @@ It prints:
 
 ```
 Ragnarok Offline 1.5.2, headless.
+  Game:     http://127.0.0.1:3338/
+            (this machine only; turn on LAN in Settings -> Multiplayer for others)
   Settings: http://127.0.0.1:3339/settings?token=vZTPpbZ2zMYgH9bKdLOw7wSZJbGXQpEc
             (this address signs you in; it changes every start)
             from another machine: ssh -L 3339:127.0.0.1:3339 <this host>
@@ -58,6 +60,12 @@ Ragnarok Offline 1.5.2, headless.
 
 and then the server's progress, as the loading screen would show it, ending in
 `headless: ready. Players open http://…:3338/`.
+
+**Game** is where the game itself is: open it in any browser to play on this
+world, or give it to players (see [Letting players in](#letting-players-in)).
+From another machine over SSH, forward it too:
+`ssh -L 3338:127.0.0.1:3338 -L 3339:127.0.0.1:3339 you@the-server`, then open
+both addresses on your own computer.
 
 The address is also written to `state/headless-admin.url` in the app's data
 folder, readable only by your user:
@@ -94,9 +102,20 @@ A few things are different without a screen:
 | Open mods folder / data folder | shows the folder's path on the server |
 | Copy diagnostics, Report an issue | saves diagnostics to a file in the data folder's `state/logs/` and says where |
 | Copy (an invitation, a link) | copies in your browser, for anything the page itself shows |
-| Tools (database browser, control panel, log viewer) | not yet: they are windows of their own |
-| A mod's own settings page | not yet, for the same reason |
+| Tools (item and monster browsers, database browser, control panel, log viewer) | open in a new tab, under the same sign-in |
+| A mod's own settings page | opens over Settings, in a sandboxed frame (below) |
 | The AI agent's guide | not yet |
+
+### A mod's own settings page
+
+Some mods have a settings page of their own (Settings… on the mod in the Mods
+tab). That page is the mod author's code, so it never gets your sign-in. It
+opens in a sandboxed frame with an origin of its own: it sends no cookie,
+cannot read the Settings page around it, and cannot call anything the
+Settings page can. It reads its files from one address that serves only its
+mod's folder, and it can do exactly what it can in the desktop app: read its
+own settings, save them, and ask for the server to restart. Which mod a call is
+for is decided by the frame it came from, never by what the page says.
 
 ### Who can open it
 
@@ -114,6 +133,8 @@ it is yours alone:
   ```
 
 - `--admin-port <n>` (or `RAGNAROK_OFFLINE_ADMIN_PORT`) moves it off 3339.
+- The Tools pages are ours and share your session; their requests are accepted
+  only from the admin page's own address.
 - `--admin-host 0.0.0.0` (or `RAGNAROK_OFFLINE_ADMIN_HOST`) makes it listen on
   every network. It is plain HTTP, so anyone on the network path can read the
   token as you type it. Prefer the SSH tunnel, or a network only you are on.

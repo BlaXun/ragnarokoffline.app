@@ -356,73 +356,88 @@ function createTools(deps) {
 		return new Response(body, { status, headers: { 'content-type': type, 'cache-control': 'no-store' } });
 	}
 
+	// One request to a tool: its page and files, and what they ask of the
+	// server. The ro-tool:// scheme below and a headless app's admin page
+	// (electron/headless/admin-server.js, /tools/<id>/...) both answer with this.
+	async function route(id, name, url, request) {
+		const tool = TOOLS.find(t => t.id === id);
+		if (!tool) return respond('no such tool', 'text/plain', 404);
+		try {
+			if (tool.id === 'log-viewer') {
+				const answer = await logViewerRoute(name, url, request);
+				if (answer) return answer;
+			}
+			if (tool.id === 'db-browser' && name.startsWith('api/')) return await dbBridge(request, name.slice(4));
+			if (tool.id === 'control-panel') {
+				const answer = await controlPanelRoute(name, url, request);
+				if (answer) return answer;
+			}
+			if (name === 'mob_db.yml' || /^item_db_(equip|etc|usable)\.yml$/.test(name)) {
+				return respond(await exportTable(name.replace(/\.yml$/, '')), TYPES['.yml']);
+			}
+			if (name === 'itemInfo.lua') return respond(itemInfo(), TYPES['.lua']);
+			if (name === 'monster-sprites.json') return respond(JSON.stringify(monsterTable()), TYPES['.json']);
+			const sprite = /^sprite\/([^/]+)\.(spr|act)$/.exec(name);
+			if (sprite) {
+				// data/sprite/몬스터/ ("monster"): the asset server resolves the
+				// Korean folder and the GRFs' lowercase names.
+				const url = `http://${assetHost()}/data/sprite/${encodeURIComponent('몬스터')}/${encodeURIComponent(sprite[1].toLowerCase())}.${sprite[2]}`;
+				const res = await deps.net.fetch(url, { bypassCustomProtocolHandlers: true });
+				if (!res.ok) return respond(`no sprite ${sprite[1]}`, 'text/plain', 404);
+				return respond(Buffer.from(await res.arrayBuffer()), 'application/octet-stream');
+			}
+			// The tool's own files, and nothing outside its folder.
+			const dir = path.join(ROOT, tool.id);
+			const file = path.resolve(dir, name || tool.page);
+			if (!file.startsWith(dir + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return respond('not found', 'text/plain', 404);
+			return respond(fs.readFileSync(file), TYPES[path.extname(file)] || 'application/octet-stream');
+		} catch (e) {
+			deps.log(`tools: ${tool.id} ${name}: ${e.message}`);
+			return respond(e.message, 'text/plain', 503);
+		}
+	}
+
+	// What a tool page asks of the asset server, by path: the monster
+	// browser's icon map (built here), the game's .bmp pictures with their
+	// magenta made transparent, and anything else as it is.
+	async function asset(pathAndQuery) {
+		const url = new URL(pathAndQuery, `http://${assetHost()}`);
+		if (url.pathname === '/item-icons.js') {
+			try { return respond(await itemIcons(), TYPES['.js']); } catch (e) {
+				deps.log(`tools: item icons: ${e.message}`);
+				return respond('/* ' + e.message.replace(/\*\//g, '') + ' */', TYPES['.js'], 503);
+			}
+		}
+		// The game's .bmp pictures, with their magenta turned transparent.
+		if (/\.bmp$/i.test(url.pathname)) {
+			const key = url.pathname;
+			if (!pngCache.has(key)) {
+				const res = await deps.net.fetch(url.toString(), { bypassCustomProtocolHandlers: true });
+				if (!res.ok) return res;
+				const original = Buffer.from(await res.arrayBuffer());
+				const png = require('./bmp').bmpToPng(original);
+				if (pngCache.size > 5000) pngCache.clear();
+				pngCache.set(key, png ? { body: png, type: 'image/png' } : { body: original, type: 'image/bmp' });
+			}
+			const hit = pngCache.get(key);
+			return new Response(hit.body, { headers: { 'content-type': hit.type, 'cache-control': 'max-age=3600' } });
+		}
+		return deps.net.fetch(url.toString(), { bypassCustomProtocolHandlers: true });
+	}
+
 	function setupSession() {
 		if (handlersReady) return;
 		const ses = deps.session.fromPartition(PARTITION);
-		ses.protocol.handle(SCHEME, async request => {
+		ses.protocol.handle(SCHEME, request => {
 			const url = new URL(request.url);
-			const tool = TOOLS.find(t => t.id === url.hostname);
-			if (!tool) return respond('no such tool', 'text/plain', 404);
-			const name = decodeURIComponent(url.pathname.replace(/^\/+/, ''));
-			try {
-				if (tool.id === 'log-viewer') {
-					const answer = await logViewerRoute(name, url, request);
-					if (answer) return answer;
-				}
-				if (tool.id === 'db-browser' && name.startsWith('api/')) return await dbBridge(request, name.slice(4));
-				if (tool.id === 'control-panel') {
-					const answer = await controlPanelRoute(name, url, request);
-					if (answer) return answer;
-				}
-				if (name === 'mob_db.yml' || /^item_db_(equip|etc|usable)\.yml$/.test(name)) {
-					return respond(await exportTable(name.replace(/\.yml$/, '')), TYPES['.yml']);
-				}
-				if (name === 'itemInfo.lua') return respond(itemInfo(), TYPES['.lua']);
-				if (name === 'monster-sprites.json') return respond(JSON.stringify(monsterTable()), TYPES['.json']);
-				const sprite = /^sprite\/([^/]+)\.(spr|act)$/.exec(name);
-				if (sprite) {
-					// data/sprite/몬스터/ ("monster"): the asset server resolves the
-					// Korean folder and the GRFs' lowercase names.
-					const url = `http://${assetHost()}/data/sprite/${encodeURIComponent('몬스터')}/${encodeURIComponent(sprite[1].toLowerCase())}.${sprite[2]}`;
-					const res = await deps.net.fetch(url, { bypassCustomProtocolHandlers: true });
-					if (!res.ok) return respond(`no sprite ${sprite[1]}`, 'text/plain', 404);
-					return respond(Buffer.from(await res.arrayBuffer()), 'application/octet-stream');
-				}
-				// The tool's own files, and nothing outside its folder.
-				const dir = path.join(ROOT, tool.id);
-				const file = path.resolve(dir, name || tool.page);
-				if (!file.startsWith(dir + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return respond('not found', 'text/plain', 404);
-				return respond(fs.readFileSync(file), TYPES[path.extname(file)] || 'application/octet-stream');
-			} catch (e) {
-				deps.log(`tools: ${tool.id} ${name}: ${e.message}`);
-				return respond(e.message, 'text/plain', 503);
-			}
+			return route(url.hostname, decodeURIComponent(url.pathname.replace(/^\/+/, '')), url, request);
 		});
 		// The monster browser loads its icon map from the asset server, where
 		// the old extraction script used to leave it. Answer that one URL here
 		// and let everything else through.
 		ses.protocol.handle('http', async request => {
 			const url = new URL(request.url);
-			if (isAsset(url) && url.pathname === '/item-icons.js') {
-				try { return respond(await itemIcons(), TYPES['.js']); } catch (e) {
-					deps.log(`tools: item icons: ${e.message}`);
-					return respond('/* ' + e.message.replace(/\*\//g, '') + ' */', TYPES['.js'], 503);
-				}
-			}
-			// The game's .bmp pictures, with their magenta turned transparent.
-			if (isAsset(url) && /\.bmp$/i.test(url.pathname)) {
-				const key = url.pathname;
-				if (!pngCache.has(key)) {
-					const res = await deps.net.fetch(toAsset(request.url), { bypassCustomProtocolHandlers: true });
-					if (!res.ok) return res;
-					const original = Buffer.from(await res.arrayBuffer());
-					const png = require('./bmp').bmpToPng(original);
-					if (pngCache.size > 5000) pngCache.clear();
-					pngCache.set(key, png ? { body: png, type: 'image/png' } : { body: original, type: 'image/bmp' });
-				}
-				const hit = pngCache.get(key);
-				return new Response(hit.body, { headers: { 'content-type': hit.type, 'cache-control': 'max-age=3600' } });
-			}
+			if (isAsset(url) && (url.pathname === '/item-icons.js' || /\.bmp$/i.test(url.pathname))) return asset(url.pathname + url.search);
 			// The pages only read from the asset server, so a moved one is a GET.
 			if (isAsset(url) && url.host !== assetHost()) return deps.net.fetch(toAsset(request.url), { bypassCustomProtocolHandlers: true });
 			return deps.net.fetch(request, { bypassCustomProtocolHandlers: true });
@@ -466,6 +481,8 @@ function createTools(deps) {
 	}
 
 	return {
+		route,
+		asset,
 		list: () => TOOLS.map(({ id, name, description, author, needsServer }) => ({ id, name, description, author, needsServer: !!needsServer })),
 		open,
 	};

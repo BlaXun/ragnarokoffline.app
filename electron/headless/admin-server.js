@@ -28,6 +28,7 @@
 //
 
 const crypto = require('crypto');
+const { Readable } = require('stream');
 const fs = require('fs');
 const http = require('http');
 const os = require('os');
@@ -43,6 +44,74 @@ const ASSETS = {
 	'accounts-settings.js': 'text/javascript; charset=utf-8',
 	'admin-shim.js': 'text/javascript; charset=utf-8',
 };
+
+/**
+ * A mod's settings page is somebody else's code, so it is never served under
+ * the admin session. The admin page puts it in an <iframe sandbox="allow-scripts">
+ * without allow-same-origin: the frame has an origin of its own that matches
+ * nothing, sends no cookie, and can reach the admin API not at all. Its files
+ * come from /mod-page/<ticket>/..., a ticket the admin page asked for when it
+ * opened the frame, which names one mod's folder and nothing else. Its three
+ * calls (modSettings.get/set/apply) go to the admin page by postMessage, and
+ * the admin page decides which mod they are for from which frame sent them.
+ *
+ * The policy is the settings window's (electron/mod-settings-window.js), with
+ * 'self' narrowed to this one mod's folder.
+ */
+const MOD_PAGE_TYPES = {
+	'.html': 'text/html; charset=utf-8', '.htm': 'text/html; charset=utf-8',
+	'.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
+	'.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
+	'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
+	'.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
+	'.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf',
+};
+
+function modPagePolicy(base, adminOrigin) {
+	return [
+		"default-src 'none'",
+		`script-src ${base} 'unsafe-inline'`,
+		`style-src ${base} 'unsafe-inline'`,
+		`img-src ${base} data: blob:`,
+		`font-src ${base} data:`,
+		`connect-src ${base}`,
+		"form-action 'none'",
+		"frame-src 'none'",
+		"object-src 'none'",
+		"base-uri 'none'",
+		`frame-ancestors ${adminOrigin}`,
+	].join('; ');
+}
+
+/** What a mod's page gets as window.modSettings, in place of the window's preload. */
+const MOD_PAGE_BRIDGE = `<script>
+(function () {
+	var next = 0, waiting = {};
+	window.addEventListener('message', function (e) {
+		if (e.source !== window.parent || !e.data || e.data.roModSettings !== 'reply') return;
+		var w = waiting[e.data.id];
+		if (!w) return;
+		delete waiting[e.data.id];
+		if (e.data.ok) w.resolve(e.data.value); else w.reject(new Error(e.data.error));
+	});
+	function call(op, values) {
+		return new Promise(function (resolve, reject) {
+			var id = ++next;
+			waiting[id] = { resolve: resolve, reject: reject };
+			window.parent.postMessage({ roModSettings: 'call', id: id, op: op, values: values }, '*');
+		});
+	}
+	window.modSettings = {
+		get: function () { return call('get'); },
+		set: function (values) { return call('set', values); },
+		apply: function () { return call('apply'); }
+	};
+})();
+</script>
+`;
+
+/** A ticket outlives a forgotten tab by no more than this. */
+const MOD_PAGE_TTL_MS = 12 * 60 * 60 * 1000;
 
 /** The largest body accepted: a mod archive, or a backup to restore. */
 const UPLOAD_LIMIT = 1024 * 1024 * 1024;
@@ -81,6 +150,25 @@ function send(res, status, type, body, headers = {}) {
 
 function json(res, status, value) {
 	send(res, status, 'application/json; charset=utf-8', JSON.stringify(value));
+}
+
+/**
+ * A Fetch Response, as this server's answer. Streamed, so the log viewer's
+ * live stream flows rather than waiting for an end that never comes.
+ */
+async function pipe(res, response, rewrite) {
+	const type = response.headers.get('content-type') || 'application/octet-stream';
+	const headers = { 'Content-Type': type, 'Cache-Control': response.headers.get('cache-control') || 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
+	if (rewrite && /^text\/html/.test(type)) {
+		res.writeHead(response.status, headers);
+		res.end(rewrite(await response.text()));
+		return;
+	}
+	res.writeHead(response.status, headers);
+	if (!response.body) { res.end(); return; }
+	const stream = Readable.fromWeb(response.body);
+	res.on('close', () => stream.destroy());
+	stream.pipe(res);
 }
 
 function readBody(req, limit) {
@@ -139,6 +227,20 @@ async function start(o) {
 		return names;
 	};
 
+	// Mod settings pages: ticket -> { name, root, expires }.
+	const modPages = new Map();
+	const modFile = (root, rel) => {
+		let parts;
+		try { parts = rel.split('/').filter(Boolean).map(decodeURIComponent); } catch { return null; }
+		if (!parts.length || parts.some(p => p === '.' || p === '..' || /[\\/:\0]/.test(p))) return null;
+		let file;
+		try { file = fs.realpathSync(path.join(root, ...parts)); } catch { return null; }
+		const inside = path.relative(root, file);
+		if (!inside || inside.startsWith('..') || path.isAbsolute(inside)) return null;
+		try { return fs.statSync(file).isFile() ? file : null; } catch { return null; }
+	};
+	const ownOrigin = req => `http://${req.headers.host}`;
+
 	const authorized = req => {
 		const bearer = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || ''));
 		if (bearer && same(bearer[1], secret)) return true;
@@ -161,6 +263,34 @@ async function start(o) {
 				return send(res, 421, 'text/plain; charset=utf-8', 'This address is not served here.');
 			}
 
+			// A mod's settings page: the ticket is the key, and it opens one
+			// mod's folder, read-only.
+			const modPage = /^\/mod-page\/([A-Za-z0-9_-]{20,})\/(.+)$/.exec(url.pathname);
+			if (modPage) {
+				const ticket = modPages.get(modPage[1]);
+				if (!ticket || ticket.expires < Date.now() || req.method !== 'GET') return send(res, 404, 'text/plain; charset=utf-8', 'Not found');
+				const file = modFile(ticket.root, modPage[2]);
+				if (!file) return send(res, 404, 'text/plain; charset=utf-8', 'Not found');
+				const type = MOD_PAGE_TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream';
+				let body = fs.readFileSync(file);
+				// The bridge before anything of the page's own.
+				if (/^text\/html/.test(type)) {
+					const html = body.toString('utf8');
+					const at = html.search(/<head[^>]*>/i);
+					body = at < 0 ? MOD_PAGE_BRIDGE + html
+						: html.slice(0, at) + html.slice(at).replace(/<head[^>]*>/i, m => m + MOD_PAGE_BRIDGE);
+				}
+				const base = `${ownOrigin(req)}/mod-page/${modPage[1]}/`;
+				res.writeHead(200, {
+					'Content-Type': type,
+					'Cache-Control': 'no-store',
+					'Content-Security-Policy': modPagePolicy(base, ownOrigin(req)),
+					'X-Content-Type-Options': 'nosniff',
+					'Referrer-Policy': 'no-referrer',
+				});
+				return res.end(body);
+			}
+
 			// The token, swapped for a session.
 			if (req.method === 'GET' && url.pathname === '/settings' && url.searchParams.has('token')) {
 				if (!same(url.searchParams.get('token'), secret)) {
@@ -179,6 +309,31 @@ async function start(o) {
 			if (!authorized(req)) {
 				return send(res, 401, 'text/plain; charset=utf-8',
 					'Open the address the app printed when it started: /settings?token=...');
+			}
+
+			// Settings -> Tools, our own pages, under the same session. Their
+			// POSTs (the database browser's and control panel's bridges) cannot
+			// carry X-RO-Admin, so they must come from this origin instead: a
+			// page on another site sends its own Origin and is refused.
+			const tool = /^\/tools\/([a-z0-9-]+)\/(.*)$/.exec(url.pathname);
+			if (tool && o.tools) {
+				if (req.method !== 'GET' && (req.headers.origin !== ownOrigin(req) || req.headers['sec-fetch-site'] === 'cross-site')) {
+					return send(res, 403, 'text/plain; charset=utf-8', 'Only the tool pages may send this.');
+				}
+				const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await readBody(req, JSON_LIMIT);
+				const request = new Request(`http://admin.invalid${req.url}`, {
+					method: req.method,
+					headers: { 'content-type': req.headers['content-type'] || 'application/octet-stream' },
+					body,
+				});
+				const response = await o.tools.route(tool[1], decodeURIComponent(tool[2]), new URL(request.url), request);
+				// The pages name the asset server by its loopback address, which
+				// a browser on another machine cannot reach; send them through
+				// this server instead.
+				return pipe(res, response, html => html.replace(/(['"])http:\/\/127\.0\.0\.1:3338\1/g, '(location.origin + "/tools-asset")'));
+			}
+			if (url.pathname.startsWith('/tools-asset/') && o.tools && req.method === 'GET') {
+				return pipe(res, await o.tools.asset(url.pathname.slice('/tools-asset'.length) + url.search));
 			}
 
 			if (req.method === 'GET') {
@@ -242,6 +397,25 @@ async function start(o) {
 		url: `http://${shown}:${port}/settings?token=${secret}`,
 		token: secret,
 		port,
+		/**
+		 * A ticket for one mod's settings page, for the admin page to load in
+		 * its sandboxed frame. `root` is the mod's folder and `file` the page,
+		 * both checked by mod-settings-window's settingsPageFile.
+		 */
+		openModPage(name, root, file) {
+			const ticket = token();
+			modPages.set(ticket, { name, root, expires: Date.now() + MOD_PAGE_TTL_MS });
+			const rel = path.relative(root, file).split(path.sep).map(encodeURIComponent).join('/');
+			return { ticket, url: `/mod-page/${ticket}/${rel}` };
+		},
+		/** The mod a ticket was made for, or null. */
+		modPageOwner(ticket) {
+			const t = modPages.get(String(ticket));
+			return t && t.expires >= Date.now() ? t.name : null;
+		},
+		closeModPage(ticket) {
+			modPages.delete(String(ticket));
+		},
 		close: () => new Promise(resolve => server.close(() => resolve())),
 	};
 }
