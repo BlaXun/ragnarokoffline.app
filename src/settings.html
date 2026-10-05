@@ -889,6 +889,69 @@
     <p class="note" id="ram-note"></p>
   </div>
 
+  <h2 style="margin-top:18px">Loot</h2>
+  <div class="panel" id="loot-panel">
+    <label>
+      <span>Fake players loot</span>
+      <input type="checkbox" id="population_loot_enable" style="accent-color: var(--accent); flex: none" />
+      <span class="val" style="width:auto; color: var(--dim)">they pick up what their kills drop</span>
+    </label>
+    <div id="loot-settings">
+      <label style="margin-top:6px">
+        <span>Picks up common drops</span>
+        <input type="range" id="population_loot_common_pickup_pct" min="0" max="100" step="5">
+        <span class="val" id="v-population_loot_common_pickup_pct"></span>
+      </label>
+      <label style="margin-top:6px">
+        <span>Rare from</span>
+        <input type="range" id="population_loot_rare_pct" min="0" max="5" step="0.05">
+        <span class="val" id="v-population_loot_rare_pct"></span>
+      </label>
+      <label style="margin-top:6px">
+        <span>Picks up rare drops</span>
+        <input type="range" id="population_loot_rare_pickup_pct" min="50" max="100" step="1">
+        <span class="val" id="v-population_loot_rare_pickup_pct"></span>
+      </label>
+      <label style="margin-top:6px">
+        <span>Forgets after a fight</span>
+        <input type="range" id="population_loot_forget_pct" min="0" max="100" step="5">
+        <span class="val" id="v-population_loot_forget_pct"></span>
+      </label>
+      <label style="margin-top:6px">
+        <span>Rare mid-fight above</span>
+        <input type="range" id="population_loot_hp_abort_pct" min="0" max="90" step="5">
+        <span class="val" id="v-population_loot_hp_abort_pct"></span>
+      </label>
+      <label style="margin-top:6px">
+        <span>Gives up after</span>
+        <input type="range" id="population_loot_timeout_s" min="5" max="60" step="5">
+        <span class="val" id="v-population_loot_timeout_s"></span>
+      </label>
+      <label style="margin-top:6px">
+        <span>Looks around</span>
+        <input type="range" id="population_loot_radius" min="3" max="20" step="1">
+        <span class="val" id="v-population_loot_radius"></span>
+      </label>
+    </div>
+    <p class="note" id="loot-note"></p>
+    <div class="actions" style="margin-top:10px">
+      <button id="save-population-loot" class="ghost">Apply</button>
+    </div>
+    <p class="note">Without this, fake players leave every drop on the ground. With it, they walk
+       over and pick up what their own kills dropped, the way a player would. For each drop
+       they decide once whether they want it: <b>Picks up common drops</b> is how often they
+       bother with an ordinary one. A drop is rare when it is a card, or the monster drops it
+       at most as often as <b>Rare from</b>; those they want <b>Picks up rare drops</b> of the
+       time, very likely but not certain. Rare drops are fetched straight away, even while
+       being hit, as long as their HP is above <b>Rare mid-fight above</b>. Everything else
+       waits until nothing is attacking them, and when the fight is over they forget it with
+       the <b>Forgets after a fight</b> chance. A drop they have not reached after <b>Gives up
+       after</b> is left behind (rare ones get twice as long). <b>Looks around</b> is how many
+       cells away they notice their drops. Companions in your party are not affected: what
+       they kill is yours to pick up. Fake players' bags are not saved, so what they loot is
+       gone when they leave.</p>
+  </div>
+
   <h2 style="margin-top:18px">Play with an AI agent</h2>
   <div class="panel">
     <label>
@@ -1536,6 +1599,21 @@ function refreshPopulation() {
   $('population_companion_hire').disabled = !on;
   $('companion-fee').hidden = !hired;
   $('population_skill_weapon_check').disabled = !on;
+  const loot = $('population_loot_enable').checked;
+  $('population_loot_enable').disabled = !on;
+  for (const id of LOOT_FIELDS) $(id).disabled = !on || !loot;
+  $('loot-settings').style.opacity = on && loot ? '' : '0.5';
+  const rare = Number($('population_loot_rare_pct').value);
+  $('v-population_loot_common_pickup_pct').textContent = `${$('population_loot_common_pickup_pct').value}% of the time`;
+  $('v-population_loot_rare_pct').textContent = rare > 0 ? `cards, and drops of ${rare}% or less` : 'cards only';
+  $('v-population_loot_rare_pickup_pct').textContent = `${$('population_loot_rare_pickup_pct').value}% of the time`;
+  $('v-population_loot_forget_pct').textContent = `${$('population_loot_forget_pct').value}% chance`;
+  $('v-population_loot_hp_abort_pct').textContent = Number($('population_loot_hp_abort_pct').value) > 0
+    ? `${$('population_loot_hp_abort_pct').value}% HP` : 'any HP';
+  $('v-population_loot_timeout_s').textContent = `${$('population_loot_timeout_s').value} s`;
+  $('v-population_loot_radius').textContent = `${$('population_loot_radius').value} cells`;
+  $('loot-note').textContent = !on ? 'Fake players are off.'
+    : loot ? 'On: fake players pick up their drops.' : 'Off: drops stay on the ground until they expire.';
   // The trade-off spelled out where the box is ticked: what turning it on
   // costs, and how to get the skills back.
   $('weapon-check-note').textContent = $('population_skill_weapon_check').checked
@@ -1602,6 +1680,12 @@ $('population_companion_limit').addEventListener('input', refreshPopulation);
 for (const area of POPULATION_AREAS) $(`population_${area}_pct`).addEventListener('input', refreshPopulation);
 $('population_companion_hire').addEventListener('change', refreshPopulation);
 $('population_skill_weapon_check').addEventListener('change', refreshPopulation);
+// Every loot slider, besides the on/off box: disabled together, saved together.
+const LOOT_FIELDS = ['population_loot_common_pickup_pct', 'population_loot_rare_pct',
+  'population_loot_rare_pickup_pct', 'population_loot_forget_pct', 'population_loot_hp_abort_pct',
+  'population_loot_timeout_s', 'population_loot_radius'];
+$('population_loot_enable').addEventListener('change', refreshPopulation);
+for (const id of LOOT_FIELDS) $(id).addEventListener('input', refreshPopulation);
 $('population_companion_fee_zeny').addEventListener('input', refreshPopulation);
 $('vm_ram_mib').addEventListener('input', refreshPopulation);
 
@@ -1617,6 +1701,8 @@ $('save-population').onclick = async () => {
   settings.population_companion_fee_item = Number($('population_companion_fee_item').value) || 0;
   settings.population_companion_fee_item_amount = Number($('population_companion_fee_item_amount').value) || 0;
   settings.population_skill_weapon_check = $('population_skill_weapon_check').checked;
+  settings.population_loot_enable = $('population_loot_enable').checked;
+  for (const id of LOOT_FIELDS) settings[id] = Number($(id).value);
   // Machine-level, so it lives in client.json beside the client paths and the
   // LAN switch rather than in settings.json. Written first: save_settings
   // restarts the stack, which is what makes the new ceiling take effect.
@@ -1627,6 +1713,9 @@ $('save-population').onclick = async () => {
   $('save-population').disabled = false;
   refresh();
 };
+
+// The Loot section saves with the rest of Population: one settings write, one restart.
+$('save-population-loot').onclick = () => $('save-population').onclick();
 
 // Everything a maintainer would otherwise have to talk someone through
 // finding, on the clipboard, because the destination is a text box on GitHub
@@ -3068,6 +3157,15 @@ invoke('get_settings').then(s => {
   $('population_companion_fee_item_amount').value = s.population_companion_fee_item_amount ?? 0;
   $('population_companion_limit').value = s.population_companion_limit ?? 4;
   $('population_skill_weapon_check').checked = s.population_skill_weapon_check === true;
+  $('population_loot_enable').checked = s.population_loot_enable === true;
+  // A save from before the loot settings has no keys: the defaults.
+  $('population_loot_common_pickup_pct').value = s.population_loot_common_pickup_pct ?? 70;
+  $('population_loot_rare_pct').value = s.population_loot_rare_pct ?? 1;
+  $('population_loot_rare_pickup_pct').value = s.population_loot_rare_pickup_pct ?? 95;
+  $('population_loot_forget_pct').value = s.population_loot_forget_pct ?? 10;
+  $('population_loot_hp_abort_pct').value = s.population_loot_hp_abort_pct ?? 30;
+  $('population_loot_timeout_s').value = s.population_loot_timeout_s ?? 15;
+  $('population_loot_radius').value = s.population_loot_radius ?? 9;
   refreshPopulation();
 });
 

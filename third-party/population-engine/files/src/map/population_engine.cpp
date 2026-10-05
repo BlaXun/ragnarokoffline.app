@@ -9,6 +9,7 @@
 
 #include "population_engine/runtime/population_engine_combat.hpp"
 #include "population_engine/runtime/population_shell_ammo.hpp"
+#include "population_engine/runtime/population_shell_loot.hpp"
 #include "population_engine/runtime/population_shell_runtime.hpp"
 
 #include <algorithm>
@@ -4787,6 +4788,7 @@ void population_engine_on_shell_death(map_session_data *sd)
 	if (!sd)
 		return;
 	sd->pop.diag_death_tick = gettick(); // #373 diagnostics: pc_dead handled this death
+	population_shell_loot_clear(sd); // RAGNAROKMAC (shell looting): a corpse forgets its drops
 	if (!population_engine_shell_is_mortal(sd)) {
 		ShowDebug("PopEngine death: shell %u (%s) has no Mortal flag — no respawn scheduled.\n",
 			sd->id, sd->status.name);
