@@ -57,7 +57,13 @@ test('no White Imprison row aims at an ally, and the generator does not bring on
 
 test('Marionette waits on the caster\'s own link, not the ally\'s', () => {
 	const rows = yaml.match(/\{ SkillId: CG_MARIONETTE,[^}]*\}/g) || [];
-	assert.ok(rows.length >= 4, 'Clown, Gypsy, Troubadour and Trouvere carry it');
+	assert.ok(rows.length >= 6, 'every class rAthena teaches it to carries it');
+	// Clown, Gypsy, Minstrel_T, Wanderer_T, Troubadour, Trouvere: the classes whose skill tree has it
+	for (const job of [4020, 4021, 4075, 4076, 4263, 4264]) {
+		const block = yaml.split(`\n  - JobId: ${job}\n`)[1];
+		assert.ok(block, `job ${job} has a block`);
+		assert.ok(block.split(/\n  - JobId: /)[0].includes('SkillId: CG_MARIONETTE,'), `job ${job} casts Marionette`);
+	}
 	for (const row of rows)
 		assert.match(row, /Target: ally, Condition: not_self_status, CondValue: SC_MARIONETTE \}/,
 			'SC_MARIONETTE is on the caster; the ally holds SC_MARIONETTE2');

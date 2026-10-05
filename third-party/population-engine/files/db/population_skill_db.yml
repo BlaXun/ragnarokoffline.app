@@ -2132,6 +2132,7 @@ Body:
       - { SkillId: MI_RUSH_WINDMILL,    Level: 5,  Rate: 8000, Target: self }
       - { SkillId: MI_ECHOSONG,         Level: 5,  Rate: 8000, Target: self }
       - { SkillId: MI_HARMONIZE,        Level: 5,  Rate: 7000, Target: ally }
+      - { SkillId: CG_MARIONETTE,       Level: 1,  Rate: 8000, Target: ally, Condition: not_self_status, CondValue: SC_MARIONETTE }
       - { SkillId: BA_WHISTLE,          Level: 10, Rate: 7000, Target: self, Cooldown: 30000 }
       - { SkillId: BA_ASSASSINCROSS,    Level: 10, Rate: 7000, Target: self, Cooldown: 30000 }
       - { SkillId: BA_POEMBRAGI,        Level: 10, Rate: 7000, Target: self, Cooldown: 30000 }
@@ -2211,6 +2212,7 @@ Body:
       - { SkillId: DC_DONTFORGETME,     Level: 10, Rate: 7000, Target: self, Cooldown: 30000 }
       - { SkillId: DC_FORTUNEKISS,      Level: 10, Rate: 7000, Target: self, Cooldown: 30000 }
       - { SkillId: DC_SERVICEFORYOU,    Level: 10, Rate: 7000, Target: self, Cooldown: 30000 }
+      - { SkillId: CG_MARIONETTE,       Level: 1,  Rate: 8000, Target: ally, Condition: not_self_status, CondValue: SC_MARIONETTE }
       - { SkillId: WM_SONG_OF_MANA,    Level: 5,  Rate: 6000, Target: self, Condition: sp_below, CondValue: 40 }
       - { SkillId: WM_DANCE_WITH_WUG,  Level: 5,  Rate: 6000, Target: self }
       - { SkillId: WM_LERADS_DEW,      Level: 5,  Rate: 5000, Target: self, Condition: ally_hp_below, CondValue: 60 }
