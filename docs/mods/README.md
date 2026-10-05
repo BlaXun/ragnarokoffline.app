@@ -18,4 +18,5 @@ and that nobody would find by guessing:
 | | |
 |---|---|
 | [Adding a mod to the registry](../MOD_REGISTRY.md) | putting a mod in the registry so the app can find and install it: files in this repository or your own repository with releases, `mod.json`, cutting a release, updates, and what a reviewer reads for ([short version](publishing.md)) |
+| [Custom maps](CUSTOM_MAPS.md) | a map that is in nobody's GRF: the files, how the server side is done for you, making the geometry, its sky, weather and music, and getting players there |
 | [Where the AI characters go](ai-characters.md) | the population engine's spawn table: adding maps to it, replacing it, and the eight tables that still cannot be modded |

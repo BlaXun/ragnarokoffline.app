@@ -94,6 +94,11 @@ being switched off.)
 `"host"` declares a [host route](#host-routes): JavaScript of the mod's own
 that runs on the host's computer, and the addresses it may connect to.
 
+`"maps"` gives maps a sky, clouds, weather and music, by map name:
+`"maps": { "my_isle": { "sky": [0.4, 0.6, 0.8], "clouds": [1, 1, 1], "bgm": "my_isle.mp3" } }`.
+It is how a custom map gets anything but black behind it and the default track;
+see [Custom maps](mods/CUSTOM_MAPS.md#the-sky-the-weather-and-the-music).
+
 ### renewalFolder / prerenewalFolder — one mod for both eras
 
 Some files only work in one era. An item script that calls a renewal-only
@@ -1617,74 +1622,25 @@ my-mod/BGM/my-theme.mp3
 It is its own layer rather than part of `data/` because the client asks for
 music as `BGM/<file>`, a path root outside `data/`.
 
-Which track plays on which map is `data/mp3nametable.txt` — a `data/` file, so a
-mod can override it to point maps at its own music. Start from the client's copy
-and edit it.
+Which track plays on which map is `data/mp3nametable.txt`, one table for the
+whole game. Rather than ship a copy of it, which replaces every map's music with
+what the copy says, name the track per map in `mod.json`:
+`"maps": { "my_isle": { "bgm": "my-theme.mp3" } }`. See
+[Custom maps](mods/CUSTOM_MAPS.md#the-sky-the-weather-and-the-music).
 
 ## Custom maps
 
-**This works, end to end**, and there is nothing to configure: put the geometry
-in `data/` and the server side is done.
+A mod can add a map that is in nobody's GRF: put its `.gat`, `.gnd` and `.rsw`
+in `data/`, and the app registers it with the server on every start (the
+`map:` line, `map_index.txt` and the map cache rAthena would otherwise need a
+separate tool for). A `"maps"` entry in `mod.json` gives it a sky, clouds,
+weather and music; without one, the background behind a custom map is black and
+it plays the default track.
 
-That is worth stating plainly because it is not obvious and because it is not
-how rAthena works on its own. A custom map needs **three** things on the server,
-two of which are invisible:
-
-1. **A `map:` line in the map config.** The map server builds its list of maps
-   from `map:` directives — `conf/maps_athena.conf` is twelve hundred of them.
-   A map never named there is not in the list and the server says *nothing at
-   all* about it. This is the one that wastes the afternoon.
-2. **An entry in `db/import/map_index.txt`**, which gives the map the number
-   the servers pass between them. Missing, and the map is dropped at load with
-   only a "maps removed" count to say so.
-3. **An entry in `db/import/map_cache.dat`.** rAthena's map server never reads
-   a `.gat` at runtime; it reads a prebuilt cache and refuses any map not in
-   one, however correctly it is registered elsewhere. Upstream builds this file
-   with a separate `mapcache` tool that links against the whole server and
-   reads geometry out of a GRF.
-
-On every start, the supervisor scans each enabled mod's `data/` for `.gat`
-files, decodes them, writes `map_cache.dat` and `map_index.txt` into the
-`db/import` tree it mounts, and adds the `map:` lines to the generated
-`map_conf.txt` (`stack/src/mapcache.rs`, `stack/src/mods.rs`). It prints what
-it found:
-
-```
-mods: custom-map
-mod maps: ro_isle
-```
-
-The map cache is built in-process rather than by running rAthena's `mapcache`
-tool, so a custom map needs no Docker rebuild and no image change — which is
-the same promise as the rest of the mod system.
-
-### Making one
-
-```
-scripts/mkmap.py my_isle --out path/to/my-mod/data --cells 40
-```
-
-writes a flat, walled, walkable square with a generated ground texture and a
-minimap: `.gat`, `.gnd`, `.rsw`, `data/texture/my_isle/ground.bmp` and
-`data/texture/À¯ÀúÀÎÅÍÆäÀÌ½º/map/my_isle.bmp`. It is a floor to stand on, not a
-landscape — for real terrain, use one of the community map editors and copy its
-`.gat`/`.gnd`/`.rsw` into `data/` exactly the same way.
-
-Three traps:
-
-- **Map names are at most 11 characters.** rAthena truncates silently at three
-  separate layers before anything complains.
-- **The `.gnd` is half the `.gat`'s resolution.** An 80 × 80 walkable map is a
-  40 × 40 ground mesh.
-- **A `.gnd` lightmap cell is not a brightness value.** It is 64 bytes of
-  shadow followed by 64 RGB triples of *additive* coloured light. Filling the
-  cell with `0xff` — the obvious thing — adds full white light to every pixel
-  and renders the map as a flat white sheet with the texture washed out of it.
-- **Without a minimap bitmap** at `data/texture/À¯ÀúÀÎÅÍÆäÀÌ½º/map/<name>.bmp`
-  the client asks once, gets a 404, and shows an empty frame.
-
-See [`examples/mods/custom-map`](../examples/mods/custom-map) and
-[`examples/mods/island-ferry`](../examples/mods/island-ferry).
+[Custom maps](mods/CUSTOM_MAPS.md) is the whole of it: the files, making the
+geometry, the sky and weather, getting players there, and what to check when a
+map does not show. See [`examples/mods/custom-map`](../examples/mods/custom-map)
+and [`examples/mods/island-ferry`](../examples/mods/island-ferry).
 
 ## Generating a mod instead of writing one
 
