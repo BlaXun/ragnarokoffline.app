@@ -9541,6 +9541,7 @@ static void pop_shell_stop_ai_action(map_session_data *sd)
 	sd->pop.sticky_until = 0;
 	unit_skillcastcancel(sd, 0);
 	unit_stop_attack(sd);
+	pc_stop_following(sd);
 	unit_stop_walking(sd, USW_FIXPOS);
 }
 
@@ -9575,6 +9576,9 @@ static void pop_shell_end_hold(map_session_data *sd)
 	sd->pop.hold_until = 0;
 	sd->pop.whisper_event.clear();
 	unit_stop_attack(sd);
+	// pcfollow runs its own timer, which would keep walking the shell after
+	// whoever the script had it follow.
+	pc_stop_following(sd);
 	unit_stop_walking(sd, USW_FIXPOS);
 	if ((sd->pop.script_spawned && !sd->pop.script_keep)
 		|| (sd->pop.spawn_map_id >= 0 && sd->m != sd->pop.spawn_map_id)) {
