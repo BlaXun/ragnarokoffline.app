@@ -6,7 +6,8 @@
 //   grab                    take the nearest free ambient shell
 //   come                    the taken shell walks to you          (unitwalk)
 //   follow / stop           it follows you, or stops              (pcfollow)
-//   attack                  it attacks a monster within 14 cells  (unitattack)
+//   attack{#name}           it attacks the monster nearest to it,  (unitattack)
+//                           or the nearest named like that
 //   warp{#map#x#y}          it warps beside you, or to that spot  (unitwarp)
 //   say#text                it says something                     (unittalk)
 //   free                    give it back to the engine            (population_unhold)
@@ -59,12 +60,26 @@ OnWhisperGlobal:
 	else if (.@cmd$ == "stop")
 		pcstopfollow .last;
 	else if (.@cmd$ == "attack") {
-		if (getareaunits(BL_MOB, .@map$, .@x - 14, .@y - 14, .@x + 14, .@y + 14, .@mob) <= 0) {
-			dispbottom "shelltest: no monster within 14 cells.";
+		// The nearest monster to the shell, or the nearest whose name contains
+		// the argument: rings of growing size around the shell, first hit wins.
+		getmapxy(.@sm$, .@sx, .@sy, BL_PC, rid2name(.last));
+		.@want$ = @whispervar1$;
+		for (.@r = 1; .@r <= 14 && !.@target; .@r++) {
+			.@c = getareaunits(BL_MOB, .@sm$, .@sx - .@r, .@sy - .@r, .@sx + .@r, .@sy + .@r, .@mob);
+			for (.@i = 0; .@i < .@c; .@i++) {
+				if (.@want$ == "" || compare(rid2name(.@mob[.@i]), .@want$)) {
+					.@target = .@mob[.@i];
+					break;
+				}
+			}
+		}
+		if (!.@target) {
+			dispbottom "shelltest: no monster" + (.@want$ == "" ? "" : " named like '" + .@want$ + "'") + " within 14 cells of the shell.";
 			end;
 		}
-		// getareaunits lists in the map's own order, not by distance.
-		unitattack .last, .@mob[0], 1;
+		// unitattack returns whether the shell took the target as its own.
+		.@ok = unitattack(.last, .@target, 1);
+		dispbottom "shelltest: attack " + rid2name(.@target) + " (" + .@target + "), " + (.@r - 1) + " cell(s) from the shell: order " + (.@ok ? "accepted" : "refused") + ".";
 	} else if (.@cmd$ == "warp") {
 		if (@whispervar1$ == "")
 			unitwarp .last, .@map$, .@x + 1, .@y;

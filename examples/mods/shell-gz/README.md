@@ -40,7 +40,7 @@ The full reference is [docs/mods/shell-control.md](../../../docs/mods/shell-cont
 | `grab` | takes the nearest free shell |
 | `come` | it walks to you (`unitwalk`) |
 | `follow` / `stop` | it follows you, or stops (`pcfollow`) |
-| `attack` | it attacks a monster within 14 cells of you, walking into range first (`unitattack`) |
+| `attack` / `attack#Dummy` | it attacks the monster nearest to it, or the nearest whose name contains the word, walking into range first; says which, how far, and whether the order was accepted (`unitattack`) |
 | `warp` / `warp#prt_fild08#150#200` | it warps beside you, or to that spot (`unitwarp`) |
 | `say#hello` | it talks (`unittalk`) |
 | `free` | gives it back (`population_unhold`) |
