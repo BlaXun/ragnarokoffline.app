@@ -37,7 +37,6 @@ class RemoteDialogs {
 					resolve(cancelled);
 				}
 			}, this.timeoutMs);
-			if (timer.unref) timer.unref();
 			this.questions.set(id, { id, kind, options: plain(options), resolve, timer });
 		});
 	}
