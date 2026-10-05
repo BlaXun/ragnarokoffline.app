@@ -548,7 +548,7 @@ forms:
 | `itemheal rand(120,180),0;` | a potion |
 
 The chances in `bAutoSpell…` and `autobonus` are out of 1000. Anything a bonus can't express
-("only below 30% HP", "every fifth hit") is what [Lua](#lua--changing-how-a-skill-works)
+("only below 30% HP", "every fifth hit") is what [Lua](#lua--changing-how-a-skill-or-item-works)
 is for.
 
 ### A new monster
