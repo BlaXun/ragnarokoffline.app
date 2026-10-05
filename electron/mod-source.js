@@ -36,6 +36,9 @@ const RELEASE_LIMIT = 2 * 1024 * 1024;
 const ASSET_LIMIT = 50 * 1024 * 1024;
 const UNPACKED_LIMIT = 96 * 1024 * 1024;
 const MAX_FILES = 2000;
+// A release's notes, as much as the Updates tab shows (collapsed, a click to
+// open the rest). GitHub allows far more; a page of changes is plenty.
+const NOTES_LIMIT = 20000;
 // Long enough that opening the Mods tab twice does not spend two of the sixty
 // lookups an hour GitHub allows without signing in; short enough that a
 // release published a few minutes ago shows up when somebody goes looking.
@@ -180,7 +183,7 @@ async function latestRelease(repo, { api = GITHUB_API, allow, cache, fresh = fal
 		repo,
 		tag: value.tag_name,
 		name: typeof value.name === 'string' ? value.name.slice(0, 200) : '',
-		notes: typeof value.body === 'string' ? value.body.slice(0, 4000) : '',
+		notes: typeof value.body === 'string' ? value.body.slice(0, NOTES_LIMIT) : '',
 		url: secure(value.html_url) || `https://github.com/${repo}/releases/tag/${encodeURIComponent(value.tag_name)}`,
 		publishedAt: typeof value.published_at === 'string' ? value.published_at : '',
 		assets: (Array.isArray(value.assets) ? value.assets : [])
@@ -387,7 +390,7 @@ async function checkUpdates(installed, listing, options = {}) {
 		try {
 			const release = await latestRelease(record.repo, options);
 			out.push({ ...base, listed: true, latest: release.tag, update: isNewer(release.tag, record.tag),
-				url: release.url, notes: release.notes.slice(0, 1200), publishedAt: release.publishedAt });
+				url: release.url, notes: release.notes, publishedAt: release.publishedAt });
 		} catch (e) {
 			out.push({ ...base, listed: true, error: e.message });
 			// One rate limit answers for all of them.

@@ -22,6 +22,7 @@
 #include "../population_shell_control.hpp" // RAGNAROKMAC
 #include "../core/population_engine_core.hpp"
 #include "population_engine_combat.hpp"
+#include "population_shell_loot.hpp"
 #include "../../status.hpp"
 #include "../../unit.hpp"
 
@@ -273,6 +274,9 @@ TIMER_FUNC(population_engine_wander_timer)
 		}
 
 		if (sd->pop.target_id != 0)
+			continue;
+		// RAGNAROKMAC (shell looting): a shell picking up its drops is not idle.
+		if (population_shell_loot_busy(sd))
 			continue;
 
 		// Reset stale canmove_tick lock â€” wander bots don't go through the combat per-tick

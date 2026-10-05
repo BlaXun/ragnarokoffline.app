@@ -9,6 +9,7 @@
 #include "../../population_engine.hpp"
 #include "../config/population_yaml_types.hpp"
 #include "../core/population_engine_core.hpp"
+#include "population_shell_loot.hpp"
 #include "population_shell_runtime.hpp"
 
 #include <algorithm>
@@ -2887,6 +2888,17 @@ int population_engine_combat_per_tick(map_session_data *sd, bool do_skills)
 		return 0;
 	}
 
+	// RAGNAROKMAC (shell looting): an ambient shell goes for its own drops before
+	// picking the next fight. Looting decides itself when combat should win (an
+	// ordinary drop while something attacks the shell); when it claims the tick,
+	// combat sits this one out. Off unless population_engine_loot_enable.
+	// No homunculus turn on this early return: only companions have one, and
+	// looting never runs for them.
+	if (!hired_companion && population_shell_loot_tick(sd, current_tick)) {
+		population_shell_status_checkmapchange(sd);
+		return 0;
+	}
+
 	// Do not drop a chase target just because it is outside client sight yet — that prevented pathing.
 	// Hired companions receive targets from their owner/party-threat controller
 	// and must never fall back to the shell's ambient town/field target scan.
@@ -3061,6 +3073,7 @@ void population_engine_combat_cleanup_player(map_session_data *sd)
 	}
 	pe.session_guard = pe.session_guard + 1;
 	pe.recently_cleared_targets.clear();
+	population_shell_loot_clear(sd);
 }
 
 void do_init_population_engine_combat()

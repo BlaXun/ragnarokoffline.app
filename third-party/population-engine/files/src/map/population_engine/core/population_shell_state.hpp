@@ -56,6 +56,19 @@ struct PopulationShellBuffSkill {
 	std::shared_ptr<expanded_ai::ExpandedCondition> expanded; ///< Set iff condition == Expanded; evaluated in lieu of the flat condition fields.
 };
 
+/// RAGNAROKMAC (shell looting): one floor item a shell has decided to pick up.
+/// Kept by block id and re-resolved every tick, never by pointer: the item can
+/// be taken by someone else or expire between ticks.
+struct PopulationShellLootEntry {
+	int32_t  item_bl_id = 0;   ///< flooritem_data block id
+	uint32_t nameid     = 0;   ///< guards against the block id being reused for another item
+	t_tick   ready_at   = 0;   ///< reaction delay: not before this tick
+	t_tick   give_up_at = 0;   ///< after this tick the shell "forgets" it
+	bool     rare       = false;
+	bool     interrupted = false; ///< a fight held it back; rolls the forget chance once the fight is over
+	uint8_t  walk_fails = 0;
+};
+
 /// Population engine shell state (sd->pop). Only meaningful for bots managed by the population engine;
 /// real players leave this in its default-constructed state.
 struct s_population {
@@ -256,6 +269,13 @@ struct s_population {
 	bool companion_formation_active = false; ///< True while walking to the shell's assigned idle formation cell.
 	int16_t companion_formation_x = 0; ///< Current formation walk destination.
 	int16_t companion_formation_y = 0; ///< Current formation walk destination.
+
+	// --- RAGNAROKMAC (shell looting, population_shell_loot.cpp) ---
+	std::vector<PopulationShellLootEntry> loot_queue{};     ///< Items it means to pick up, in no particular order.
+	std::unordered_map<int32_t, t_tick> loot_seen{};      ///< Floor items already decided on (queued or forgotten) -> when to drop the record.
+	t_tick  loot_next_scan    = 0; ///< Rate limit for the floor-item scan.
+	t_tick  loot_next_action  = 0; ///< Short human pause between pickups.
+	int32_t loot_walking_to   = 0; ///< Floor item the shell is walking to (0 = none).
 
 	// --- Skill fail tracking ---
 	t_tick last_skill_fail    = 0;  ///< Tick of last failed skill use.
