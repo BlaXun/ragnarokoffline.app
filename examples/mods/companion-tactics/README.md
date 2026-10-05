@@ -94,8 +94,11 @@ once). In every phase:
 - nobody casts anything the plan does not name: a plan about a monster turns the
   normal skill rotation off, so the Wizard casts Fire Bolt and its Meteors, the
   Assassin Enchant Poison and Sonic Blow (at the boss only, with SP to spare),
-  and the Priest and Wizard keep 6 to 8 cells from Phreeoni, out of its reach
-  and within their spells';
+  the Wizard keeps 6 to 8 cells from Phreeoni, out of its reach and within Fire
+  Bolt's, and the Priest stays out of its melee but within Heal's reach of
+  whoever is being hit;
+- when someone dies, the Priest walks toward the body until it is within
+  Resurrection's 9 cells, and keeps SP back for it;
 - the Priest heals, walls and Kyries whoever the monsters are on first, keeps
   Blessing, Increase AGI and (on attackers) Impositio up, and reveals a hidden
   Phreeoni only when it is within Ruwach's reach;
