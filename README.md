@@ -79,6 +79,13 @@ Cloudflare account or token; connecting your own fixed hostname is optional.
 Friends open the HTTPS link in their browser and play on your running world.
 See [setup, invitation expiry and Stop sharing](docs/FRIENDS_SHARING.md).
 
+## Hosting on a machine with no screen
+
+Start the app with `--headless` and it opens no windows: the server starts on
+its own, and Settings opens in a browser at an address it prints. It works the
+same on macOS, Windows and Linux, so a home server or a cloud machine can host
+the world. Experimental for now; see [Running headless](docs/HEADLESS.md).
+
 ## Hosting and playing with friends on your LAN
 
 Everyone on the same wifi can play together on one person's machine. Only the
