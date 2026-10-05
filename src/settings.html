@@ -66,6 +66,9 @@
   }
   button.ghost:hover:not(:disabled) { border-color: var(--accent-dim); color: var(--text); }
   button:disabled { opacity: .4; cursor: default; }
+  /* A button that ends a sentence in the status line: the line's own size,
+     level with the words before it, not a form control on a row of its own. */
+  #era-status button { padding: 0 8px; margin-left: 4px; font-size: inherit; line-height: inherit; vertical-align: baseline; }
   .spinner {
     width: 12px; height: 12px; border: 2px solid var(--line);
     border-top-color: var(--accent); border-radius: 50%;
@@ -1305,9 +1308,23 @@ async function chooseEra(pre) {
     // The open game keeps the item and sign text it already loaded, so logging
     // in again is not enough: it has to be reopened to show the new era.
     const gameOpen = await invoke('game_status').then(g => g.open, () => false);
+    const afterwards = `Log in again — your character list is the ${label} one.`;
     show(`Switched to ${label} in ${elapsed()}s. ` + (gameOpen
-      ? `Reopen the game to see ${label} items and signs, then log in — your character list is the ${label} one.`
-      : `Log in again — your character list is the ${label} one.`));
+      ? `The open game still shows the old era's items and signs. ${afterwards}`
+      : afterwards));
+    if (gameOpen) {
+      // Offered here rather than described: nobody should have to know that
+      // the game window can be closed on its own and the setting stays.
+      const reopen = document.createElement('button');
+      reopen.id = 'era-reopen';
+      reopen.textContent = 'Reopen game';
+      reopen.onclick = async () => {
+        reopen.disabled = true; reopen.textContent = 'Opening…';
+        try { await invoke('open_game'); reopen.textContent = 'Reopened'; }
+        catch (e) { reopen.disabled = false; reopen.textContent = 'Reopen game'; log('error: ' + e); }
+      };
+      status.append(reopen);
+    }
     // Internet hosting credentials are per era, so an era that was never
     // prepared for friends starts in Local mode. The supervisor says so; say
     // it here as well, because the player asked for a different era, not for

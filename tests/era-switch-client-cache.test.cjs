@@ -21,7 +21,10 @@ test('Apply drops the stale client cache once the assets are relinked, and only 
   assert.match(applied, /if \(!\(windows\.game && !windows\.game\.isDestroyed\(\)\)\) await dropStaleClientCache\(\);/);
 });
 
-test('an open game window is told to reopen to see the new era', () => {
+test('an open game window is told it still shows the old era, and can be reopened from the status line', () => {
   assert.match(settings, /invoke\('game_status'\)\.then\(g => g\.open, \(\) => false\)/);
-  assert.match(settings, /Reopen the game to see \$\{label\} items and signs/);
+  assert.match(settings, /The open game still shows the old era's items and signs/);
+  assert.match(settings, /reopen\.id = 'era-reopen';/);
+  assert.match(settings, /reopen\.onclick = async \(\) => \{[^]*?await invoke\('open_game'\)/, 'the same handler as the Mods tab Reopen game');
+  assert.match(settings, /if \(gameOpen\) \{[^]*?status\.append\(reopen\);/, 'only offered when a game window is open');
 });
