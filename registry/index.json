@@ -2,6 +2,31 @@
   "version": 1,
   "mods": [
     {
+      "name": "affix-forge",
+      "version": "",
+      "author": "rhewid",
+      "description": "Equipment that monsters drop also comes with 1-4 random affixes from 214 options in four rarity tiers, on the ground or in your inventory. The Affix Smith in Prontera moves, removes and rerolls affixes for zeny and materials you set.",
+      "homepage": "https://github.com/rhewid/affix-forge",
+      "tags": [
+        "drops",
+        "equipment",
+        "npc",
+        "random-options"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "",
+        "app": ""
+      },
+      "source": {
+        "github": "rhewid/affix-forge",
+        "asset": "affix-forge-*.zip"
+      },
+      "files": []
+    },
+    {
       "name": "arpg-equipments",
       "version": "",
       "author": "Iguera",
