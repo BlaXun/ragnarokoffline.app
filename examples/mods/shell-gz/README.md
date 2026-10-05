@@ -8,7 +8,11 @@ useful thing the shell control commands do, and the place to start reading.
 0027). On an older one the server rejects both scripts at load, with an
 "unknown command" line in the map server log.
 
-Compiled, not yet run in game.
+Run in game: the level-up reaction and the test bench below.
+
+**Level up with experience to try it.** `@blvl` fires no level-up event unless
+the battle setting `atcommand_levelup_events` is on, and rAthena ships it off.
+Kill something near a few shells instead (`@monster Poring` in town works).
 
 ## What to look at first
 
