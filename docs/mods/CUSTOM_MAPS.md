@@ -126,6 +126,11 @@ other. The same line does it instead:
 }
 ```
 
+<img src="../assets/custom-map-sky.jpg" alt="The edge of the custom-map example's island: black beyond it without a maps entry, a blue sky with white clouds with one" width="720">
+
+*The edge of [`custom-map`](../../examples/mods/custom-map)'s island, `ro_isle`,
+with no `"maps"` entry and with `"sky": [0.4, 0.6, 0.8], "clouds": [1.0, 1.0, 1.0]`.*
+
 Each key is a map name, as in `@warp` (a trailing `.rsw` is allowed and
 ignored). Each map takes any of four settings:
 
