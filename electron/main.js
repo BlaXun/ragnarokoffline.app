@@ -988,6 +988,8 @@ async function linkClientOwned(paths) {
 }
 
 let registryImages = null;
+// Mod-list CHANGELOG.md texts by digest, for the Updates tab.
+let registryChangelogs = null;
 
 const SETTINGS_DEFAULTS = {
 	open_registration: true,
@@ -2214,6 +2216,17 @@ const handlers = {
 		if (fresh) url.searchParams.set('t', String(Date.now()));
 		const listing = await registry.list({ url: url.toString() });
 		const listed = source.registryUpdates(fromList, listing, { appVersion: app.getVersion() });
+		// What each waiting update changed, from the CHANGELOG.md in the mod's
+		// folder: every version since the installed one. A mod without one,
+		// or a file that fails to arrive, just shows no notes.
+		registryChangelogs = registryChangelogs || new Map();
+		for (const result of listed.filter(r => r.update)) {
+			try {
+				const text = await registry.changelog(result.name, { url: url.toString(), mods: listing, cache: registryChangelogs });
+				const notes = source.notesSince(source.changelogSections(text), result.installed, result.latest);
+				if (notes) result.notes = notes;
+			} catch { /* no notes */ }
+		}
 		return [...listed, ...await source.checkUpdates(fromSource, listing, sourceOptions({ fresh: !!fresh }))];
 	},
 	// A release page, opened in the player's browser. Only ever a GitHub

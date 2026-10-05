@@ -2385,7 +2385,8 @@ function paintUpdates() {
     const head = el('div', 'mhead');
     head.append(el('span', 'mname', m.name), el('span', 'pill upd', `${u.installed} → ${u.latest}`));
     text.append(head, el('div', 'mone', m.source ? `from github.com/${m.source.repo}` : 'from the mod list'));
-    // A GitHub release's notes, here rather than in the Update… box.
+    // What the update changed, here rather than in the Update… box: the
+    // GitHub releases since the installed one, or the mod's CHANGELOG.md.
     if (u.notes && u.notes.trim()) text.append(notesBlock(u.notes));
     const acts = el('div', 'acts');
     const button = el('button', '', updateLabel(u));
