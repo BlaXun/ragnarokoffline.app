@@ -4559,12 +4559,14 @@ static TIMER_FUNC(pop_shell_despawn_timer);
 TIMER_FUNC(population_engine_global_combat_timer)
 {
 	PE_PERF_SCOPE("timer.combat");
+	// RAGNAROKMAC (shell control API): first, so a held shell a script warped is
+	// back on the map before the stale sweep would take it for gone.
+	pop_shell_control_sweep();
 	{
 		auto stale = population_engine_collect_stale_shells();
 		for (auto *s : stale)
 			population_engine_shell_release(s);
 	}
-	pop_shell_control_sweep();
 
 	// Goal 2: gear re-snapshot poll — companions whose equipped items changed
 	// since last tick get their persistence row updated (debounced by the hash).
@@ -9604,16 +9606,56 @@ bool population_engine_shell_unhold(int32_t gid, int32_t npc_id)
 	return true;
 }
 
-/// Ends the holds that lapsed, and those of NPCs that no longer exist (a script
-/// reload), so a script that stops caring never leaves a frozen shell behind.
-/// Runs from the combat timer.
+/// pc_setpos takes a character off the map and waits for its client to say the
+/// new map has loaded; a shell has no client, so it would stay off the map and
+/// the stale sweep would free it. The engine finishes its own warps itself, and
+/// this does the same for a held shell a script warped (unitwarp), or that
+/// rAthena's follow timer carried after its target through a warp (pcfollow).
+static void pop_shell_finish_script_warp(map_session_data *sd)
+{
+	if (sd->prev != nullptr || !sd->state.active || map_id2bl(sd->id) != sd || pc_isdead(sd))
+		return;
+	if (pop_shell_finish_map_placement(sd))
+		pop_shell_broadcast_map_placement(sd);
+}
+
+/// unitattack on a character only swings at a target in reach; otherwise rAthena
+/// asks the character's client to walk over (clif_movetoattack), and a shell has
+/// none. Walk a held shell into range the way a monster chases; rAthena's own walk
+/// code then attacks on arrival, and chases again if the target moved on.
+static void pop_shell_chase_attack(map_session_data *sd)
+{
+	unit_data &ud = sd->ud;
+	if (ud.target == 0 || !ud.state.attack_continue || ud.attacktimer != INVALID_TIMER
+		|| unit_is_walking(sd) || sd->prev == nullptr || pc_isdead(sd))
+		return;
+	block_list *tbl = map_id2bl(ud.target);
+	if (tbl == nullptr || tbl->m != sd->m || status_isdead(*tbl)) {
+		unit_stop_attack(sd);
+		return;
+	}
+	const int range = status_get_status_data(*sd)->rhw.range;
+	if (check_distance_bl(sd, tbl, range))
+		return;
+	if (!unit_walktobl(sd, tbl, range, 2))
+		unit_stop_attack(sd); // unreachable: give the order up rather than retry forever
+}
+
+/// The engine's part in a hold, from the combat timer before its stale sweep:
+/// finishes warps, chases attack orders, and ends the holds that lapsed or whose
+/// NPC no longer exists (a script reload), so a script that stops caring never
+/// leaves a frozen shell behind.
 static void pop_shell_control_sweep()
 {
 	for (map_session_data *sd : g_population_engine_pcs) {
 		if (sd == nullptr || sd->pop.hold_npc == 0 || sd->pop.despawn_pending)
 			continue;
-		if (!population_engine_shell_is_held(sd) || map_id2nd(sd->pop.hold_npc) == nullptr)
+		pop_shell_finish_script_warp(sd);
+		if (!population_engine_shell_is_held(sd) || map_id2nd(sd->pop.hold_npc) == nullptr) {
 			pop_shell_end_hold(sd);
+			continue;
+		}
+		pop_shell_chase_attack(sd);
 	}
 }
 

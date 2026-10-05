@@ -68,13 +68,30 @@ test('the engine leaves a held shell alone everywhere it acts on one', () => {
 
 test('holds end by themselves, and a script actor does not linger', () => {
 	const timer = body(engine, 'TIMER_FUNC(population_engine_global_combat_timer)', '// Goal 2: gear re-snapshot poll');
-	assert.match(timer, /pop_shell_control_sweep\(\);/, 'swept from the combat timer');
+	const sweepAt = timer.indexOf('pop_shell_control_sweep();');
+	const staleAt = timer.indexOf('population_engine_collect_stale_shells()');
+	assert.ok(sweepAt > 0 && staleAt > sweepAt, 'swept from the combat timer, before the stale sweep frees an off-map shell');
 	const sweep = body(engine, 'static void pop_shell_control_sweep()\n{', '\n}\n');
 	assert.match(sweep, /!population_engine_shell_is_held\(sd\) \|\| map_id2nd\(sd->pop\.hold_npc\) == nullptr/, 'lapsed, or its NPC is gone');
 	const end = body(engine, 'static void pop_shell_end_hold(', '\n}\n');
 	assert.match(end, /\(sd->pop\.script_spawned && !sd->pop\.script_keep\)/, 'a spawned actor logs out unless kept');
 	assert.match(end, /sd->m != sd->pop\.spawn_map_id/, 'so does a shell left on another map');
 	assert.match(end, /sd->pop\.whisper_event\.clear\(\);/);
+});
+
+test('the engine does a client\'s part of stock commands for a held shell', () => {
+	const sweep = body(engine, 'static void pop_shell_control_sweep()\n{', '\n}\n');
+	assert.match(sweep, /pop_shell_finish_script_warp\(sd\);/);
+	assert.match(sweep, /pop_shell_chase_attack\(sd\);/);
+	const warp = body(engine, 'static void pop_shell_finish_script_warp(', '\n}\n');
+	assert.match(warp, /sd->prev != nullptr/, 'only a shell pc_setpos left off the map');
+	assert.match(warp, /pop_shell_finish_map_placement\(sd\)\)\n\t\tpop_shell_broadcast_map_placement\(sd\);/, 'placed and shown, as the engine\'s own warps');
+	const chase = body(engine, 'static void pop_shell_chase_attack(', '\n}\n');
+	assert.match(chase, /unit_walktobl\(sd, tbl, range, 2\)/, 'walks into range and attacks on arrival');
+	assert.match(chase, /unit_stop_attack\(sd\); \/\/ unreachable/, 'gives up an unreachable target');
+	assert.match(chase, /ud\.attacktimer != INVALID_TIMER/, 'leaves an attack in progress alone');
+	const end = body(engine, 'static void pop_shell_end_hold(', '\n}\n');
+	assert.match(end, /pc_stop_following\(sd\);/, 'a released shell stops following');
 });
 
 test('removal is deferred and only removes what was asked for', () => {

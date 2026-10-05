@@ -334,7 +334,11 @@ A hold is a pair on `sd->pop` (`hold_npc`, `hold_until`) that the combat
 tick, reactive casts, wander sweep, ambient chat, name-mention replies,
 whisper handler and drift check all skip on. It belongs to the NPC that took
 it, is bounded (30 minutes at most), and ends by itself when it lapses or its
-NPC is unloaded (`pop_shell_control_sweep`, from the combat timer). A shell
+NPC is unloaded (`pop_shell_control_sweep`, from the combat timer). The same
+sweep does the part of three stock commands a player's client would: it puts a
+held shell that `pc_setpos` took off the map back on it (`unitwarp`, and
+`pcfollow` through a warp), which is why it runs before the stale sweep, and it
+walks a held shell with an attack order into range (`unitattack`). A shell
 `population_spawn` made is marked `script_spawned` and left out of the map
 quota counts. Companions and vendors are never handed out. Nothing changes
 until a script calls one of the commands.

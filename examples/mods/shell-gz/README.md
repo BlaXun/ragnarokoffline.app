@@ -36,7 +36,8 @@ The full reference is [docs/mods/shell-control.md](../../../docs/mods/shell-cont
 | `grab` | takes the nearest free shell |
 | `come` | it walks to you (`unitwalk`) |
 | `follow` / `stop` | it follows you, or stops (`pcfollow`) |
-| `attack` | it attacks the nearest monster (`unitattack`) |
+| `attack` | it attacks a monster within 14 cells of you, walking into range first (`unitattack`) |
+| `warp` / `warp#prt_fild08#150#200` | it warps beside you, or to that spot (`unitwarp`) |
 | `say#hello` | it talks (`unittalk`) |
 | `free` | gives it back (`population_unhold`) |
 | `bye` / `bye#fly` | it logs out, or fly-wings away (`population_despawn`) |
@@ -44,5 +45,7 @@ The full reference is [docs/mods/shell-control.md](../../../docs/mods/shell-cont
 While you hold it, whisper the shell itself: the bench answers through
 `population_whisperevent` and `population_whisper`.
 
-`follow` and `attack` are the first two to try. They are stock commands
-written for players, and this is where they meet a shell for the first time.
+`follow`, `attack` and `warp` are stock commands written for players. A
+player's client does part of their work (walking into range, finishing a
+warp), and a shell has no client, so the engine does that part for a shell
+you hold. `follow` carries on through warps the same way.

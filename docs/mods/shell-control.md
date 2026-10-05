@@ -20,8 +20,8 @@ player, so the stock commands that take a unit id already work on it:
 |---|---|
 | walk to a cell | `unitwalk <gid>, <x>, <y>{, "<npc>::<label>"}` — the label runs when it arrives |
 | walk to someone | `unitwalkto <gid>, <target gid>` |
-| follow someone | `pcfollow <gid>, <target gid>` / `pcstopfollow <gid>` |
-| attack | `unitattack <gid>, <target gid>, 1` — 1 keeps attacking |
+| follow someone | `pcfollow <gid>, <target gid>` / `pcstopfollow <gid>` — through warps too |
+| attack | `unitattack <gid>, <target gid>, 1` — 1 keeps attacking; it walks into range first |
 | cast | `unitskilluseid <gid>, "<skill>", <level>{, <target gid>}` / `unitskillusepos` |
 | say something | `unittalk <gid>, rid2name(<gid>) + " : text"` |
 | emote | `emotion <emotion>, <gid>` |
@@ -31,6 +31,17 @@ player, so the stock commands that take a unit id already work on it:
 
 `unittalk` shows its text exactly as given. Real chat reads `Name : text`, so
 put the name in front yourself, as above.
+
+Three of these lean on the player's game client for part of their work, and a
+shell has none, so **the engine does that part for a shell you hold**:
+
+- `unitattack` only swings at a target already in reach; for anything further
+  the server asks the client to walk over. A held shell is walked into range
+  instead, and keeps chasing a target that moves.
+- `unitwarp`, and `pcfollow` when its target leaves through a warp, move the
+  character and wait for the client to say the new map has loaded. A held
+  shell's warp is finished within a tenth of a second instead. On a shell
+  nobody holds, they leave it off the map and the engine clears it away.
 
 **But the engine is driving it too.** Without a hold, the shell's own AI
 overrides your `unitwalk` on its next tick. That is what the commands below

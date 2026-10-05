@@ -6,7 +6,8 @@
 //   grab                    take the nearest free ambient shell
 //   come                    the taken shell walks to you          (unitwalk)
 //   follow / stop           it follows you, or stops              (pcfollow)
-//   attack                  it attacks the nearest monster        (unitattack)
+//   attack                  it attacks a monster within 14 cells  (unitattack)
+//   warp{#map#x#y}          it warps beside you, or to that spot  (unitwarp)
 //   say#text                it says something                     (unittalk)
 //   free                    give it back to the engine            (population_unhold)
 //   bye{#fly}               it logs out, or fly-wings away        (population_despawn)
@@ -60,7 +61,13 @@ OnWhisperGlobal:
 			dispbottom "shelltest: no monster within 14 cells.";
 			end;
 		}
+		// getareaunits lists in the map's own order, not by distance.
 		unitattack .last, .@mob[0], 1;
+	} else if (.@cmd$ == "warp") {
+		if (@whispervar1$ == "")
+			unitwarp .last, .@map$, .@x + 1, .@y;
+		else
+			unitwarp .last, @whispervar1$, atoi(@whispervar2$), atoi(@whispervar3$);
 	} else if (.@cmd$ == "say")
 		unittalk .last, rid2name(.last) + " : " + @whispervar1$;
 	else if (.@cmd$ == "free") {
