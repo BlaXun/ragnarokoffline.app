@@ -1854,15 +1854,15 @@ static void population_shell_combat_process_tick(map_session_data *sd, t_tick cu
 	const PopulationRoleType shell_role = static_cast<PopulationRoleType>(sd->pop.role);
 	const int32 pai = battle_config.population_engine_ai;
 
-	// RAGNAROKMAC (companion strategies): a companion's rules go first; one that acts ends the turn.
-	if (population_strategy_turn(sd, current_tick, do_skills, flag_attack_only))
-		return;
-
 	// Party resurrection outranks ordinary role behaviour.  This intentionally
 	// also applies to a priest assigned Tank, Attacker, or None: class capability
 	// determines whether the party can recover from a death.
 	if (!flag_attack_only && do_skills &&
 		population_shell_try_party_resurrection(sd, current_tick))
+		return;
+
+	// RAGNAROKMAC (companion strategies): then the rules; one that acts ends the turn.
+	if (population_strategy_turn(sd, current_tick, do_skills, flag_attack_only))
 		return;
 
 	// --- PANIC INTERRUPT: emergency hide dodge ---

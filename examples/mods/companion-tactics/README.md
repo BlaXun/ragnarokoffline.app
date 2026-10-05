@@ -87,7 +87,14 @@ once). In every phase:
   Slave is instant, so only the result can be seen);
 - one attacker takes slaves off the Priest;
 - the Priest heals the most hurt, keeps Kyrie up and opens with Lex Aeterna;
-- nobody uses Fire Wall, which sets off its Heaven's Drive.
+- nobody uses Fire Wall, which sets off its Heaven's Drive;
+- when the Priest dies and none is left, they fall back to their owner and stop
+  fighting (a `fallback` strategy, entered with `Absent: { Ally: nearest, Job: Priest }`),
+  until a Priest is up again;
+- nobody casts anything the plan does not name: a plan about a monster turns the
+  normal skill rotation off, so the Wizard casts Fire Bolt and its Meteors, the
+  Assassin Enchant Poison and Sonic Blow (at the boss only, with SP to spare),
+  and the Priest and Wizard keep their distance from Phreeoni.
 
 **Regular AI characters** (`For: shells`): Wizards around the world keep Storm
 Gust, Meteor Storm, Lord of Vermilion and Heaven's Drive for packs of three or
