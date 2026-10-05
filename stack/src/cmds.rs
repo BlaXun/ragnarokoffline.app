@@ -1578,6 +1578,20 @@ pub const MOD_STORE_LIMITS: [(&str, u64); 5] = [
 ];
 const MOD_STORE_CONF: &str = "mod_store_conf.txt";
 
+/// The store's table: the fork's own definition (sql-files/main.sql and
+/// upgrade_20261005.sql), repeated here so a world made before it has it. The
+/// map server only reads and writes it.
+const MOD_STORE_TABLE_SQL: &str = "CREATE TABLE IF NOT EXISTS `mod_store` (
+  `mod_name` varchar(64) CHARACTER SET ascii NOT NULL,
+  `scope` tinyint unsigned NOT NULL,
+  `owner` int unsigned NOT NULL DEFAULT '0',
+  `path` varchar(255) CHARACTER SET ascii NOT NULL,
+  `kind` char(1) CHARACTER SET ascii NOT NULL DEFAULT 'i',
+  `num` bigint NOT NULL DEFAULT '0',
+  `str` mediumblob NULL,
+  PRIMARY KEY (`mod_name`, `scope`, `owner`, `path`)
+) ENGINE=MyISAM;";
+
 /// The limits file, and the battle config's `import:` of it. battle_conf.txt is
 /// the shell's (it rewrites it from Settings before every start), so the line
 /// is put back here each time rather than written once.
@@ -1796,6 +1810,11 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     phase(cfg, "Starting the database…");
     if let Some(credentials) = &credentials { migrate_service_credentials(dk, credentials)?; }
     wait_for_db(dk)?;
+    // Before the reader's grants, which list the tables. Without it the map
+    // server starts with the store off and says so; the game is unaffected.
+    if let Err(e) = dk.private_sql(MOD_STORE_TABLE_SQL) {
+        eprintln!("warning: mods can't keep data this time: preparing the mod store's table: {e}");
+    }
     if let Some(password) = mod_reader.as_deref() {
         // Root's login: the managed one once migrated, else the install's
         // default. Never a reason not to start: without the reader, scripts'
@@ -3277,6 +3296,17 @@ mod tests {
         let batches = mod_reader_grant_sql(&many);
         assert_eq!(batches.len(), 3, "batched under the SQL input limit");
         assert!(batches.iter().all(|b| b.len() < crate::docker::SQL_INPUT_LIMIT));
+    }
+
+    #[test]
+    fn mod_store_table_only_adds() {
+        assert_eq!(MOD_STORE_TABLE_SQL.matches("CREATE TABLE IF NOT EXISTS `mod_store`").count(), 1);
+        for word in ["DROP", "ALTER", "DELETE", "TRUNCATE"] {
+            assert!(!MOD_STORE_TABLE_SQL.to_ascii_uppercase().contains(word), "{word}");
+        }
+        for column in ["`mod_name`", "`scope`", "`owner`", "`path`", "`kind`", "`num`", "`str`"] {
+            assert!(MOD_STORE_TABLE_SQL.contains(column), "{column}");
+        }
     }
 
     #[test]
