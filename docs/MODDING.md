@@ -893,7 +893,9 @@ mod's `db/extension_db.yml` and call it from `OnInit`. The
 [map-spawn-rate](../registry/mods/map-spawn-rate) mod does this for any map,
 picked in its settings window.
 
-See [`examples/mods/quest-npc`](../examples/mods/quest-npc).
+See [`examples/mods/quest-npc`](../examples/mods/quest-npc). For a quest in
+the game's own quest log, with kill counters the server keeps, see
+[Custom quests](mods/CUSTOM_QUESTS.md).
 
 ### Knowing what players did: rAthena's logs
 
@@ -1731,7 +1733,7 @@ quest window, and every other quest keeps its own:
 ```lua
 -- my-mod/System/OngoingQuestInfoList.lub
 QuestInfoList = {
-	[70001] = {
+	[105001] = {
 		Title = "The Islander's Errand",
 		Summary = "Bring Hana 10 Jellopies.",
 		IconName = "ico_nq.bmp",
@@ -1749,6 +1751,8 @@ text in ASCII: the client reads quest tables in its own codepage, not as
 UTF-8. The app copies each table aside as `OngoingQuestInfoList-<mod>.lub` and
 lists them in the client's `customQuestInfo`, which loads **after** the base,
 in mod order, the last definition of a quest winning.
+[Custom quests](mods/CUSTOM_QUESTS.md) covers the whole quest: the server's
+side, the fields this table takes, and choosing an id no one else uses.
 
 Everything else in `System/` still replaces the client's copy, so start from the
 translation's version and add to it.
