@@ -1787,14 +1787,21 @@ async function installModFrom(src) {
 	return `Installed ${name}.${on}${note} Apply to restart the server.`;
 }
 
+// What removing a mod does, in the settings window's question and the native one.
+const REMOVE_DETAIL = 'Its folder goes to the trash, and its on/off choice and options are forgotten. Characters and items are not touched.';
+
 /**
  * A folder, or a .zip or .rar file, from an open dialog. Only macOS offers
  * files and folders in one dialog; elsewhere the dialog shows one or the
- * other, so ask which first. Null when cancelled.
+ * other, so which one is asked first. The settings window asks it in its own
+ * style and passes the answer as `kind` ('folder' or 'archive'); without one
+ * the question is asked here. Null when cancelled.
  */
-async function pickFolderOrArchive(message, filterName) {
+async function pickFolderOrArchive(message, filterName, kind) {
 	let props = ['openFile', 'openDirectory'];
-	if (process.platform !== 'darwin') {
+	if (kind === 'folder' || kind === 'archive') {
+		props = [kind === 'folder' ? 'openDirectory' : 'openFile'];
+	} else if (process.platform !== 'darwin') {
 		const parent = BrowserWindow.getFocusedWindow();
 		const question = {
 			type: 'question',
@@ -1869,7 +1876,11 @@ function sourceOptions(extra = {}) {
 // run from the staging folder -- and only then does the player see what it is
 // and decide. The question is asked here rather than in the settings page: the
 // page renders text the internet wrote, and it is not the one that decides
-// whether somebody else's code goes into the server.
+// whether somebody else's code goes into the server. That is also why this
+// stays a native box while Remove and the folder-or-archive question moved
+// into the settings window: a page that could be made to click its own
+// button could not click this one. An update's release notes are no longer
+// in it: the Updates tab shows them, whole, beside the button that led here.
 async function installFromSource(entry) {
 	const source = require('./mod-source');
 	const modsDir = path.join(stateDir(), 'mods');
@@ -1911,7 +1922,8 @@ async function installFromSource(entry) {
 					? `this mod's author can change it without review, and this release ships ${ships.join(', ')}.`
 					: "this mod's author can change it without review."),
 			current || present ? 'Your settings for it and whether it is switched on are kept.' : '',
-			notes ? `\nRelease notes:\n${notes.length > 700 ? notes.slice(0, 700) + '…' : notes}` : '',
+			// An install has no Updates row to read them on, so it keeps them.
+			notes && !current ? `\nRelease notes:\n${notes.length > 700 ? notes.slice(0, 700) + '…' : notes}` : '',
 			`\n${release.url}`,
 		].filter(line => line !== '').join('\n');
 		const parent = BrowserWindow.getFocusedWindow() || windows.settings;
@@ -2303,11 +2315,11 @@ const handlers = {
 	// can ship JavaScript that the game page executes. Installing one is running
 	// somebody's code, so this checks before it moves anything, and unpacks
 	// defensively.
-	install_mod: async () => {
+	install_mod: async ({ kind } = {}) => {
 		// A folder, a .zip or a .rar: installModFrom reads an archive by its
 		// content, so a RAR with a .zip name installs too. The dialog used to
 		// offer files only, so a mod folder could not be picked at all.
-		const src = await pickFolderOrArchive('Install a mod from…', 'Mod folder, .zip or .rar');
+		const src = await pickFolderOrArchive('Install a mod from…', 'Mod folder, .zip or .rar', kind);
 		if (!src) return 'Cancelled.';
 		const installed = await installModFrom(src);
 		modHostsChanged();
@@ -2317,8 +2329,8 @@ const handlers = {
 	// of one) or a cursor pack (cursors.spr + cursors.act), made into a mod.
 	// Pictures are data rather than code, but the archive is unpacked with
 	// the same checks as a mod's.
-	install_skin: async () => {
-		const src = await pickFolderOrArchive('Install a UI skin or cursor pack from…', 'Skin folder, .zip or .rar');
+	install_skin: async ({ kind } = {}) => {
+		const src = await pickFolderOrArchive('Install a UI skin or cursor pack from…', 'Skin folder, .zip or .rar', kind);
 		if (!src) return 'Cancelled.';
 		return installSkinFrom(src);
 	},
@@ -2330,23 +2342,30 @@ const handlers = {
 	// name starts from its own defaults. A mod that ships with the app is not
 	// in state/mods and has no Remove button; this refuses it anyway, because
 	// the page is not the one who decides what may be deleted.
-	remove_mod: async ({ name }) => {
+	// `asked`: the settings window has already asked, in its own style. Only
+	// the app's own pages can call this (callerIsOwnPage), the folder goes to
+	// the trash rather than away, and nothing of anybody's code is installed by
+	// it -- so, unlike an update from GitHub, the question need not be native.
+	// A caller that has not asked still gets the native box.
+	remove_mod: async ({ name, asked } = {}) => {
 		const { modFolder } = require('./mod-remove');
 		const rows = (await runStack(['mods'])).split('\n').filter(Boolean).map(l => l.split('\t'));
 		const row = rows.find(r => r[1] === name);
 		if (row && row[4] === 'bundled') throw new Error(`${name} comes with the app and cannot be removed. Switch it off instead.`);
 		const target = modFolder(path.join(stateDir(), 'mods'), name);
-		const parent = BrowserWindow.getFocusedWindow();
-		const question = {
-			type: 'warning',
-			buttons: ['Remove', 'Cancel'],
-			defaultId: 1,
-			cancelId: 1,
-			message: `Remove ${name}?`,
-			detail: 'Its folder goes to the trash, and its on/off choice and options are forgotten. Characters and items are not touched.',
-		};
-		const { response } = parent ? await dialog.showMessageBox(parent, question) : await dialog.showMessageBox(question);
-		if (response !== 0) return 'Cancelled.';
+		if (asked !== true) {
+			const parent = BrowserWindow.getFocusedWindow();
+			const question = {
+				type: 'warning',
+				buttons: ['Remove', 'Cancel'],
+				defaultId: 1,
+				cancelId: 1,
+				message: `Remove ${name}?`,
+				detail: REMOVE_DETAIL,
+			};
+			const { response } = parent ? await dialog.showMessageBox(parent, question) : await dialog.showMessageBox(question);
+			if (response !== 0) return 'Cancelled.';
+		}
 		try {
 			await shell.trashItem(target);
 		} catch (e) {
