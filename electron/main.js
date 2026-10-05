@@ -1143,7 +1143,7 @@ let toolsSingleton = null;
 function toolsInstance() {
 	if (!toolsSingleton) {
 		toolsSingleton = require('./tools').createTools({
-			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
+			BrowserWindow, session, net, shell, dialog, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
 			assetPort: () => gamePorts().asset,
 			// The map editor's MCP and command line, on the AI agent's listener,
 			// unless the player turned that off.
