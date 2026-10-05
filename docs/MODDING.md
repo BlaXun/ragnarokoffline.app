@@ -1494,6 +1494,67 @@ and so on. Or ship your own image there and name it.
   anywhere else under `data/`, is copied like any other file and changes
   nothing on screen, and the log says so.
 
+### Cut-ins: an NPC's full-length picture
+
+`cutin "<name>", <position>;` in an NPC's script shows a picture beside the
+dialogue. The client loads it from `data/texture/유저인터페이스/illust/`:
+
+- **A name with no extension is a BMP.** `cutin "skogul", 2;` loads
+  `illust/skogul.bmp`.
+- **A name with an extension is used as given.** `cutin "skogul.png", 2;`
+  loads `illust/skogul.png`.
+- **`cutin "", 255;`** takes the picture away.
+- **Positions:** 0 bottom left, 1 bottom centre, 2 bottom right, 4 centre of
+  the screen.
+
+```
+my-mod/data/texture/유저인터페이스/illust/skogul.bmp
+my-mod/npc/my_npc.txt          cutin "skogul", 2;
+```
+
+**A BMP's transparency is magenta, and only near-pure magenta.** BMPs have no
+alpha channel, so the client makes `#FF00FF` transparent. To be exact, it
+clears any pixel with red above 230, green below 20 and blue above 230. This
+applies to every BMP it loads: cut-ins, item icons, signboards.
+
+That's the trap with modern art. A picture cut out and **antialiased** onto a
+magenta background has edge pixels that are part art, part magenta, like
+`(180, 40, 170)`. They aren't near-pure magenta, so they're drawn, and the
+picture gets a purple halo.
+
+| | |
+|---|---|
+| <img src="assets/cutin-fringe-before.png" alt="A dark winged figure on a grey background, outlined in thin magenta along every edge, with a zoomed wing showing the magenta pixels" width="300"> | <img src="assets/cutin-fringe-after.png" alt="The same figure with a clean edge and no magenta, zoomed the same way" width="300"> |
+| Antialiased onto magenta: a purple halo | Every pixel art or exact `#FF00FF` |
+
+The client can't safely key the halo away: a looser rule would also erase
+real purple in the art. Fix the picture, one of two ways.
+
+**Use a PNG with real transparency** (the smooth edges you drew):
+
+1. Export the art with its transparent background as PNG. Don't flatten it
+   onto magenta first.
+2. Put it in `illust/` and name the extension in the script:
+   `cutin "skogul.png", 2;`.
+
+A PNG keeps its alpha as it is, so antialiased edges, soft shadows and glows
+all work. That's a feature of Ragnarok Offline's client: don't count on other
+RO clients reading a PNG cut-in.
+
+**Or keep the BMP, with a hard edge.** Every pixel must be either art or exact
+`#FF00FF`:
+- **From art with transparency:** in your editor, make the selection or alpha
+  hard first (threshold the alpha at 50%, or select with antialiasing off),
+  then fill what's outside with `#FF00FF` and save as a 24-bit BMP.
+- **From a BMP that already has a halo:** select the background with the magic
+  wand at tolerance 0, grow the selection by 1–2 pixels, and fill it with
+  `#FF00FF`. That eats into the edge's blended pixels rather than keeping them.
+- **Check it:** zoom in on an edge. There should be no pinkish or purplish
+  pixel between the art and the magenta.
+
+The same goes for any BMP with transparency in a mod: item and collection
+icons and signboard icons.
+
 ### The client caches, hard
 
 There are two caches between your file and the screen, and they fail
