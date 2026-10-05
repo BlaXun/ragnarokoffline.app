@@ -11,6 +11,17 @@
 // everywhere is worth ~60 MB of download.
 //
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard, screen, session, safeStorage, powerMonitor, protocol, net } = require('electron');
+
+// Headless: no windows, the server started on its own, and Settings in a
+// browser at an address printed once (electron/headless/, docs/HEADLESS.md).
+// For a machine with no screen, or one the host reaches over SSH.
+const HEADLESS = process.argv.includes('--headless') || process.env.RAGNAROK_OFFLINE_HEADLESS === '1';
+// Chromium needs a display server on Linux even with no window open. With
+// none to be had, use its headless platform; Xvfb (docs/HEADLESS.md) is the
+// fallback if this build of Electron lacks it.
+if (HEADLESS && process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
+	app.commandLine.appendSwitch('ozone-platform', 'headless');
+}
 // Mods' own settings pages are served from a private scheme, which Chromium
 // only accepts if it is declared before the app is ready.
 // Every privileged scheme in one call (Electron keeps only the last): the mod
@@ -3192,6 +3203,10 @@ function clientLog(level, text, line, src) {
 
 function appLog(line) {
 	line = joinSession.redact(line);
+	// Headless, the log is the only thing the host sees as it happens.
+	if (HEADLESS) {
+		try { process.stdout.write(`${line}\n`); } catch { /* no terminal attached */ }
+	}
 	try {
 		const dir = stateDir();
 		fs.mkdirSync(dir, { recursive: true });
@@ -3582,6 +3597,11 @@ if (!app.requestSingleInstanceLock()) {
 			}
 			return;
 		}
+		// Headless has no window to bring forward; say where Settings is.
+		if (HEADLESS) {
+			appLog('headless: already running; Settings is at the address printed when it started (state/headless-admin.url)');
+			return;
+		}
 		// Otherwise it is "show me the game", and the window already exists.
 		const win = windows.game || BrowserWindow.getAllWindows().find(w => !require('./mod-host/sandbox').isHostWindow(w));
 		if (win && !win.isDestroyed()) {
@@ -3590,6 +3610,155 @@ if (!app.requestSingleInstanceLock()) {
 		}
 	});
 }
+
+// ---------------------------------------------------------------------------
+// Headless
+// ---------------------------------------------------------------------------
+
+// What the admin page may call: what Settings calls, no more. The game
+// page's own calls (remember_login, mod_host_request and the rest) are not
+// for an admin page, and anything that opens a window has nowhere to open.
+const HEADLESS_PAGE_HANDLERS = new Set([
+	'agent_replace_token', 'agent_set', 'agent_status', 'assets_ready', 'assets_stop', 'check_mod_updates',
+	'client_folders', 'copy_diagnostics', 'data_location', 'db_backup', 'db_backup_full', 'db_inspect',
+	'db_inspect_full', 'db_restore', 'db_restore_full', 'game_status', 'get_client_paths', 'get_mode',
+	'get_settings', 'get_vm_ram_mib', 'host_facts', 'host_ram_mib', 'hosting_check', 'install_mod',
+	'install_registry_mod', 'install_skin', 'list_mods', 'list_registry_mods', 'mod_host_list', 'mod_host_set',
+	'open_data_folder', 'open_mods_folder', 'packetvers', 'registry_image', 'registry_release', 'remove_mod',
+	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'set_client_paths',
+	'set_mod_enabled', 'set_mod_settings', 'set_mode', 'set_vm_ram_mib', 'sharing_status', 'sharing_token_help',
+	'sign_in_status', 'stack_down', 'stack_repair', 'stack_status', 'stack_up', 'start_stack', 'tools_list',
+	'accounts', 'save_diagnostics', 'sharing_connect', 'sharing_start', 'sharing_forget', 'sharing_stop',
+	'sharing_replace', 'sharing_copy', 'sign_in_save', 'sign_in_forget',
+	// Setup's, served at /setup: where the client's files are.
+	'scan_client_dir',
+	'__dialog_open', '__dialog_save',
+]);
+
+// The same calls, answered for a host who is not at this machine: a folder
+// is named rather than opened, diagnostics land in a file rather than on a
+// clipboard nobody can paste from.
+const HEADLESS_OVERRIDES = {
+	open_data_folder: () => { fs.mkdirSync(dataRoot(), { recursive: true }); return dataRoot(); },
+	open_mods_folder: () => { const dir = path.join(stateDir(), 'mods'); fs.mkdirSync(dir, { recursive: true }); return dir; },
+	copy_diagnostics: async () => saveHeadlessDiagnostics(),
+	report_issue: async () => `${await saveHeadlessDiagnostics()} Attach it to a new issue at ${SOURCE_URL}/issues/new.`,
+	sharing_token_help: () => 'Create a token at https://dash.cloudflare.com/profile/api-tokens',
+	// A mod's own settings page, in a sandboxed frame of the admin page
+	// (electron/headless/admin-server.js). The ticket names the mod; the page's
+	// three calls come back here with it and go to the same code as the
+	// settings window's (mod-settings-window.js).
+	mod_page_open: async ({ name }) => {
+		const { root, file } = await modSettingsWindows().page(String(name));
+		appLog(`opened the settings page of mod ${name} (headless)`);
+		return headlessAdmin.openModPage(String(name), root, file);
+	},
+	mod_page_call: async ({ ticket, op, values }) => {
+		const name = headlessAdmin.modPageOwner(ticket);
+		if (!name) throw new Error('This settings page has been closed. Open it again from the Mods tab.');
+		const mods = modSettingsWindows();
+		if (op === 'get') return mods.get(name);
+		if (op === 'set') return mods.set(name, values, 'its settings page (headless)');
+		if (op === 'apply') return mods.apply(name, 'its settings page (headless)');
+		throw new Error(`modSettings has no ${op}.`);
+	},
+	mod_page_close: ({ ticket }) => { headlessAdmin.closeModPage(ticket); },
+};
+
+// The running admin server, for the calls above that issue its tickets.
+let headlessAdmin = null;
+
+async function saveHeadlessDiagnostics() {
+	const file = path.join(stateDir(), 'logs', `diagnostics-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`);
+	fs.mkdirSync(path.dirname(file), { recursive: true });
+	fs.writeFileSync(file, await handlers.collect_diagnostics());
+	return `Diagnostics saved on the server: ${file}.`;
+}
+
+// A call from the admin page: through the same queue and the same handlers
+// as one from the Settings window.
+async function headlessInvoke(name, args) {
+	if (!HEADLESS_OVERRIDES[name] && (!HEADLESS_PAGE_HANDLERS.has(name) || !(name in handlers))) {
+		throw new Error(`${name} is not available in headless mode.`);
+	}
+	try {
+		if (HEADLESS_OVERRIDES[name]) return await HEADLESS_OVERRIDES[name](args || {});
+		if (SERVER_OPERATIONS.has(name)) return await runServerOperation(name, args);
+		return await handlers[name](args || {}, null);
+	} catch (e) {
+		appLog(`${name} failed: ${(e && e.message) || e}`);
+		throw e;
+	}
+}
+
+// --headless: start the admin page and the server, and print where both are.
+async function startHeadless() {
+	if (process.platform === 'darwin' && app.dock) app.dock.hide();
+	const { RemoteDialogs } = require('./headless/remote-dialogs');
+	const dialogs = new RemoteDialogs({ log: appLog }).install(dialog);
+
+	const arg = name => {
+		const i = process.argv.indexOf(name);
+		return i > -1 ? process.argv[i + 1] : undefined;
+	};
+	const host = arg('--admin-host') || process.env.RAGNAROK_OFFLINE_ADMIN_HOST || '127.0.0.1';
+	const port = Number(arg('--admin-port') || process.env.RAGNAROK_OFFLINE_ADMIN_PORT || 3339);
+	if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error(`--admin-port ${port} is not a port`);
+	const gameUrl = () => `http://${advertiseHost()}:${gamePorts().asset}/`;
+	const admin = await require('./headless/admin-server').start({
+		host, port, dialogs,
+		srcDir: path.join(__dirname, '..', 'src'),
+		invoke: headlessInvoke,
+		// Settings -> Tools, served at /tools/<id>/ by the same code as their windows.
+		tools: toolsInstance(),
+		info: () => ({ gameUrl: gameUrl(), version: app.getVersion() }),
+		log: appLog,
+	});
+	headlessAdmin = admin;
+	// The one place the address is, for a host who did not see it scroll past
+	// -- and on Windows, where a windowed app's output reaches no terminal.
+	const urlFile = path.join(stateDir(), 'headless-admin.url');
+	fs.mkdirSync(stateDir(), { recursive: true });
+	fs.writeFileSync(urlFile, `${admin.url}\n`, { mode: 0o600 });
+	const game = gameUrl();
+	const local = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(game);
+	process.stdout.write(`\nRagnarok Offline ${app.getVersion()}, headless.\n` +
+		`  Game:     ${game}\n` +
+		(local ? '            (this machine only; turn on LAN in Settings -> Multiplayer for others)\n' : '') +
+		`  Settings: ${admin.url}\n` +
+		'            (this address signs you in; it changes every start)\n' +
+		(host === '127.0.0.1' ? '            from another machine: ssh -L ' + admin.port + ':127.0.0.1:' + admin.port + ' <this host>\n' : '') +
+		`  Also in:  ${urlFile}\n\n`);
+	if (host !== '127.0.0.1' && host !== 'localhost') {
+		appLog(`headless: the admin page listens on ${host}:${admin.port}, plain HTTP; the token crosses the network as typed. An SSH tunnel to 127.0.0.1 is safer.`);
+	}
+
+	// The supervisor's progress, as the boot window would show it.
+	const phaseFile = path.join(stateDir(), 'phase');
+	let lastPhase = '';
+	fs.watchFile(phaseFile, { interval: 1000 }, () => {
+		try {
+			const phase = fs.readFileSync(phaseFile, 'utf8').trim();
+			if (phase && phase !== lastPhase) appLog(`server: ${(lastPhase = phase)}`);
+		} catch { /* not written yet */ }
+	});
+
+	const c = getClientPaths();
+	if (c.mode === 'join') {
+		appLog('headless: this install is set to join a friend\'s server, so there is nothing to host. Switch to hosting in Settings.');
+		return;
+	}
+	if (!clientComplete(c)) {
+		appLog('headless: no client data (data.grf) is set yet. In Settings, General, choose Change asset locations, then Start.');
+		return;
+	}
+	await runServerOperation('start_stack', {});
+	appLog(`headless: ready. Players open ${gameUrl()}`);
+}
+
+// Ctrl-C, or a service manager's SIGTERM, needs nothing here: Electron turns
+// both into a normal quit, so before-quit stops the stack before the exit, as
+// quitting from the menu does (checked on macOS with each signal).
 
 app.whenReady().then(() => {
 	crashMonitor.start();
@@ -3623,6 +3792,14 @@ app.whenReady().then(() => {
 		const s = getSettings();
 		if (s.agent_play) agentPlay().start({ show: s.agent_window !== false, agents: s.agent_count || 1 }).catch(e => appLog(`agent play: ${e.message}`));
 	} catch (e) { appLog(`agent play: ${e.message}`); }
+
+	if (HEADLESS) {
+		startHeadless().catch(e => {
+			appLog(`headless: could not start: ${e.message}`);
+			app.exit(1);
+		});
+		return;
+	}
 
 	// Joining loads the host's page directly, so nothing on the way there
 	// would notice the host being down -- Electron would just render its own
@@ -3720,6 +3897,7 @@ app.on('before-quit', e => {
 	if (tearingDown) return; // second pass: let it go
 	e.preventDefault();
 	tearingDown = true;
+	if (HEADLESS) appLog('headless: stopping the server before exiting…');
 	for (const win of BrowserWindow.getAllWindows()) {
 		if (!win.isDestroyed()) win.setTitle(`${productName()} — shutting down…`);
 	}
@@ -3735,7 +3913,9 @@ app.on('before-quit', e => {
 	});
 });
 
-app.on('window-all-closed', () => app.quit());
+// Headless has no windows to close; an AI agent's window that comes and
+// goes must not take the server with it.
+app.on('window-all-closed', () => { if (!HEADLESS) app.quit(); });
 
 // A signal terminates the process without a before-quit, so `kill`, a logout or
 // Ctrl-C would otherwise leave the whole stack running.
