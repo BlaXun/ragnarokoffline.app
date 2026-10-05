@@ -42,6 +42,7 @@ function equal(a, b) {
 export function startServer({ bridge, remote, root, token, port = 0, log = () => {}, commands = {} }) {
 	const pageToken = crypto.randomBytes(24).toString('hex');
 	let actualPort = 0;
+	const control = controlCalls({ remote, log, commands, port: () => actualPort });
 	const server = http.createServer(async (req, res) => {
 		const send = (status, body, type = 'application/json; charset=utf-8', extra = {}) => {
 			const buf = Buffer.isBuffer(body) ? body : Buffer.from(typeof body === 'string' ? body : JSON.stringify(body));
@@ -60,19 +61,8 @@ export function startServer({ bridge, remote, root, token, port = 0, log = () =>
 			const auth = String(req.headers.authorization || '');
 			if (!equal(auth.replace(/^Bearer\s+/i, ''), token)) return send(401, { error: 'bad or missing token: see connection.json' });
 			if (req.headers.origin) return send(403, { error: 'not from a web page' });
-			const what = url.pathname.slice(9);
-			try {
-				if (what === 'status') return send(200, { connected: remote.connected(), page: remote.info(), port: actualPort });
-				if (what === 'run' && req.method === 'POST') {
-					const { cmd, args } = JSON.parse(body.toString('utf8') || '{}');
-					if (commands[cmd]) return send(200, { result: await commands[cmd](args || {}) });
-					log(`map editor: ${cmd} from the command line`);
-					return send(200, { result: await remote.run(String(cmd), args || {}) });
-				}
-				return send(404, { error: 'no such control call' });
-			} catch (e) {
-				return send(200, { error: e.message });
-			}
+			const out = await control({ method: req.method, what: url.pathname.slice(9), body });
+			return send(out.status, out.body);
 		}
 
 		if (!bridge) return send(404, { error: 'not found' });
@@ -105,6 +95,33 @@ export function startServer({ bridge, remote, root, token, port = 0, log = () =>
 			resolve({ server, port: actualPort, pageToken, close: () => new Promise(r => server.close(() => r())) });
 		});
 	});
+}
+
+/**
+ * The control calls, whichever server they arrive on: this one, or the app's
+ * local API for agents under /map (electron/map-editor.js).
+ *
+ *   status   GET: is an editor open, what map
+ *   run      POST {cmd, args}: run a command in the open editor
+ *
+ * Resolves to { status, body }. A command that fails is still a 200, with
+ * { error }, so the command line can tell it from a missing server.
+ */
+export function controlCalls({ remote, log = () => {}, commands = {}, port = () => null }) {
+	return async ({ method, what, body }) => {
+		try {
+			if (what === 'status') return { status: 200, body: { connected: remote.connected(), page: remote.info(), port: port() } };
+			if (what === 'run' && method === 'POST') {
+				const { cmd, args } = JSON.parse(body.toString('utf8') || '{}');
+				if (commands[cmd]) return { status: 200, body: { result: await commands[cmd](args || {}) } };
+				log(`map editor: ${cmd} from the command line`);
+				return { status: 200, body: { result: await remote.run(String(cmd), args || {}) } };
+			}
+			return { status: 404, body: { error: 'no such control call' } };
+		} catch (e) {
+			return { status: 200, body: { error: e.message } };
+		}
+	};
 }
 
 /** A file only the user can read: connection details with a bearer token. */

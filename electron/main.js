@@ -1000,6 +1000,11 @@ const SETTINGS_DEFAULTS = {
 	agent_window: true,
 	// How many agents may play at once, each its own account and window.
 	agent_count: 1,
+	// "Let an AI agent use the map editor": its MCP (/mcp/map) and command
+	// line on the same listener. On means opening the editor opens them (and
+	// every start after, once it has been); off closes them and keeps them
+	// closed, editor or not.
+	map_editor_agent: true,
 	// How long a friends invitation stays valid, in days. Nothing to do with
 	// Cloudflare -- the tunnel runs as long as the app shares; this is only how
 	// long the invite token is accepted. A link posted in Discord should still
@@ -1140,6 +1145,10 @@ function toolsInstance() {
 		toolsSingleton = require('./tools').createTools({
 			BrowserWindow, session, net, shell, stackBin, stackEnv, stateDir, runtimeDir: projectRoot, log: appLog,
 			assetPort: () => gamePorts().asset,
+			// The map editor's MCP and command line, on the AI agent's listener,
+			// unless the player turned that off.
+			addAgentRoute: (route, options) => agentPlay().addRoute(route, options),
+			mapEditorAgentAllowed: () => getSettings().map_editor_agent !== false,
 			// The Control panel (#230). Its writes wait in the same queue as
 			// every other server operation; one that stops the game (a delete)
 			// stops sharing on the way in and offers it back afterwards, as an
@@ -1195,6 +1204,16 @@ function toolsInstance() {
 
 // The AI agent (#187): the local API, its files and its game window.
 let agentPlayInstance = null;
+
+// What Settings -> Play with an AI agent shows: the game agent's state and
+// the map editor's.
+function agentStatus(s) {
+	return {
+		...agentPlay().info(), enabled: !!s.agent_play, show: s.agent_window !== false, count: s.agent_count || 1,
+		mapEditorEnabled: s.map_editor_agent !== false,
+		mapEditor: s.map_editor_agent !== false ? toolsInstance().mapEditor.agentInfo() : null,
+	};
+}
 function agentPlay() {
 	if (!agentPlayInstance) {
 		agentPlayInstance = require('./agent-play').createAgentPlay({
@@ -3098,13 +3117,18 @@ const handlers = {
 	open_tool: ({ id }) => toolsInstance().open(String(id)),
 	// Let an AI agent play (#187). Saved and applied at once, like the app
 	// preferences above: nothing about the server changes.
-	agent_status: () => { const s = getSettings(); return { ...agentPlay().info(), enabled: !!s.agent_play, show: s.agent_window !== false, count: s.agent_count || 1 }; },
+	agent_status: () => agentStatus(getSettings()),
 	agent_set: async ({ enabled, show, count }) => {
 		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
 			{ agent_play: !!enabled, agent_window: show !== false, agent_count: Math.max(1, Math.min(4, Number(count) || 1)) }, SETTINGS_DEFAULTS);
 		if (settings.agent_play) await agentPlay().start({ show: settings.agent_window, agents: settings.agent_count });
 		else if (agentPlay().running()) await agentPlay().stop();
-		return { ...agentPlay().info(), enabled: settings.agent_play, show: settings.agent_window, count: settings.agent_count };
+		return agentStatus(settings);
+	},
+	map_editor_agent_set: async ({ enabled }) => {
+		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'), { map_editor_agent: !!enabled }, SETTINGS_DEFAULTS);
+		await toolsInstance().mapEditor.setAgentAccess(settings.map_editor_agent !== false);
+		return agentStatus(settings);
 	},
 	agent_open_guide: async () => {
 		const guide = agentPlay().info().guide;
@@ -3115,7 +3139,7 @@ const handlers = {
 	agent_replace_token: async () => {
 		if (!getSettings().agent_play) throw new Error('Turn the AI agent on first.');
 		await agentPlay().replaceToken();
-		return { ...agentPlay().info(), enabled: true, show: getSettings().agent_window !== false, count: getSettings().agent_count || 1 };
+		return agentStatus(getSettings());
 	},
 
 	// Windows
@@ -3662,7 +3686,7 @@ if (!app.requestSingleInstanceLock()) {
 // page's own calls (remember_login, mod_host_request and the rest) are not
 // for an admin page, and anything that opens a window has nowhere to open.
 const HEADLESS_PAGE_HANDLERS = new Set([
-	'agent_replace_token', 'agent_set', 'agent_status', 'assets_ready', 'assets_stop', 'check_mod_updates',
+	'agent_replace_token', 'agent_set', 'agent_status', 'map_editor_agent_set', 'assets_ready', 'assets_stop', 'check_mod_updates',
 	'client_folders', 'copy_diagnostics', 'data_location', 'db_backup', 'db_backup_full', 'db_inspect',
 	'db_inspect_full', 'db_restore', 'db_restore_full', 'game_status', 'get_client_paths', 'get_mode',
 	'get_settings', 'get_vm_ram_mib', 'host_facts', 'host_ram_mib', 'hosting_check', 'install_mod',
@@ -3834,6 +3858,12 @@ app.whenReady().then(() => {
 	try {
 		const s = getSettings();
 		if (s.agent_play) agentPlay().start({ show: s.agent_window !== false, agents: s.agent_count || 1 }).catch(e => appLog(`agent play: ${e.message}`));
+		// The map editor's routes, back from the last run when the editor has
+		// been opened before (its connection file is there); with the setting
+		// off, this clears a file an earlier run left instead.
+		if (fs.existsSync(path.join(stateDir(), 'map-editor', 'connection.json'))) {
+			toolsInstance().mapEditor.setAgentAccess(s.map_editor_agent !== false).catch(e => appLog(`map editor: ${e.message}`));
+		}
 	} catch (e) { appLog(`agent play: ${e.message}`); }
 
 	if (HEADLESS) {

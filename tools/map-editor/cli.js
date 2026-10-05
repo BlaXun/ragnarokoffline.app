@@ -95,7 +95,7 @@ function readConnection(opts) {
 }
 
 async function control(conn, what, body) {
-	const res = await fetch(`http://127.0.0.1:${conn.port}/control/${what}`, {
+	const res = await fetch(`http://127.0.0.1:${conn.port}${conn.base || ''}/control/${what}`, {
 		method: body === undefined ? 'GET' : 'POST',
 		headers: { authorization: `Bearer ${conn.token}`, 'content-type': 'application/json' },
 		body: body === undefined ? undefined : JSON.stringify(body),
@@ -216,7 +216,7 @@ async function startHeadless(opts, { mod, map } = {}) {
 	try { await tryPlaywright(); } catch (e1) {
 		try { await tryElectron(); } catch (e2) {
 			await server.close();
-			throw new Error(`No editor is open and none could be started here (${e1.message.split('\n')[0]}; ${e2.message.split('\n')[0]}). Open the map editor from Settings → Tools in the app, or run \`ragnarok-map serve\` and open its address in a browser.`);
+			throw new Error(`No editor is open and none could be started here (${e1.message.split('\n')[0]}; ${e2.message.split('\n')[0]}). In the app, open the map editor from Settings → Tools (and check Settings → Play with an AI agent → Map editor is on); or run \`ragnarok-map serve\` and open its address in a browser.`);
 		}
 	}
 	await waitForPage(conn, 90000);
@@ -285,23 +285,9 @@ async function offline(opts, cmd, args) {
 // ---- MCP, on stdio
 
 async function mcp(opts) {
-	const { COMMANDS } = await import('./lib/commands.js');
-	const { PAGE_COMMANDS } = await import('./lib/page-commands.js');
-	const all = { ...PAGE_COMMANDS, ...Object.fromEntries(Object.entries(COMMANDS).map(([k, v]) => [k, { describe: v.describe, args: v.args }])) };
-	const toolName = n => n.replace(/\./g, '_');
-	const byTool = new Map(Object.keys(all).map(n => [toolName(n), n]));
-	const tools = Object.entries(all).map(([name, spec]) => ({
-		name: toolName(name),
-		description: spec.describe,
-		inputSchema: {
-			type: 'object',
-			properties: Object.fromEntries(Object.entries(spec.args).map(([a, [type, description]]) => [a, { type: type === 'object' ? 'object' : type === 'number' ? 'number' : type === 'boolean' ? 'boolean' : 'string', description }])),
-			required: Object.entries(spec.args).filter(([, s]) => !s[2]).map(([a]) => a),
-		},
-	}));
-	const PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
-	const reply = (id, result) => process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id, result }) + '\n');
-	const error = (id, code, message) => process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id, error: { code, message } }) + '\n');
+	const { createMcp } = await import('./server/mcp.js');
+	const handle = createMcp({ run: (cmd, args) => runLive(opts, cmd, args) });
+	const write = message => process.stdout.write(JSON.stringify(message) + '\n');
 	let buffer = '';
 	process.stdin.setEncoding('utf8');
 	process.stdin.on('data', chunk => {
@@ -312,40 +298,11 @@ async function mcp(opts) {
 			buffer = buffer.slice(nl + 1);
 			if (!line) continue;
 			let msg;
-			try { msg = JSON.parse(line); } catch { error(null, -32700, 'parse error'); continue; }
-			handle(msg).catch(e => error(msg.id, -32603, e.message));
+			try { msg = JSON.parse(line); } catch { write({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'parse error' } }); continue; }
+			handle(msg).then(r => { if (r) write(r); }, e => write({ jsonrpc: '2.0', id: msg.id, error: { code: -32603, message: e.message } }));
 		}
 	});
 	process.stdin.on('end', async () => { if (headless) await headless.close(); process.exit(0); });
-	async function handle(msg) {
-		if (msg.id === undefined) return; // a notification
-		if (msg.method === 'initialize') {
-			const want = msg.params && msg.params.protocolVersion;
-			return reply(msg.id, {
-				protocolVersion: PROTOCOLS.includes(want) ? want : PROTOCOLS[0],
-				capabilities: { tools: {} },
-				serverInfo: { name: 'ragnarok-map', version: '1.0.0' },
-				instructions: fs.existsSync(path.join(HERE, 'AGENTS.md')) ? fs.readFileSync(path.join(HERE, 'AGENTS.md'), 'utf8').slice(0, 6000) : 'Ragnarok Offline map editor.',
-			});
-		}
-		if (msg.method === 'ping') return reply(msg.id, {});
-		if (msg.method === 'tools/list') return reply(msg.id, { tools });
-		if (msg.method === 'tools/call') {
-			const name = byTool.get(msg.params && msg.params.name);
-			if (!name) return error(msg.id, -32602, `no tool ${msg.params && msg.params.name}`);
-			try {
-				const result = await runLive(opts, name, (msg.params && msg.params.arguments) || {});
-				if (result && result.png) {
-					const { png, ...rest } = result;
-					return reply(msg.id, { content: [{ type: 'image', data: png, mimeType: 'image/png' }, { type: 'text', text: JSON.stringify(rest) }] });
-				}
-				return reply(msg.id, { content: [{ type: 'text', text: JSON.stringify(result ?? null, null, 1) }] });
-			} catch (e) {
-				return reply(msg.id, { content: [{ type: 'text', text: e.message }], isError: true });
-			}
-		}
-		return error(msg.id, -32601, `no method ${msg.method}`);
-	}
 }
 
 // ---- Main
@@ -374,9 +331,8 @@ async function main() {
 	}
 	if (verb === 'mcp') return mcp(opts);
 	if (verb === 'help' && !(await liveStatus(opts))?.connected) {
-		const { COMMANDS } = await import('./lib/commands.js');
-		const { PAGE_COMMANDS } = await import('./lib/page-commands.js');
-		print({ commands: { ...PAGE_COMMANDS, ...Object.fromEntries(Object.entries(COMMANDS).map(([k, v]) => [k, { describe: v.describe, args: v.args }])) } });
+		const { allCommands } = await import('./server/mcp.js');
+		print({ commands: allCommands() });
 		return;
 	}
 	if (verb === 'offline') {
