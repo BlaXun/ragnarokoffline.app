@@ -423,6 +423,8 @@ fn overlay_mods(
             // and does nothing, so the mod says why.
             warn_misplaced(root, &m.name);
         }
+        // The sky, clouds and weather it gives its maps (mod.json "maps").
+        tables.add_maps(&m.manifest.maps);
         // A roBrowser plugin: styling, UI, anything the client can be told to
         // load. Served from the root, so the path in the config is
         // server-relative -- which is the one thing that will confuse people.

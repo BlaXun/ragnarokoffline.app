@@ -141,7 +141,39 @@ pub struct Manifest {
     /// the alternative was two mods that repeat everything else.
     pub renewal_folder: String,
     pub prerenewal_folder: String,
+    /// How the client draws and plays a map: the sky behind it, its clouds,
+    /// its weather and its music
+    /// (`"maps": { "my_isle": { "sky": [r, g, b], "clouds": [r, g, b], "bgm": "my_isle.mp3" } }`).
+    ///
+    /// Official clients keep the sky table in the executable, and roBrowser in
+    /// `DB/Effects/WeatherEffect.js`: a dozen official maps, and black with no
+    /// clouds for every other, which meant every custom map. The music is one
+    /// table for the whole game, `data/mp3nametable.txt`, so a mod could only
+    /// name a map's music by replacing every map's. Our fork reads these from
+    /// the `customMaps` config (client_tables).
+    pub maps: Vec<MapLook>,
 }
+
+/// One map's entry in a manifest's `"maps"`.
+#[derive(Clone, PartialEq, Debug)]
+pub struct MapLook {
+    /// The map's name, lower case, without `.rsw`.
+    pub name: String,
+    /// RGBA, 0 to 1; given as RGB, the alpha is 1.
+    pub sky: Option<[f64; 4]>,
+    /// RGB, 0 to 1. Only with a sky: the clouds drift across it.
+    pub clouds: Option<[f64; 3]>,
+    /// One of [`WEATHERS`].
+    pub weather: Option<String>,
+    /// A file in `BGM/`: the mod's own, or one the client ships (`"08.mp3"`).
+    pub bgm: Option<String>,
+}
+
+/// The weather effects roBrowser's ScreenEffectManager starts by name.
+pub const WEATHERS: &[&str] = &[
+    "snow", "rain", "fireworks", "leaves", "sakura", "cloud", "cloud2", "cloud3", "cloud4", "cloud5",
+    "cloud6", "cloud7", "cloud8",
+];
 
 /// The values `"kind"` may take. Anything else is refused by name, the way a
 /// typo in `requires` is: a skin that silently stops being exclusive is the
@@ -207,8 +239,117 @@ impl Default for Manifest {
             kind: String::new(),
             renewal_folder: String::new(),
             prerenewal_folder: String::new(),
+            maps: Vec::new(),
         }
     }
+}
+
+/// A manifest's `"maps"`, checked for shape. A mistake is a refusal with a
+/// reason, as anywhere else in mod.json: a colour that silently fails to
+/// apply looks exactly like a feature that does not work.
+fn map_looks(v: &json::Value) -> Result<Vec<MapLook>, String> {
+    let Some(maps) = v.get("maps") else {
+        return Ok(Vec::new());
+    };
+    let json::Value::Object(maps) = maps else {
+        return Err("mod.json: \"maps\" must be an object of map names, like { \"my_isle\": { \"sky\": [0.4, 0.6, 0.8] } }".into());
+    };
+    if maps.len() > 200 {
+        return Err("mod.json: \"maps\" may name at most 200 maps".into());
+    }
+    let color = |map: &str, key: &str, value: &json::Value, sizes: &[usize]| -> Result<Vec<f64>, String> {
+        let wrong = || {
+            let shape = if sizes.len() == 2 { "3 or 4" } else { "3" };
+            format!("mod.json: \"maps\".{map}.{key} must be a list of {shape} numbers from 0 to 1, like [0.4, 0.6, 0.8]")
+        };
+        let json::Value::Array(items) = value else { return Err(wrong()) };
+        if !sizes.contains(&items.len()) {
+            return Err(wrong());
+        }
+        items
+            .iter()
+            .map(|item| match item {
+                json::Value::Number(n) if n.is_finite() && (0.0..=1.0).contains(n) => Ok(*n),
+                _ => Err(wrong()),
+            })
+            .collect()
+    };
+    let mut out = Vec::new();
+    for (key, entry) in maps {
+        let name = key.to_ascii_lowercase();
+        let name = name.strip_suffix(".rsw").unwrap_or(&name).to_string();
+        // rAthena's limit; the same one the map cache enforces.
+        if name.is_empty()
+            || name.len() > 11
+            || !name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'@' || b == b'-')
+        {
+            return Err(format!(
+                "mod.json: {key:?} in \"maps\" is not a map name -- letters, digits, _, @ and -, up to 11"
+            ));
+        }
+        let json::Value::Object(fields) = entry else {
+            return Err(format!("mod.json: \"maps\".{name} must be an object, like {{ \"sky\": [0.4, 0.6, 0.8] }}"));
+        };
+        for k in fields.keys() {
+            if !["sky", "clouds", "weather", "bgm"].contains(&k.as_str()) {
+                return Err(format!(
+                    "mod.json: \"maps\".{name} has no setting called \"{k}\" (this build understands \"sky\", \"clouds\", \"weather\" and \"bgm\")"
+                ));
+            }
+        }
+        let sky = match fields.get("sky") {
+            None => None,
+            Some(value) => {
+                let c = color(&name, "sky", value, &[3, 4])?;
+                Some([c[0], c[1], c[2], c.get(3).copied().unwrap_or(1.0)])
+            }
+        };
+        let clouds = match fields.get("clouds") {
+            None => None,
+            Some(_) if sky.is_none() => {
+                return Err(format!("mod.json: \"maps\".{name} has clouds but no sky for them to drift across -- add \"sky\""))
+            }
+            Some(value) => {
+                let c = color(&name, "clouds", value, &[3])?;
+                Some([c[0], c[1], c[2]])
+            }
+        };
+        let weather = match fields.get("weather") {
+            None => None,
+            Some(json::Value::String(w)) if WEATHERS.contains(&w.as_str()) => Some(w.clone()),
+            Some(_) => {
+                return Err(format!(
+                    "mod.json: \"maps\".{name}.weather must be one of {}",
+                    WEATHERS.iter().map(|w| format!("\"{w}\"")).collect::<Vec<_>>().join(", ")
+                ))
+            }
+        };
+        // A file name in BGM/, as the client asks for it. `BGM.play` cuts any
+        // name that mentions "bgm" down to its last `\w+.mp3`, so a folder, or
+        // a "-" in such a name, would play some other file.
+        let playable = |f: &str| {
+            let lower = f.to_ascii_lowercase();
+            let Some(stem) = lower.strip_suffix(".mp3") else { return false };
+            !stem.is_empty()
+                && f.len() <= 64
+                && stem.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
+                && !(stem.contains("bgm") && stem.contains('-'))
+        };
+        let bgm = match fields.get("bgm") {
+            None => None,
+            Some(json::Value::String(f)) if playable(f) => Some(f.clone()),
+            Some(_) => {
+                return Err(format!(
+                    "mod.json: \"maps\".{name}.bgm must be the name of an .mp3 in BGM/ -- letters, digits, _ and -, like \"my_isle.mp3\""
+                ))
+            }
+        };
+        if sky.is_none() && weather.is_none() && bgm.is_none() {
+            return Err(format!("mod.json: \"maps\".{name} sets nothing -- give it a \"sky\", a \"weather\" or a \"bgm\""));
+        }
+        out.push(MapLook { name, sky, clouds, weather, bgm });
+    }
+    Ok(out)
 }
 
 /// A list of mod names from the manifest, checked for shape.
@@ -462,6 +603,7 @@ fn read_manifest(dir: &Path) -> Result<Option<Manifest>, String> {
     }
     m.renewal_folder = era_folder(dir, &v, "renewalFolder")?;
     m.prerenewal_folder = era_folder(dir, &v, "prerenewalFolder")?;
+    m.maps = map_looks(&v)?;
     Ok(Some(m))
 }
 
@@ -3497,6 +3639,48 @@ mod tests {
         assert!(read_manifest(&d).unwrap().is_none());
         fs::write(d.join("mod.json"), "{ oops }").unwrap();
         assert!(read_manifest(&d).is_err());
+    }
+
+    #[test]
+    fn a_map_s_sky_clouds_and_weather_are_read_from_maps() {
+        let d = tmp("maps");
+        fs::write(
+            d.join("mod.json"),
+            r#"{"maps": {"My_Isle.rsw": {"sky": [0.4, 0.6, 0.8], "clouds": [1, 1, 1], "bgm": "my_isle.mp3"}, "my_cave": {"sky": [0, 0, 0.1, 1], "weather": "snow"}}}"#,
+        )
+        .unwrap();
+        let m = read_manifest(&d).unwrap().unwrap();
+        assert_eq!(
+            m.maps,
+            vec![
+                MapLook { name: "my_isle".into(), sky: Some([0.4, 0.6, 0.8, 1.0]), clouds: Some([1.0, 1.0, 1.0]), weather: None, bgm: Some("my_isle.mp3".into()) },
+                MapLook { name: "my_cave".into(), sky: Some([0.0, 0.0, 0.1, 1.0]), clouds: None, weather: Some("snow".into()), bgm: None },
+            ]
+        );
+    }
+
+    /// Each says what is wrong, by the map and the key, rather than drawing
+    /// black behind a map that was meant to have a sky.
+    #[test]
+    fn a_mistake_in_maps_is_refused_by_name() {
+        let d = tmp("bad-maps");
+        for (maps, says) in [
+            (r#"{"my_isle": {"sky": [0.4, 0.6]}}"#, "my_isle.sky"),
+            (r#"{"my_isle": {"sky": [0.4, 0.6, 1.5]}}"#, "from 0 to 1"),
+            (r#"{"my_isle": {"clouds": [1, 1, 1]}}"#, "no sky"),
+            (r#"{"my_isle": {"weather": "hail"}}"#, "\"snow\""),
+            (r#"{"my_isle": {"skys": [0.4, 0.6, 0.8]}}"#, "skys"),
+            (r#"{"my_isle": {}}"#, "sets nothing"),
+            (r#"{"my_isle": {"bgm": "music/my_isle.mp3"}}"#, "my_isle.bgm"),
+            (r#"{"my_isle": {"bgm": "my_isle.ogg"}}"#, "my_isle.bgm"),
+            (r#"{"my_isle": {"bgm": "my-bgm.mp3"}}"#, "my_isle.bgm"),
+            (r#"{"a_name_too_long": {"sky": [0, 0, 0]}}"#, "up to 11"),
+            (r#"["my_isle"]"#, "must be an object"),
+        ] {
+            fs::write(d.join("mod.json"), format!(r#"{{"maps": {maps}}}"#)).unwrap();
+            let e = read_manifest(&d).unwrap_err();
+            assert!(e.contains(says), "{maps}: {e}");
+        }
     }
 
     /// A misspelled requirement is the failure this whole mechanism exists to
