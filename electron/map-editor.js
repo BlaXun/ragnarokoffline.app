@@ -94,7 +94,7 @@ function createMapEditor(deps) {
 		if (!name.startsWith('asset/') && !name.startsWith('api/')) return null;
 		// Only the editor's own page, as the other Tools' bridges check.
 		const origin = request.headers.get('origin');
-		if (origin && origin !== 'ro-tool://map-editor') return new Response('not allowed', { status: 403 });
+		if (origin && origin !== 'ro-tool://map-editor' && origin !== 'ro-tool://music-browser') return new Response('not allowed', { status: 403 });
 		if (name.startsWith('api/remote/') || name.startsWith('api/host/') || name === 'api/save' || name === 'api/prefabs') ensureControl().catch(e => deps.log(`map editor: control: ${e.message}`));
 		const b = await getBridge();
 		const body = request.method === 'POST' ? new Uint8Array(await request.arrayBuffer()) : null;

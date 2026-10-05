@@ -449,7 +449,7 @@ function status(ev) {
 }
 
 const HINTS = {
-	select: 'Click to select · drag to move · Shift adds · drag on empty ground to box-select · Delete removes · [ ] turn · Ctrl+D duplicate',
+	select: 'Click to select · drag to move · Ctrl+drag raises · Shift adds · drag on empty ground to box-select · Delete removes · [ ] turn · Ctrl+D duplicate',
 	sculpt: 'Drag to sculpt · Shift lowers · Ctrl smooths · Alt picks the height · +/- brush size',
 	paint: 'Drag to paint · Alt picks the texture under the cursor · R rotates · +/- brush size',
 	walk: 'Drag to paint walkability · Alt picks a type · +/- brush size',
@@ -623,6 +623,18 @@ function onMove(ev) {
 	}
 	if (!c) return;
 	if (drag.kind === 'stroke' && drag.each) drag.each(c);
+	if (drag.kind === 'move' && (ev.ctrlKey || ev.metaKey)) {
+		// Ctrl+drag: up and down, not across.
+		const idx = [...E.sel].filter(k => typeof k === 'number');
+		if (idx.length && ev.movementY) {
+			if (!drag.began) { startStroke('move', ['rsw.objects', 'gameplay']); drag.began = true; }
+			runCommand(E.doc, 'object.move', { indexes: idx, dheight: -ev.movementY * (E.renderer.camera.distance / 600), keepHeight: true });
+			idx.forEach(i => E.renderer.objectMoved(i));
+			setDirty(true);
+			E.redraw = true;
+		}
+		return;
+	}
 	if (drag.kind === 'move') {
 		const dx = c.x - drag.last.x, dy = c.y - drag.last.y;
 		const snap = E.opts.objects.snap && !ev.altKey;

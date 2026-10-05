@@ -266,8 +266,8 @@ function play(file, button) {
 	audio.onended = () => { button.textContent = '▶'; };
 }
 
-export function bgmBrowser(E, current, onpick) {
-	const list = h('div.list', { style: { maxHeight: '220px' } }, h('div.li.muted', 'Loading the music…'));
+export function bgmBrowser(E, current, onpick, { tall = false } = {}) {
+	const list = h('div.list', { style: { maxHeight: tall ? 'none' : '220px' } }, h('div.li.muted', 'Loading the music…'));
 	const input = h('input', { placeholder: 'Search tracks or the maps that play them', style: { width: '100%' } });
 	const names = new Map((E.tables.maps || []).map(m => [m.map, m.name]));
 	let tracks = E._bgm || null;
@@ -276,12 +276,18 @@ export function bgmBrowser(E, current, onpick) {
 		const rows = (tracks || []).filter(t => !q || t.file.toLowerCase().includes(q) || t.maps.some(m => m.includes(q) || (names.get(m) || '').toLowerCase().includes(q)));
 		list.replaceChildren(...rows.slice(0, 200).map(t => {
 			const btn = h('button.btn.small.play', { title: 'Listen', onclick: e => { e.stopPropagation(); play(t.file, btn); } }, '▶');
-			return h('div.li.bgm-row', { class: `li bgm-row${current === t.file ? ' on' : ''}`, onclick: () => onpick(t.file) }, btn, h('span', t.file), h('small', { title: t.maps.join(', ') }, t.mod ? `mod ${t.mod}` : t.maps.slice(0, 4).map(m => names.get(m) || m).join(', ') + (t.maps.length > 4 ? ` +${t.maps.length - 4}` : '')));
+			return h('div.li.bgm-row', { class: `li bgm-row${current === t.file ? ' on' : ''}`, onclick: () => onpick(t.file) }, btn, h('span', t.file), h('small', { title: t.maps.join(', ') }, t.mod ? `mod ${t.mod}` : shownNames(t.maps, names)));
 		}));
 	};
 	input.oninput = debounce(paint, 120);
 	(tracks ? Promise.resolve(tracks) : get('api/bgm')).then(t => { tracks = E._bgm = t; paint(); }).catch(e => list.replaceChildren(h('div.li.muted', e.message)));
 	return h('div', h('p', current ? ['Playing ', h('b', current), ' ', h('button.btn.small', { onclick: () => onpick(null) }, 'none')] : h('span.muted', 'The client\'s default track (01.mp3).')), input, list, h('p.hint', 'A track used by official maps is listed with them (mp3nametable.txt). Ship your own in the mod\'s BGM/ folder and it shows up here.'));
+}
+
+/** A track's maps by their display names, each name once. */
+function shownNames(maps, names) {
+	const all = [...new Set(maps.map(m => names.get(m) || m))];
+	return all.slice(0, 4).join(', ') + (all.length > 4 ? ` +${all.length - 4}` : '');
 }
 
 // ---- Sounds

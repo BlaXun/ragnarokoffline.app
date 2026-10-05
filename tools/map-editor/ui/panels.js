@@ -219,6 +219,10 @@ function density(E, s) {
 
 function shopEditor(E, obj, upd) {
 	const items = obj.items || [];
+	// Names come from the server's item table, read the first time a shop is shown.
+	if (!E.tables.items && !E._itemsLoading) {
+		E._itemsLoading = import('./host.js').then(({ get }) => get('api/tables/items')).then(list => { E.tables.items = list; rerender(E); }).catch(() => { E.tables.items = []; });
+	}
 	const byId = new Map((E.tables.items || []).map(i => [i.id, i]));
 	const box = h('div');
 	const line = (it, i) => {

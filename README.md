@@ -391,7 +391,9 @@ rebuild, no compiler, no Docker.
 
 You can change what monsters are worth and what they drop, add NPCs with real
 quests, replace the login screen and the loading screens with your own art,
-build a map that is in nobody's GRF and put monsters and NPCs on it, decide
+build a map that is in nobody's GRF and put monsters and NPCs on it — with
+**Settings → Tools → [Map editor](docs/mods/MAP_EDITOR.md)**, which an AI agent
+can drive too — decide
 where new characters wake up, and restyle the client itself. Settings → Mods
 lists what is installed, with a checkbox each.
 

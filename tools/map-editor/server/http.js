@@ -93,7 +93,7 @@ export function startServer({ bridge, remote, root, token, port = 0, log = () =>
 		const file = path.resolve(root, rel);
 		if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile() || !TYPES[path.extname(file)]) return send(404, 'not found', 'text/plain');
 		let content = fs.readFileSync(file);
-		if (rel === 'map-editor.html') {
+		if (/\.html$/.test(rel)) {
 			content = Buffer.from(content.toString('utf8').replace('<!--HOST-->', `<script>window.MAP_EDITOR_HOST = ${JSON.stringify({ name: 'cli', token: pageToken })};</script>`));
 		}
 		return send(200, content, TYPES[path.extname(file)]);

@@ -215,6 +215,16 @@ const TOOLS = [
 		width: 1440, height: 900,
 	},
 	{
+		id: 'music-browser',
+		name: 'Music browser',
+		description: 'Every music track in your client and your mods, which maps play each one, and a play button: for picking a map\'s music.',
+		page: 'music.html',
+		// The map editor's page and bridge.
+		dir: 'map-editor',
+		author: 'Ragnarok Offline',
+		needsServer: true,
+	},
+	{
 		id: 'control-panel',
 		name: 'Control panel',
 		description: 'Every account and character on your server: how they look, their level, zeny, equipment and where they are. Move a stuck character to its save point, delete a character the way the game does, or make an account.',
@@ -392,7 +402,7 @@ function createTools(deps) {
 					if (answer) return answer;
 				}
 				if (tool.id === 'db-browser' && name.startsWith('api/')) return await dbBridge(request, name.slice(4));
-				if (tool.id === 'map-editor') {
+				if (tool.id === 'map-editor' || tool.dir === 'map-editor') {
 					const answer = await mapEditor.route(name, url, request);
 					if (answer) return answer;
 				}
@@ -415,7 +425,7 @@ function createTools(deps) {
 					return respond(Buffer.from(await res.arrayBuffer()), 'application/octet-stream');
 				}
 				// The tool's own files, and nothing outside its folder.
-				const dir = path.join(ROOT, tool.id);
+				const dir = path.join(ROOT, tool.dir || tool.id);
 				const file = path.resolve(dir, name || tool.page);
 				if (!file.startsWith(dir + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) return respond('not found', 'text/plain', 404);
 				return respond(fs.readFileSync(file), TYPES[path.extname(file)] || 'application/octet-stream');
