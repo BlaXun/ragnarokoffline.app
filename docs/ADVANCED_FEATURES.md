@@ -176,6 +176,13 @@ just monsters. Results sharing a name are grouped: pick the map and coordinates
 on the right, then choose **Find**. The route is drawn on the ground using the
 navigation art from your own client, and clears itself when you arrive.
 
+Results are listed in English while the English translation is on. A kRO
+client's tables name everything in Korean; ROenglishRE's dictionary
+(`SystemEN/Navi_Data.lub`) supplies the English for each name, the same way
+kRO's own client looks it up. A name the dictionary does not have yet, usually
+something kRO added recently, stays in Korean. A table already in English, as in
+an iRO client, is left as it is.
+
 The chat command takes either a destination or a name:
 
 ```

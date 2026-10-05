@@ -56,6 +56,7 @@ loader = loader.replace(arrayPattern, `local is_array = true
 const decodeNeedle = 'result = JSON.parse(userStringDecoder.decode(value));';
 if (loader.split(decodeNeedle).length !== 2) throw Error('Navigation JSON decode call not found');
 loader = loader.replace(decodeNeedle, 'result = JSON.parse(userStringDecoder.decode(value, userCharpage));');
+loader = require('./navigation-names.cjs').patchLoader(loader);
 patched = patched.slice(0,start) + loader + patched.slice(stop);
 
 const classicNavigationHtml = String.raw`<div class="Navigation">
