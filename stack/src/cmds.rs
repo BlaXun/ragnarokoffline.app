@@ -1562,8 +1562,37 @@ fn audit_service_accounts(dk: &Docker, legacy: bool) -> Result<(), String> {
 }
 
 /// Tables the mod reader never sees: `login` holds every account's password
-/// hash, e-mail and web token.
-const MOD_READER_HIDDEN: [&str; 1] = ["login"];
+/// hash, e-mail and web token; `mod_store` holds every mod's own data, which
+/// only that mod may read (through the store, not SQL).
+const MOD_READER_HIDDEN: [&str; 2] = ["login", "mod_store"];
+
+/// The mod store's limits (rathena's mod_store_* battle settings), set here per
+/// release: raising one is a change to this table and nothing else, and a mod
+/// that needs more says so with requires.app. See docs/MOD_STORE.md.
+pub const MOD_STORE_LIMITS: [(&str, u64); 5] = [
+    ("mod_store_global_bytes", 1024 * 1024),
+    ("mod_store_account_bytes", 64 * 1024),
+    ("mod_store_char_bytes", 64 * 1024),
+    ("mod_store_value_bytes", 4096),
+    ("mod_store_depth", 8),
+];
+const MOD_STORE_CONF: &str = "mod_store_conf.txt";
+
+/// The limits file, and the battle config's `import:` of it. battle_conf.txt is
+/// the shell's (it rewrites it from Settings before every start), so the line
+/// is put back here each time rather than written once.
+fn write_mod_store_limits(conf: &Path) -> Result<(), String> {
+    let limits: String = MOD_STORE_LIMITS.iter().map(|(key, value)| format!("{key}: {value}\n")).collect();
+    write_conf(conf, MOD_STORE_CONF, &limits)?;
+    let battle = conf.join("battle_conf.txt");
+    let existing = fs::read_to_string(&battle).unwrap_or_default();
+    let import = format!("import: conf/import/{MOD_STORE_CONF}");
+    if !existing.lines().any(|line| line.trim() == import) {
+        let sep = if existing.is_empty() || existing.ends_with('\n') { "" } else { "\n" };
+        fs::write(&battle, format!("{existing}{sep}{import}\n")).map_err(|_| "Cannot write the battle configuration")?;
+    }
+    Ok(())
+}
 
 /// Statements that create the mod reader (or reset its password to the one on
 /// disk) and take back whatever it was granted before.
@@ -1727,6 +1756,7 @@ pub fn up(cfg: &Config, dk: &Docker, lan: bool, ram_mib: Option<u32>) -> Result<
     if !battle.exists() {
         let _ = fs::write(&battle, "");
     }
+    write_mod_store_limits(&conf)?;
 
     ensure_images(cfg, dk)?;
     if credentials.is_some() { require_private_database_image(cfg, dk)?; }
@@ -2256,6 +2286,41 @@ pub fn sql(cfg: &Config, dk: &Docker, args: &[String]) -> Result<(), String> {
     if write {
         eprintln!("applied; game services are back as they were");
     }
+    Ok(())
+}
+
+/// A mod name as the store keys it: the mod's folder name (lowercase letters,
+/// digits, `-`, `_`), so it can go into SQL as a literal.
+fn mod_store_name(name: &str) -> Result<&str, String> {
+    let ok = !name.is_empty()
+        && name.len() <= 64
+        && name.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || b == b'_');
+    if ok { Ok(name) } else { Err(format!("{name:?} is not a mod name")) }
+}
+
+/// `mod-data-reset <mod>`: delete everything `mod` keeps in the store, in every
+/// scope and for every player. The map server keeps documents in memory and
+/// would write them back, so the game is stopped around it, and a backup is
+/// saved first, as for `sql --write`.
+pub fn mod_data_reset(cfg: &Config, dk: &Docker, name: &str) -> Result<(), String> {
+    let name = mod_store_name(name)?;
+    crate::accounts::verify_era(cfg, dk, crate::service_credentials::era(cfg))?;
+    let exists = dk.console_sql("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'mod_store';")?;
+    if exists.trim() != "1" {
+        println!("{name} has no data: the mod store has not been used in this world yet.");
+        return Ok(());
+    }
+    let removed = crate::accounts::with_servers_stopped(cfg, dk, "mod data", || {
+        let safety = cfg.state.join("backups").join(format!(
+            "before-mod-data-reset-{name}-{}-{}.sql",
+            crate::service_credentials::era(cfg),
+            crate::private_fs::random_hex(8)?
+        ));
+        backup_snapshot(cfg, dk, &safety.to_string_lossy(), false)?;
+        eprintln!("saved {} first", safety.display());
+        dk.console_sql(&format!("DELETE FROM mod_store WHERE mod_name = '{name}'; SELECT ROW_COUNT();"))
+    })?;
+    println!("{name}: {} stored value(s) deleted.", removed.trim());
     Ok(())
 }
 
@@ -3212,5 +3277,31 @@ mod tests {
         let batches = mod_reader_grant_sql(&many);
         assert_eq!(batches.len(), 3, "batched under the SQL input limit");
         assert!(batches.iter().all(|b| b.len() < crate::docker::SQL_INPUT_LIMIT));
+    }
+
+    #[test]
+    fn mod_store_limits_are_written_and_imported_once() {
+        let conf = std::env::temp_dir().join(format!("ro-modstore-conf-{}", crate::private_fs::random_hex(8).unwrap()));
+        fs::create_dir_all(&conf).unwrap();
+        fs::write(conf.join("battle_conf.txt"), "base_exp_rate: 200").unwrap();
+        write_mod_store_limits(&conf).unwrap();
+        write_mod_store_limits(&conf).unwrap();
+        let battle = fs::read_to_string(conf.join("battle_conf.txt")).unwrap();
+        assert_eq!(battle, "base_exp_rate: 200\nimport: conf/import/mod_store_conf.txt\n", "the shell's settings kept, imported once");
+        let limits = fs::read_to_string(conf.join(MOD_STORE_CONF)).unwrap();
+        assert!(limits.contains("mod_store_global_bytes: 1048576\n"));
+        assert!(limits.contains("mod_store_char_bytes: 65536\n"));
+        assert_eq!(limits.lines().count(), MOD_STORE_LIMITS.len());
+        assert!(mod_reader_grant_sql("char\nmod_store\nlogin\n")[0].matches("GRANT").count() == 1, "mod_store is hidden from SQL");
+        fs::remove_dir_all(conf).unwrap();
+    }
+
+    #[test]
+    fn mod_data_reset_takes_only_a_mod_folder_name() {
+        assert_eq!(mod_store_name("prontera-vendors").unwrap(), "prontera-vendors");
+        assert_eq!(mod_store_name("bounty_hunt2").unwrap(), "bounty_hunt2");
+        for bad in ["", "Bad", "a'b", "x; DROP TABLE login", "../x", &"a".repeat(65)] {
+            assert!(mod_store_name(bad).is_err(), "{bad}");
+        }
     }
 }

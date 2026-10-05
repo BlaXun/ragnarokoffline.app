@@ -569,7 +569,7 @@ function withEngineFlags(args) {
 }
 
 async function runStack(rawArgs) {
-    if (sharing && ['up', 'down', 'repair', 'backup', 'restore', 'secure-services'].includes(rawArgs[0])) await sharing.stop();
+    if (sharing && ['up', 'down', 'repair', 'backup', 'restore', 'secure-services', 'mod-data-reset'].includes(rawArgs[0])) await sharing.stop();
     return runStackProcess(rawArgs);
 }
 function runStackProcess(rawArgs) {
@@ -2390,6 +2390,13 @@ const handlers = {
 	// the trash rather than away, and nothing of anybody's code is installed by
 	// it -- so, unlike an update from GitHub, the question need not be native.
 	// A caller that has not asked still gets the native box.
+	// Everything a mod keeps in the mod store (docs/MOD_STORE.md), every scope
+	// and every player. The supervisor stops the game around it and saves a
+	// backup first, as for any write to the database.
+	mod_data_reset: async ({ name } = {}) => {
+		if (typeof name !== 'string' || !/^[a-z0-9_-]{1,64}$/.test(name)) throw new Error('Not a mod name.');
+		return (await runStack(['mod-data-reset', name])).trim();
+	},
 	remove_mod: async ({ name, asked } = {}) => {
 		const { modFolder } = require('./mod-remove');
 		const rows = (await runStack(['mods'])).split('\n').filter(Boolean).map(l => l.split('\t'));
@@ -3666,7 +3673,7 @@ const HEADLESS_PAGE_HANDLERS = new Set([
 	'client_folders', 'copy_diagnostics', 'data_location', 'db_backup', 'db_backup_full', 'db_inspect',
 	'db_inspect_full', 'db_restore', 'db_restore_full', 'game_status', 'get_client_paths', 'get_mode',
 	'get_settings', 'get_vm_ram_mib', 'host_facts', 'host_ram_mib', 'hosting_check', 'install_mod',
-	'install_registry_mod', 'install_skin', 'list_mods', 'list_registry_mods', 'mod_host_list', 'mod_host_set',
+	'install_registry_mod', 'install_skin', 'list_mods', 'list_registry_mods', 'mod_data_reset', 'mod_host_list', 'mod_host_set',
 	'open_data_folder', 'open_mods_folder', 'packetvers', 'registry_image', 'registry_release', 'remove_mod',
 	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'set_client_paths',
 	'set_mod_enabled', 'set_mod_settings', 'set_mode', 'set_vm_ram_mib', 'sharing_status', 'sharing_token_help',

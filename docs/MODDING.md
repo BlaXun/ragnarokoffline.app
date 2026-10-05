@@ -922,8 +922,9 @@ A mod's script can **read** the game database with `query_sql` (and
 `query_logsql`, below), but not change it. Both log in as `ragnarok_mods`,
 a login the app creates that can only `SELECT`:
 
-- **Every table but `login`** can be read. `login` holds every account's
-  password hash and e-mail, so a mod never sees it, not even through a join.
+- **Every table but `login` and `mod_store`** can be read. `login` holds every
+  account's password hash and e-mail, and `mod_store` holds every mod's own
+  data, so a mod never sees them, not even through a join.
 - **Nothing can be written.** `INSERT`, `UPDATE`, `DELETE`, `CREATE`,
   `ALTER`, `DROP` and `SELECT … INTO OUTFILE` all fail. The query returns
   `-1`, and the map server's log shows MariaDB's "command denied" error,
@@ -931,10 +932,11 @@ a login the app creates that can only `SELECT`:
 
 So a mod can't make its own tables in the game database, or edit characters
 behind the server's back (which it would overwrite anyway; see
-[docs/DATABASE.md](DATABASE.md)). To keep a mod's own data, use rAthena's
-permanent variables for now, prefixed with your mod's name so mods don't
-collide: `$mymod_price[501]`, `#mymod_rank`. A proper per-mod store is
-being discussed in [#440](https://github.com/Flux159/ragnarokoffline.app/issues/440).
+[docs/DATABASE.md](DATABASE.md)). **To keep a mod's own data, use the
+[mod store](MOD_STORE.md)**: key/value storage, global, per account and per
+character, from NPC scripts and Lua. rAthena's permanent variables
+(`$mymod_price[501]`, `#mymod_rank`) still work for simple cases; prefix them
+with your mod's name so mods don't collide.
 
 ### Knowing what players did: rAthena's logs
 
