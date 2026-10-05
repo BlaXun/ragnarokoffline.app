@@ -305,7 +305,7 @@
         },
         {
           "path": "images/icon.png",
-          "sha256": "13b98cd73e61f7b0dd0514b78be96138c2217808429454adcb06774e16a42f13"
+          "sha256": "b31932fe6a704db42b21a4ceee244a31be3bb1f34479277cb22acca19d24354d"
         }
       ]
     },
@@ -816,7 +816,7 @@
       "files": [
         {
           "path": "images/icon.png",
-          "sha256": "6f183766d5b7d68f0c7a39042a43f929a8d1803a7bd64973908514d632229604"
+          "sha256": "680a9d2920038ab63a2e11ce9f7c3c2c2458b327a7b47a5ce0e1ab0d2d15fab1"
         }
       ]
     },
