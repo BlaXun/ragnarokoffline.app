@@ -379,6 +379,47 @@ engine's vendors spawn exactly as upstream's do.
 `registry/mods/prontera-vendors` is the worked example (its generator is in
 `registry/tools/prontera-vendors`).
 
+### Shell control for mods
+
+Nine script commands let a mod's NPC script find shells (`population_is_shell`,
+`population_shells`), take one from the AI for a while (`population_hold`,
+`population_unhold`), make or remove one (`population_spawn`,
+`population_despawn`), handle whispers to it (`population_whisper_event`,
+`population_whisper`), and hear when its follow loses someone
+(`population_lost_event`). Everything else a script does with a shell is stock:
+it is a real character, so `unitwalk`, `unittalk`, `emotion`, `unitattack` and
+`unitskilluseid` already work on it.
+
+It is kept out of the engine's own files, so an engine update merges around it:
+
+| | |
+|---|---|
+| `patches/0027-shell-control-api.patch` | the script commands, in rAthena's `src/custom/script.inc` and `script_def.inc` only |
+| `files/src/map/population_engine/runtime/population_shell_control.cpp` | all of the engine side; `population_engine.cpp` includes it, as it does `population_customers.cpp` |
+| `files/src/map/population_engine/population_shell_control.hpp` | its declarations |
+| `files/src/map/population_engine/core/population_shell_hold.hpp` | the per-shell state, one member (`hold`) on `s_population` |
+
+What remains in the engine's own files are one-line hooks, each marked
+`RAGNAROKMAC`: the combat tick, reactive casts, wander sweep, ambient chat and
+name-mention replies skip a held shell (`population_engine_shell_is_held`); the
+whisper handler asks `population_shell_control_whisper` first; the drift check
+and the two map-quota counts skip `sd->pop.hold`; and the combat timer calls
+`population_shell_control_sweep` before its stale sweep.
+
+A hold belongs to the NPC that took it, is bounded (30 minutes at most), and
+ends by itself when it lapses or its NPC is unloaded. The sweep also does the
+part of three stock commands a player's client would: it puts a held shell
+that `pc_setpos` took off the map back on it (`unitwarp`), walks one with an
+attack order into range (`unitattack`), and runs its `pcfollow` in place of
+rAthena's follow timer, which would teleport it onto a target it cannot reach:
+a target that left by a portal is followed into that portal after a short
+pause, and one that left any other way ends the follow and runs the lost
+event. A shell `population_spawn` made is left out of the map quota counts.
+Companions and vendors are never handed out. Nothing changes until a script
+calls one of the commands.
+
+The player-facing reference is [docs/mods/shell-control.md](../../docs/mods/shell-control.md).
+
 ## Measured cost
 
 Alpine/musl, arm64, packetver 20221005, map server only, 4 GiB guest:
