@@ -533,4 +533,25 @@ Body:
   - Mobs: [PORING, DROPS, POPORING, MARIN, FABRE, PUPA]
     Jobs:
       - Job: All
+        For: all                  # the AI characters around the world too
         Rotation: false
+
+  # --- Regular AI characters: Wizards keep their area spells for packs -----------
+  - Mob: All
+    Jobs:
+      - Job: Wizard
+        Build: shells_aoe
+        For: shells
+        Start: single
+        Strategies:
+          - Name: single
+            Ban: [WZ_STORMGUST, WZ_METEOR, WZ_VERMILION, WZ_HEAVENDRIVE]
+            Rules:
+              - Name: pack
+                Count: { Around: target, Range: 4, AtLeast: 3 }
+                Switch: pack
+          - Name: pack
+            Rules:
+              - Name: no_pack
+                Count: { Around: target, Range: 4, Below: 3 }
+                Switch: single

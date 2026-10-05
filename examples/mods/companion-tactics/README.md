@@ -89,7 +89,11 @@ once). In every phase:
 - the Priest heals the most hurt, keeps Kyrie up and opens with Lex Aeterna;
 - nobody uses Fire Wall, which sets off its Heaven's Drive.
 
-**Porings and friends:** plain hits only, so no companion spends SP on them.
+**Regular AI characters** (`For: shells`): Wizards around the world keep Storm
+Gust, Meteor Storm, Lord of Vermilion and Heaven's Drive for packs of three or
+more, instead of casting them at a single monster.
+
+**Porings and friends:** plain hits only, so neither companions nor the AI characters around them spend SP on them.
 
 ## Things worth knowing before copying it
 

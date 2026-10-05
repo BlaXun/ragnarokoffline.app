@@ -205,9 +205,10 @@ at once when no rules are loaded or the shell is not a recruited companion.
     contain parallel `s_population` layouts and must remain synchronised.
 12. Local binaries, Docker images, app payloads, runtime files, GRFs, logs, and
     test archives must never enter Git.
-13. Companion strategies run for recruited companions only, never for ambient
-    shells, and an empty `population_strategy.yml` changes nothing. Their state
-    lives in the strategy module, not in `s_population`.
+13. Companion strategies run for recruited companions, and for regular combat
+    shells only through plans marked `For: shells` or `For: all`; an empty
+    `population_strategy.yml` changes nothing. Their state lives in the strategy
+    module, not in `s_population`.
 
 ## Verification record for PR #128
 

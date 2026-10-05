@@ -179,8 +179,13 @@ struct Strategy {
 	int8 rotation = -1;          ///< -1: the plan's Rotation; 0/1: overrides it while active
 };
 
+/// Who a plan is for: recruited companions (the default), the regular shells around the
+/// world, or both.
+enum class Audience : uint8 { Companions, Shells, All };
+
 /// What one (monster, job, build) has. Rules outside any strategy apply in all of them.
 struct Plan {
+	Audience audience = Audience::Companions;
 	Requirements req;            ///< a Build: only companions that meet these use the plan
 	std::vector<RulePtr> rules;
 	std::map<std::string, Strategy> strategies;
@@ -362,6 +367,7 @@ public:
 	size_t rule_count = 0;
 	bool uses_chat = false;
 	bool limits_rotation = false;
+	bool for_shells = false;     ///< some plan is For: shells or all, so regular shells take turns
 
 	StrategyDatabase() : YamlDatabase("POPULATION_STRATEGY_DB", 1) {}
 
@@ -373,6 +379,7 @@ public:
 		this->rule_count = 0;
 		this->uses_chat = false;
 		this->limits_rotation = false;
+		this->for_shells = false;
 	}
 
 	const std::string getDefaultLocation() override
@@ -1081,8 +1088,23 @@ void StrategyDatabase::merge_rules(const ryml::NodeRef &seq, std::vector<RulePtr
 
 void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<uint32> &mobs)
 {
-	this->warn_unknown_keys(node, { "Job", "Build", "Requires", "Remove", "Reset", "Rotation", "Ban", "Start", "Rules",
+	this->warn_unknown_keys(node, { "Job", "Build", "For", "Requires", "Remove", "Reset", "Rotation", "Ban", "Start", "Rules",
 		"Strategies" }, "a job entry");
+	bool has_audience = false;
+	Audience audience = Audience::Companions;
+	if (this->nodeExists(node, "For")) {
+		std::string f;
+		this->asString(node, "For", f);
+		f = lower(f);
+		if (f == "companions") audience = Audience::Companions;
+		else if (f == "shells") audience = Audience::Shells;
+		else if (f == "all") audience = Audience::All;
+		else {
+			this->invalidWarning(node["For"], "For is companions (default), shells or all; entry skipped.\n");
+			return;
+		}
+		has_audience = true;
+	}
 	std::string job_name;
 	if (!this->asString(node, "Job", job_name))
 		return;
@@ -1120,6 +1142,8 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 		Plan &plan = this->plans[key];
 		if (this->nodeExists(node, "Requires"))
 			plan.req = req;
+		if (has_audience)
+			plan.audience = audience;
 
 		if (this->nodeExists(node, "Rotation"))
 			this->asBool(node, "Rotation", plan.rotation);
@@ -1267,6 +1291,8 @@ void StrategyDatabase::loadingFinished()
 		}
 		if (!plan.rotation || !plan.ban.empty())
 			this->limits_rotation = true;
+		if (plan.audience != Audience::Companions)
+			this->for_shells = true;
 		for (const auto &st : plan.strategies)
 			if (st.second.rotation >= 0 || !st.second.ban.empty())
 				this->limits_rotation = true;
@@ -1340,6 +1366,7 @@ struct ShellState {
 	std::unordered_map<uint32, RuleState> rules;
 	std::map<PlanKey, PlanState> plans;
 	bool trace = false;
+	uint32 tracer_char = 0;     ///< a regular shell's trace goes to this player (a companion's to its owner)
 	t_tick hold_until = 0;      ///< a rule is positioning the companion: following waits until then
 	int32 forced_target = 0;    ///< SetTarget: this monster, until forced_until
 	t_tick forced_until = 0;
@@ -1435,7 +1462,8 @@ static void trace(map_session_data *sd, ShellState &st, t_tick tick, const char 
 {
 	if (!st.trace)
 		return;
-	map_session_data *owner = population_engine_companion_loot_owner(sd);
+	map_session_data *owner = st.tracer_char != 0 ? map_charid2sd(static_cast<int32>(st.tracer_char))
+		: population_engine_companion_loot_owner(sd);
 	if (owner == nullptr)
 		return;
 	char body[CHAT_SIZE_MAX];
@@ -1459,9 +1487,31 @@ static int hp_pct(const block_list *bl)
 }
 
 /// Party members on the shell's map (the owner and other companions included, the shell not).
+struct SyntheticPartyScan {
+	map_session_data *sd;
+	std::vector<map_session_data *> *out;
+};
+
+static int32 synthetic_party_cb(block_list *bl, va_list ap)
+{
+	SyntheticPartyScan *scan = va_arg(ap, SyntheticPartyScan *);
+	map_session_data *m = BL_CAST(BL_PC, bl);
+	if (m != nullptr && m != scan->sd && m->status.party_id == scan->sd->status.party_id
+			&& m->state.active && !m->state.warping)
+		scan->out->push_back(m);
+	return 0;
+}
+
 static std::vector<map_session_data *> party_members(map_session_data *sd)
 {
 	std::vector<map_session_data *> out;
+	// Regular shells share a synthetic party per map (0x70000000 | map) that rAthena's party
+	// table does not know; for them, the party is the shells of that party within sight.
+	if (sd->status.party_id >= 0x70000000) {
+		SyntheticPartyScan scan{ sd, &out };
+		map_foreachinrange(synthetic_party_cb, sd, AREA_SIZE, BL_PC, &scan);
+		return out;
+	}
 	const party_data *p = sd->status.party_id > 0 ? party_search(sd->status.party_id) : nullptr;
 	if (p == nullptr)
 		return out;
@@ -2624,6 +2674,17 @@ struct Candidate {
 	PlanState *state;
 };
 
+/// Whether a shell runs strategy rules: a recruited companion, or a regular combat shell when a
+/// plan is For: shells or all (arena fighters have their own turn and never reach here).
+static bool takes_part(const map_session_data *sd)
+{
+	if (sd == nullptr)
+		return false;
+	if (population_engine_is_recruited_companion(sd))
+		return true;
+	return g_db.for_shells && population_engine_is_population_pc(sd->id) && sd->pop.arena_team == 0;
+}
+
 struct PlanRef {
 	PlanKey key;
 	const Plan *plan;
@@ -2662,6 +2723,10 @@ static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_li
 	mobs.emplace_back(kAllMobs, 0);
 
 	std::vector<PlanRef> out;
+	const bool companion = population_engine_is_recruited_companion(sd);
+	auto for_me = [&](const Plan &plan) {
+		return plan.audience == Audience::All || (plan.audience == Audience::Companions) == companion;
+	};
 	const int32 job = sd->status.class_;
 	const int32 base = population_engine_job_base_class(sd->status.class_);
 	for (const auto &m : mobs) {
@@ -2670,8 +2735,9 @@ static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_li
 			PlanKey every_key;
 			for (auto it = g_db.plans.lower_bound(PlanKey(m.first, j, std::string())); it != g_db.plans.end()
 					&& std::get<0>(it->first) == m.first && std::get<1>(it->first) == j; ++it) {
-				if (std::any_of(out.begin(), out.end(), [&](const PlanRef &p) { return p.plan == &it->second; }))
-					continue; // same key twice (job == base)
+				if (!for_me(it->second)
+						|| std::any_of(out.begin(), out.end(), [&](const PlanRef &p) { return p.plan == &it->second; }))
+					continue; // not for this kind of shell, or the same key twice (job == base)
 				if (std::get<2>(it->first).empty()) {
 					every_build = &it->second;
 					every_key = it->first;
@@ -2777,7 +2843,7 @@ size_t population_strategy_rule_count()
 
 bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills, bool attack_only)
 {
-	if (g_db.rule_count == 0 || sd == nullptr || !population_engine_is_recruited_companion(sd))
+	if (g_db.rule_count == 0 || !takes_part(sd))
 		return false;
 	prune(tick);
 
@@ -2851,7 +2917,7 @@ bool population_strategy_holds_position(const map_session_data *sd, t_tick tick)
 
 bool population_strategy_rotation_allows(map_session_data *sd, block_list *target, uint16 skill_id)
 {
-	if (!g_db.limits_rotation || sd == nullptr || !population_engine_is_recruited_companion(sd))
+	if (!g_db.limits_rotation || !takes_part(sd))
 		return true;
 	// Asked once per skill in the rotation; the plans cannot change within one tick.
 	static int32 cached_id = 0, cached_target = 0;
@@ -2980,11 +3046,34 @@ void population_strategy_on_party_chat(map_session_data *from_sd, const char *me
 				continue;
 			ShellState &st = shell_state(m, gettick());
 			st.trace = !st.trace;
+			st.tracer_char = 0;
 			st.last_trace.clear();
 			char reply[CHAT_SIZE_MAX];
 			safesnprintf(reply, sizeof(reply), "[%s] strategy trace %s.", m->status.name, st.trace ? "on" : "off");
 			clif_displaymessage(from_sd->fd, reply);
 			return;
+		}
+		// Not a companion of theirs: a regular shell in sight by that name, if shells have plans.
+		if (g_db.for_shells) {
+			struct NameScan { const std::string *who; map_session_data *found; } scan{ &who, nullptr };
+			map_foreachinrange([](block_list *bl, va_list ap) -> int32 {
+				NameScan *n = va_arg(ap, NameScan *);
+				map_session_data *m = BL_CAST(BL_PC, bl);
+				if (n->found == nullptr && m != nullptr && population_engine_is_population_pc(m->id)
+						&& !population_engine_is_recruited_companion(m) && lower(m->status.name) == *n->who)
+					n->found = m;
+				return 0;
+			}, from_sd, AREA_SIZE, BL_PC, &scan);
+			if (scan.found != nullptr) {
+				ShellState &st = shell_state(scan.found, gettick());
+				st.trace = !st.trace;
+				st.tracer_char = st.trace ? from_sd->status.char_id : 0;
+				st.last_trace.clear();
+				char reply[CHAT_SIZE_MAX];
+				safesnprintf(reply, sizeof(reply), "[%s] strategy trace %s.", scan.found->status.name, st.trace ? "on" : "off");
+				clif_displaymessage(from_sd->fd, reply);
+				return;
+			}
 		}
 	}
 

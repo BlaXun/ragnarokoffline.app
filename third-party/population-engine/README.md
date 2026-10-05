@@ -143,14 +143,15 @@ reference, and `examples/mods/companion-tactics` a worked set.
 It is built to stay out of upstream's way. The whole feature is
 `src/map/population_engine/strategy/`, and the engine calls it from thirteen
 marked places in three of its own files (listed in `docs/COMPANION_DEVELOPMENT.md`).
-It needs no patch against rAthena. It runs for recruited companions only.
+It needs no patch against rAthena. It runs for recruited companions, and for
+regular combat shells only through plans a mod marks `For: shells` or `For: all`.
 The table ships empty, and every entry point returns at once when no rules are
 loaded, so with no mod the engine behaves exactly as before. Decisions are
 deterministic: no `rnd()` in the rule path.
 
 Two things it changes in how a companion casts, both only for rules:
 
-- A rule never casts a skill the companion has not learned. The rotation's
+- A rule never casts a skill the shell has not learned. The rotation's
   rows may.
 - A combo step (Chain Combo, Combo Finish, ...) may be cast during the previous
   step's after-cast delay, which is when rAthena accepts it.
