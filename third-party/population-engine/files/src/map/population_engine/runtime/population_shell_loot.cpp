@@ -61,6 +61,28 @@ flooritem_data *loot_resolve(const PopulationShellLootEntry &e, int16 m)
 	return fitem;
 }
 
+/// Weight the shell can still carry before rAthena's first overweight step
+/// (natural_heal_weight_rate: 50% pre-renewal, 70% renewal), where natural
+/// regen stops. Shells never sell what they pick up, so without this cap they
+/// would keep looting to 90%, where Weight90 stops them attacking and using
+/// skills: a field full of shells standing still. The same cap and the same
+/// unbonused carry limit as the ammo stock (population_shell_ammo.cpp), because
+/// max_weight is raised to 2000000 while a shell spawns.
+int64 loot_weight_room(const map_session_data *sd)
+{
+	const int64 max_weight = job_db.get_maxWeight(pc_mapid2jobid(sd->class_, sd->status.sex)) +
+		static_cast<int64>(sd->status.str) * 300;
+	return max_weight * battle_config.natural_heal_weight_rate / 100 - 1 - sd->weight;
+}
+
+/// Whether picking up this drop keeps the shell under the cap above.
+bool loot_fits(const map_session_data *sd, const flooritem_data *fitem)
+{
+	std::shared_ptr<item_data> id = item_db.find(fitem->item.nameid);
+	const int64 weight = id != nullptr ? static_cast<int64>(id->weight) * fitem->item.amount : 0;
+	return weight <= loot_weight_room(sd);
+}
+
 /// Rare: any card, or a drop whose base rate in this monster's table is at or
 /// below population_engine_loot_rare_rate (per 10000, so 100 = 1%).
 bool loot_is_rare(const flooritem_data *fitem)
@@ -129,6 +151,9 @@ void loot_scan(map_session_data *sd, t_tick now)
 	for (flooritem_data *fitem : found) {
 		if (!pe.loot_seen.emplace(fitem->id, now + remember_ms).second)
 			continue; // already decided
+		// A full bag: the shell leaves it, as a player with no room would.
+		if (!loot_fits(sd, fitem))
+			continue;
 
 		// Whether it bothers at all: a player picks up most of what drops, nearly
 		// every rare drop, and walks past some of the rest.
@@ -284,8 +309,11 @@ bool population_shell_loot_tick(map_session_data *sd, t_tick now)
 			unit_stop_walking(sd, USW_FIXPOS);
 		const int32 item_id = pick->item_bl_id;
 		// pc_takeitem plays the pickup animation and logs to picklog. If it
-		// fails (overweight, full inventory) the item is given up, as a player would.
-		pc_takeitem(sd, pick_item);
+		// fails (full inventory) the item is given up, as a player would. So is
+		// one that no longer fits under the weight cap: the queue was decided
+		// before the pickups ahead of it.
+		if (loot_fits(sd, pick_item))
+			pc_takeitem(sd, pick_item);
 		pe.loot_queue.erase(std::remove_if(pe.loot_queue.begin(), pe.loot_queue.end(),
 			[item_id](const PopulationShellLootEntry &e) { return e.item_bl_id == item_id; }),
 			pe.loot_queue.end());

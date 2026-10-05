@@ -254,7 +254,24 @@ And then fetched with a player's priorities:
 It looks `population_engine_loot_radius` cells (default 9) around itself.
 Recruited companions are left out: their loot priority already belongs to their
 owner (0003). The shell's inventory is runtime-only, so what it picks up is gone
-when it despawns; a pickup that fails (overweight, full bag) gives the item up.
+when it despawns; a pickup that fails (full bag) gives the item up.
+
+**Weight.** A shell never sells what it picks up, so it stops looting at
+rAthena's first overweight step (`natural_heal_weight_rate`, 50% pre-renewal and
+70% renewal), with the same cap and the same unbonused carry limit as the ammo
+stock. Without that it would loot on to 90%, where `Weight90` stops it attacking
+and using skills, and a field would fill with shells standing still. A drop
+that would take it past the cap is left on the ground, as a player with a full
+bag would leave it.
+
+**The log grows faster.** Every pickup is a `P` row in `picklog`, beside the `M`
+row the drop already wrote. rAthena never trims that table, so with a few
+hundred shells looting it gains tens of thousands of rows an hour, which take up
+space on the server's disk. Nothing reads it back except mods that ask for it
+(prontera-vendors' market reads only `V`/`B` rows, by `id`). A long-running
+server that loots can clear old rows from Settings -> Tools -> Database, or with
+`ragnarok-stack sql --write "DELETE FROM picklog WHERE time < NOW() - INTERVAL 7 DAY"`
+while the game is stopped.
 Settings writes all of them (`electron/population-conf.js`, `shellLoot`); a mod
 can still change any of them at runtime with `setbattleflag`.
 
