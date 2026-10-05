@@ -216,7 +216,7 @@ async function startHeadless(opts, { mod, map } = {}) {
 	try { await tryPlaywright(); } catch (e1) {
 		try { await tryElectron(); } catch (e2) {
 			await server.close();
-			throw new Error(`No editor is open and none could be started here (${e1.message.split('\n')[0]}; ${e2.message.split('\n')[0]}). Open the map editor from Settings → Tools in the app, or run \`ragnarok-map serve\` and open its address in a browser.`);
+			throw new Error(`No editor is open and none could be started here (${e1.message.split('\n')[0]}; ${e2.message.split('\n')[0]}). In the app, open the map editor from Settings → Tools (and check Settings → Play with an AI agent → Map editor is on); or run \`ragnarok-map serve\` and open its address in a browser.`);
 		}
 	}
 	await waitForPage(conn, 90000);

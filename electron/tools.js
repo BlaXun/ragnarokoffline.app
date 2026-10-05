@@ -506,7 +506,8 @@ function createTools(deps) {
 		// the map editor's: its store is the unsaved map it can recover.
 		if (id !== 'map-editor') await ses.clearStorageData({ storages: ['indexdb'] }).catch(() => {});
 		if (id === 'control-panel') itemNames = null;
-		if (id === 'map-editor') mapEditor.ensureControl().catch(e => deps.log(`tools: map editor: ${e.message}`));
+		// The map editor's routes for agents open with it, unless the player turned them off.
+		if (id === 'map-editor' && (!deps.mapEditorAgentAllowed || deps.mapEditorAgentAllowed())) mapEditor.ensureControl().catch(e => deps.log(`tools: map editor: ${e.message}`));
 		const win = new deps.BrowserWindow({
 			width: tool.width || 1280, height: tool.height || 860, show,
 			title: `${tool.name} — Ragnarok Offline`,

@@ -111,7 +111,6 @@ function createMapEditor(deps) {
 		// Only the editor's own page, as the other Tools' bridges check.
 		const origin = request.headers.get('origin');
 		if (origin && origin !== 'ro-tool://map-editor' && origin !== 'ro-tool://music-browser') return new Response('not allowed', { status: 403 });
-		if (name.startsWith('api/remote/') || name.startsWith('api/host/') || name === 'api/save' || name === 'api/prefabs') ensureControl().catch(e => deps.log(`map editor: control: ${e.message}`));
 		const b = await getBridge();
 		const body = request.method === 'POST' ? new Uint8Array(await request.arrayBuffer()) : null;
 		const answer = await b.handle({ method: request.method, path: name, query: url.searchParams, body });
@@ -145,7 +144,8 @@ function createMapEditor(deps) {
 	 * The map editor's routes on the app's local API for agents (the listener
 	 * the game agent's /mcp is on, agent-play.js): MCP at /mcp/map, and the
 	 * command line's control calls at /map/control/. Their token is the map
-	 * editor's own, in connection.json; registered once per session.
+	 * editor's own, in connection.json. Opening the editor opens them unless
+	 * the player turned them off (Settings, setAgentAccess).
 	 */
 	async function ensureControl() {
 		if (control) return control;
@@ -211,12 +211,16 @@ function createMapEditor(deps) {
 	}
 
 	/**
-	 * At start-up: put the routes back when the editor was set up before, so an
-	 * MCP client added once keeps working without the editor being opened first.
+	 * Settings -> Play with an AI agent -> the map editor, and at every start.
+	 * On: the routes, and connection.json for clients to find them. Off: no
+	 * routes, and no file, so its token is gone with them (the next time it is
+	 * turned on makes a new one).
 	 */
-	function resume() {
+	async function setAgentAccess(on) {
+		if (on) { await ensureControl(); return; }
+		await shutdown();
 		const c = readConnection();
-		if (c && c.app && c.base === '/map') ensureControl().catch(e => deps.log(`map editor: ${e.message}`));
+		if (c && c.app) fs.rmSync(connectionFile(), { force: true });
 	}
 
 	/** For Settings: how an agent connects to the map editor, once it is set up. */
@@ -235,7 +239,7 @@ function createMapEditor(deps) {
 		control = null;
 	}
 
-	return { route, ensureControl, resume, agentInfo, shutdown, getBridge };
+	return { route, ensureControl, setAgentAccess, agentInfo, shutdown, getBridge };
 }
 
 module.exports = { createMapEditor, MAP_EDITOR_ROOT: ROOT };

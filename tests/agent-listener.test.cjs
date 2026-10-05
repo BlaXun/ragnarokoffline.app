@@ -53,7 +53,7 @@ function agentPlayIn(state) {
 	});
 }
 
-test('the map editor\'s MCP and command line are on the agent listener, with or without the game agent', async () => {
+test('the map editor\'s MCP and command line are on the agent listener while the player allows it', async () => {
 	const state = tmp();
 	const agents = agentPlayIn(state);
 	const editor = createMapEditor({
@@ -63,6 +63,8 @@ test('the map editor\'s MCP and command line are on the agent listener, with or 
 		openWindow: async () => { throw new Error('no window in a test'); },
 		addRoute: (route, options) => agents.addRoute(route, options),
 	});
+	assert.equal(editor.agentInfo(), null, 'nothing until the player turns it on');
+	await editor.setAgentAccess(true);
 	const registered = await editor.ensureControl();
 	const conn = JSON.parse(fs.readFileSync(path.join(state, 'map-editor', 'connection.json'), 'utf8'));
 	try {
@@ -101,8 +103,30 @@ test('the map editor\'s MCP and command line are on the agent listener, with or 
 		assert.equal((await call(conn.port, '/mcp', game.token, init)).status, 404);
 		assert.equal((await call(conn.port, '/mcp/map', conn.token, init)).status, 200);
 	} finally {
-		await editor.shutdown();
+		await editor.setAgentAccess(false);
 	}
-	// With neither using it, the listener closes.
+	// Off: the route, the file and its token are gone, and with nothing else
+	// using it the listener closes.
+	assert.equal(fs.existsSync(path.join(state, 'map-editor', 'connection.json')), false);
+	assert.equal(editor.agentInfo(), null);
 	await assert.rejects(fetch(`http://127.0.0.1:${conn.port}/mcp/map`, { method: 'POST' }));
+	// On again: a new token.
+	await editor.setAgentAccess(true);
+	const again = JSON.parse(fs.readFileSync(path.join(state, 'map-editor', 'connection.json'), 'utf8'));
+	assert.notEqual(again.token, conn.token);
+	await editor.setAgentAccess(false);
+});
+
+test('opening the map editor opens its agent routes unless the player turned them off', () => {
+	const tools = fs.readFileSync(path.join(__dirname, '..', 'electron', 'tools.js'), 'utf8');
+	const editor = fs.readFileSync(path.join(__dirname, '..', 'electron', 'map-editor.js'), 'utf8');
+	const main = fs.readFileSync(path.join(__dirname, '..', 'electron', 'main.js'), 'utf8');
+	// The one place that opens them with the editor checks the setting first.
+	const opens = tools.split('\n').filter(l => l.includes('ensureControl'));
+	assert.equal(opens.length, 1);
+	assert.match(opens[0], /mapEditorAgentAllowed\(\)\)\) mapEditor\.ensureControl/);
+	const route = editor.slice(editor.indexOf('async function route('), editor.indexOf('function writeLauncher'));
+	assert.doesNotMatch(route, /ensureControl/, 'nor does any request from the editor page');
+	assert.match(main, /map_editor_agent: true,/, 'on unless turned off');
+	assert.match(main, /mapEditorAgentAllowed: \(\) => getSettings\(\)\.map_editor_agent !== false/);
 });

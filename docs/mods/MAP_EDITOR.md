@@ -292,7 +292,9 @@ The map editor's MCP is on the app's local API for AI agents: the same
 listener as the game agent's `/mcp` (Settings → Play with an AI agent), at
 its own path, `/mcp/map`, with its own token. It answers whether or not the
 game agent is on, from the first time you open the editor, and again at every
-start after that. Settings → Play with an AI agent shows the command; for
+start after that. **Settings → Play with an AI agent → Map editor** turns it
+off: the route closes, the token is forgotten, and opening the editor leaves it
+closed until you turn it back on. The same place shows the command; for
 Claude Code it is:
 
 ```

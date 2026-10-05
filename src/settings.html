@@ -1045,11 +1045,17 @@
          From a terminal: <code id="agent-command"></code> <code>state</code>. Point the agent at
          <b>the guide</b> (AGENT.md) before it starts: it says how to play and what not to do.</p>
     </div>
-    <p class="note" style="color: var(--text); margin-top:10px">The map editor</p>
+    <label style="margin-top:10px">
+      <span>Map editor</span>
+      <input type="checkbox" id="map_editor_agent" style="accent-color: var(--accent); flex: none" />
+      <span class="val" style="width:auto; color: var(--dim)">let an AI agent use the map editor</span>
+    </label>
     <p class="note">The map editor has its own MCP route on the same address, <code>/mcp/map</code>,
        for an agent that builds maps rather than plays. Its tools are the editor's
-       (<code>map_open</code>, <code>terrain_brush</code>, <code>view_screenshot</code>, &hellip;), its token is its
-       own, and it works whether or not the AI agent above is on.</p>
+       (<code>map_open</code>, <code>terrain_brush</code>, <code>view_screenshot</code>, &hellip;) and its token is its
+       own. It is separate from the AI agent above: either can be on without the other. It opens
+       when you open the map editor; turning it off here closes it and forgets the token, and
+       opening the editor then leaves it closed.</p>
     <div id="agent-map" hidden>
       <pre id="agent-map-claude" style="white-space: pre-wrap; word-break: break-all; font-size: 11px; margin: 4px 0"></pre>
       <div class="actions" style="margin-top:4px">
@@ -1058,8 +1064,8 @@
       <p class="note">Other MCP clients: <code id="agent-map-mcp"></code>, with the token in
          <code id="agent-map-file"></code>. Point the agent at <code>AGENTS.md</code> beside it.</p>
     </div>
-    <p class="note" id="agent-map-setup">Open the map editor once (Settings &rarr; Tools &rarr; Map editor) and the
-       command to connect an agent to it appears here.</p>
+    <p class="note" id="agent-map-setup" hidden>Open the map editor once (Settings &rarr; Tools &rarr; Map editor)
+       and the command to connect an agent to it appears here.</p>
     <p class="note" id="agent-status"></p>
   </div>
   </div>
@@ -3435,8 +3441,9 @@ function paintAgent(a) {
     $('agent-command').textContent = a.command ? `"${a.command}"` : '';
   }
   const m = a.mapEditor;
+  $('map_editor_agent').checked = !!a.mapEditorEnabled;
   $('agent-map').hidden = !m;
-  $('agent-map-setup').hidden = !!m;
+  $('agent-map-setup').hidden = !!m || !a.mapEditorEnabled;
   if (m) {
     $('agent-map-claude').textContent = m.claudeCommand || '';
     $('agent-map-mcp').textContent = m.mcp || '';
@@ -3460,6 +3467,11 @@ $('agent_count').addEventListener('change', setAgent);
 $('agent-copy-claude').addEventListener('click', async () => {
   const text = $('agent-claude').textContent;
   if (text) { await invoke('copy_text', { text }); $('agent-status').textContent = 'Copied. Paste each line into a terminal.'; }
+});
+$('map_editor_agent').addEventListener('change', async e => {
+  $('agent-status').textContent = 'Saving…';
+  try { paintAgent(await invoke('map_editor_agent_set', { enabled: e.target.checked })); }
+  catch (err) { $('agent-status').textContent = String(err.message || err); }
 });
 $('agent-copy-map').addEventListener('click', async () => {
   const text = $('agent-map-claude').textContent;
