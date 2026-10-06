@@ -1,153 +1,179 @@
-# Mod store: data a mod keeps for itself
+# The mod store: data a mod keeps for itself
 
-> **Status: proposed, not built yet.** This is the design under discussion in
-> [#440](https://github.com/Flux159/ragnarokoffline.app/issues/440). The API
-> below is what mods would write against. Comment on the issue before relying
-> on any name here.
+> **Experimental (new in 1.5.2).** The API may still change before 1.6, after
+> mod developers have tried it ([#440](https://github.com/Flux159/ragnarokoffline.app/issues/440)).
+> Data a mod stores now is kept across such changes.
 
-A mod gets a place to keep its own data, **written through the store and never
-through SQL**. Scripts' `query_sql` and `query_logsql` are read-only:
-they log in as a SELECT-only user that can't see `login`, which arrives in the
-same release as this store at the latest.
-The store lives in the world's database, in tables only the map server writes.
+A mod can keep its own data between server starts: **key/value storage** with
+three scopes. NPC scripts and Lua hooks read and write it; the mod's client
+UI can read what the mod puts under `client`.
+- **Writes** go through the store, never through SQL. Mods' `query_sql` and
+  `query_logsql` are read-only.
+- **Isolation:** a mod only ever sees its own store.
 
-## Scopes
+| Scope | For | Lives |
+|---|---|---|
+| **global** | the mod's own state: a market, a leaderboard, a season | until the player resets the mod's data |
+| **account** | per account: unlocks, a rank every character shares | with the account |
+| **char** | per character: quest or bounty progress | with the character, deleted when it is |
 
-| Scope | What it's for | Loaded | Removed |
-|---|---|---|---|
-| **global** | the mod's own world state: a market, a leaderboard, a season | when the map server starts | only when the player deletes the mod's data |
-| **account** | per account: unlocks, a rank shared by every character | when the account logs in | with the account |
-| **char** | per character: quest progress, a bounty in progress | when the character logs in | with the character |
+## Keys and values
 
-Account and character data behave like rAthena's own account (`#var`) and
-character variables: loaded with the player, saved with the player, deleted
-with them. So nothing is left behind, and memory follows the players who are
-online, not everyone who ever played.
-
-**A mod sees only its own store.** The namespace comes from where the calling
-code was loaded (`npc/mods/<mod>/…`, `db/import/lua/<mod>/…`), not from a name
-the mod passes in. There is no reading another mod's store, and the store's
-tables are left out of what the read-only SQL login can see.
-
-## Paths and values
-
-Each scope is one document, addressed by dotted paths:
-
-```
-market.items.501.price      → 55
-market.trades               → 1204
-bounty.kills                → 3
-season.name                 → "Autumn"
-```
-
-- **Values:** integers and strings, plus nested tables from Lua.
-- **"Tables":** a path's children are its rows, enumerated with `keys`.
-- **Path segments:** letters, digits and `_`, joined with `.`.
+- **A key** is a path: `"rank"`, `"bounty.kills"`, `"market.items.501.price"`.
+  - Each segment is letters, digits and `_`, and segments are joined by `.`.
+  - A path can be at most 255 characters and 8 segments deep.
+  - A path can't be exactly `global`, `account` or `char`.
+- **A value** is an integer (64-bit) or a string.
+  - From Lua, `true`/`false` are stored as `1`/`0`.
+  - A table is written as the paths under its key.
+  - Non-integer numbers are refused.
+- **Dots are only for grouping:** they let you list or rank everything under a
+  prefix. A key with no dots is plain key/value.
+- **It's a tree:** a path holds a value *or* entries under it, never both.
+  With `season.name` set, setting `season` is refused, and with `season` set,
+  so is `season.name`: delete one first. That's what lets Lua and the client
+  read `season` back as a table.
 
 ## From an NPC script
 
-The scope comes first and can be left out for global.
+The first argument can name the scope: `"global"` (the default), `"account"`
+or `"char"`. The last two use the attached player.
 
 ```c
-// global
-modstore_set "market.items.501.price", 55;
-.@price = modstore_get("market.items.501.price", 50);   // 50 if unset
-modstore_inc "market.trades", 1;
+modstore_set "season.name", "Autumn";                  // 1 if stored, 0 if not
+.@price = modstore_get("market.items.501.price", 50);  // 50 if it isn't set
+.@name$ = modstore_get("season.name");                 // a string needs a $ variable
+.@kills = modstore_inc("char", "bounty.kills", 1);     // the new value
+.@rank  = modstore_get("account", "rank", 0);
 
-// the attached player's character and account
-modstore_set "char", "bounty.target", 1002;
-modstore_inc "char", "bounty.kills", 1;
-.@rank = modstore_get("account", "rank", 0);
-
-// enumerating and ranking a "table"
-.@n = modstore_keys("market.items", .@ids$);            // child names
-.@n = modstore_top("leaderboard.kills", 10, .@names$, .@scores);  // highest first
-
+.@n = modstore_keys("market.items", .@ids$);           // child names: "501", "502", ...
+.@n = modstore_count("market.items");
+.@n = modstore_top("board", 10, .@who$, .@score);      // highest first
 if (modstore_exists("market.news"))
-	modstore_delete "market.news";
+	modstore_delete "market.news";                     // and everything under it
+
+.@max = modstore_limit("global");                      // bytes allowed
+.@now = modstore_used();                               // bytes in use (global)
 ```
 
-`char` and `account` use the player attached to the script. Without one (in
-`OnInit`, say), they fail with a log line, the same way `getcharid` does.
+Only a mod's own scripts can use the store, that is, files under the mod's
+`npc/` folder. A failed call returns `0` (or the default) and logs why. The
+script carries on.
 
 ## From a Lua hook
 
 ```lua
-store.inc("market.trades", 1)                      -- global
-local kills = store.char.get("bounty.kills", 0)    -- the hook's player
-store.char.set("bounty.kills", kills + 1)
-store.account.set("unlocks.fire_relic", true)
+store.inc("hits", 1)                                -- global
+store.set("season", { name = "Autumn", week = 3 })  -- season.name, season.week
 
-store.set("leaderboard.kills." .. c.source.name, kills + 1)
-for name, score in store.top("leaderboard.kills", 10) do ... end
+local me = store.char(c.caster)                     -- c.caster or c.target, a player
+me.inc("bounty.kills", 1)
+local unlocks = store.account(c.caster).get("unlocks.fire", 0)
+
+for _, row in ipairs(store.top("board", 10)) do
+  log(row.name .. ": " .. row.value)
+end
+
+local season = store.get("season")                  -- { name = "Autumn", week = 3 }
+store.set("recent", { "Alice", "Bob" })
+store.get("recent")                                 -- { "Alice", "Bob" }: integer keys come back as integers
+
+local ok, why = store.set("x", 1.5)                 -- nil, "numbers in the store are integers"
+local l = store.limits()                            -- l.global, l.account, l.char, l.value, l.depth
 ```
 
-`store.char` and `store.account` belong to the player in the hook's context.
-Every call counts towards the hook's existing instruction limit.
+The functions are `get`, `set`, `inc`, `delete`, `exists`, `keys`, `count`,
+`top` and `used`. `store` also has `limits`, `char` and `account`.
+
+- **`get` on a path with entries under it** returns them as a table, the
+  same shape `set` wrote. `get()` with no path returns the whole document.
+
+- **Errors are returned, not raised:** a write that fails returns `nil` and a
+  reason.
+- **Instruction limit:** each call counts towards the hook's existing limit.
+- **Load time works too:** the store is available while a mod's Lua file
+  loads, not only inside hooks.
+
+A mod's scripts and its Lua share one store, so a script can set something a
+hook reads, and the other way round.
+
+## From the mod's client UI
+
+A client plugin reads with `api.store.get(scope, path)`. It resolves with a
+number, a string, an object of them, or `null` if nothing is there:
+
+```js
+const board = await api.store.get('global', 'client.board');   // { Alice: 30, Bob: 50 }
+const mine  = await api.store.get('char', 'client.bounty');    // this character's
+```
+
+- **Only paths under `client`.** A mod keeps what its UI may show there, and
+  everything else stays on the server. Keep a copy under `client` of anything
+  the window needs: `modstore_set "client.board." + .@name$, .@kills;`.
+- **The player's own data:** `account` and `char` are the logged-in player's.
+- **Not secret:** what's under `client` can be read by the player, and by any
+  plugin, so don't keep anything there a player shouldn't see.
+- **It asks the map server** (the `@modstore` command, as a server request),
+  so it works only in game, and an answer over about 36 KB is refused: read a
+  smaller path.
+- **Read-only:** a client changes the store through the mod's own server
+  script, with `api.server.request` or `api.server.command`.
 
 ## Querying
 
-Queries run in memory and never block the server:
-
+Everything runs in memory, so reads and writes never wait for the database:
 - **`keys(path)`:** a path's children.
-- **`count(path)`:** how many children it has.
-- **`top(path, n)`:** children sorted by their numeric value, highest first, for
-  leaderboards.
+- **`count(path)`:** how many there are.
+- **`top(path, n)`:** the children holding numbers, highest first.
 
-A query across all characters, like "the 10 characters with the most bounty
-kills", can't read offline characters' stores. Keep it in the global store as
-it happens, as the Lua example does with `leaderboard.kills`.
+A ranking across all characters ("the 10 with the most kills") can't read
+characters who are offline. Keep it in the global store as it happens:
+`store.set("board." .. c.caster.name, kills)`.
 
 ## Limits
 
-Limits belong to the **app**, not to rAthena or to a mod. Each release sets
-them in one table in the supervisor, which writes them into the map server's
-configuration at every start:
-
-| Setting | First value | What it limits |
+| Setting | Now | Limits |
 |---|---|---|
-| `mod_store_global_bytes` | 1 MiB | one mod's global document |
-| `mod_store_account_bytes` | 64 KiB | one mod's document for one account |
-| `mod_store_char_bytes` | 64 KiB | one mod's document for one character |
-| `mod_store_value_bytes` | 4 KiB | one string value |
-| `mod_store_depth` | 8 | path segments |
+| `mod_store_global_bytes` | 1 MiB | one mod's global data |
+| `mod_store_account_bytes` | 64 KiB | one mod's data for one account |
+| `mod_store_char_bytes` | 64 KiB | one mod's data for one character |
+| `mod_store_value_bytes` | 4 KiB | one string |
+| `mod_store_depth` | 8 | segments in a path |
 
-So a later release can raise a limit without touching rAthena or migrating
-anything. The data is the same either way; only the check on the next write
-changes.
+A key counts its own length, plus 8 bytes for a number or the string's length.
 
-**What a mod sees:**
-- **A write that would go over a limit fails, alone.** The script command
-  returns `0` (Lua: `nil, "limit"`), and the map server log names the mod, the
-  scope, the path and the limit. Nothing else changes and nothing crashes.
-- **Reading the limits:** `modstore_limit("global")` (Lua: `store.limits()`)
-  returns the current ones, so a mod can trim old entries before it runs out.
-- **Needing more:** if a mod needs more than the release it targets allows, it
-  says so the usual way. Say 1.6.1 raises the global limit to 2 MiB: a mod
-  that needs that declares `"requires": { "app": ">=1.6.1" }`. Then 1.6.0
-  refuses to install it, with a clear message, instead of letting it fail
-  writes later.
-- **Lowering a limit never loses data.** Limits go up, not down. If one were
-  ever lowered, data already stored stays readable; writes that would grow a
-  document past the new limit fail, and writes that shrink it work.
+The app sets these each start (`MOD_STORE_LIMITS` in `stack/src/cmds.rs`), so
+**a release can raise them** without anything else changing.
+- **Going over a limit:** the write fails, alone. The map-server log names the
+  mod, the scope, the path and the sizes.
+- **Shrinking always works:** a write that doesn't make the data bigger never
+  fails, so data saved under a higher limit stays editable.
+- **Needing more:** if a mod needs more room than the oldest app it supports,
+  it says so with `"requires": { "app": ">=<version>" }`. Older apps then refuse
+  to install it, instead of the mod's writes failing later.
+- **Reading the limits:** `modstore_limit()` and `store.limits()` return the
+  current ones, so a mod can trim old entries before it runs out.
 
-## Lifetime and backups
+## Where it's kept
 
-- **Updating a mod, or switching it off and on, keeps its data.**
-- **Removing a mod keeps its data,** unless the player confirms deleting it.
-  Settings → Mods gets "Reset this mod's data".
-- **Backups:** everything is in the world's database, so database backups and
-  restores carry it, per world.
+The map server keeps each document in memory. It saves changes:
+- every minute, so a crash loses at most the last minute (rAthena saves its
+  own `$` variables and characters every five);
+- when a player logs out (their account and char data);
+- when the server stops.
 
-## Why not SQL
+The data is in the world's own database, in a table only the map server
+writes. So it's part of every database backup and restore, and each era (and
+world) has its own.
 
-A mod could be given its own MariaDB database, with full SQL inside it.
-- **Blocking:** every query stops the map server until the database answers.
-  The store answers from memory.
-- **No size limits:** MariaDB can't cap a database's size, so the limits above
-  couldn't be enforced.
-- **Fork code:** it would need a login per mod inside rAthena, which is more
-  code to carry through every upstream merge.
+**Resetting a mod's data:** Settings → Mods → the mod → **Reset data…**, or
+`ragnarok-stack mod-data-reset <mod>`. Either way:
+- the game is stopped around the reset, because the map server would
+  otherwise write its copy back;
+- a backup is saved first.
 
-If the store turns out too limiting for real mods, that's the alternative to
-revisit.
+**Removing a mod keeps its data,** so reinstalling it picks up where it was.
+Reset it first if you want it gone.
+
+The table is hidden from the SQL login mods use, so `query_sql` can't read
+any mod's store, including your own: use the store commands.

@@ -916,6 +916,28 @@ See [`examples/mods/quest-npc`](../examples/mods/quest-npc). For a quest in
 the game's own quest log, with kill counters the server keeps, see
 [Custom quests](mods/CUSTOM_QUESTS.md).
 
+### Reading the database: `query_sql` and `query_logsql` are read-only
+
+A mod's script can **read** the game database with `query_sql` (and
+`query_logsql`, below), but not change it. Both log in as `ragnarok_mods`,
+a login the app creates that can only `SELECT`:
+
+- **Every table but `login` and `mod_store`** can be read. `login` holds every
+  account's password hash and e-mail, and `mod_store` holds every mod's own
+  data, so a mod never sees them, not even through a join.
+- **Nothing can be written.** `INSERT`, `UPDATE`, `DELETE`, `CREATE`,
+  `ALTER`, `DROP` and `SELECT … INTO OUTFILE` all fail. The query returns
+  `-1`, and the map server's log shows MariaDB's "command denied" error,
+  naming the table.
+
+So a mod can't make its own tables in the game database, or edit characters
+behind the server's back (which it would overwrite anyway; see
+[docs/DATABASE.md](DATABASE.md)). **To keep a mod's own data, use the
+[mod store](MOD_STORE.md)**: key/value storage, global, per account and per
+character, from NPC scripts and Lua. rAthena's permanent variables
+(`$mymod_price[501]`, `#mymod_rank`) still work for simple cases; prefix them
+with your mod's name so mods don't collide.
+
 ### Knowing what players did: rAthena's logs
 
 A script can react to some things as they happen: `OnPCLoginEvent`,
@@ -1908,6 +1930,7 @@ It is a supported interface, not a sandbox for untrusted JavaScript.
 | `api.ui.menuButton({ background, hover, down, title, onClick })` | A button of the mod's own in the option menu (Escape), drawn from pictures the mod ships like the menu's own. Returns a function that takes it out; it also goes with the plugin. See [below](#a-button-in-the-option-menu--apiuimenubutton). Absent in an older app. |
 | `api.items.search(text, limit)` / `.get(id)` / `.icon(id)` | Items from the client's own tables, mods' included: `{ id, name, description, slots }`, and an icon URL for an `<img>`. |
 | `api.server.request(command, text, { timeout })` | Ask the mod's server script for something; resolves with its answer. See [Windows and server requests](#windows-and-server-requests). |
+| `api.store.get(scope, path, { timeout })` | Read what the mod keeps in its store under `client` (`'global'`, or the player's own `'account'` / `'char'`); resolves with a value, an object, or `null`. See [MOD_STORE.md](MOD_STORE.md#from-the-mods-client-ui). |
 | `api.cleanup(fn)` | Register idempotent cleanup immediately after allocating a resource. The returned function can release it early. Runs on failure, scope replacement and page teardown. |
 | `api.screens.replace(screen, hook)` / `.stage(canvas)` / `.image(path)` | Draw the login screen, server list, character select or character creation yourself. See [below](#the-screens-before-the-game--apiscreens). |
 | `api.account.status()` / `.remember()` / `.resume()` / `.forget()` | A remembered login the page never holds, traded for a one-time login token. See [below](#leaving-the-game-and-remembered-logins--exit-and-apiaccount). |
