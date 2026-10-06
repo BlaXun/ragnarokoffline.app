@@ -9,7 +9,7 @@
 # what scripts/vendor-bump.sh resolves -- builds fetch the commit.
 #
 #   name              url                                                commit                                    branch
-roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   ac639cb2b6b4b86cad3da41bbbc15df3c219a48d  gamepad-improvements-v2
+roBrowserLegacy   https://github.com/BlaXun/roBrowserLegacy.git   02d06f25797417d255f10ced54d88648013999c5  gamepad-bundle
 ROenglishRE       https://github.com/llchrisll/ROenglishRE.git     66cdfec631603fda6a90ba4bbe26ab07b5204c84
 rathena           https://github.com/Flux159/rathena.git           c8b69e4079c7ef5adfa55df37a591ec9e56f6d4e  ragnarokoffline
 #
