@@ -31,6 +31,7 @@ mod groups;
 mod json;
 mod mapcache;
 mod mods;
+mod navmob;
 mod navnpc;
 mod process_identity;
 mod registration;
@@ -113,6 +114,17 @@ fn main() {
     if verb == "navigation-npc-index" {
         let result = args.get(1).ok_or_else(|| "a rAthena checkout is required".to_string())
             .and_then(|root| navnpc::build_index(std::path::Path::new(root)));
+        match result {
+            Ok(index) => print!("{}", index.to_text()),
+            Err(error) => { eprintln!("{error}"); exit(1); }
+        }
+        return;
+    }
+
+    // The same for navigation-server-monsters (navmob.rs).
+    if verb == "navigation-mob-index" {
+        let result = args.get(1).ok_or_else(|| "a rAthena checkout is required".to_string())
+            .and_then(|root| navmob::build_index(std::path::Path::new(root)));
         match result {
             Ok(index) => print!("{}", index.to_text()),
             Err(error) => { eprintln!("{error}"); exit(1); }

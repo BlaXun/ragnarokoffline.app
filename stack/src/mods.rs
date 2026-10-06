@@ -1207,6 +1207,17 @@ impl Installed {
     pub fn has_npc_layers(&self) -> bool {
         self.roots.iter().any(|root| root.join("npc").is_dir() || root.join("stock-npc.txt").is_file())
     }
+
+    /// Whether the mod changes one `db/` table, directly or behind a setting.
+    pub fn has_db_table(&self, table: &str) -> bool {
+        self.roots.iter().any(|root| {
+            let db = root.join("db");
+            db.join(table).is_file()
+                || fs::read_dir(db.join("when"))
+                    .map(|rd| rd.flatten().any(|e| e.path().join(table).is_file()))
+                    .unwrap_or(false)
+        })
+    }
 }
 
 /// Every mod folder, in merge order, with its manifest checked.
@@ -2092,6 +2103,28 @@ pub fn npc_sources(cfg: &Config, m: &Installed) -> Result<(Vec<String>, Vec<Path
     Ok((stock, files.into_values().collect()))
 }
 
+/// A mod's copies of one `db/` table, in the order `assemble` merges them:
+/// each root's own, then its `when/<setting>/` copies while that setting is
+/// on. For the navigation monster table (navmob.rs), which reads mob_db.yml
+/// the way the server's import does.
+pub fn db_sources(cfg: &Config, m: &Installed, table: &str) -> Result<Vec<PathBuf>, String> {
+    let saved = read_settings(&cfg.state)?;
+    let settings = effective(&m.manifest, saved.get(&m.name));
+    let mut out = Vec::new();
+    for root in &m.roots {
+        let db = root.join("db");
+        if db.join(table).is_file() {
+            out.push(db.join(table));
+        }
+        for (_, folder) in conditional_folders(&db, &m.name, "db", &settings) {
+            if folder.join(table).is_file() {
+                out.push(folder.join(table));
+            }
+        }
+    }
+    Ok(out)
+}
+
 /// Scripts rAthena already ships that a mod asks to switch on.
 ///
 /// rAthena carries a job changer, a warper, a healer and a stylist in
@@ -2776,6 +2809,8 @@ pub fn list(cfg: &Config) -> Vec<[String; 14]> {
     // every mod's scripts (navnpc.rs), so a change to one needs the game
     // reopened like any client file; so does switching that mod itself.
     let navigation = mods.iter().any(|m| m.name == crate::navnpc::MOD && matches!(m.status, Status::On));
+    // And with navigation-server-monsters on, from their spawns and mob_db.
+    let monsters = mods.iter().any(|m| m.name == crate::navmob::MOD && matches!(m.status, Status::On));
     mods.into_iter()
         .map(|m| {
             let (state, reason) = match &m.status {
@@ -2828,7 +2863,9 @@ pub fn list(cfg: &Config) -> Vec<[String; 14]> {
                 // Apply that changed one of those.
                 if m.has_client_layers()
                     || m.name == crate::navnpc::MOD
+                    || m.name == crate::navmob::MOD
                     || (navigation && m.has_npc_layers())
+                    || (monsters && (m.has_npc_layers() || m.has_db_table("mob_db.yml")))
                 {
                     "client"
                 } else {
@@ -4213,5 +4250,20 @@ mod tests {
         let mut on = client(&cfg);
         on.sort();
         assert_eq!(on, ["healers", crate::navnpc::MOD, "town"]);
+
+        // The monster table also reads mob_db: a mod changing it, even behind
+        // a setting, needs the game reopened while that mod is on.
+        set_enabled(&cfg.state, crate::navnpc::MOD, false).unwrap();
+        install(&cfg, crate::navmob::MOD, r#"{"default": "off"}"#);
+        install(&cfg, "tougher", "{}");
+        fs::create_dir_all(mods.join("tougher/db/when/hard")).unwrap();
+        fs::write(mods.join("tougher/db/when/hard/mob_db.yml"), "Body:\n").unwrap();
+        let mut off = client(&cfg);
+        off.sort();
+        assert_eq!(off, [crate::navmob::MOD, crate::navnpc::MOD]);
+        enable(&cfg, crate::navmob::MOD).unwrap();
+        let mut on = client(&cfg);
+        on.sort();
+        assert_eq!(on, ["healers", crate::navmob::MOD, crate::navnpc::MOD, "tougher", "town"]);
     }
 }

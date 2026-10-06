@@ -202,6 +202,13 @@ enabled mod adds, at the server's coordinates, under the names shown over their
 heads. NPCs only kRO has drop out of the search. Monsters, maps and routes still
 come from your client.
 
+**Settings → Mods → navigation-server-monsters** does the same for monsters:
+search finds what the server spawns, on the maps it spawns them, with the
+level, element, race and size its monster database gives -- after every mod's
+changes, so a custom monster or a randomized one shows as it is in game. The
+frequency column counts every spawn line on the map. The two mods are
+independent; turn on either or both.
+
 ### When searches come back empty
 
 The tables behind the search are read from your own client archives, and they

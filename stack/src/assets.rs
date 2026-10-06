@@ -410,6 +410,7 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     let (plugins, tables) = overlay_mods(cfg, &server_root, &merged)?;
     // After the mods' own client files, so its table is the one served.
     let navigation_npcs = crate::navnpc::stage(cfg, &server_root)?;
+    let navigation_mobs = crate::navmob::stage(cfg, &server_root)?;
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
     // Bumped when how the tree is staged changes without its inputs changing
     // (v3: the signboard table's name; v4: the client's item table staged
@@ -426,9 +427,11 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     fnv(&mut fingerprint, overlay_fingerprint(cfg).as_bytes());
     // Built partly from mods' server scripts, which overlay_fingerprint leaves
     // out because the client never sees them -- except through this table.
-    if let Some(table) = &navigation_npcs {
-        fnv(&mut fingerprint, crate::navnpc::MOD.as_bytes());
-        fnv(&mut fingerprint, table);
+    for (name, table) in [(crate::navnpc::MOD, &navigation_npcs), (crate::navmob::MOD, &navigation_mobs)] {
+        if let Some(table) = table {
+            fnv(&mut fingerprint, name.as_bytes());
+            fnv(&mut fingerprint, table);
+        }
     }
     hash_tree(&mut fingerprint, &translation, Path::new("translation"));
     hash_tree(
@@ -1758,6 +1761,70 @@ mod tests {
         assert!(classic.contains("Classic Kafra") && !classic.contains("Renewal Kafra"), "{classic}");
 
         crate::mods::set_enabled(&cfg.state, crate::navnpc::MOD, false).unwrap();
+        link(&cfg, &args).unwrap();
+        assert_eq!(table(), None);
+        fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
+    }
+
+    /// With navigation-server-monsters on, the monster table counts the
+    /// era's stock spawns and every mod's, and describes each monster as the
+    /// merged mob_db does: a mod's new monster, and a mod's change to a stock one.
+    #[test]
+    fn server_monsters_replace_the_navigation_table_while_the_mod_is_on() {
+        let cfg = fixture_config("server-mobs");
+        let client = cfg.state.parent().unwrap().join("client");
+        write(&client.join("data.grf"), "archive");
+        let en = cfg.root.join("vendor/ROenglishRE/Translation");
+        write(&en.join("Renewal/data/table.txt"), "renewal table");
+        write(&en.join("Pre-Renewal/data/table.txt"), "pre-renewal table");
+        write(&en.join("Renewal/SystemEN/LuaFiles514/itemInfo.lua"), "English items");
+        write(&en.join("Renewal/SystemEN/OngoingQuests.lub"), "English quests");
+        write(&cfg.root.join("config/Config.local.js"), "window.ROConfigLocal = {\nrenewal: true,\n};\n");
+        write(&cfg.root.join("config/index.html"), "game entry");
+        let nav = cfg.state.join("mods").join(crate::navmob::MOD);
+        write(&nav.join("mod.json"), r#"{"default": "off"}"#);
+        write(
+            &nav.join(crate::navmob::INDEX),
+            "load\trenewal\tnpc/re.txt\nload\tprerenewal\tnpc/pre.txt\n\
+             mob\trenewal\t1002\tPORING\t1\tPlant\tMedium\tWater\t1\t0\tPoring\n\
+             mob\tprerenewal\t1002\tPORING\t1\tPlant\tMedium\tWater\t1\t0\tClassic Poring\n\
+             file\tnpc/re.txt\nspawn\tprt_fild08\t1002\t20\n\
+             file\tnpc/pre.txt\nspawn\tprt_fild08\t1002\t70\n",
+        );
+        let isle = cfg.state.join("mods/isle");
+        write(&isle.join("mod.json"), r#"{"settings": [{"key": "angry", "type": "boolean", "default": false}]}"#);
+        write(&isle.join("npc/spawns.txt"), "my_isle,0,0\tmonster\tMine\t30000,4\nprt_fild08,0,0\tmonster\tPoring\t1002,5\n");
+        write(&isle.join("db/mob_db.yml"), "Body:\n  - Id: 30000\n    AegisName: MY_MOB\n    Name: Isle Crab\n    Level: 12\n    Size: Small\n    Race: Fish\n    Element: Water\n    ElementLevel: 2\n");
+        write(&isle.join("db/when/angry/mob_db.yml"), "Body:\n  - Id: 1002\n    Name: Angry Poring\n    Level: 50\n");
+        crate::mods::enable(&cfg, "isle").unwrap();
+        let args = vec![client.join("data.grf").to_str().unwrap().to_string()];
+        let table = || fs::read_to_string(cfg.state.join("assets").join(crate::navmob::TABLE)).ok();
+        let id = || fs::read_to_string(cfg.state.join("assets/overlay.id")).unwrap();
+
+        link(&cfg, &args).unwrap();
+        assert_eq!(table(), None, "off: the client keeps its own table");
+        let off = id();
+
+        crate::mods::enable(&cfg, crate::navmob::MOD).unwrap();
+        link(&cfg, &args).unwrap();
+        let on = table().unwrap();
+        // 25 Porings, the stock 20 and the mod's 5.
+        assert!(on.contains(&format!("\"prt_fild08\", 1, 300, {}, \"Poring\", \"PORING\", 1, ", 25 << 16 | 1002)), "{on}");
+        assert!(on.contains(&format!("\"my_isle\", 2, 300, {}, \"Isle Crab\", \"MY_MOB\", 12, {} }}", 4 << 16 | 30000, 22 << 16 | 5)), "{on}");
+        assert_ne!(id(), off, "switching the mod on must clear the cached table");
+        let first = id();
+
+        crate::mods::save_settings(&cfg, "isle", r#"{"angry": true}"#).unwrap();
+        link(&cfg, &args).unwrap();
+        assert!(table().unwrap().contains("\"Angry Poring\", \"PORING\", 50, "), "{:?}", table());
+        assert_ne!(id(), first, "a mod's mob_db reaching the table must clear the cache");
+
+        write(&cfg.state.join("prerenewal"), "true");
+        crate::mods::save_settings(&cfg, "isle", r#"{"angry": false}"#).unwrap();
+        link(&cfg, &args).unwrap();
+        assert!(table().unwrap().contains(&format!("{}, \"Classic Poring\"", 75 << 16 | 1002)), "{:?}", table());
+
+        crate::mods::set_enabled(&cfg.state, crate::navmob::MOD, false).unwrap();
         link(&cfg, &args).unwrap();
         assert_eq!(table(), None);
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
