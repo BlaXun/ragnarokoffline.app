@@ -21,9 +21,10 @@ spawn line on the map, boxed areas included. NPCs, maps and routes still come
 from your client -- or turn on `navigation-server-npcs` for NPCs too.
 
 `mob-index.tsv` lists the pinned rAthena's spawn lines and monster database,
-which live in the server image rather than on your machine. It is generated,
-and regenerated when the rAthena pin moves:
+which live in the server image rather than on your machine. It is generated
+from the pin with the app's server mods applied, and regenerated whenever the
+rAthena pin moves (CI fails until it is):
 
 ```
-ragnarok-stack navigation-mob-index <rAthena checkout with scripts/apply-server-mods.sh applied>
+scripts/navigation-index.sh
 ```
