@@ -98,12 +98,18 @@ once). In every phase:
   Bolt's, and the Priest stays out of its melee but within Heal's reach of
   whoever is being hit;
 - when someone dies, the Priest walks toward the body until it is within
-  Resurrection's 9 cells, and keeps SP back for it;
+  Resurrection's 9 cells and keeps SP back for it. With Phreeoni on it, it heals
+  itself below 50 %, walls its own cell and casts Kyrie, then revives behind the
+  wall, so the cast is not broken. Its plan revives with its own rule, so the
+  engine's immediate attempt stands aside;
+- after a Wide Stone Curse the Priest stays within reach of the petrified and
+  cures them, already while it is still setting in;
 - the Priest heals, walls and Kyries whoever the monsters are on first, keeps
   Blessing, Increase AGI and (on attackers) Impositio up, and reveals a hidden
   Phreeoni only when it is within Ruwach's reach;
-- the Assassin steps out and waits for heals below 30 % HP, instead of the
-  engine's own flee running it off.
+- below 30 % HP the Assassin runs Phreeoni round the Priest: away from the
+  boss, within Heal's reach, never onto the Priest (`Kite`). Without it, the
+  engine's own flee ran it off, dragging the boss away from everyone.
 
 **Regular AI characters** (`For: shells`): Wizards around the world keep Storm
 Gust, Meteor Storm, Lord of Vermilion and Heaven's Drive for packs of three or

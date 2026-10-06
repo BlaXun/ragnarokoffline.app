@@ -34,6 +34,10 @@ size_t population_strategy_rule_count();
 /// acted (cast, moved), which ends the turn. Say and Switch never end it.
 bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills, bool attack_only);
 
+/// Whether the companion's plan revives the fallen with its own rule (a Resurrection rule it
+/// can cast): then the engine's built-in Party Resurrection stands aside for it.
+bool population_strategy_handles_resurrection(map_session_data *sd);
+
 /// Whether a rule is positioning the companion right now (Hold, MoveTo, KeepDistance,
 /// Retreat, Leave): owner-follow's leash and the idle formation step leave it where it is.
 /// The warps (another map, out of sight) are not affected.
