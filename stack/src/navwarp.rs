@@ -54,6 +54,13 @@ fn valid_map(map: &str) -> bool {
         && !instance_map(map)
 }
 
+/// A number as `sscanf`'s `%hd` reads one: leading whitespace skipped, and
+/// whatever follows the digits (a trailing comment) ignored.
+fn number(field: &str) -> Option<u32> {
+    let field = field.trim_start();
+    field[..field.find(|c: char| !c.is_ascii_digit()).unwrap_or(field.len())].parse().ok()
+}
+
 /// The portals in a script:
 /// `map,x,y,facing<TAB>warp|warp2<TAB>name<TAB>spanx,spany,dest,dx,dy`.
 /// Instance maps, at either end, are left out.
@@ -62,7 +69,9 @@ pub fn parse_warps(text: &[u8]) -> Vec<Warp> {
         .into_iter()
         .filter_map(|line| {
             let line = std::str::from_utf8(line).ok()?;
-            let mut fields = line.split('\t');
+            // The fourth field runs to the end of the line, tabs and all, as
+            // npc_parsesrcfile cuts it: a stock portal has an extra tab there.
+            let mut fields = line.splitn(4, '\t');
             let place = fields.next()?;
             let kind = fields.next()?;
             let name = fields.next()?;
@@ -74,12 +83,12 @@ pub fn parse_warps(text: &[u8]) -> Vec<Warp> {
             let map = at.next()?.trim();
             let x = at.next()?.trim().parse().ok()?;
             let y = at.next()?.trim().parse().ok()?;
-            let mut to = rest.split(',').map(str::trim);
+            let mut to = rest.split(',');
             to.next()?;
             to.next()?;
-            let dest = to.next()?;
-            let dx = to.next()?.parse().ok()?;
-            let dy = to.next()?.parse().ok()?;
+            let dest = to.next()?.trim();
+            let dx = number(to.next()?)?;
+            let dy = number(to.next()?)?;
             if !valid_map(map) || !valid_map(dest) {
                 return None;
             }
@@ -328,14 +337,32 @@ pub fn table_lua(warps: &[Warp], disabled: &HashSet<String>) -> Vec<u8> {
     out
 }
 
+/// What is staged while the mod is off. The client asks for the table on
+/// every load, and an empty one changes nothing; a missing one would be a 404
+/// in missing-files.log each time, the log people read to find a real miss.
+const EMPTY: &[u8] = b"Navi_Link_Server = {}\n";
+
+fn write_table(server_root: &Path, table: &[u8]) -> Result<(), String> {
+    let path = server_root.join(TABLE);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    fs::write(&path, table).map_err(|e| format!("writing {}: {e}", path.display()))
+}
+
 /// Write the table into the staged assets when the mod is on: the era's stock
 /// scripts, the stock scripts mods switch on and the scripts mods ship.
-/// Returns the table written, for the cache fingerprint.
+/// Returns the table written, for the cache fingerprint; with the mod off, an
+/// empty table is staged and nothing is returned.
 pub fn stage(cfg: &Config, server_root: &Path) -> Result<Option<Vec<u8>>, String> {
     let enabled = crate::mods::enabled(cfg);
-    let Some(this) = enabled.iter().find(|m| m.name == MOD) else { return Ok(None) };
+    let Some(this) = enabled.iter().find(|m| m.name == MOD) else {
+        write_table(server_root, EMPTY)?;
+        return Ok(None);
+    };
     let Some(text) = this.roots.iter().find_map(|r| fs::read_to_string(r.join(INDEX)).ok()) else {
         eprintln!("{MOD}: no {INDEX}; the client keeps its own routes");
+        write_table(server_root, EMPTY)?;
         return Ok(None);
     };
     let index = Index::from_text(&text);
@@ -364,11 +391,7 @@ pub fn stage(cfg: &Config, server_root: &Path) -> Result<Option<Vec<u8>>, String
     all.extend(&mod_gates);
     let disabled = closed(&all);
     let table = table_lua(&warps, &disabled);
-    let path = server_root.join(TABLE);
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    }
-    fs::write(&path, &table).map_err(|e| format!("writing {}: {e}", path.display()))?;
+    write_table(server_root, &table)?;
     println!("{MOD}: {} warps", warps.len());
     Ok(Some(table))
 }
@@ -384,6 +407,8 @@ mod tests {
             prontera,1,1,0\twarp\tShown#x::prt_gate\t1,1,prt_fild08,5,6\n\
             1@tower,1,1,0\twarp\tinside\t1,1,1@tower,2,2\n\
             prontera,1,1,0\twarp\tto instance\t1,1,1@tower,2,2\n\
+            lhz_in03,12,162,0\twarp\t#to_lhz\t\t1,1,lighthalzen,321,322\n\
+            izlude,1,1,0\twarp\tcommented_end\t1,1,prontera,7,8 // the arena\n\
             prontera,1,1,0\tscript\tNot a warp\t112,{\n\
             /* prontera,9,9,0\twarp\tcommented\t1,1,izlude,1,1 */\n";
         let warps = parse_warps(script);
@@ -392,6 +417,8 @@ mod tests {
             ("prontera", 107, 215, "prt01", "prt_in", 240, 139),
             ("ra_san01", 139, 139, "sanctuary15", "ra_temin", 27, 314),
             ("prontera", 1, 1, "prt_gate", "prt_fild08", 5, 6),
+            ("lhz_in03", 12, 162, "#to_lhz", "lighthalzen", 321, 322),
+            ("izlude", 1, 1, "commented_end", "prontera", 7, 8),
         ]);
     }
 

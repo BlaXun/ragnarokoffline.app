@@ -67,7 +67,10 @@ function serverLinks(variableName) {
 // Without the server's table, nothing changes.
 test('the server\'s portals replace the GRF\'s, and only while there are some', t => {
   const luaBin = ['lua5.1', 'lua'].find(bin => spawnSync(bin, ['-v'], { encoding: 'utf8' }).status === 0);
-  if (!luaBin) return t.skip('no Lua interpreter');
+  if (!luaBin) {
+    assert.ok(!process.env.REQUIRE_LUA, 'REQUIRE_LUA is set, and there is no lua5.1 or lua');
+    return t.skip('no Lua interpreter');
+  }
   assert.equal(serverLinks('Navi_Map'), '');
   const run = server => {
     const script = [
@@ -109,7 +112,10 @@ test('only the four named tables are renamed', () => {
 // bytes, as kRO's tables and ROenglishRE's dictionary both hold it.
 test('Korean names are translated and every other name is left as it is', t => {
   const luaBin = ['lua5.1', 'lua'].find(bin => spawnSync(bin, ['-v'], { encoding: 'utf8' }).status === 0);
-  if (!luaBin) return t.skip('no Lua interpreter');
+  if (!luaBin) {
+    assert.ok(!process.env.REQUIRE_LUA, 'REQUIRE_LUA is set, and there is no lua5.1 or lua');
+    return t.skip('no Lua interpreter');
+  }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ro-navi-names-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const kafra = Buffer.from([0xc4, 0xab, 0xc7, 0xc1, 0xb6, 0xf3]); // 카프라

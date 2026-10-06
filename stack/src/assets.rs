@@ -1875,7 +1875,9 @@ mod tests {
         let id = || fs::read_to_string(cfg.state.join("assets/overlay.id")).unwrap();
 
         link(&cfg, &args).unwrap();
-        assert_eq!(table(), None, "off: the client keeps its own routes");
+        // Off: an empty table, so the client keeps its own routes and its
+        // request for the file is not a miss in missing-files.log.
+        assert_eq!(table().as_deref(), Some("Navi_Link_Server = {}\n"));
         let off = id();
 
         crate::mods::enable(&cfg, crate::navwarp::MOD).unwrap();
@@ -1895,7 +1897,7 @@ mod tests {
 
         crate::mods::set_enabled(&cfg.state, crate::navwarp::MOD, false).unwrap();
         link(&cfg, &args).unwrap();
-        assert_eq!(table(), None);
+        assert_eq!(table().as_deref(), Some("Navi_Link_Server = {}\n"));
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
     }
 

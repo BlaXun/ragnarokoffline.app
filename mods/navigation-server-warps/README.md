@@ -12,7 +12,10 @@ other mods switch on (`stock-npc.txt`), and the scripts other mods ship. A
 portal switched off when the server starts (`disablenpc "<name>"` under
 `OnInit`) is left out, so a mod that reroutes a gate is routed over correctly.
 One that some script switches back on with `enablenpc` is kept: it is a gate an
-event or a quest opens, and open some of the time.
+event or a quest opens, and open some of the time. A portal that starts hidden
+or disabled (`warp(DISABLED)`, `warp2(HIDDEN)`) or is a `duplicate(...)` of
+another isn't routed over; in the stock scripts, those are all on instance
+maps, which are left out anyway.
 
 Your client's other links stay: a sailor or a signpost is a script that warps
 you when spoken to, which cannot be read the way a portal can. Its precomputed
@@ -21,8 +24,9 @@ the fewest maps.
 
 `warp-index.tsv` lists the pinned rAthena's portals, which live in the server
 image rather than on your machine. It is generated from the pin with the app's
-server mods applied, and regenerated whenever the rAthena pin moves (CI fails
-until it is):
+server mods applied. `scripts/vendor-bump.sh` regenerates it when the rAthena
+pin moves; after changing the server mods' scripts, run (CI fails until it
+matches):
 
 ```
 scripts/navigation-index.sh

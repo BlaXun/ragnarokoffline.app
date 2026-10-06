@@ -3349,6 +3349,7 @@ on	gate#start#2
 on	jupe_goto#1
 on	jupe_goto#2
 file	npc/quests/quests_lighthalzen.txt
+warp	lhz_in03	12	162	#to_lhz	lighthalzen	321	322
 warp	lhz_que01	97	33	#li_toin01	lhz_in01	43	120
 warp	lhz_in01	278	132	#li_toin02	lhz_in01	43	120
 off	#bully1
