@@ -210,8 +210,12 @@ Until then:
 - **Built:** `Signal: name`, `On: { Event: signal, Name }` and `MoveTo: event`,
   between companions of one party: "on me", "the tank has it", "I'm out of SP".
   Moved ahead of the playtest because gathering is what boss fights turn on.
-- Rules gated on the assigned party role (tank, support, attacker), so one table
-  serves a party arranged differently each time.
+- **Built:** role plans for any boss (`Mob: Boss`), in
+  `examples/mods/companion-roles`. The class family picks the role and a Duty
+  overrides it (`Requires: { Role: [support, none] }`). Boss plans now hold only
+  each boss's own mechanics. Rotation is layered: a plan saying `false` wins,
+  then one saying `true`, then the default. Taken from the Phreeoni plan; not
+  yet played against a second boss.
 - Beyond `OnePerParty`: claims on targets, so crowd control goes to different
   monsters and the party's Lex Aeterna is not wasted twice.
 

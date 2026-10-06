@@ -5,10 +5,16 @@ is fighting. A mod can give it a plan instead: rules for a particular monster,
 job and build, in a table the population engine reads,
 `db/population_strategy.yml`.
 
-This page is the reference for that table.
-[`examples/mods/companion-tactics`](../../examples/mods/companion-tactics) is a
-working set of plans: two Monk builds and a Ninja against the Stalactic Golem, a
-Priest who walls party members about to be stunned, and plain hits on Porings.
+This page is the reference for that table. Two example mods use it, one on top
+of the other:
+
+- [`examples/mods/companion-roles`](../../examples/mods/companion-roles): what each
+  kind of companion does at **any** boss. A Priest heals, walls, revives and cures.
+  Casters and Hunters keep their distance. Melee keeps SP back and runs the boss
+  round the healer when hurt. There are also general rules for every fight.
+- [`examples/mods/companion-tactics`](../../examples/mods/companion-tactics):
+  particular bosses. It has Phreeoni's phases, and two Monk builds and two Ninja
+  builds against the Stalactic Golem.
 
 By default only **recruited companions** use these rules. A plan marked
 `For: shells` or `For: all` is used by the regular AI characters around the world
@@ -23,10 +29,10 @@ Header:
   Version: 1
 
 Body:
-  - Mob: STALACTIC_GOLEM          # AegisName, id, or All; Mobs: [..] for several
+  - Mob: STALACTIC_GOLEM          # AegisName, id, Boss or All; Mobs: [..] for several
     Targeting: { Priority: 50 }   # optional
     Jobs:
-      - Job: Monk                 # Monk, High_Priest, JOB_NINJA, 15, or All
+      - Job: Monk                 # Monk (the family), [Wizard, Sage], JOB_NINJA, 15, or All
         Build: combo              # optional: one way to play the job
         Requires: { Skills: [MO_CHAINCOMBO], Lacks: [MO_EXTREMITYFIST] }
         Rotation: false           # optional: the normal skill rotation (see below)
@@ -44,10 +50,24 @@ A monster, a job and a build together make a **plan**. A companion uses every
 plan that matches what it is fighting:
 
 1. the monster it targets, then any **encounter** monster near it (below), then
-   `Mob: All`;
-2. its own job before its base class (rAthena's `get_base_job`), before `Job: All`;
+   `Mob: Boss` while a boss is near, then `Mob: All`;
+2. its own job, then its family, then its 1st class, then `Job: All`
+   ([Jobs and families](#jobs-and-families));
 3. within those, each `Build` whose `Requires` it meets, before the entry
    without a `Build`.
+
+### Jobs and families
+
+`Job: Priest` names the whole **family**: Priest, High Priest, Arch Bishop,
+Cardinal and Baby Priest. A Champion uses `Job: Monk`, and a Lord Knight uses
+`Job: Knight`. A plan for one job only names that job (`Job: High_Priest`); it
+comes before the family's plan. A 1st class names everything built on it:
+`Job: Acolyte` is Priests and Monks alike, so use it with care.
+
+A list is several families: `Job: [Wizard, Sage]`. A job this server's era lacks
+(a 4th class in pre-renewal) is passed over without a word, so one list serves
+both eras. A name that is no job at all is a warning. `Job` in a
+[selector](#choosing-who-selectors) works the same way.
 
 ### Encounters: boss fights
 
@@ -70,6 +90,44 @@ may be a slave; ask about the boss with a selector:
 [`examples/mods/companion-tactics`](../../examples/mods/companion-tactics) has a
 whole Phreeoni encounter.
 
+### Any boss: `Mob: Boss`
+
+`Mob: Boss` is a plan for every boss-class monster, MVPs and mini-bosses alike.
+It applies while one is within 14 cells: the one the companion fights if that is
+a boss, otherwise the nearest. It works like an encounter. Its strategy starts
+over with each new boss, and `encounter_ended` fires when that boss dies or
+teleports away. It is where a role's general boss behaviour goes. A particular
+boss's plan comes before it and adds that boss's mechanics:
+
+```yaml
+- Mob: Boss
+  Jobs:
+    - Job: Priest
+      Build: healer
+      Requires: { Role: [support, none] }   # the family's part, unless told otherwise
+      Rotation: false
+      Rules: [...]
+```
+
+`Requires: { Role: [support, none] }` is how a role follows the class by default
+and the party-chat Duty overrides it. A Priest given no Duty, or told `support`,
+heals. A Priest told `attacker` does not use this plan.
+
+`Encounter` and `Targeting` need a particular monster, not `Boss`.
+
+### Priorities between mods
+
+When a role mod and a boss mod both apply, their rules go into one list by
+`Priority`. The example mods keep to these bands, so a boss's mechanics come
+before a role's routine without either mod knowing the other's numbers:
+
+| Priority | For |
+|---|---|
+| 100 and up | survival and resurrection |
+| 80 – 99 | a boss's own mechanics |
+| 40 – 79 | the role's core: heals, position, buffs |
+| below 40 | filler, and `Hold` |
+
 ## Rules
 
 Every turn (every 100 ms while it fights) the companion goes down its rules,
@@ -81,7 +139,7 @@ A rule applies when all of the following hold:
 
 | Key | The rule applies only... |
 |---|---|
-| `Requires: { Skills, Lacks, Items, BaseLevel, Role }` | to a companion that has (and lacks) these. `Role` is the party role set in chat (`tank`, `support`, `attacker`, `none`). A `Cast` rule also requires the skill itself, so a rule for a skill the companion never learned does not exist for it. |
+| `Requires: { Skills, Lacks, Items, BaseLevel, Role }` | to a companion that has (and lacks) these. `Role` is the party role set in chat (`tank`, `support`, `attacker`, `none`), or a list of them for any of those. A `Cast` rule also requires the skill itself, so a rule for a skill the companion never learned does not exist for it. |
 | `On:` | within `Within` ms (default 3000) of an event, and once per event. See [Events](#events). |
 | `When:` | while a condition holds. The syntax is `population_skill_db.yml`'s: `enemy_hp_pct_lt30`, `self_spheres_ge1`, `not_enemy_aeterna`, `[a, b]` for AND, `{ OR: [a, b] }`. `ally_*` asks about the rule's own target and `master_*` about the owner. |
 | `Charges: { Status, Below \| AtLeast, Value }` | while a status's counter is in range. Cicada Skin Shed keeps its blocks left in its second value (the default), so `{ Status: SC_UTSUSEMI, Below: 2 }` is "1 or 0 left". No status counts as 0. |
@@ -129,11 +187,24 @@ its own rule (a `Cast: ALL_RESURRECTION` it knows): then the plan decides when,
 for instance only behind a Safety Wall.
 
 **The normal skill rotation is off under a plan about a monster.** A plan for
-`Mob: PHREEONI` (or its encounter) says what to cast, and the companion casts
-that and plain-attacks, nothing else from its class's rotation. `Mob: All` plans
-are general behaviour and leave the rotation on. Either default can be
-overridden with `Rotation: true` or `false` on the job entry. The built-in heals,
-buffs and resurrection are not part of the rotation and keep running.
+`Mob: PHREEONI` (or `Mob: Boss`) says what to cast, and the companion casts that
+and plain-attacks, nothing else from its class's rotation. `Mob: All` plans are
+general behaviour and leave the rotation on. The built-in heals, buffs and
+resurrection are not part of the rotation and keep running.
+
+`Rotation: true` or `false` on a job entry (or on a strategy, while it is
+active) overrides that default. With several plans applying, they are weighed
+together:
+
+1. any plan that says `false` wins;
+2. otherwise any plan that says `true`;
+3. otherwise the default: off if a monster or `Boss` plan applies, on if only
+   `Mob: All` plans do.
+
+So a boss plan that says nothing leaves it to the role plan. For example, the
+caster plan in companion-roles turns the rotation on with a `Ban` list. A boss
+plan that needs every cast counted (the Asura Monk) says `false`. `Ban` lists
+from every plan that applies add up.
 
 A caster under such a plan still takes ordinary turns whenever no rule acts, and
 an ordinary turn walks up to its target and hits it. End a caster's rules with
@@ -155,11 +226,11 @@ whose selector finds nobody does not apply.
 
 | Selector | Picks |
 |---|---|
-| `{ Enemy: attacking, Who, NotSelf, Prefer }` | a monster attacking `Who` (`party` by default; `owner`, `self`, `tank`, `support`, `attacker`, `any`). `NotSelf: true` leaves out the ones attacking the companion itself; `Prefer` puts those on one member first. |
-| `{ Enemy: target_of, Who }` | the monster `Who` is fighting (`owner` by default): assisting. |
+| `{ Enemy: attacking, Who, NotSelf, Prefer, Job }` | a monster attacking `Who` (`party` by default; `owner`, `self`, `tank`, `support`, `attacker`, `any`). `NotSelf: true` leaves out the ones attacking the companion itself; `Prefer` puts those on one member first; `Job` keeps to those attacking a member of that job (`Job: Priest`: whatever is on the healer, Duty or not). |
+| `{ Enemy: target_of, Who, Job }` | the monster `Who` is fighting (`owner` by default): assisting. |
 | `{ Enemy: nearest \| lowest_hp \| boss \| slaves \| casting \| hidden }` | the nearest, the most hurt, a boss, a summoned slave, one that is casting, one that is hidden (Hiding, Cloaking, a Hode's burrow). `Boss: true` on any Enemy selector or `Count` keeps to bosses. |
 | `{ Ally: dead }` | the nearest fallen party member. |
-| `{ Ally: lowest_hp \| nearest \| missing \| having \| attacked, Role, Job, Status, NotSelf }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, the nearest with it (Status Recovery on the petrified), or the one the monsters in sight are on (a boss counts three times); only those with that `Role` or `Job` (its own or base class). |
+| `{ Ally: lowest_hp \| nearest \| missing \| having \| attacked, Role, Job, Status, NotSelf }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, the nearest with it (Status Recovery on the petrified), or the one the monsters in sight are on (a boss counts three times); only those with that `Role` or `Job` (a [family](#jobs-and-families), or a list). |
 
 With an `Enemy` selector, `When`'s `enemy_*` tokens ask about the chosen monster,
 so `not_enemy_provoke` means "that one is not provoked yet". With an `Ally`
@@ -284,7 +355,7 @@ forth cannot hang it).
 | `On:` | Fires once when... | `event` is |
 |---|---|---|
 | `casts` `{ By, Skill, At }` | someone starts casting (that skill). `By`: `monster` (default), `party` (the companion included), `self`, `enemy`, `anyone`. `At`: who it is aimed at, `party` (default for monsters and enemies), `self`, `owner`, `anyone` (default otherwise). Ground spells count as aimed at whoever stands within 3 cells. A cast at the caster itself (a summon, Power Up, a heal) passes the default `At`. `monster_casts` is `casts` with `By: monster`. | who it is cast at; `source` is the caster; `MoveTo: event_cell` is where it lands |
-| `encounter_ended` `{ Mob, Reason }` | an encounter monster that was near is not any more. `Reason: died` (dead or removed), `vanished` (alive but teleported, out of sight or on another map), or `any`. Its own plan has stopped applying by then, so put the rule under `Mob: All`. | the monster |
+| `encounter_ended` `{ Mob, Reason }` | an encounter monster (or the boss a `Mob: Boss` plan was for) that was near is not any more. `Reason: died` (dead or removed), `vanished` (alive but teleported, out of sight or on another map), or `any`. Its own plan has stopped applying by then, so put the rule under `Mob: All`. | the monster |
 | `target_lost` `{ Reason }` | the companion's target is gone the same ways. Switching to another target does not count. | the monster |
 | `signal` `{ Name, From }` | another companion of the party sends `Signal: Name`. `From: anyone` also hears its own. | who sent it |
 | `party_chat` `{ Match, From }` | a party member's line contains `Match` (any case). `From: anyone` (default), `owner` or `leader`. | who said it |

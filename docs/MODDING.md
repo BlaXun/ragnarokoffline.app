@@ -501,8 +501,10 @@ in a directory nothing opens.
 `db/population_strategy.yml` gives them per-monster, per-job and per-build rules,
 with strategies they switch between.
 [docs/mods/companion-strategies.md](mods/companion-strategies.md) is its
-reference, and [`examples/mods/companion-tactics`](../examples/mods/companion-tactics)
-a working set.
+reference. [`examples/mods/companion-roles`](../examples/mods/companion-roles)
+is what each kind of companion does at any boss, and
+[`examples/mods/companion-tactics`](../examples/mods/companion-tactics) adds
+particular bosses on top.
 
 **[docs/mods/ai-characters.md](mods/ai-characters.md)** is the full reference:
 every key, how the headcount is divided between maps, which tables are still
