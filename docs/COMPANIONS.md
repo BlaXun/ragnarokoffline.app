@@ -96,6 +96,24 @@ its Population Engine profile, or `None` when no profile role exists.
 Combat modes and roles are independent: the mode decides *when* the group
 engages, while each role decides *how* that companion behaves once involved.
 
+## SP and resting
+
+Companions pay the SP their skills cost, as players do, and regenerate it the
+same way. Between fights, a companion low on SP or HP sits down to rest, which
+recovers it twice as fast, and stands once both are back. It gets up at once
+when it is needed: a monster to fight, a threat to the party, a hit on itself,
+or its owner moving on. A companion that can heal also stays on its feet while
+its owner is hurt.
+
+When it rests is set on the Companions window's **Battle** tab, under
+**Resting**, or with `@companion rest <below%> <until%>`: it sits below the
+first percentage of its SP or HP and stands once both reach the second. Every
+companion starts at 30% and 95%; 0 as the first means it never rests. Like the
+healer thresholds, the choice applies to all of your companions and is saved
+with each of them.
+
+Other fake players rest the same way, at a fixed 30% and 95%.
+
 ## Death and resurrection
 
 A defeated companion stays in the party as a corpse while its owner remains on
@@ -126,7 +144,7 @@ window with four tabs.
 | --- | --- |
 | Party | The saved companion list, with each one's job, level and state. Set duty, summon, bench, favorite, or refresh. |
 | Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th, as Male, Female or Random. When companions are hired (below), only your own tier's jobs, with the fee. |
-| Battle | Stance (Free / Standard / Hold), Taunt and Recall, and the healer thresholds. |
+| Battle | Stance (Free / Standard / Hold), Taunt and Recall, the healer thresholds, and when companions rest. |
 | Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it; when you take a piece back, it puts its own gear back on in that slot. Gear you gave that a new job cannot wear is handed back when it advances. |
 
 Each companion on the Party tab has a **Skills** button, which lists the skills

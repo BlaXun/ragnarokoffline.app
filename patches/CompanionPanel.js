@@ -713,6 +713,55 @@ function _drawBattle() {
 			talk(`@companion heal ${a} ${b}`, false);
 		})
 	));
+
+	// When companions sit down to rest between fights (whole party, like the
+	// healer thresholds). The server keeps "until" at least 5 above "below",
+	// or a companion would stand up and sit straight back down.
+	const h5 = document.createElement('h4');
+	h5.textContent = 'Resting';
+	page.append(h5);
+	const restHint = document.createElement('div');
+	restHint.className = 'hint';
+	restHint.textContent = 'Between fights, companions sit down to recover below this SP or HP level, '
+		+ 'and stand once both are back. 0 = never rest.';
+	page.append(restHint);
+
+	const restBelow = document.createElement('input');
+	restBelow.className = 'num';
+	restBelow.type = 'number';
+	restBelow.min = 0;
+	restBelow.max = 90;
+	restBelow.value = '30';
+	const restUntil = document.createElement('input');
+	restUntil.className = 'num';
+	restUntil.type = 'number';
+	restUntil.min = 5;
+	restUntil.max = 100;
+	restUntil.value = '95';
+
+	page.append(_row(
+		(() => {
+			const s = document.createElement('span');
+			s.className = 'nm';
+			s.textContent = 'Rest below';
+			return s;
+		})(),
+		restBelow,
+		(() => {
+			const s = document.createElement('span');
+			s.className = 'lv';
+			s.textContent = '% / until';
+			return s;
+		})(),
+		restUntil,
+		_button('Set', 'b', () => {
+			const a = Math.max(0, Math.min(90, Math.round(Number(restBelow.value)) || 0));
+			const b = Math.max(a + 5, Math.min(100, Math.round(Number(restUntil.value)) || 95));
+			restBelow.value = String(a);
+			restUntil.value = String(b);
+			talk(`@companion rest ${a} ${b}`, false);
+		})
+	));
 }
 
 /// Ask the server for one companion's skill menu. Answered through the chat hook

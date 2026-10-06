@@ -2150,12 +2150,24 @@ static uint32 pop_companion_combat_target(map_session_data *sd, map_session_data
 
 /// Keep a real-party shell close to the player who recruited it.
 /// Returns true when normal combat/support processing may run this tick.
+/// RAGNAROKMAC (rest): stand a shell up, the way a player's client does.
+static void pop_shell_stand(map_session_data *sd)
+{
+	sd->pop.resting = false;
+	if (pc_issit(sd) && pc_setstand(sd, false)) {
+		skill_sit(sd, false);
+		clif_standing(*sd);
+	}
+}
+
 static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *owner, t_tick now)
 {
 	if (!sd || !owner || pc_isdead(sd))
 		return false;
-	if (pc_issit(sd) && pc_setstand(sd, false))
-		clif_standing(*sd);
+	// A resting companion stays down while its owner stands still; pop_companion_rest decides
+	// when it gets up, and anything below that moves it stands it first.
+	if (pc_issit(sd) && !(sd->pop.resting && !unit_is_walking(owner)))
+		pop_shell_stand(sd);
 	if (sd->pop.companion_formation_active &&
 		(unit_is_walking(owner) || sd->pop.target_id != 0)) {
 		if (unit_is_walking(sd))
@@ -2164,6 +2176,7 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 	}
 
 	auto warp_near_owner = [&]() -> bool {
+		pop_shell_stand(sd);
 		sd->pop.companion_formation_active = false;
 		int16 x = owner->x;
 		int16 y = owner->y;
@@ -2247,6 +2260,7 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		return false;
 	}
 	if (owner_distance > leash) {
+		pop_shell_stand(sd);
 		population_shell_target_change(sd, 0);
 		unit_stop_attack(sd);
 		// RAGNAROKMAC: Intensive Aim (Night Watch) is a toggle that roots its user until it is cast
@@ -2263,6 +2277,64 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		unit_walktobl(sd, owner, 3, 0);
 		return false;
 	}
+	return true;
+}
+
+/// RAGNAROKMAC (rest): a shell low on SP or HP sits down between fights, as a player rests.
+/// Sitting halves the natural regen interval and lets sitting-regen skills work
+/// (status_natural_heal), and once shells pay for their skills (0029) one that ran dry
+/// otherwise stood about for minutes. It sits below the lower mark of either and gets up at
+/// the upper mark of both, or as soon as it is needed: a target, or a hit on itself; for a
+/// companion also a threat to the party, its owner moving off, or, for a healer, its owner
+/// hurt; for an ambient shell also a drop it means to pick up. An ambient shell's marks are
+/// fixed (POP_REST_*); a companion's are its owner's choice, from the Companions window.
+/// Returns true while it rests; the combat tick is skipped then.
+static constexpr int16_t POP_REST_BELOW_PCT = 30;
+static constexpr int16_t POP_REST_UNTIL_PCT = 95;
+
+static bool pop_shell_rest(map_session_data *sd, map_session_data *owner, uint32 target, t_tick now)
+{
+	const int below = owner != nullptr ? sd->pop.companion_rest_below : POP_REST_BELOW_PCT;
+	// Never stand up below the mark it sat down at, or it would sit straight back down.
+	const int until = std::max(below + 1, static_cast<int>(owner != nullptr ? sd->pop.companion_rest_until : POP_REST_UNTIL_PCT));
+	auto pct = [](uint32 cur, uint32 max) {
+		return max > 0 ? static_cast<int>(static_cast<uint64>(cur) * 100 / max) : 100;
+	};
+	const int sp = pct(sd->battle_status.sp, sd->battle_status.max_sp);
+	const int hp = pct(sd->battle_status.hp, sd->battle_status.max_hp);
+	bool needed = target != 0
+		|| (sd->pop.last_attacked_tick != 0 && DIFF_TICK(now, sd->pop.last_attacked_tick) <= 5000);
+	if (owner != nullptr)
+		needed = needed
+			|| pc_isdead(owner)
+			|| unit_is_walking(owner)
+			|| (pc_checkskill(sd, AL_HEAL) > 0
+				&& pct(owner->battle_status.hp, owner->battle_status.max_hp) < sd->pop.companion_heal_at)
+			|| pop_companion_party_threat(sd) != 0;
+	else
+		needed = needed || population_shell_loot_busy(sd);
+
+	if (sd->pop.resting) {
+		if (needed || !pc_issit(sd) || below <= 0 || (sp >= until && hp >= until)) {
+			pop_shell_stand(sd);
+			return false;
+		}
+		return true;
+	}
+	if (below <= 0 || needed || pc_issit(sd) || unit_is_walking(sd) || (sp >= below && hp >= below))
+		return false;
+	// The checks a player's sit request passes (clif_parse_ActionRequest_sub, DMG_SIT_DOWN).
+	if (sd->ud.skilltimer != INVALID_TIMER || (sd->sc.opt1 && sd->sc.opt1 != OPT1_STONEWAIT && sd->sc.opt1 != OPT1_BURNING)
+		|| sd->sc.getSCE(SC_DANCING)
+		|| (sd->sc.getSCE(SC_GRAVITATION) && sd->sc.getSCE(SC_GRAVITATION)->val3 == BCT_SELF)
+		|| (sd->state.block_action & PCBLOCK_SITSTAND))
+		return false;
+	unit_stop_attack(sd);
+	sd->pop.companion_formation_active = false;
+	pc_setsit(sd);
+	skill_sit(sd, true);
+	clif_sitting(*sd);
+	sd->pop.resting = true;
 	return true;
 }
 
@@ -3363,6 +3435,9 @@ static int32 pop_combat_tick_bot_in_range(block_list *bl, va_list ap)
 	// Dedupe across multiple real-PC viewers.
 	if (!ctx->ticked.insert(sd->id).second)
 		return 0;
+	// RAGNAROKMAC (rest): an ambient shell low on SP or HP sits between fights.
+	if (pop_shell_rest(sd, nullptr, static_cast<uint32>(sd->pop.target_id), gettick()))
+		return 1;
 	population_engine_combat_per_tick(sd, true);
 	return 1;
 }
@@ -3760,6 +3835,29 @@ int population_engine_companion_set_heal_thresholds(uint32_t owner_account, int1
 			continue;
 		sd->pop.companion_heal_at = heal_at;
 		sd->pop.companion_emergency_at = emergency_at;
+		population_engine_persist_companion_gear(sd);
+		++applied;
+	}
+	return applied;
+}
+
+/// RAGNAROKMAC (rest): when every summoned companion of `owner_account` rests: below
+/// `below` % of its SP or HP (0 = never) until both are back to `until` %. Persisted per
+/// row like the healer thresholds; returns how many live companions were updated, or -1
+/// for values out of range.
+int population_engine_companion_set_rest_thresholds(uint32_t owner_account, int16_t below, int16_t until)
+{
+	if (below < 0 || below > 90 || until < below + 5 || until > 100)
+		return -1;
+	int applied = 0;
+	const uint32_t owner_char = pop_online_char(owner_account);
+	for (map_session_data *sd : g_population_engine_pcs) {
+		if (!sd || !pop_is_companion(sd))
+			continue;
+		if (sd->pop.companion_owner_account != owner_account || sd->pop.companion_owner_char != owner_char)
+			continue;
+		sd->pop.companion_rest_below = below;
+		sd->pop.companion_rest_until = until;
 		population_engine_persist_companion_gear(sd);
 		++applied;
 	}
@@ -4808,6 +4906,8 @@ TIMER_FUNC(population_engine_global_combat_timer)
 				sd->ud.target_to != owner->id)
 				unit_stop_walking(sd, USW_FIXPOS);
 		}
+		if (pop_shell_rest(sd, owner, desired_target, now))
+			continue;
 		if (sd->state.population_combat)
 			population_engine_combat_per_tick(sd, true);
 		if (desired_target == 0)
@@ -6697,6 +6797,8 @@ static void population_engine_persist_companion_sql(
 		" duty=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), duty, 0),"
 		" heal_at=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), heal_at, 75),"
 		" emergency_at=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), emergency_at, 35),"
+		" rest_below=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), rest_below, 30),"
+		" rest_until=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), rest_until, 95),"
 		" given_mask=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), given_mask, 0),"
 		" gear_detail=IF(owner_account_id=VALUES(owner_account_id) AND owner_char_id IN (0, VALUES(owner_char_id)), gear_detail, NULL),"
 		" owner_account_id=VALUES(owner_account_id), owner_char_id=VALUES(owner_char_id),"
@@ -7233,6 +7335,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		" shadow_shoes_nameid=%u, shadow_acc_l_nameid=%u, shadow_acc_r_nameid=%u,"
 		" base_level=%d, job_level=%d, job_id=%d, str_=%d, agi_=%d, vit_=%d, intl_=%d,"
 		" dex_=%d, luk_=%d, pow_=%d, sta_=%d, wis_=%d, spl_=%d, con_=%d, crt_=%d,"
+		" rest_below=%d, rest_until=%d,"
 		" mode=%d, duty=%d, heal_at=%d, emergency_at=%d, given_mask=%u, gear_detail='%s'%s"
 		" WHERE owner_account_id=%u AND owner_char_id=%u AND shell_index=%u",
 		weapon, shield, head_top, head_mid, head_low,
@@ -7242,6 +7345,7 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		sd->status.base_level, sd->status.job_level, sd->status.class_, sd->status.str, sd->status.agi,
 		sd->status.vit, sd->status.int_, sd->status.dex, sd->status.luk,
 		sd->status.pow, sd->status.sta, sd->status.wis, sd->status.spl, sd->status.con, sd->status.crt,
+		(int)sd->pop.companion_rest_below, (int)sd->pop.companion_rest_until,
 		(int)sd->pop.companion_mode, (int)sd->pop.role,
 		(int)sd->pop.companion_heal_at, (int)sd->pop.companion_emergency_at,
 		pop_companion_given_worn(sd),
@@ -8286,7 +8390,7 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 		" costume_top_nameid, costume_mid_nameid, costume_low_nameid, costume_garment_nameid,"
 		" shadow_armor_nameid, shadow_weapon_nameid, shadow_shield_nameid,"
 		" shadow_shoes_nameid, shadow_acc_l_nameid, shadow_acc_r_nameid, skill_preset, given_mask,"
-		" gear_detail FROM `cp_companion_persistence` WHERE owner_account_id=%u AND owner_char_id=%u AND active=1%s",
+		" rest_below, rest_until, gear_detail FROM `cp_companion_persistence` WHERE owner_account_id=%u AND owner_char_id=%u AND active=1%s",
 		owner->status.account_id, owner->status.char_id, only_index != 0 ? " AND shell_index=" : "");
 	// The index is a number, so append it rather than parameterising the format.
 	if (only_index != 0) {
@@ -8380,6 +8484,9 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 		const char* skill_preset = (data != nullptr) ? presetbuf : nullptr;
 		data = next(); const uint32_t given_mask = data != nullptr ? static_cast<uint32_t>(strtoul(data, nullptr, 10)) : 0;
 		// v11: every worn piece in full; NULL for a row saved before it existed.
+		// v12: when it rests; -1 when the row has no such columns.
+		data = next(); const int rest_below_ = data != nullptr ? atoi(data) : -1;
+		data = next(); const int rest_until_ = data != nullptr ? atoi(data) : -1;
 		data = next(); const std::string gear_detail = data != nullptr ? data : "";
 		if (index_ == 0 || job_id == 0) continue;
 		// The column holds rAthena's e_sex, written from status.sex: 0 = SEX_FEMALE, 1 = SEX_MALE.
@@ -8394,12 +8501,17 @@ int population_engine_recall_companions(map_session_data *owner, uint32_t only_i
 			namebuf, c_top, c_mid, c_low, c_garment, sh_armor, sh_weapon, sh_shield, sh_shoes, sh_acc_l, sh_acc_r,
 			pow_, sta_, wis_, spl_, con_, crt_, mode_, duty_, heal_at_, emergency_at_,
 			skill_preset, gear_detail.empty() ? nullptr : gear_detail.c_str());
-		// Which of the re-equipped pieces the player gave: restored here rather than threaded
-		// through recall_one_companion, and narrowed to what the shell actually wears.
+		// Which of the re-equipped pieces the player gave, and when it rests: restored here rather
+		// than threaded through recall_one_companion, the gear narrowed to what the shell wears.
 		for (map_session_data *shell : g_population_engine_pcs) {
 			if (shell != nullptr && shell->status.char_id == POPULATION_ENGINE_CHAR_ID_BASE + index_) {
 				shell->pop.companion_given_mask = given_mask;
 				shell->pop.companion_given_mask = pop_companion_given_worn(shell);
+				// v12: when it rests. 0 is a real choice (never); -1 is a row without the columns.
+				if (rest_below_ >= 0 && rest_below_ <= 90 && rest_until_ >= rest_below_ + 5 && rest_until_ <= 100) {
+					shell->pop.companion_rest_below = static_cast<int16_t>(rest_below_);
+					shell->pop.companion_rest_until = static_cast<int16_t>(rest_until_);
+				}
 				break;
 			}
 		}
