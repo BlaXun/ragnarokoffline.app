@@ -2048,6 +2048,43 @@ fn write_map_layer(db: &Path, maps: &[mapcache::Map]) -> Result<(), String> {
     fs::write(&index, body).map_err(|e| format!("writing {}: {e}", index.display()))
 }
 
+/// The scripts a mod has the map server load, for the navigation table
+/// (navnpc.rs): the stock ones its `stock-npc.txt` names, and its own `.txt`
+/// files as `assemble` lays them down -- every root, a later root's file
+/// replacing an earlier one of the same path, and a `when/<setting>/` folder
+/// only while that setting is on.
+pub fn npc_sources(cfg: &Config, m: &Installed) -> Result<(Vec<String>, Vec<PathBuf>), String> {
+    fn walk(dir: &Path, rel: &str, top: bool, out: &mut BTreeMap<String, PathBuf>) {
+        let Ok(rd) = fs::read_dir(dir) else { return };
+        for e in rd.flatten() {
+            let name = e.file_name().to_string_lossy().into_owned();
+            let path = e.path();
+            if top && name == "when" && path.is_dir() {
+                continue;
+            }
+            let rel = if rel.is_empty() { name.clone() } else { format!("{rel}/{name}") };
+            if path.is_dir() {
+                walk(&path, &rel, false, out);
+            } else if name.ends_with(".txt") {
+                out.insert(rel, path);
+            }
+        }
+    }
+    let saved = read_settings(&cfg.state)?;
+    let settings = effective(&m.manifest, saved.get(&m.name));
+    let mut stock = Vec::new();
+    let mut files = BTreeMap::new();
+    for root in &m.roots {
+        read_stock_npc(root, &m.name, &mut stock);
+        let npc = root.join("npc");
+        walk(&npc, "", true, &mut files);
+        for (key, folder) in conditional_folders(&npc, &m.name, "npc", &settings) {
+            walk(&folder, &format!("when/{key}"), false, &mut files);
+        }
+    }
+    Ok((stock, files.into_values().collect()))
+}
+
 /// Scripts rAthena already ships that a mod asks to switch on.
 ///
 /// rAthena carries a job changer, a warper, a healer and a stylist in

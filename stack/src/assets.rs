@@ -408,6 +408,8 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
         &server_root.join("data"),
     )?;
     let (plugins, tables) = overlay_mods(cfg, &server_root, &merged)?;
+    // After the mods' own client files, so its table is the one served.
+    let navigation_npcs = crate::navnpc::stage(cfg, &server_root)?;
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
     // Bumped when how the tree is staged changes without its inputs changing
     // (v3: the signboard table's name; v4: the client's item table staged
@@ -422,6 +424,12 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
         fnv(&mut fingerprint, packetver.as_bytes());
     }
     fnv(&mut fingerprint, overlay_fingerprint(cfg).as_bytes());
+    // Built partly from mods' server scripts, which overlay_fingerprint leaves
+    // out because the client never sees them -- except through this table.
+    if let Some(table) = &navigation_npcs {
+        fnv(&mut fingerprint, crate::navnpc::MOD.as_bytes());
+        fnv(&mut fingerprint, table);
+    }
     hash_tree(&mut fingerprint, &translation, Path::new("translation"));
     hash_tree(
         &mut fingerprint,
@@ -1689,6 +1697,70 @@ mod tests {
         assert_eq!(read("only-over.txt"), "added");
 
         let _ = fs::remove_dir_all(&tmp);
+    }
+
+    /// With navigation-server-npcs on, the client's NPC table is replaced by
+    /// one built from the scripts the server loads: the era's stock scripts,
+    /// the stock ones a mod switches on, and a mod's own, behind its switches.
+    #[test]
+    fn server_npcs_replace_the_navigation_table_while_the_mod_is_on() {
+        let cfg = fixture_config("server-npcs");
+        let client = cfg.state.parent().unwrap().join("client");
+        write(&client.join("data.grf"), "archive");
+        let en = cfg.root.join("vendor/ROenglishRE/Translation");
+        write(&en.join("Renewal/data/table.txt"), "renewal table");
+        write(&en.join("Pre-Renewal/data/table.txt"), "pre-renewal table");
+        write(&en.join("Renewal/SystemEN/LuaFiles514/itemInfo.lua"), "English items");
+        write(&en.join("Renewal/SystemEN/OngoingQuests.lub"), "English quests");
+        write(&cfg.root.join("config/Config.local.js"), "window.ROConfigLocal = {\nrenewal: true,\n};\n");
+        write(&cfg.root.join("config/index.html"), "game entry");
+        let nav = cfg.state.join("mods").join(crate::navnpc::MOD);
+        write(&nav.join("mod.json"), r#"{"default": "off"}"#);
+        write(
+            &nav.join(crate::navnpc::INDEX),
+            "# stock\nsprite\t4_M_KAFRA\t112\nload\trenewal\tnpc/re.txt\nload\tprerenewal\tnpc/pre.txt\n\
+             file\tnpc/re.txt\nnpc\tprontera\t1\t2\t0\t112\tRenewal Kafra\n\
+             file\tnpc/pre.txt\nnpc\tprontera\t3\t4\t0\t112\tClassic Kafra\n\
+             file\tnpc/custom/healer.txt\nnpc\tizlude\t5\t6\t0\t112\tHealer\n",
+        );
+        let town = cfg.state.join("mods/town");
+        write(&town.join("mod.json"), r#"{"settings": [{"key": "night", "type": "boolean", "default": false}]}"#);
+        write(&town.join("stock-npc.txt"), "npc/custom/healer.txt\n");
+        write(&town.join("npc/guide.txt"), "izlude,7,8,0\tscript\tGuide\t4_M_KAFRA,{\n}\n");
+        write(&town.join("npc/when/night/owl.txt"), "izlude,9,9,0\tshop\tNight Owl\t4_M_KAFRA,501:-1\n");
+        crate::mods::enable(&cfg, "town").unwrap();
+        let args = vec![client.join("data.grf").to_str().unwrap().to_string()];
+        let table = || fs::read_to_string(cfg.state.join("assets").join(crate::navnpc::TABLE)).ok();
+        let id = || fs::read_to_string(cfg.state.join("assets/overlay.id")).unwrap();
+
+        link(&cfg, &args).unwrap();
+        assert_eq!(table(), None, "off: the client keeps its own table");
+        let off = id();
+
+        crate::mods::enable(&cfg, crate::navnpc::MOD).unwrap();
+        link(&cfg, &args).unwrap();
+        let on = table().unwrap();
+        for name in ["Renewal Kafra", "Healer", "Guide"] {
+            assert!(on.contains(&format!("\"{name}\"")), "{name} missing: {on}");
+        }
+        assert!(!on.contains("Classic Kafra") && !on.contains("Night Owl"), "{on}");
+        assert_ne!(id(), off, "switching the mod on must clear the cached table");
+        let first = id();
+
+        crate::mods::save_settings(&cfg, "town", r#"{"night": true}"#).unwrap();
+        link(&cfg, &args).unwrap();
+        assert!(table().unwrap().contains("\"izlude\", 4, 102, 112, \"Night Owl\""), "{:?}", table());
+        assert_ne!(id(), first, "a mod's script reaching the table must clear the cache");
+
+        write(&cfg.state.join("prerenewal"), "true");
+        link(&cfg, &args).unwrap();
+        let classic = table().unwrap();
+        assert!(classic.contains("Classic Kafra") && !classic.contains("Renewal Kafra"), "{classic}");
+
+        crate::mods::set_enabled(&cfg.state, crate::navnpc::MOD, false).unwrap();
+        link(&cfg, &args).unwrap();
+        assert_eq!(table(), None);
+        fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
     }
 
     /// The client caches by filename, and every skin replaces the same

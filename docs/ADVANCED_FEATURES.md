@@ -190,6 +190,18 @@ The chat command takes either a destination or a name:
 /navi Kafra
 ```
 
+### Finding this server's NPCs
+
+The NPC search reads your client's own table, which lists kRO's NPCs at kRO's
+positions. This server runs rAthena's scripts, so a few of those are not here or
+stand elsewhere, and NPCs that mods add are never listed.
+
+Turn on **Settings → Mods → navigation-server-npcs** to search the NPCs the
+server actually loads instead: the stock ones for your era and the ones every
+enabled mod adds, at the server's coordinates, under the names shown over their
+heads. NPCs only kRO has drop out of the search. Monsters, maps and routes still
+come from your client.
+
 ### When searches come back empty
 
 The tables behind the search are read from your own client archives, and they
