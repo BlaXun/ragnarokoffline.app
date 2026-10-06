@@ -2811,6 +2811,8 @@ pub fn list(cfg: &Config) -> Vec<[String; 14]> {
     let navigation = mods.iter().any(|m| m.name == crate::navnpc::MOD && matches!(m.status, Status::On));
     // And with navigation-server-monsters on, from their spawns and mob_db.
     let monsters = mods.iter().any(|m| m.name == crate::navmob::MOD && matches!(m.status, Status::On));
+    // And with navigation-server-warps on, from their warps.
+    let warps = mods.iter().any(|m| m.name == crate::navwarp::MOD && matches!(m.status, Status::On));
     mods.into_iter()
         .map(|m| {
             let (state, reason) = match &m.status {
@@ -2864,7 +2866,8 @@ pub fn list(cfg: &Config) -> Vec<[String; 14]> {
                 if m.has_client_layers()
                     || m.name == crate::navnpc::MOD
                     || m.name == crate::navmob::MOD
-                    || (navigation && m.has_npc_layers())
+                    || m.name == crate::navwarp::MOD
+                    || ((navigation || warps) && m.has_npc_layers())
                     || (monsters && (m.has_npc_layers() || m.has_db_table("mob_db.yml")))
                 {
                     "client"
@@ -4265,5 +4268,14 @@ mod tests {
         let mut on = client(&cfg);
         on.sort();
         assert_eq!(on, ["healers", crate::navmob::MOD, crate::navnpc::MOD, "tougher", "town"]);
+
+        // With only navigation-server-warps on, scripts count (they may hold
+        // portals) and a mob_db does not.
+        set_enabled(&cfg.state, crate::navmob::MOD, false).unwrap();
+        install(&cfg, crate::navwarp::MOD, r#"{"default": "off"}"#);
+        enable(&cfg, crate::navwarp::MOD).unwrap();
+        let mut on = client(&cfg);
+        on.sort();
+        assert_eq!(on, ["healers", crate::navmob::MOD, crate::navnpc::MOD, crate::navwarp::MOD, "town"]);
     }
 }

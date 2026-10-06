@@ -4,8 +4,8 @@
 #   scripts/navigation-index.sh
 #
 # mods/navigation-server-npcs/npc-index.tsv lists what the pinned rAthena's
-# scripts place, and mods/navigation-server-monsters/mob-index.tsv what they
-# spawn and its mob_db, read from the tree the server image is built from: the
+# scripts place, mods/navigation-server-monsters/mob-index.tsv what they spawn
+# and its mob_db, and mods/navigation-server-warps/warp-index.tsv their portals, read from the tree the server image is built from: the
 # pin with scripts/apply-server-mods.sh applied. Run it after moving the rathena
 # pin (vendor-bump.sh says so) or changing the server mods' scripts; CI's
 # server-language job fails while the index is stale.
@@ -23,3 +23,5 @@ STACK="$ROOT/stack/target/debug/ragnarok-stack"
 echo "wrote mods/navigation-server-npcs/npc-index.tsv"
 "$STACK" navigation-mob-index "$TMP/rathena" > "$ROOT/mods/navigation-server-monsters/mob-index.tsv"
 echo "wrote mods/navigation-server-monsters/mob-index.tsv"
+"$STACK" navigation-warp-index "$TMP/rathena" > "$ROOT/mods/navigation-server-warps/warp-index.tsv"
+echo "wrote mods/navigation-server-warps/warp-index.tsv"

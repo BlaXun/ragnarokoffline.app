@@ -20,8 +20,8 @@ const LOADER = [
 test('the loader is patched once, and refuses a loader it does not recognise', () => {
   const patched = patchLoader(LOADER);
   assert.ok(patched.startsWith(IMPLEMENTATION));
-  assert.match(patched, /if \(NAVIGATION_NAME_COLUMNS\[variable_name\]\) await navigationNamesTurn\(\);\n\t+await lua\.doFile\(file_path\);/);
-  assert.match(patched, /\$\{navigationNameSwap\(variable_name\)\}\n\t+extractValue\(to_json\(\$\{variable_name\}\)\)/);
+  assert.match(patched, /if \(NAVIGATION_NAME_COLUMNS\[variable_name\] \|\| variable_name === "Navi_Distance"\) await navigationNamesTurn\(\);\n\t+await lua\.doFile\(file_path\);/);
+  assert.match(patched, /\$\{navigationServerLinks\(variable_name\)\}\$\{navigationNameSwap\(variable_name\)\}\n\t+extractValue\(to_json\(\$\{variable_name\}\)\)/);
   assert.throws(() => patchLoader(LOADER.replace('await lua.doFile(file_path);', '')), /load call not found/);
   assert.throws(() => patchLoader(LOADER.replace('extractValue(', 'extract(')), /extraction not found/);
 });
@@ -42,7 +42,7 @@ test('the tables waiting on the dictionary run their Lua one at a time', async (
     }
   };
   const Client = { loadFile(file, ok) { setTimeout(() => ok(new ArrayBuffer(1)), 5); } };
-  const context = { Client, lua, setTimeout, console };
+  const context = { Client, lua, setTimeout, console, DB: { LUA_PATH: 'data/luafiles514/lua files/' } };
   vm.runInNewContext(IMPLEMENTATION + ';this.turn = navigationNamesTurn;', context);
   await Promise.all(['Navi_Map', 'Navi_Npc', 'Navi_Mob', 'Navi_Link'].map(async name => {
     await context.turn();
@@ -50,7 +50,46 @@ test('the tables waiting on the dictionary run their Lua one at a time', async (
     await lua.doFile(name);
   }));
   assert.equal(overlapped, false, 'two Lua chunks ran at once: ' + order.join(', '));
-  assert.deepEqual(order, ['SystemEN/Navi_Data.lub', 'Navi_Map', 'Navi_Npc', 'Navi_Mob', 'Navi_Link']);
+  assert.deepEqual(order, [
+    'SystemEN/Navi_Data.lub', 'data/luafiles514/lua files/navigation/navi_link_server.lub',
+    'Navi_Map', 'Navi_Npc', 'Navi_Mob', 'Navi_Link'
+  ]);
+});
+
+function serverLinks(variableName) {
+  const context = {};
+  vm.runInNewContext(IMPLEMENTATION + ';this.links = navigationServerLinks;', context);
+  return context.links(variableName);
+}
+
+// navigation-server-warps: the server's portals replace the GRF's, its other
+// links stay, and the GRF's distances, which name its portals, are set aside.
+// Without the server's table, nothing changes.
+test('the server\'s portals replace the GRF\'s, and only while there are some', t => {
+  const luaBin = ['lua5.1', 'lua'].find(bin => spawnSync(bin, ['-v'], { encoding: 'utf8' }).status === 0);
+  if (!luaBin) return t.skip('no Lua interpreter');
+  assert.equal(serverLinks('Navi_Map'), '');
+  const run = server => {
+    const script = [
+      server,
+      'Navi_Link = { { "prontera", 1, 200, 99999, "kRO gate", "", 1, 1, "prt_fild08", 2, 2 },',
+      '  { "alberta", 2, 204, 100, "Sailor", "", 3, 3, "izlude", 4, 4 } }',
+      'Navi_Distance = { "prontera", 1, { { 1, { "prt_fild08", 1, 10 } } } }',
+      serverLinks('Navi_Link'),
+      serverLinks('Navi_Distance'),
+      'for _, r in ipairs(Navi_Link) do io.write(r[5], "|", r[3], "\\n") end',
+      'io.write("distance ", #Navi_Distance, "\\n")'
+    ].join('\n');
+    const result = spawnSync(luaBin, ['-'], { input: script, encoding: 'latin1' });
+    assert.equal(result.status, 0, why(result));
+    return result.stdout.trim().split('\n');
+  };
+  assert.deepEqual(
+    run('Navi_Link_Server = { { "prontera", 1000000, 200, 99999, "prt001", "", 5, 5, "prt_fild08", 6, 6 } }'),
+    ['Sailor|204', 'prt001|200', 'distance 0']
+  );
+  assert.deepEqual(run(''), ['kRO gate|200', 'Sailor|204', 'distance 3'], 'no server table: the GRF\'s routes as they were');
+  assert.deepEqual(run('Navi_Link_Server = {}'), ['kRO gate|200', 'Sailor|204', 'distance 3'], 'an empty one changes nothing');
 });
 
 function swap(variableName) {

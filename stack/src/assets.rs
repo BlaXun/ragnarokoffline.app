@@ -411,6 +411,7 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     // After the mods' own client files, so its table is the one served.
     let navigation_npcs = crate::navnpc::stage(cfg, &server_root)?;
     let navigation_mobs = crate::navmob::stage(cfg, &server_root)?;
+    let navigation_warps = crate::navwarp::stage(cfg, &server_root)?;
     let mut fingerprint = 0xcbf2_9ce4_8422_2325;
     // Bumped when how the tree is staged changes without its inputs changing
     // (v3: the signboard table's name; v4: the client's item table staged
@@ -427,7 +428,11 @@ pub fn link(cfg: &Config, args: &[String]) -> Result<(), String> {
     fnv(&mut fingerprint, overlay_fingerprint(cfg).as_bytes());
     // Built partly from mods' server scripts, which overlay_fingerprint leaves
     // out because the client never sees them -- except through this table.
-    for (name, table) in [(crate::navnpc::MOD, &navigation_npcs), (crate::navmob::MOD, &navigation_mobs)] {
+    for (name, table) in [
+        (crate::navnpc::MOD, &navigation_npcs),
+        (crate::navmob::MOD, &navigation_mobs),
+        (crate::navwarp::MOD, &navigation_warps),
+    ] {
         if let Some(table) = table {
             fnv(&mut fingerprint, name.as_bytes());
             fnv(&mut fingerprint, table);
@@ -1829,6 +1834,66 @@ mod tests {
         assert!(table().unwrap().contains(&format!("{}, \"Classic Poring\"", 70 << 16 | 1002)), "{:?}", table());
 
         crate::mods::set_enabled(&cfg.state, crate::navmob::MOD, false).unwrap();
+        link(&cfg, &args).unwrap();
+        assert_eq!(table(), None);
+        fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();
+    }
+
+    /// With navigation-server-warps on, the client's navigation patch gets the
+    /// era's stock portals and every mod's, less those a mod switches off.
+    #[test]
+    fn server_warps_are_staged_while_the_mod_is_on() {
+        let cfg = fixture_config("server-warps");
+        let client = cfg.state.parent().unwrap().join("client");
+        write(&client.join("data.grf"), "archive");
+        let en = cfg.root.join("vendor/ROenglishRE/Translation");
+        write(&en.join("Renewal/data/table.txt"), "renewal table");
+        write(&en.join("Pre-Renewal/data/table.txt"), "pre-renewal table");
+        write(&en.join("Renewal/SystemEN/LuaFiles514/itemInfo.lua"), "English items");
+        write(&en.join("Renewal/SystemEN/OngoingQuests.lub"), "English quests");
+        write(&cfg.root.join("config/Config.local.js"), "window.ROConfigLocal = {\nrenewal: true,\n};\n");
+        write(&cfg.root.join("config/index.html"), "game entry");
+        let nav = cfg.state.join("mods").join(crate::navwarp::MOD);
+        write(&nav.join("mod.json"), r#"{"default": "off"}"#);
+        write(
+            &nav.join(crate::navwarp::INDEX),
+            "load\trenewal\tnpc/re.txt\nload\tprerenewal\tnpc/pre.txt\n\
+             file\tnpc/re.txt\nwarp\tprontera\t156\t22\tprt001\tprt_fild08\t170\t375\n\
+             warp\tprontera\t107\t215\tprt01\tprt_in\t240\t139\n\
+             file\tnpc/pre.txt\nwarp\tprontera\t156\t18\tprt001\tprt_fild08\t170\t370\n",
+        );
+        let isle = cfg.state.join("mods/isle");
+        write(&isle.join("mod.json"), "{}");
+        write(
+            &isle.join("npc/gate.txt"),
+            "-\tscript\tisle_gate\t-1,{\n\tend;\nOnInit:\n\tdisablenpc \"prt001\";\n\tend;\n}\n\
+             prontera,156,22,0\twarp\tisle_gate_warp\t3,2,my_isle,40,40\n",
+        );
+        crate::mods::enable(&cfg, "isle").unwrap();
+        let args = vec![client.join("data.grf").to_str().unwrap().to_string()];
+        let table = || fs::read_to_string(cfg.state.join("assets").join(crate::navwarp::TABLE)).ok();
+        let id = || fs::read_to_string(cfg.state.join("assets/overlay.id")).unwrap();
+
+        link(&cfg, &args).unwrap();
+        assert_eq!(table(), None, "off: the client keeps its own routes");
+        let off = id();
+
+        crate::mods::enable(&cfg, crate::navwarp::MOD).unwrap();
+        link(&cfg, &args).unwrap();
+        let on = table().unwrap();
+        assert!(on.contains("\"prt01\", \"\", 107, 215, \"prt_in\", 240, 139"), "{on}");
+        assert!(on.contains("\"isle_gate_warp\", \"\", 156, 22, \"my_isle\", 40, 40"), "{on}");
+        assert!(!on.contains("prt001"), "the gate the mod switched off: {on}");
+        assert_ne!(id(), off, "switching the mod on must clear the cached routes");
+
+        crate::mods::set_enabled(&cfg.state, "isle", false).unwrap();
+        write(&cfg.state.join("prerenewal"), "true");
+        link(&cfg, &args).unwrap();
+        let classic = table().unwrap();
+        assert!(classic.contains("\"prt001\", \"\", 156, 18, \"prt_fild08\", 170, 370"), "{classic}");
+        assert!(!classic.contains("prt01\"") && !classic.contains("my_isle"), "{classic}");
+
+        crate::mods::set_enabled(&cfg.state, crate::navwarp::MOD, false).unwrap();
         link(&cfg, &args).unwrap();
         assert_eq!(table(), None);
         fs::remove_dir_all(cfg.state.parent().unwrap()).unwrap();

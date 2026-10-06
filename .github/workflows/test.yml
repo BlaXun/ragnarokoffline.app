@@ -37,8 +37,8 @@ jobs:
       # renewal item database.
       - run: python3 third-party/population-engine/validate.py vendor/rathena
       # vendor/rathena is now the pin with the server mods applied, the tree the
-      # navigation-server-npcs and -monsters indexes describe (both tests match
-      # the name). The test skips without such a
+      # navigation-server-npcs, -monsters and -warps indexes describe (each
+      # one's test matches the name). The test skips without such a
       # checkout; here it must not, or a pin bump would leave the index stale
       # unnoticed. scripts/navigation-index.sh regenerates it.
       - uses: dtolnay/rust-toolchain@stable

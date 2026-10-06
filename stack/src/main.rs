@@ -33,6 +33,7 @@ mod mapcache;
 mod mods;
 mod navmob;
 mod navnpc;
+mod navwarp;
 mod process_identity;
 mod registration;
 mod hosting;
@@ -125,6 +126,17 @@ fn main() {
     if verb == "navigation-mob-index" {
         let result = args.get(1).ok_or_else(|| "a rAthena checkout is required".to_string())
             .and_then(|root| navmob::build_index(std::path::Path::new(root)));
+        match result {
+            Ok(index) => print!("{}", index.to_text()),
+            Err(error) => { eprintln!("{error}"); exit(1); }
+        }
+        return;
+    }
+
+    // And for navigation-server-warps (navwarp.rs).
+    if verb == "navigation-warp-index" {
+        let result = args.get(1).ok_or_else(|| "a rAthena checkout is required".to_string())
+            .and_then(|root| navwarp::build_index(std::path::Path::new(root)));
         match result {
             Ok(index) => print!("{}", index.to_text()),
             Err(error) => { eprintln!("{error}"); exit(1); }
