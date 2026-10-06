@@ -580,6 +580,18 @@ Body:
             Cast: AL_HEAL
             Target: { Enemy: attacking, Element: Undead }
             When: self_sp_ge120
+          # Blessing on an undead or demon monster halves its STR, INT and DEX (on anything
+          # else it would buff it, so the selector keeps to these). Bosses resist it.
+          - Name: bless_the_undead
+            Priority: 58
+            Cast: AL_BLESSING
+            Target: { Enemy: attacking, Race: Undead }
+            When: [not_enemy_blessing, not_enemy_is_boss, self_sp_ge120]
+          - Name: bless_the_undead_element
+            Priority: 58
+            Cast: AL_BLESSING
+            Target: { Enemy: attacking, Element: Undead }
+            When: [not_enemy_blessing, not_enemy_is_boss, self_sp_ge120]
           - Name: turn_undead
             Priority: 60
             Cast: PR_TURNUNDEAD
@@ -600,6 +612,13 @@ Body:
         Build: healer
         Requires: { Role: [support, none] }
         Rules:
+          # Blessing on an undead or demon monster halves its STR, INT and DEX (on anything
+          # else it would buff it, so the selector keeps to these). Bosses resist it.
+          - Name: bless_the_demons
+            Priority: 58
+            Cast: AL_BLESSING
+            Target: { Enemy: attacking, Race: Demon }
+            When: [not_enemy_blessing, not_enemy_is_boss, self_sp_ge120]
           - Name: sanctuary_the_demons
             Priority: 64
             Cast: PR_SANCTUARY

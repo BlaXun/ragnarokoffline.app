@@ -68,11 +68,13 @@ does not:
 - **Undead**, by race or by element. The healer, between the party's heals and
   its buffs:
   - Resurrection on an undead monster, which destroys it (not a boss);
+  - Blessing on it, which halves its STR, INT and DEX (not a boss);
   - Sanctuary on two or more, only where no living monster stands in it;
   - Magnus Exorcismus when three are together;
   - Heal and Turn Undead as attacks;
   - Aspersio (holy) on the melee's weapons.
-- **Demons**: Sanctuary on two or more, which hurts them too.
+- **Demons**: Blessing, which halves their stats too, and Sanctuary on two or
+  more, which hurts them.
 - **Ghost**: a plain weapon does little or nothing to it, so the healer puts
   Aspersio on the melee.
 
