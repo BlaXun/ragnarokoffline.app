@@ -3430,13 +3430,15 @@ static const PopJobAdvance kPopJobAdvanceTable[] = {
 	{ 20, 4021, 0, 99, 50 }, // Dancer -> Gypsy
 	// Rebirth ladder (player-triggered from the Rebirth tab): High Novice -> a high 1st job at
 	// base 40 (a uniform roll, handled as a special case above like Novice), then a high 1st job ->
-	// its trans class on the same 99/50 gate.
-	{ 4002, 4008, 4015, 99, 50 }, // High Swordman -> Lord Knight | Paladin
-	{ 4003, 4010, 4017, 99, 50 }, // High Mage     -> High Wizard | Scholar
-	{ 4004, 4012, 4020, 99, 50 }, // High Archer   -> Sniper | Minstrel (sex-adjusted)
-	{ 4005, 4009, 4016, 99, 50 }, // High Acolyte  -> High Priest | Champion
-	{ 4006, 4011, 4019, 99, 50 }, // High Merchant -> Mastersmith | Biochemist
-	{ 4007, 4013, 4018, 99, 50 }, // High Thief    -> Assassin Cross | Stalker
+	// its transcendent class on the SAME base-40 / job-0 gate as any other 1st -> 2nd step: these
+	// rows are not rebirths (pop_job_change_is_rebirth is false for them), so a reborn companion
+	// must not sit as a high 1st job from base 40 all the way to 99.
+	{ 4002, 4008, 4015, 40, 0 }, // High Swordman -> Lord Knight | Paladin
+	{ 4003, 4010, 4017, 40, 0 }, // High Mage     -> High Wizard | Scholar
+	{ 4004, 4012, 4020, 40, 0 }, // High Archer   -> Sniper | Minstrel (sex-adjusted)
+	{ 4005, 4009, 4016, 40, 0 }, // High Acolyte  -> High Priest | Champion
+	{ 4006, 4011, 4019, 40, 0 }, // High Merchant -> Mastersmith | Biochemist
+	{ 4007, 4013, 4018, 40, 0 }, // High Thief    -> Assassin Cross | Stalker
 	// trans -> 3rd (official: base 99 / job 70)
 	{ 4008, 4054, 0, 99, 70 }, { 4015, 4066, 0, 99, 70 },
 	{ 4010, 4055, 0, 99, 70 }, { 4017, 4067, 0, 99, 70 },
@@ -3589,14 +3591,20 @@ static bool pop_companion_apply_job_change(map_session_data *sd, uint16_t forced
 			sd->status.name, sd->status.class_, next);
 		return false;
 	}
-	// A rebirth proper resets the LEVEL as well: High Novice starts over at 1/1. Advancing straight
-	// to the transcendent class keeps the level, which is the whole point of that option.
+	// A rebirth proper resets the LEVEL as well: High Novice starts over at 1/1, and rAthena's own
+	// rebirth resets the build with it - npc/jobs/valkyrie.txt runs
+	// `jobchange Job_Novice_High; resetlvl(1);`, and pc_resetlvl(sd, 1) is that call: stats back
+	// to 1, the 100 status points, the platinum skills. Assigning the level by hand shipped a
+	// level-1 High Novice carrying its level-99 stats and skills. Granted skill flags survive
+	// pc_resetskill (it skips SKILL_FLAG_PERM_GRANTED), so the engine's own grants are untouched.
+	// Advancing straight to the transcendent class keeps the level and stats - that is the whole
+	// point of that option - and only the new job level starts over.
 	if (next == JOB_NOVICE_HIGH) {
-		sd->status.base_level = 1;
-		sd->status.base_exp = 0;
+		pc_resetlvl(sd, 1);
+	} else {
+		sd->status.job_level = 1;
+		sd->status.job_exp = 0;
 	}
-	sd->status.job_level = 1;
-	sd->status.job_exp = 0;
 	ShowInfo("Population engine: companion %s advanced from %s to %s (base %d/job %d).\n",
 		sd->status.name, old_name, job_name(next), sd->status.base_level, sd->status.job_level);
 	// Re-arm the skill preset for the new job. Clearing the cooldowns alone was NOT
