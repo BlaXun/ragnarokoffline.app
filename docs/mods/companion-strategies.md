@@ -29,7 +29,7 @@ Header:
   Version: 1
 
 Body:
-  - Mob: STALACTIC_GOLEM          # AegisName, id, Boss or All; Mobs: [..] for several
+  - Mob: STALACTIC_GOLEM          # AegisName, id, Boss, All or { Race, Element }; Mobs: [..] for several
     Targeting: { Priority: 50 }   # optional
     Jobs:
       - Job: Monk                 # Monk (the family), [Wizard, Sage], JOB_NINJA, 15, or All
@@ -50,7 +50,8 @@ A monster, a job and a build together make a **plan**. A companion uses every
 plan that matches what it is fighting:
 
 1. the monster it targets, then any **encounter** monster near it (below), then
-   `Mob: Boss` while a boss is near, then `Mob: All`;
+   that monster's [kind](#kinds-of-monster-mob--race-element-) (race and
+   element), then `Mob: Boss` while a boss is near, then `Mob: All`;
 2. its own job, then its family, then its 1st class, then `Job: All`
    ([Jobs and families](#jobs-and-families));
 3. within those, each `Build` whose `Requires` it meets, before the entry
@@ -115,6 +116,56 @@ heals. A Priest told `attacker` does not use this plan.
 
 `Encounter` and `Targeting` need a particular monster, not `Boss`.
 
+### Kinds of monster: `Mob: { Race, Element }`
+
+A plan can be for every monster of a race, an element, or both:
+
+```yaml
+- Mobs: [{ Race: Undead }, { Element: Undead }]   # either: Heal hurts both
+  Jobs: [...]
+- Mob: { Race: Demon, Element: Dark }             # both must hold
+  Jobs: [...]
+```
+
+Races and elements are rAthena's names, with or without the prefix: `Undead`,
+`DemiHuman`, `RC_BRUTE`; `Fire`, `Ghost`, `ELE_WATER`. The kind is read from the
+monster the companion fights. With no target, it is read from the nearest
+monster on the party, because a Priest seldom has a target of its own. The
+element is the monster's current one: a frozen monster counts as Water. A plan
+for race and element together comes before one for either alone.
+
+The rotation already picks spells by element: a Mage casts Cold Bolt at a fire
+monster and never casts a spell that would heal its target. A kind plan is for
+what the rotation does not do. Examples: Heal as an attack on the undead,
+Aspersio on the melee against Ghost monsters, Lex Aeterna first on demons.
+
+`Race` and `Element` also narrow an Enemy [selector](#choosing-who-selectors) or
+a `Count`. `Target: { Enemy: attacking, Race: Undead }` is the undead monster
+on the party, whatever kind of plan the rule is in.
+
+### Putting a broader rule aside: `Disable`
+
+A more specific plan can switch off rules of the broader ones, by `Name`, while
+it applies:
+
+```yaml
+- Mob: STALACTIC_GOLEM
+  Jobs:
+    - Job: Priest
+      Disable: [stay_back]        # the role's 5 cells; this plan has its own
+      Rules:
+        - Name: stay_back
+          Priority: 74
+          Target: { Enemy: boss, Range: 14 }
+          KeepDistance: 4
+```
+
+The plan's own rules of that name are not affected. A strategy can carry its own
+`Disable`, which counts while it is active. A name no rule has is a warning at
+load. Names are shared by every plan a companion uses, so give a role's rules
+names that say what they do (`stay_back`, `heal_attacked`), and disable them by
+those names.
+
 ### Priorities between mods
 
 When a role mod and a boss mod both apply, their rules go into one list by
@@ -156,7 +207,7 @@ And then does one thing:
 
 | Action | |
 |---|---|
-| `Cast:` skill, `Level:`, `Target:` | `enemy` (default), `self`, `owner`, `event` (who the event was about), `source` (the monster that caused it), `ally_lowest_hp`, `dead_ally`, or a [selector](#choosing-who-selectors). Ground skills land at the target's feet. Refused where the normal rotation would refuse it: SP, range, weapon, state. |
+| `Cast:` skill or `[list]`, `Level:`, `Target:` | `enemy` (default), `self`, `owner`, `event` (who the event was about), `source` (the monster that caused it), `ally_lowest_hp`, `dead_ally`, or a [selector](#choosing-who-selectors). Ground skills land at the target's feet. Refused where the normal rotation would refuse it: SP, range, weapon, state. A list casts the one the target is weakest to by rAthena's element table, among those the companion knows and has the SP for; ties go to list order, and one the target would resist entirely (or be healed by) is never cast. `Cast: [MG_COLDBOLT, MG_FIREBOLT, MG_LIGHTNINGBOLT]` is a bolt by element. |
 | `Consume: true` (with `Cast`) | Marks a cast that should pay its catalyst (a Flame Stone, a Blue Gemstone) as a player does. **Not paid yet:** companions have no inventory of their own, so for now the cast goes ahead as if the catalyst were paid, as the engine does for every companion. Once inventories exist, the same rule checks the inventory before casting and pays when the cast starts; tables written today need no change. |
 | `Retreat: away` / `owner`, `Distance:` | Steps that many cells away from the monster (or from an event's `source`), or walks back to the owner. |
 | `MoveTo: event` | Walks next to whoever the event is about: the companion that sent a `signal`, the member who spoke in party chat. Already beside them: the rule passes. |
@@ -186,10 +237,11 @@ a dead party member is revived first, unless the companion's plan revives with
 its own rule (a `Cast: ALL_RESURRECTION` it knows): then the plan decides when,
 for instance only behind a Safety Wall.
 
-**The normal skill rotation is off under a plan about a monster.** A plan for
-`Mob: PHREEONI` (or `Mob: Boss`) says what to cast, and the companion casts that
-and plain-attacks, nothing else from its class's rotation. `Mob: All` plans are
-general behaviour and leave the rotation on. The built-in heals, buffs and
+**The normal skill rotation is off under a plan about a particular monster.** A
+plan for `Mob: PHREEONI` says what to cast, and the companion casts that and
+plain-attacks, nothing else from its class's rotation. Broad plans (`All`,
+`Boss`, a kind of monster) describe general behaviour and leave the rotation as
+it is. The built-in heals, buffs and
 resurrection are not part of the rotation and keep running.
 
 `Rotation: true` or `false` on a job entry (or on a strategy, while it is
@@ -198,11 +250,12 @@ together:
 
 1. any plan that says `false` wins;
 2. otherwise any plan that says `true`;
-3. otherwise the default: off if a monster or `Boss` plan applies, on if only
-   `Mob: All` plans do.
+3. otherwise the default: off if a plan about a particular monster applies.
+   `All`, `Boss` and the kinds of monster have no opinion, so with only those
+   the rotation is on.
 
 So a boss plan that says nothing leaves it to the role plan. For example, the
-caster plan in companion-roles turns the rotation on with a `Ban` list. A boss
+melee plan in companion-roles turns the rotation on with a `Ban` list. A boss
 plan that needs every cast counted (the Asura Monk) says `false`. `Ban` lists
 from every plan that applies add up.
 
@@ -228,7 +281,7 @@ whose selector finds nobody does not apply.
 |---|---|
 | `{ Enemy: attacking, Who, NotSelf, Prefer, Job }` | a monster attacking `Who` (`party` by default; `owner`, `self`, `tank`, `support`, `attacker`, `any`). `NotSelf: true` leaves out the ones attacking the companion itself; `Prefer` puts those on one member first; `Job` keeps to those attacking a member of that job (`Job: Priest`: whatever is on the healer, Duty or not). |
 | `{ Enemy: target_of, Who, Job }` | the monster `Who` is fighting (`owner` by default): assisting. |
-| `{ Enemy: nearest \| lowest_hp \| boss \| slaves \| casting \| hidden }` | the nearest, the most hurt, a boss, a summoned slave, one that is casting, one that is hidden (Hiding, Cloaking, a Hode's burrow). `Boss: true` on any Enemy selector or `Count` keeps to bosses. |
+| `{ Enemy: nearest \| lowest_hp \| boss \| slaves \| casting \| hidden }` | the nearest, the most hurt, a boss, a summoned slave, one that is casting, one that is hidden (Hiding, Cloaking, a Hode's burrow). `Boss: true` on any Enemy selector or `Count` keeps to bosses; `Race` and `Element` to that race or element (the element it has now). |
 | `{ Ally: dead }` | the nearest fallen party member. |
 | `{ Ally: lowest_hp \| nearest \| missing \| having \| attacked, Role, Job, Status, NotSelf }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, the nearest with it (Status Recovery on the petrified), or the one the monsters in sight are on (a boss counts three times); only those with that `Role` or `Job` (a [family](#jobs-and-families), or a list). |
 
@@ -500,6 +553,17 @@ Learned in the Phreeoni playtests, each one from something that went wrong.
 normal skill rotation off, so the companion casts what the plan names and hits.
 A Wizard that "randomly cast Ice Wall" was its rotation; with the plan in charge,
 the Wizard needs its damage spell written down (Fire Bolt, the Meteors).
+
+**A caster needs named spells; a ban list is not enough.** Melee did well on its
+rotation minus a few skills. A Wizard did not. The rotation casts at the
+engine's target, which can be a monster nobody is fighting, and walks into range
+of it after every cast. It also takes whatever is ready: Thunder Storm at
+nothing, Meteor Storm at a single Sandman. Name the bolts as one `Cast: [..]`
+list (the engine picks by element), aim them with selectors at what is on the
+party, and keep area spells for a `Count` of three.
+
+**Hold still while being petrified.** A member who runs from a Wide Stone Curse
+drags the healer's Status Recovery after it. `When: self_stonewait` and `Hold`.
 
 **End a caster's rules with `Hold`, and then name its buffs.** With nothing to
 cast, an ordinary turn walks the companion up to its target and hits it: a

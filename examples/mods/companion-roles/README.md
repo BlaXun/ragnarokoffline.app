@@ -22,7 +22,7 @@ A companion's role comes from its **class family**. A party-chat Duty
 | Family | Role, with no Duty given | At a boss |
 |---|---|---|
 | Priest (High Priest, Arch Bishop, Cardinal) | healer | heals, walls, revives, cures, buffs; never melees |
-| Wizard, Sage | caster | its rotation, minus Ice Wall, Fire Wall and what a boss is immune to; 6 to 8 cells off the boss |
+| Wizard, Sage | caster | named spells only: a bolt by element at what is on itself, on the healer, the boss, then the rest of the party's attackers; an area spell only on three or more; 6 to 8 cells off the boss, steps away when hurt, stands between casts |
 | Hunter | ranged | its rotation; 4 to 8 cells off the boss |
 | Knight, Crusader, Assassin, Rogue, Blacksmith, Monk, Star Gladiator | melee | its rotation while SP lasts, then plain hits until SP is back; runs the boss round the healer when hurt |
 | anyone told `tank` | tank | holds the boss as its target |
@@ -49,13 +49,32 @@ SP is kept back for Resurrection. It stands out of the boss's melee, within
 Heal's reach of whoever is being hit. With nothing to cast it stands still, but
 only while a monster is near. Otherwise it follows its owner.
 
-**Everyone.** A hidden boss is revealed at once (Ruwach, Sight). When the healer
+**Everyone.** Anyone being petrified (Wide Stone Curse setting in) stands still
+for the healer's Status Recovery rather than run from it. A hidden boss is
+revealed at once (Ruwach, Sight). When the healer
 dies and no other is up, they fall back to their owner and fight nothing until
 a healer is back. A party that never had a Priest is not affected.
 
 **Melee** with a Priest nearby, below 30 % HP, runs the boss round the Priest:
 away from the boss, within Heal's reach, never onto the Priest. One of them
 takes whatever is hitting the Priest off it.
+
+## Kinds of monster (`Mob: { Race, Element }`)
+
+These follow the monster a companion fights, or, with none, the nearest one on
+the party. The rotation already picks spells by element, so these cover what it
+does not:
+
+- **Undead**, by race or by element. The healer, between the party's heals and
+  its buffs:
+  - Magnus Exorcismus when three are together;
+  - Heal and Turn Undead as attacks;
+  - Aspersio (holy) on the melee's weapons.
+- **Ghost**: a plain weapon does little or nothing to it, so the healer puts
+  Aspersio on the melee.
+
+Magnus and Aspersio are marked `Consume` (Blue Gemstone, Holy Water). Catalysts
+are not paid until companions have an inventory of their own.
 
 ## In every fight (`Mob: All`)
 
@@ -76,6 +95,8 @@ A boss plan in another mod (`Mob: PHREEONI`, `Encounter: true`) adds that boss's
 mechanics. Give its rules priorities between 80 and 99: they then come before a
 role's core (40 to 79) and after survival and resurrection (100 and up). A boss
 plan that leaves `Rotation` out lets the role decide; `Rotation: false` takes
-the rotation away for that boss.
+the rotation away for that boss. `Disable: [stay_back]` puts one of the role's
+rules aside while the boss plan applies. The Stalactic Golem's Priest uses that
+to stand 4 cells off instead of 5.
 
 Type `<companion name> trace` in party chat to see which rule it acts on and why.

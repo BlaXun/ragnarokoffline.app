@@ -161,6 +161,13 @@ Body:
             Absent: { Ally: nearest, Job: Priest }
             Say: "Our healer is down! Falling back to {owner}."
             OnePerParty: true
+          # Petrification setting in (Wide Stone Curse): stand still, so the healer can
+          # reach and cure it. Running drags the cure after it. The healer itself goes on.
+          - Name: wait_for_the_cure
+            Priority: 100
+            When: self_stonewait
+            Present: { Ally: nearest, Job: Priest, NotSelf: true }
+            Hold: true
         Strategies:
           - Name: fight
           - Name: fallback            # stay with the owner, fight nothing, until a healer is up
@@ -312,27 +319,61 @@ Body:
             Hold: true
 
       # --- Casters: Wizards and Sages -------------------------------------------
-      # Their rotation runs, minus what does nothing to a boss or gets in the party's
-      # way. They stand out of its reach and within their spells'.
+      # Named spells only. With the rotation on, a Wizard at Phreeoni took whatever the
+      # engine targeted (bystanders too), walked to it after every cast, and cast what was
+      # ready: Thunder Storm at nothing, Meteor Storm at a single Sandman. Now: a bolt
+      # chosen by element (Cast: [..] takes the one the target is weakest to) at what is
+      # on the party, an area spell only on a pack, and it stands between casts.
       - Job: [Wizard, Sage]
         Build: caster
         Requires: { Role: [attacker, none] }
-        Rotation: true
-        Ban:
-          - WZ_ICEWALL        # walls the party in as often as the boss out
-          - MG_FIREWALL       # a boss is not pushed back; some answer it (Phreeoni)
-          - MG_FROSTDIVER     # bosses cannot be frozen
-          - WZ_FROSTNOVA
-          - MG_STONECURSE     # nor petrified
+        Rotation: false
         Rules:
+          # Hurt, with something on it: step away and let the healer catch up.
+          - Name: step_away
+            Priority: 76
+            When: self_hp_pct_lt50
+            Target: { Enemy: attacking, Who: self, Range: 3 }
+            KeepDistance: 4
           - Name: stay_back
             Priority: 74
             Target: { Enemy: boss, Range: 14 }
             KeepDistance: { Min: 6, Max: 8 }
-          - Name: out_of_sp          # stand, rather than walk up and hit it with a rod
+          # Three or more together on the party: the area spell its element suits best.
+          - Name: aoe_the_pack
+            Priority: 45
+            Cast: [WZ_METEOR, WZ_STORMGUST, WZ_VERMILION, WZ_HEAVENDRIVE]
+            Target: { Enemy: attacking }
+            Count: { Enemy: attacking, Around: target, Range: 3, AtLeast: 3 }
+            When: self_sp_pct_ge30
+            Cooldown: 5000
+          # Bolts, in this order: what is on itself, what is on the healer, the boss, then
+          # anything else on the party -- never a monster nobody is fighting.
+          - Name: bolt_my_attacker
+            Priority: 43
+            Cast: [MG_COLDBOLT, MG_FIREBOLT, MG_LIGHTNINGBOLT, WZ_EARTHSPIKE, MG_SOULSTRIKE]
+            Target: { Enemy: attacking, Who: self }
+            When: self_sp_pct_ge15
+          - Name: bolt_the_healers_attacker
+            Priority: 42
+            Cast: [MG_COLDBOLT, MG_FIREBOLT, MG_LIGHTNINGBOLT, WZ_EARTHSPIKE, MG_SOULSTRIKE]
+            Target: { Enemy: attacking, Job: Priest }
+            When: self_sp_pct_ge15
+          - Name: bolt_the_boss
+            Priority: 41
+            Cast: [MG_COLDBOLT, MG_FIREBOLT, MG_LIGHTNINGBOLT, WZ_EARTHSPIKE, MG_SOULSTRIKE]
+            Target: { Enemy: boss }
+            When: self_sp_pct_ge15
+          - Name: bolt
+            Priority: 40
+            Cast: [MG_COLDBOLT, MG_FIREBOLT, MG_LIGHTNINGBOLT, WZ_EARTHSPIKE, MG_SOULSTRIKE]
+            Target: { Enemy: attacking }
+            When: self_sp_pct_ge15
+          # Nothing to cast: stand, rather than walk up and hit it with a rod. Only while
+          # something is on the party, so it still follows its owner otherwise.
+          - Name: no_melee
             Priority: 1
-            When: self_sp_pct_lt10
-            Present: { Enemy: nearest, Range: 14 }
+            Present: { Enemy: attacking, Range: 14 }
             Hold: true
 
       # --- Ranged: Hunters --------------------------------------------------------
@@ -402,3 +443,62 @@ Body:
             Priority: 70
             Target: { Enemy: boss }
             SetTarget: true
+
+  # --- Kinds of monster ----------------------------------------------------------
+  # Mob: { Race, Element } follows the monster a companion fights, or with none (a Priest
+  # seldom has a target) the nearest one on the party. The rotation already picks spells
+  # by element, so these are for what it does not cover.
+
+  # Undead, by race or by element: Heal hurts them, and holy is what they fear.
+  - Mobs: [{ Race: Undead }, { Element: Undead }]
+    Jobs:
+      - Job: Priest
+        Build: healer
+        Requires: { Role: [support, none] }
+        Rules:
+          # Below the party's heals (75-79), above buffs: Heal and Turn Undead as attacks,
+          # Magnus on a pack. SP is kept back for Resurrection and the party's heals.
+          - Name: magnus_the_pack
+            Priority: 62
+            Cast: PR_MAGNUS
+            Target: { Enemy: attacking, Race: Undead }
+            Count: { Enemy: attacking, Race: Undead, Around: target, Range: 3, AtLeast: 3 }
+            When: self_sp_ge150
+            Consume: true                  # a Blue Gemstone, once companions carry them
+            Cooldown: 6000
+          - Name: heal_the_undead
+            Priority: 61
+            Cast: AL_HEAL
+            Target: { Enemy: attacking, Race: Undead }
+            When: self_sp_ge120
+          - Name: heal_the_undead_element
+            Priority: 61
+            Cast: AL_HEAL
+            Target: { Enemy: attacking, Element: Undead }
+            When: self_sp_ge120
+          - Name: turn_undead
+            Priority: 60
+            Cast: PR_TURNUNDEAD
+            Target: { Enemy: attacking, Race: Undead }
+            When: self_sp_ge150
+          # Holy on the melee's weapons.
+          - Name: aspersio
+            Priority: 55
+            Cast: PR_ASPERSIO
+            Target: { Ally: missing, Status: SC_ASPERSIO, Job: [Knight, Crusader, Assassin, Rogue, Blacksmith, Monk, Star_Gladiator] }
+            When: self_sp_ge120
+            Consume: true                  # a Holy Water, once companions carry them
+
+  # Ghost: a plain weapon does little or nothing to it. Holy on the melee's weapons.
+  - Mob: { Element: Ghost }
+    Jobs:
+      - Job: Priest
+        Build: healer
+        Requires: { Role: [support, none] }
+        Rules:
+          - Name: aspersio
+            Priority: 55
+            Cast: PR_ASPERSIO
+            Target: { Ally: missing, Status: SC_ASPERSIO, Job: [Knight, Crusader, Assassin, Rogue, Blacksmith, Monk, Star_Gladiator] }
+            When: self_sp_ge120
+            Consume: true
