@@ -61,11 +61,16 @@ const SHOPS: &[&str] = &["shop", "cashshop", "itemshop", "pointshop", "marketsho
 /// constant the server does not know is left out too: rAthena draws those as
 /// INVISIBLE.
 pub fn parse_script(text: &[u8], sprites: &HashMap<String, i32>) -> Vec<Npc> {
+    script_lines(text).into_iter().filter_map(|line| parse_header(line, sprites)).collect()
+}
+
+/// A script's lines, less those a block comment starts in or covers: a
+/// header the map server would never see is not a header.
+pub(crate) fn script_lines(text: &[u8]) -> Vec<&[u8]> {
     let mut out = Vec::new();
     let mut in_comment = false;
     for raw in text.split(|b| *b == b'\n') {
         let line = raw.strip_suffix(b"\r").unwrap_or(raw);
-        // Block comments can comment out whole NPCs.
         let starts_in_comment = in_comment;
         let mut i = 0;
         while i + 1 < line.len() {
@@ -81,14 +86,17 @@ pub fn parse_script(text: &[u8], sprites: &HashMap<String, i32>) -> Vec<Npc> {
                 i += 1;
             }
         }
-        if starts_in_comment {
-            continue;
-        }
-        if let Some(npc) = parse_header(line, sprites) {
-            out.push(npc);
+        if !starts_in_comment {
+            out.push(line);
         }
     }
     out
+}
+
+/// An instance map (`1@tower`): a copy made per party, not a place to walk to.
+pub(crate) fn instance_map(map: &str) -> bool {
+    let mut chars = map.chars();
+    chars.next().is_some_and(|c| c.is_ascii_digit()) && chars.next() == Some('@')
 }
 
 fn parse_header(line: &[u8], sprites: &HashMap<String, i32>) -> Option<Npc> {
@@ -108,8 +116,7 @@ fn parse_header(line: &[u8], sprites: &HashMap<String, i32>) -> Option<Npc> {
     if !valid_map || map == "-" || at.next().is_some() {
         return None;
     }
-    let mut chars = map.chars();
-    if chars.next().is_some_and(|c| c.is_ascii_digit()) && chars.next() == Some('@') {
+    if instance_map(map) {
         return None;
     }
 
@@ -211,7 +218,7 @@ pub struct Index {
 /// Names are written byte for byte, with tab, newline, backslash and anything
 /// outside printable ASCII escaped as `\xNN`, so the index stays one line per
 /// NPC and plain text whatever a script's encoding.
-fn escape(bytes: &[u8]) -> String {
+pub(crate) fn escape(bytes: &[u8]) -> String {
     let mut s = String::new();
     for &b in bytes {
         if (0x20..0x7f).contains(&b) && b != b'\\' {
@@ -223,7 +230,7 @@ fn escape(bytes: &[u8]) -> String {
     s
 }
 
-fn unescape(s: &str) -> Vec<u8> {
+pub(crate) fn unescape(s: &str) -> Vec<u8> {
     let bytes = s.as_bytes();
     let mut out = Vec::new();
     let mut i = 0;
@@ -268,7 +275,7 @@ pub fn build_index(rathena: &Path) -> Result<Index, String> {
     Ok(index)
 }
 
-fn collect_txt(dir: &Path, rel: &str, out: &mut Vec<String>) {
+pub(crate) fn collect_txt(dir: &Path, rel: &str, out: &mut Vec<String>) {
     let Ok(rd) = fs::read_dir(dir) else { return };
     let mut entries: Vec<_> = rd.flatten().collect();
     entries.sort_by_key(|e| e.file_name());
