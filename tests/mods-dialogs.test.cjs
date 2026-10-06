@@ -26,10 +26,10 @@ test('release notes are shown as text, never as HTML', () => {
 
 // The page renders text the internet wrote; the decision to put a release's
 // code into the server is not the page's (installFromSource's own comment).
-test('an update from GitHub is still confirmed in a native box, without its notes', () => {
+test('an install or update from GitHub is confirmed in a native box, without release notes', () => {
 	const install = fn(main, 'installFromSource');
 	assert.match(install, /dialog\.showMessageBox/);
-	assert.match(install, /notes && !current \?/, 'an update leaves its notes to the Updates tab');
+	assert.doesNotMatch(install, /release\.notes|Release notes:/, 'notes are on the Updates tab and the release page, not in the box');
 	assert.doesNotMatch(fn(settings, 'askInWindow'), /installFromSource|install_registry_mod/);
 });
 

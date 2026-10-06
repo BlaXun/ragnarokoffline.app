@@ -1943,8 +1943,9 @@ function sourceOptions(extra = {}) {
 // whether somebody else's code goes into the server. That is also why this
 // stays a native box while Remove and the folder-or-archive question moved
 // into the settings window: a page that could be made to click its own
-// button could not click this one. An update's release notes are no longer
-// in it: the Updates tab shows them, whole, beside the button that led here.
+// button could not click this one. Release notes are not in it: the Updates
+// tab shows an update's, whole, beside the button that led here, and a first
+// install has its mod's page, with a link to the release.
 async function installFromSource(entry) {
 	const source = require('./mod-source');
 	const modsDir = path.join(stateDir(), 'mods');
@@ -1976,7 +1977,6 @@ async function installFromSource(entry) {
 			staged.contents.clientCode && 'code that runs in the game window (client/)',
 			staged.contents.commands && 'a change to which commands players can use (conf/)',
 		].filter(Boolean);
-		const notes = release.notes.trim();
 		const detail = [
 			`From github.com/${repo}, release ${release.tag}`,
 			`${asset.name}, ${Math.max(1, Math.round(bytes.length / 1024))} KB, sha256 ${sha256.slice(0, 16)}…`,
@@ -1986,8 +1986,6 @@ async function installFromSource(entry) {
 					? `this mod's author can change it without review, and this release ships ${ships.join(', ')}.`
 					: "this mod's author can change it without review."),
 			current || present ? 'Your settings for it and whether it is switched on are kept.' : '',
-			// An install has no Updates row to read them on, so it keeps them.
-			notes && !current ? `\nRelease notes:\n${notes.length > 700 ? notes.slice(0, 700) + '…' : notes}` : '',
 			`\n${release.url}`,
 		].filter(line => line !== '').join('\n');
 		const parent = BrowserWindow.getFocusedWindow() || windows.settings;
