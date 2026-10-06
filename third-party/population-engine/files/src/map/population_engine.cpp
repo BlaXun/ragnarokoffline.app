@@ -2360,6 +2360,12 @@ static void pop_shell_drink(map_session_data *sd, int hp_pct, int sp_pct, t_tick
 
 static bool pop_shell_rest(map_session_data *sd, map_session_data *owner, uint32 target, t_tick now)
 {
+	// Never a dead shell: pc_setsit writes state.dead_sit = 2 over the 1 that pc_isdead reads,
+	// so sitting one down stood it back up, alive at 0 HP.
+	if (pc_isdead(sd) || status_isdead(*sd)) {
+		sd->pop.resting = false;
+		return false;
+	}
 	const int below = owner != nullptr ? sd->pop.companion_rest_below : POP_REST_BELOW_PCT;
 	// Never stand up below the mark it sat down at, or it would sit straight back down.
 	const int until = std::max(below + 1, static_cast<int>(owner != nullptr ? sd->pop.companion_rest_until : POP_REST_UNTIL_PCT));
@@ -3510,8 +3516,9 @@ static int32 pop_combat_tick_bot_in_range(block_list *bl, va_list ap)
 	// Dedupe across multiple real-PC viewers.
 	if (!ctx->ticked.insert(sd->id).second)
 		return 0;
-	// RAGNAROKMAC (rest): an ambient shell low on SP or HP sits between fights.
-	if (pop_shell_rest(sd, nullptr, static_cast<uint32>(sd->pop.target_id), gettick()))
+	// RAGNAROKMAC (rest): an ambient shell low on SP or HP sits between fights. Companions
+	// come through here too, but rest in the companion loop, at their owner's marks.
+	if (!pop_is_companion(sd) && pop_shell_rest(sd, nullptr, static_cast<uint32>(sd->pop.target_id), gettick()))
 		return 1;
 	population_engine_combat_per_tick(sd, true);
 	return 1;
