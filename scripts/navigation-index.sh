@@ -5,10 +5,11 @@
 #
 # mods/navigation-server-npcs/npc-index.tsv lists what the pinned rAthena's
 # scripts place, mods/navigation-server-monsters/mob-index.tsv what they spawn
-# and its mob_db, and mods/navigation-server-warps/warp-index.tsv their portals, read from the tree the server image is built from: the
-# pin with scripts/apply-server-mods.sh applied. Run it after moving the rathena
-# pin (vendor-bump.sh says so) or changing the server mods' scripts; CI's
-# server-language job fails while the index is stale.
+# and its mob_db, and mods/navigation-server-warps/warp-index.tsv their portals,
+# read from the tree the server image is built from: the pin with
+# scripts/apply-server-mods.sh applied. vendor-bump.sh runs it when the rathena
+# pin moves; run it yourself after changing the server mods' scripts. CI's
+# server-language job fails while an index is stale.
 #
 # Works in a scratch checkout, so vendor/rathena is left as it is.
 set -euo pipefail
