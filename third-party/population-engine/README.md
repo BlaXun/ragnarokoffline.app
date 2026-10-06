@@ -292,7 +292,11 @@ recruits, arena shells and script-held shells do not take these trips.
 
 The queue, trigger and deferred-departure checks execute C++ without a game server:
 `python3 tests/diagnostics/verify-shell-returns.py` (requires a C++17 compiler;
-`CXX` can select it). CI runs them alongside the server diagnostics. For live acceptance,
+`CXX` can select it). CI runs them alongside the server diagnostics. The callback
+and unloading checks compile verbatim `DIAGNOSTIC-BEGIN` / `DIAGNOSTIC-END`
+regions with server-boundary stubs. Keep each marker pair around its whole
+function; the harness validates the markers without relying on C++ indentation
+or brace placement. For live acceptance,
 observe pickup, departure, the reserved headcount and the same
 appearance returning, including map abandonment and recruitment during looting.
 

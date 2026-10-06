@@ -4,6 +4,15 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import unittest
+
+from source_region import source_region
+from test_source_region import SourceRegionTests
+
+# Keep the source-boundary contract covered in the same CI entry point.
+result = unittest.TextTestRunner().run(unittest.defaultTestLoader.loadTestsFromTestCase(SourceRegionTests))
+if not result.wasSuccessful():
+    raise SystemExit(1)
 
 source = Path(__file__).resolve().parents[1] / 'population-shell-returns.cpp'
 repo = source.parent.parent
@@ -17,10 +26,8 @@ with tempfile.TemporaryDirectory(prefix='shell-returns-') as directory:
     # replaced. A whisper can claim the shell between scheduling and this call.
     runtime = repo / 'third-party/population-engine/files/src/map/population_engine/runtime/population_shell_selling.cpp'
     text = runtime.read_text()
-    start = text.index('static TIMER_FUNC(pop_shell_selling_timer)')
-    callback = text[start:text.index('\n}\n', start) + 3]
-    clear_start = text.index('void population_shell_returns_clear()')
-    clear = text[clear_start:text.index('\n}\n', clear_start) + 3]
+    callback = source_region(text, 'pop_shell_selling_timer', runtime)
+    clear = source_region(text, 'population_shell_returns_clear', runtime)
     check = Path(directory) / 'departure.cpp'
     check.write_text('''
 #include <cassert>
@@ -70,9 +77,8 @@ int main() {
     subprocess.run([str(binary)], check=True)
     print('deferred departure preserves pending recruits and ignores stale callbacks')
 
-    loot = (runtime.parent / 'population_shell_loot.cpp').read_text()
-    start = loot.index('bool population_shell_loot_try_unload(')
-    decision = loot[start:loot.index('\n}\n', start) + 3]
+    loot = runtime.parent / 'population_shell_loot.cpp'
+    decision = source_region(loot.read_text(), 'population_shell_loot_try_unload', loot)
     check.write_text('''
 #include <cassert>
 #include <cstdint>

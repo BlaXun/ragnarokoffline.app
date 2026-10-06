@@ -45,6 +45,7 @@ static PopulationShellReturn pop_shell_selling_snapshot(map_session_data *sd, in
 	return entry;
 }
 
+// DIAGNOSTIC-BEGIN: pop_shell_selling_timer
 static TIMER_FUNC(pop_shell_selling_timer)
 {
 	auto *sd = map_id2sd(id);
@@ -61,6 +62,7 @@ static TIMER_FUNC(pop_shell_selling_timer)
 	population_engine_shell_release(sd);
 	return 0;
 }
+// DIAGNOSTIC-END: pop_shell_selling_timer
 
 bool population_shell_selling_depart(map_session_data *sd, int64_t now)
 {
@@ -78,11 +80,13 @@ bool population_shell_selling_depart(map_session_data *sd, int64_t now)
 	return true;
 }
 
+// DIAGNOSTIC-BEGIN: population_shell_returns_clear
 void population_shell_returns_clear()
 {
 	++g_pop_shell_return_generation; // Also invalidate departures already waiting on the map timer.
 	g_pop_shell_returns.clear();
 }
+// DIAGNOSTIC-END: population_shell_returns_clear
 
 void population_shell_returns_prune(bool under_pressure)
 {

@@ -201,6 +201,7 @@ bool population_shell_loot_busy(const map_session_data *sd)
 	return sd != nullptr && (sd->pop.loot_selling_pending || !sd->pop.loot_queue.empty());
 }
 
+// DIAGNOSTIC-BEGIN: population_shell_loot_try_unload
 bool population_shell_loot_try_unload(map_session_data *sd, t_tick now)
 {
 	if (!sd || !battle_config.population_engine_loot_enable || !sd->pop.ambient_quota
@@ -219,6 +220,7 @@ bool population_shell_loot_try_unload(map_session_data *sd, t_tick now)
 
 	return false;
 }
+// DIAGNOSTIC-END: population_shell_loot_try_unload
 
 bool population_shell_loot_tick(map_session_data *sd, t_tick now)
 {
