@@ -42,3 +42,7 @@ grep -q "^${NAME}[[:space:]].*${WANT}" "$PINS" || { echo "failed to rewrite $PIN
 echo "$NAME: ${OLD:0:12} -> ${WANT:0:12}"
 REPO="${URL%.git}"
 case "$REPO" in https://github.com/*) echo "    review: $REPO/compare/$OLD...$WANT" ;; esac
+# The navigation mods index the pinned rAthena's scripts; CI fails while the
+# index describes the old pin.
+[ "$NAME" = rathena ] && echo "    then: scripts/navigation-index.sh, and commit the index with the pin"
+exit 0
