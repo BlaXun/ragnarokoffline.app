@@ -46,7 +46,7 @@ test('ambient shells rest at fixed marks; a companion at its own', () => {
 	assert.match(state, /int16_t\s+companion_rest_below\s*=\s*30;/, 'a companion starts where ambient shells are');
 	assert.match(state, /int16_t\s+companion_rest_until\s*=\s*95;/);
 	const ambient = body('static int32 pop_combat_tick_bot_in_range(');
-	assert.match(ambient, /if \(pop_shell_rest\(sd, nullptr, static_cast<uint32>\(sd->pop\.target_id\), gettick\(\)\)\)\s*return 1;\s*population_engine_combat_per_tick\(sd, true\);/,
+	assert.match(ambient, /if \(!pop_is_companion\(sd\) && pop_shell_rest\(sd, nullptr, static_cast<uint32>\(sd->pop\.target_id\), gettick\(\)\)\)\s*return 1;\s*population_engine_combat_per_tick\(sd, true\);/,
 		'an ambient shell rests before its combat tick and skips it while it does');
 });
 
@@ -125,4 +125,14 @@ test('the Battle tab opens on the saved thresholds, not its defaults', () => {
 	assert.match(panel, /restUntil\.value = String\(saved\.restUntil\);/);
 	assert.match(panel, /normal\.value = String\(saved\.healAt\);/);
 	assert.match(panel, /emergency\.value = String\(saved\.emergencyAt\);/);
+});
+
+test('a dead shell is never sat down, and companions rest only at their own marks', () => {
+	// pc_setsit writes state.dead_sit = 2 over the 1 pc_isdead reads: the ambient combat tick, which
+	// also runs for companions and does not skip the dead, sat a companion down as it died, and it
+	// stood back up alive at 0 HP.
+	const rest = body('static bool pop_shell_rest(');
+	const guard = rest.indexOf('if (pc_isdead(sd) || status_isdead(*sd)) {');
+	assert.ok(guard > 0 && guard < rest.indexOf('pc_setsit(sd);'), 'checked before anything sits it down');
+	assert.match(src, /if \(!pop_is_companion\(sd\) && pop_shell_rest\(sd, nullptr, /);
 });
