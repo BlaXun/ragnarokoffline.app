@@ -432,7 +432,7 @@ Upstream's shells never spent SP, for two reasons:
   default, which the app keeps.
 - The immortality guard 0001 puts in `status_damage` refused everything
   positive for a shell without the `mortal` flag, and a skill's cost arrives
-  there through `status_zap`. `patches/0029-shells-pay-skill-costs.patch`
+  there through `status_zap`. `patches/0031-shells-pay-skill-costs.patch`
   narrows it: an immortal shell still refuses whatever someone else does to it,
   but its own sourceless SP and AP costs (skills, and the upkeep `status_charge`
   takes for maintained statuses) go through. Sourceless HP loss is still dropped,

@@ -1,6 +1,6 @@
 // windows-latest checks text files out with CRLF; normalise on read so assertions about file
 // content do not depend on the checkout's newline convention.
-// Guards for resting: once shells pay for their skills (patch 0029), one that ran dry stood
+// Guards for resting: once shells pay for their skills (patch 0031), one that ran dry stood
 // about until natural regen refilled it. Shells now sit between fights, as a player rests,
 // and get up the moment they are needed. Ambient shells rest at fixed marks; a companion's
 // marks are its owner's choice, from the Companions window, saved with the companion.
@@ -18,7 +18,7 @@ const hpp = read(...MAP, 'population_engine.hpp');
 const state = read(...MAP, 'population_engine', 'core', 'population_shell_state.hpp');
 const schema = read('third-party', 'population-engine', 'files', 'sql-files', 'population_engine', 'cp_companion_persistence.sql');
 const cmds = read('stack', 'src', 'cmds.rs');
-const patch = read('third-party', 'population-engine', 'patches', '0030-companion-rest-command.patch');
+const patch = read('third-party', 'population-engine', 'patches', '0032-companion-rest-command.patch');
 const panel = read('patches', 'CompanionPanel.js');
 
 function body(signature) {
