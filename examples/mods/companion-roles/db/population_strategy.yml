@@ -409,6 +409,8 @@ Body:
       # The rotation runs while SP lasts, then plain hits until it is back, so there is
       # SP for the skill that matters later. Low on HP with the boss on it: run it round
       # the healer -- away from the boss, within Heal's reach, never onto the healer.
+      # A family with named skills of its own (the Assassins, below) turns the rotation
+      # off for itself; the rest of this plan (kiting, the boss, the healer) still applies.
       - Job: [Knight, Crusader, Assassin, Rogue, Blacksmith, Monk, Star_Gladiator]
         Build: melee
         Requires: { Role: [attacker, none] }
@@ -460,6 +462,40 @@ Body:
               - Name: sp_back
                 When: self_sp_pct_ge60
                 Switch: fight
+
+      # --- Melee, Assassins (Assassin Cross, Guillotine Cross, Shadow Cross) -------
+      # Named skills only: on its rotation an Assassin Cross cast whatever was ready
+      # (Envenom, Soul Destroyer, Meteor Assault at a single target). Poison on the
+      # weapon, the strong single hit at the boss, the area hit only on a pack.
+      - Job: Assassin
+        Build: assassin
+        Requires: { Role: [attacker, none] }
+        Rotation: false
+        Rules:
+          - Name: enchant_deadly_poison
+            Priority: 50
+            When: [not_self_edp, self_sp_pct_ge40]
+            Enemy: { Boss: true }
+            Cast: ASC_EDP                  # pre-renewal also wants a Poison Bottle: not paid yet
+            Target: self
+          - Name: enchant_poison
+            Priority: 49
+            When: [not_self_encpoison, not_self_edp]
+            Cast: AS_ENCHANTPOISON
+            Target: self
+          # Three or more around it: Meteor Assault hits all of them.
+          - Name: meteor_assault_the_pack
+            Priority: 45
+            Cast: ASC_METEORASSAULT
+            Target: self
+            Count: { Enemy: attacking, Range: 2, AtLeast: 3 }
+            When: self_sp_pct_ge40
+          # At the boss: Soul Destroyer when the SP is there, else Sonic Blow.
+          - Name: burst_the_boss
+            Priority: 42
+            Enemy: { Boss: true }
+            Cast: [ASC_BREAKER, AS_SONICBLOW]
+            When: self_sp_pct_ge30
 
       # --- Tank: whoever is told "tank" ---------------------------------------------
       # Provoke does not work on a boss; it holds the boss itself while the others
