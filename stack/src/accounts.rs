@@ -672,7 +672,7 @@ mod tests {
         let request = json::parse(r#"{"password":"hunter2-secret"}"#).unwrap();
         let sql = statement("agent", &request).unwrap();
         assert!(!sql.contains("hunter2-secret") && !sql.contains(&hex("hunter2-secret")[2..]), "{sql}");
-        assert!(sql.contains(&hex("$pbkdf2-sha256$200000$")[2..]), "{sql}");
+        assert!(sql.contains(&hex(&format!("$pbkdf2-sha256${}$", crate::password::ITERATIONS))[2..]), "{sql}");
         assert!(sql.contains(&format!("WHERE BINARY userid={} AND group_id={AGENT_GROUP}", hex(AGENT_ACCOUNT))), "{sql}");
         assert!(sql.contains("WHERE NOT EXISTS (SELECT 1 FROM login AS existing WHERE userid="), "{sql}");
         assert!(sql.contains(&format!("'M','a@a.com',{AGENT_GROUP},'{DEFAULT_BIRTHDATE}'")));
@@ -693,7 +693,7 @@ mod tests {
     #[test]
     fn every_password_this_app_writes_is_already_hashed() {
         let secret = "a-test-only-secret";
-        let hashed = &hex("$pbkdf2-sha256$200000$")[2..];
+        let hashed = &hex(&format!("$pbkdf2-sha256${}$", crate::password::ITERATIONS))[2..];
         let cases = [
             ("create", format!(r#"{{"username":"friend-1","password":"{secret}","confirmation":"{secret}"}}"#), 0),
             ("invite-create", format!(r#"{{"username":"friend-1","password":"{secret}","confirmation":"{secret}"}}"#), 0),
