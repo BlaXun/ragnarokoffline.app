@@ -9,7 +9,9 @@
 # a tag still says exactly what was built. This script is the one place a
 # branch is resolved, and it only ever writes a commit.
 #
-# It does not build anything. Bump in its own commit, having built it.
+# It does not build the new pin. Bump in its own commit, having built it. A
+# rathena bump also regenerates the navigation index (navigation-index.sh),
+# which describes the pinned server's scripts; commit it with the pin.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -42,7 +44,14 @@ grep -q "^${NAME}[[:space:]].*${WANT}" "$PINS" || { echo "failed to rewrite $PIN
 echo "$NAME: ${OLD:0:12} -> ${WANT:0:12}"
 REPO="${URL%.git}"
 case "$REPO" in https://github.com/*) echo "    review: $REPO/compare/$OLD...$WANT" ;; esac
-# The navigation mods index the pinned rAthena's scripts; CI fails while the
-# index describes the old pin.
-[ "$NAME" = rathena ] && echo "    then: scripts/navigation-index.sh, and commit the index with the pin"
-exit 0
+# The navigation mods index the pinned rAthena's scripts, and CI fails while
+# the index describes the old pin.
+if [ "$NAME" = rathena ]; then
+    INDEX=mods/navigation-server-npcs/npc-index.tsv
+    bash "$ROOT/scripts/navigation-index.sh" >/dev/null
+    if git -C "$ROOT" diff --quiet -- "$INDEX"; then
+        echo "    $INDEX: unchanged"
+    else
+        echo "    $INDEX: regenerated, commit it with the pin"
+    fi
+fi
