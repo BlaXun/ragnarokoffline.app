@@ -93,6 +93,8 @@ struct Selector {
 	std::vector<int32> jobs;     ///< Ally: only these jobs (each with its family and base class)
 	int16 status = -1;           ///< Ally missing: lacking this status
 	int16 range = 0;             ///< 0 = the cast's range, or AREA_SIZE without a cast
+	int8 race = -1;              ///< Enemy: only monsters of this race (RC_*)
+	int8 element = -1;           ///< Enemy: only monsters of this element (ELE_*), as they are now
 };
 
 struct Rule {
@@ -188,6 +190,7 @@ struct Strategy {
 	std::vector<RulePtr> rules;
 	std::vector<uint16> ban;     ///< added to the plan's Ban while this strategy is active
 	int8 rotation = -1;          ///< -1: the plan's Rotation; 0/1: overrides it while active
+	std::vector<std::string> disable; ///< added to the plan's Disable while this strategy is active
 };
 
 /// Who a plan is for: recruited companions (the default), the regular shells around the
@@ -202,9 +205,13 @@ struct Plan {
 	std::map<std::string, Strategy> strategies;
 	std::string start;
 	std::vector<uint16> ban;
-	/// The normal skill rotation: -1 = the default, which is off for a plan about a monster (the
-	/// plan says what to cast) and on for a Mob: All plan (general behaviour); 0/1 = set.
+	/// The normal skill rotation: -1 = the default, which is off for a plan about a particular
+	/// monster (the plan says what to cast) and no opinion for a broad one (All, Boss, a race or
+	/// an element); 0/1 = set.
 	int8 rotation = -1;
+	/// Rules of the other plans that apply, by Name, that do not run while this plan applies:
+	/// a boss's plan putting a role's rule aside.
+	std::vector<std::string> disable;
 };
 
 
@@ -226,7 +233,39 @@ constexpr uint32 kAllMobs = 0;
 /// Mob: Boss, every boss-class monster: the plan applies while one is near (the nearest).
 constexpr uint32 kBossMobs = UINT32_MAX;
 constexpr int32 kAllJobs = -1;
-/// (mob id, kBossMobs or kAllMobs; job id or kAllJobs; build name or "" for every build)
+/// Mob: { Race, Element }: a kind of monster, read from the one the companion fights. A field
+/// left out matches any. Kept clear of monster ids by the top bit.
+constexpr uint32 kCategory = 0x80000000u;
+static uint32 category_key(int32 race, int32 element)
+{
+	return kCategory | (static_cast<uint32>(race + 1) << 8) | static_cast<uint32>(element + 1);
+}
+static bool is_category(uint32 mob)
+{
+	return mob != kBossMobs && (mob & kCategory) != 0;
+}
+/// "PHREEONI", "Boss", "All" or "Race 1, Element any": a plan's monster, for warnings.
+static std::string mob_label(uint32 mob)
+{
+	if (mob == kAllMobs)
+		return "All";
+	if (mob == kBossMobs)
+		return "Boss";
+	if (mob & kCategory) {
+		const int32 race = static_cast<int32>((mob >> 8) & 0xff) - 1, element = static_cast<int32>(mob & 0xff) - 1;
+		return "Race " + (race < 0 ? std::string("any") : std::to_string(race)) + ", Element "
+			+ (element < 0 ? std::string("any") : std::to_string(element));
+	}
+	const std::shared_ptr<s_mob_db> db = mob_db.find(mob);
+	return db != nullptr ? db->sprite : std::to_string(mob);
+}
+
+/// A plan about one particular monster, rather than a broad one (All, Boss, a race or element).
+static bool is_particular(uint32 mob)
+{
+	return mob != kAllMobs && mob != kBossMobs && !is_category(mob);
+}
+/// (mob id, a category, kBossMobs or kAllMobs; job id or kAllJobs; build name or "" for every build)
 using PlanKey = std::tuple<uint32, int32, std::string>;
 
 // ---------------------------------------------------------------------------
@@ -338,6 +377,24 @@ static bool job_matches(const map_session_data *sd, int32 job)
 	return c == job || job_family(c, sd->status.sex) == job || population_engine_job_base_class(c) == job;
 }
 
+/// "Undead", "DemiHuman" or "RC_UNDEAD". -2 when it names no race.
+static int32 race_of(const std::string &name)
+{
+	int64 value = 0;
+	if (!script_get_constant(upper("RC_" + name).c_str(), &value) && !script_get_constant(upper(name).c_str(), &value))
+		return -2;
+	return value >= RC_FORMLESS && value < RC_ALL ? static_cast<int32>(value) : -2;
+}
+
+/// "Fire", "Ghost" or "ELE_FIRE". -2 when it names no element.
+static int32 element_of(const std::string &name)
+{
+	int64 value = 0;
+	if (!script_get_constant(upper("ELE_" + name).c_str(), &value) && !script_get_constant(upper(name).c_str(), &value))
+		return -2;
+	return value >= ELE_NEUTRAL && value < ELE_ALL ? static_cast<int32>(value) : -2;
+}
+
 static int16 slot_of(const std::string &name)
 {
 	static const std::map<std::string, int16> slots = {
@@ -402,6 +459,7 @@ public:
 	bool for_shells = false;     ///< some plan is For: shells or all, so regular shells take turns
 	bool revives = false;        ///< some rule casts Resurrection (or Death Valley) itself
 	bool boss_plans = false;     ///< some plan is Mob: Boss, so turns look for a boss nearby
+	bool category_plans = false; ///< some plan is Mob: { Race, Element }
 
 	StrategyDatabase() : YamlDatabase("POPULATION_STRATEGY_DB", 1) {}
 
@@ -416,6 +474,7 @@ public:
 		this->for_shells = false;
 		this->revives = false;
 		this->boss_plans = false;
+		this->category_plans = false;
 	}
 
 	const std::string getDefaultLocation() override
@@ -660,7 +719,8 @@ bool StrategyDatabase::parse_requires(const ryml::NodeRef &node, Requirements &r
 /// On an Enemy: attacking or target_of selector, Job is the member's: "what is hitting a Priest".
 bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 {
-	this->warn_unknown_keys(node, { "Enemy", "Ally", "Who", "NotSelf", "Prefer", "Role", "Job", "Status", "Range", "Boss" }, "Target");
+	this->warn_unknown_keys(node, { "Enemy", "Ally", "Who", "NotSelf", "Prefer", "Role", "Job", "Status", "Range", "Boss",
+		"Race", "Element" }, "Target");
 	std::string pick;
 	if (this->nodeExists(node, "Enemy")) {
 		static const std::map<std::string, Selector::Pick> picks = {
@@ -745,6 +805,21 @@ bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 			this->invalidWarning(node["Status"], "Unknown status '%s'; the rule is skipped.\n", status.c_str());
 			return false;
 		}
+	}
+	// Race and Element narrow an Enemy pick: { Enemy: attacking, Race: Undead } is what Heal hurts.
+	for (const char *key : { "Race", "Element" }) {
+		if (!this->nodeExists(node, key))
+			continue;
+		std::string name;
+		this->asString(node, key, name);
+		const bool race = key[0] == 'R';
+		const int32 v = race ? race_of(name) : element_of(name);
+		if (v == -2 || sel.kind != Selector::Kind::Enemy) {
+			this->invalidWarning(node[c4::to_csubstr(key)], v == -2 ? "Unknown %s '%s'; the rule is skipped.\n"
+				: "%s narrows an Enemy selector ('%s'); the rule is skipped.\n", key, name.c_str());
+			return false;
+		}
+		(race ? sel.race : sel.element) = static_cast<int8>(v);
 	}
 	if (sel.kind == Selector::Kind::Ally && (sel.pick == Selector::Pick::Missing || sel.pick == Selector::Pick::Having) && sel.status < 0) {
 		this->invalidWarning(node, "Ally: missing and Ally: having need a Status; the rule is skipped.\n");
@@ -853,7 +928,8 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 
 	if (this->nodeExists(node, "Count")) {
 		const ryml::NodeRef c = node["Count"];
-		this->warn_unknown_keys(c, { "Enemy", "Who", "NotSelf", "Boss", "Around", "Range", "Below", "AtLeast" }, "Count");
+		this->warn_unknown_keys(c, { "Enemy", "Who", "NotSelf", "Boss", "Race", "Element", "Around", "Range", "Below", "AtLeast" },
+			"Count");
 		static const std::map<std::string, Selector::Pick> picks = {
 			{ "any", Selector::Pick::Nearest }, { "attacking", Selector::Pick::Attacking },
 			{ "boss", Selector::Pick::Boss }, { "slaves", Selector::Pick::Slaves }, { "casting", Selector::Pick::Casting },
@@ -881,6 +957,19 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 			this->asBool(c, "NotSelf", rule->count_sel.not_self);
 		if (this->nodeExists(c, "Boss"))
 			this->asBool(c, "Boss", rule->count_sel.boss_only);
+		for (const char *key : { "Race", "Element" }) {
+			if (!this->nodeExists(c, key))
+				continue;
+			std::string name;
+			this->asString(c, key, name);
+			const bool race = key[0] == 'R';
+			const int32 v = race ? race_of(name) : element_of(name);
+			if (v == -2) {
+				this->invalidWarning(c[c4::to_csubstr(key)], "Unknown %s '%s'; the rule is skipped.\n", key, name.c_str());
+				return nullptr;
+			}
+			(race ? rule->count_sel.race : rule->count_sel.element) = static_cast<int8>(v);
+		}
 		if (this->nodeExists(c, "Around")) {
 			std::string around;
 			this->asString(c, "Around", around);
@@ -1190,7 +1279,7 @@ void StrategyDatabase::merge_rules(const ryml::NodeRef &seq, std::vector<RulePtr
 void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<uint32> &mobs)
 {
 	this->warn_unknown_keys(node, { "Job", "Build", "For", "Requires", "Remove", "Reset", "Rotation", "Ban", "Start", "Rules",
-		"Strategies" }, "a job entry");
+		"Strategies", "Disable" }, "a job entry");
 	bool has_audience = false;
 	Audience audience = Audience::Companions;
 	if (this->nodeExists(node, "For")) {
@@ -1261,6 +1350,10 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 		}
 		if (this->nodeExists(node, "Start"))
 			this->asString(node, "Start", plan.start);
+		if (this->nodeExists(node, "Disable"))
+			for (const std::string &n : scalars(node["Disable"]))
+				if (std::find(plan.disable.begin(), plan.disable.end(), n) == plan.disable.end())
+					plan.disable.push_back(n);
 		if (this->nodeExists(node, "Ban")) {
 			for (const std::string &s : scalars(node["Ban"])) {
 				const uint16 id = skill_of(s);
@@ -1280,7 +1373,7 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 				continue;
 			}
 			for (const ryml::NodeRef &s : list.children()) {
-				this->warn_unknown_keys(s, { "Name", "Remove", "Rules", "Ban", "Rotation" }, "a strategy");
+				this->warn_unknown_keys(s, { "Name", "Remove", "Rules", "Ban", "Rotation", "Disable" }, "a strategy");
 				std::string name;
 				if (!this->asString(s, "Name", name) || name.empty())
 					continue;
@@ -1294,6 +1387,10 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 				Strategy &strategy = plan.strategies[name];
 				if (this->nodeExists(s, "Rules"))
 					this->merge_rules(s["Rules"], strategy.rules);
+				if (this->nodeExists(s, "Disable"))
+					for (const std::string &n : scalars(s["Disable"]))
+						if (std::find(strategy.disable.begin(), strategy.disable.end(), n) == strategy.disable.end())
+							strategy.disable.push_back(n);
 				// While this strategy is active: "no magic while it reflects", "melee only in Pneuma".
 				if (this->nodeExists(s, "Rotation")) {
 					bool rotation = true;
@@ -1318,15 +1415,45 @@ uint64 StrategyDatabase::parseBodyNode(const ryml::NodeRef &node)
 {
 	this->warn_unknown_keys(node, { "Mob", "Mobs", "Encounter", "Targeting", "Jobs" }, "an entry");
 	std::vector<std::string> names;
-	if (this->nodeExists(node, "Mob"))
-		names = scalars(node["Mob"]);
-	else if (this->nodeExists(node, "Mobs"))
-		names = scalars(node["Mobs"]);
-	if (names.empty()) {
+	std::vector<uint32> mobs;
+	// { Race: Undead, Element: Ghost }: every monster of that kind; both given, both must hold.
+	auto category = [&](const ryml::NodeRef &m) {
+		this->warn_unknown_keys(m, { "Race", "Element" }, "Mob");
+		int32 race = -1, element = -1;
+		std::string name;
+		if (this->nodeExists(m, "Race") && this->asString(m, "Race", name) && (race = race_of(name)) == -2) {
+			this->invalidWarning(m["Race"], "Unknown race '%s'; skipped.\n", name.c_str());
+			return;
+		}
+		if (this->nodeExists(m, "Element") && this->asString(m, "Element", name) && (element = element_of(name)) == -2) {
+			this->invalidWarning(m["Element"], "Unknown element '%s'; skipped.\n", name.c_str());
+			return;
+		}
+		if (race < 0 && element < 0)
+			this->invalidWarning(m, "A kind of monster needs Race or Element; skipped.\n");
+		else
+			mobs.push_back(category_key(race, element));
+	};
+	const char *key = this->nodeExists(node, "Mob") ? "Mob" : this->nodeExists(node, "Mobs") ? "Mobs" : nullptr;
+	if (key != nullptr) {
+		const ryml::NodeRef m = node[c4::to_csubstr(key)];
+		if (m.is_map()) {
+			category(m);
+		} else if (m.is_seq()) {
+			for (const ryml::NodeRef &it : m.children()) {
+				if (it.is_map())
+					category(it);
+				else if (it.has_val())
+					names.push_back(scalar(it));
+			}
+		} else {
+			names = scalars(m);
+		}
+	}
+	if (names.empty() && mobs.empty()) {
 		this->invalidWarning(node, "An entry needs Mob or Mobs.\n");
 		return 0;
 	}
-	std::vector<uint32> mobs;
 	for (const std::string &n : names) {
 		if (lower(n) == "all") {
 			mobs.push_back(kAllMobs);
@@ -1349,8 +1476,8 @@ uint64 StrategyDatabase::parseBodyNode(const ryml::NodeRef &node)
 		bool encounter = false;
 		this->asBool(node, "Encounter", encounter);
 		for (const uint32 mob : mobs) {
-			if (mob == kAllMobs || mob == kBossMobs)
-				this->invalidWarning(node["Encounter"], "Encounter needs a monster, not All or Boss (a Boss plan is one already).\n");
+			if (!is_particular(mob))
+				this->invalidWarning(node["Encounter"], "Encounter needs a monster, not All, Boss or a kind of monster.\n");
 			else if (encounter)
 				this->encounter.insert(mob);
 			else
@@ -1362,8 +1489,8 @@ uint64 StrategyDatabase::parseBodyNode(const ryml::NodeRef &node)
 		const ryml::NodeRef t = node["Targeting"];
 		this->warn_unknown_keys(t, { "Priority", "Ignore", "MaxAttackers" }, "Targeting");
 		for (const uint32 mob : mobs) {
-			if (mob == kAllMobs || mob == kBossMobs) {
-				this->invalidWarning(t, "Targeting needs a monster, not All or Boss.\n");
+			if (!is_particular(mob)) {
+				this->invalidWarning(t, "Targeting needs a monster, not All, Boss or a kind of monster.\n");
 				continue;
 			}
 			Targeting &tg = this->targeting[mob];
@@ -1407,10 +1534,12 @@ void StrategyDatabase::loadingFinished()
 			for (const RulePtr &r : s.second.rules)
 				note(r);
 		}
-		if (plan.rotation == 0 || (plan.rotation < 0 && std::get<0>(entry.first) != kAllMobs) || !plan.ban.empty())
+		if (plan.rotation == 0 || (plan.rotation < 0 && is_particular(std::get<0>(entry.first))) || !plan.ban.empty())
 			this->limits_rotation = true;
 		if (std::get<0>(entry.first) == kBossMobs)
 			this->boss_plans = true;
+		if (is_category(std::get<0>(entry.first)))
+			this->category_plans = true;
 		if (plan.audience != Audience::Companions)
 			this->for_shells = true;
 		for (const auto &st : plan.strategies)
@@ -1421,8 +1550,9 @@ void StrategyDatabase::loadingFinished()
 		// once, rather than having a rule silently switch to nothing in game.
 		const auto check = [&](const std::string &name, const char *what) {
 			if (!name.empty() && plan.strategies.find(name) == plan.strategies.end())
-				ShowWarning("population_strategy: %s '%s' names no strategy of monster %u, job %d, build '%s'.\n",
-					what, name.c_str(), std::get<0>(entry.first), std::get<1>(entry.first), std::get<2>(entry.first).c_str());
+				ShowWarning("population_strategy: %s '%s' names no strategy of monster %s, job %d, build '%s'.\n",
+					what, name.c_str(), mob_label(std::get<0>(entry.first)).c_str(), std::get<1>(entry.first),
+					std::get<2>(entry.first).c_str());
 		};
 		check(plan.start, "Start");
 		for (const RulePtr &r : plan.rules)
@@ -1431,8 +1561,26 @@ void StrategyDatabase::loadingFinished()
 			for (const RulePtr &r : s.second.rules)
 				check(r->switch_to, "Switch");
 		if (!plan.strategies.empty() && plan.start.empty())
-			ShowWarning("population_strategy: monster %u, job %d, build '%s' has strategies but no Start; none is active until a Switch.\n",
-				std::get<0>(entry.first), std::get<1>(entry.first), std::get<2>(entry.first).c_str());
+			ShowWarning("population_strategy: monster %s, job %d, build '%s' has strategies but no Start; none is active until a Switch.\n",
+				mob_label(std::get<0>(entry.first)).c_str(), std::get<1>(entry.first), std::get<2>(entry.first).c_str());
+	}
+	// Disable names rules of other plans; a name no rule has is a typo that disables nothing.
+	std::unordered_set<std::string> names;
+	for (const auto &entry : this->plans) {
+		for (const RulePtr &r : entry.second.rules)
+			names.insert(r->name);
+		for (const auto &s : entry.second.strategies)
+			for (const RulePtr &r : s.second.rules)
+				names.insert(r->name);
+	}
+	for (const auto &entry : this->plans) {
+		std::vector<std::string> all = entry.second.disable;
+		for (const auto &s : entry.second.strategies)
+			all.insert(all.end(), s.second.disable.begin(), s.second.disable.end());
+		for (const std::string &n : all)
+			if (names.count(n) == 0)
+				ShowWarning("population_strategy: Disable '%s' (monster %s, job %d, build '%s') names no rule.\n",
+					n.c_str(), mob_label(std::get<0>(entry.first)).c_str(), std::get<1>(entry.first), std::get<2>(entry.first).c_str());
 	}
 	YamlDatabase::loadingFinished();
 }
@@ -2130,6 +2278,11 @@ static bool enemy_matches(Turn &t, const Selector &sel, const mob_data *md, int 
 	map_session_data *sd = t.sd;
 	rank = 0;
 	if (sel.boss_only && status_get_class_(md) != CLASS_BOSS)
+		return false;
+	block_list *bl = const_cast<mob_data *>(md);
+	if (sel.race >= 0 && status_get_race(bl) != sel.race)
+		return false;
+	if (sel.element >= 0 && status_get_element(bl) != sel.element)
 		return false;
 	switch (sel.pick) {
 	case Selector::Pick::Attacking:
@@ -2980,8 +3133,8 @@ static int32 encounter_scan_cb(block_list *bl, va_list ap)
 }
 
 /// The plans that apply, most specific first: the monster it targets, then the encounter
-/// monsters near it (the nearest of each kind), then Boss (the boss it targets, else the
-/// nearest), then All; within each, this job before its family before its 1st class before
+/// monsters near it (the nearest of each kind), then its race and element, then Boss (the
+/// boss it targets, else the nearest), then All; within each, this job before its family before its 1st class before
 /// All, and the builds the companion meets before the plan for every build ("" sorts first
 /// in the table, so it is taken last).
 static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_list *enemy)
@@ -3003,6 +3156,28 @@ static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_li
 		for (const mob_data *md : found)
 			if (std::none_of(mobs.begin(), mobs.end(), [&](const auto &m) { return m.first == md->mob_id; }))
 				mobs.emplace_back(md->mob_id, md->id);
+	}
+	// A race or an element: of the monster it fights, or with none, of the nearest one on the
+	// party (a Priest seldom has a target of its own). Both fields first, then each alone.
+	if (g_db.category_plans) {
+		const mob_data *about = target != nullptr && !status_isdead(*target) ? target : nullptr;
+		if (about == nullptr) {
+			MobScan scan;
+			map_foreachinrange(mob_scan_cb, sd, AREA_SIZE, BL_MOB, &scan);
+			std::vector<mob_data *> found;
+			for (mob_data *md : scan.mobs)
+				if (md->target_id != 0 && is_party(sd, md->target_id))
+					found.push_back(md);
+			nearest_first(found);
+			if (!found.empty())
+				about = found.front();
+		}
+		if (about != nullptr) {
+			block_list *bl = const_cast<mob_data *>(about);
+			const int32 race = status_get_race(bl), element = status_get_element(bl);
+			for (const uint32 key : { category_key(race, element), category_key(race, -1), category_key(-1, element) })
+				mobs.emplace_back(key, about->id);
+		}
 	}
 	if (g_db.boss_plans) {
 		if (target != nullptr && target->status.class_ == CLASS_BOSS && !status_isdead(*target)) {
@@ -3177,14 +3352,29 @@ bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills,
 
 	// A Switch takes effect in the same turn; three in a row is a loop, not a plan.
 	for (int pass = 0; pass < 3; ++pass) {
+		// Disable: a plan (or its active strategy) puts other plans' rules of that name aside.
+		std::vector<std::pair<const std::string *, const Plan *>> off;
+		for (auto &s : states) {
+			for (const std::string &n : s.first->disable)
+				off.emplace_back(&n, s.first);
+			const auto it = s.first->strategies.find(s.second->active);
+			if (it != s.first->strategies.end())
+				for (const std::string &n : it->second.disable)
+					off.emplace_back(&n, s.first);
+		}
+		auto disabled = [&](const Rule &r, const Plan *plan) {
+			return std::any_of(off.begin(), off.end(), [&](const auto &o) { return o.second != plan && *o.first == r.name; });
+		};
 		std::vector<Candidate> list;
 		for (auto &s : states) {
 			for (const RulePtr &r : s.first->rules)
-				list.push_back({ r.get(), s.first, s.second });
+				if (!disabled(*r, s.first))
+					list.push_back({ r.get(), s.first, s.second });
 			const auto it = s.first->strategies.find(s.second->active);
 			if (it != s.first->strategies.end())
 				for (const RulePtr &r : it->second.rules)
-					list.push_back({ r.get(), s.first, s.second });
+					if (!disabled(*r, s.first))
+						list.push_back({ r.get(), s.first, s.second });
 		}
 		// Priority first; ties keep the more specific plan, then file order.
 		std::stable_sort(list.begin(), list.end(),
@@ -3262,13 +3452,13 @@ bool population_strategy_rotation_allows(map_session_data *sd, block_list *targe
 		cached_generation = g_generation;
 	}
 	// Rotation layers: a plan (or its active strategy) that says false wins; else one that says
-	// true; else the default, which is off while a plan about a monster (or Boss) applies. So a
-	// boss's plan that says nothing leaves the decision to a role plan that does.
+	// true; else the default, which is off while a plan about a particular monster applies. So
+	// a boss's plan that says nothing leaves the decision to a role plan that does.
 	const auto st = g_shells.find(sd->id);
 	bool said_true = false, about_monster = false;
 	for (const PlanRef &p : cached) {
 		int8 rotation = p.plan->rotation;
-		if (std::get<0>(p.key) != kAllMobs)
+		if (is_particular(std::get<0>(p.key)))
 			about_monster = true;
 		const Strategy *active = nullptr;
 		if (st != g_shells.end() && st->second.char_id == sd->status.char_id) {

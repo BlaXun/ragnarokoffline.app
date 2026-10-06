@@ -63,7 +63,8 @@ still plays its part.
   Ninja first casts Soul. Once nearly full, it asks for Kyrie
   (`Signal: kyrie_me`). It strikes at full HP behind Kyrie or Cicada, signals
   `struck`, then keeps its distance from the slow golem until healed. The Priest
-  answers both signals.
+  answers both signals. It stands 4 cells off the slow golem rather than the
+  role's 5 (`Disable: [stay_back]` and a `stay_back` of its own).
 - *A magic Ninja* stands in the middle of its own Blaze Shield and draws the
   golem in with a level 1 Freezing Spear, so that the golem walks over the fire
   to reach it. It then uses Exploding Dragon. Blaze Shield and Exploding Dragon

@@ -277,7 +277,10 @@ Body:
                 When: self_hp_pct_ge90
                 Switch: prepare
 
+      # The golem is slow and melee: 4 cells is enough, and keeps the Ninja within reach.
+      # Disable puts the role's own stay_back (5 cells, companion-roles) aside here.
       - Job: Priest
+        Disable: [stay_back]
         Rules:
           - Name: heal_the_striker     # it is at 1 HP the moment it struck
             Priority: 95
@@ -295,8 +298,9 @@ Body:
             Cast: AL_HEAL
             Target: { Ally: lowest_hp }
             When: ally_hp_pct_lt90
-          - Name: stay_back            # the golem is melee and slow
-            Priority: 20
+          - Name: stay_back            # in the role's place (74)
+            Priority: 74
+            Target: { Enemy: boss, Range: 14 }
             KeepDistance: 4
 
   # --- Phreeoni: the first playtest. A Wizard, a Priest and an Assassin beside their

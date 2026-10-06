@@ -216,6 +216,11 @@ Until then:
   each boss's own mechanics. Rotation is layered: a plan saying `false` wins,
   then one saying `true`, then the default. Taken from the Phreeoni plan; not
   yet played against a second boss.
+- **Built:** kinds of monster, `Mob: { Race, Element }`, between a particular
+  monster and `Boss`, with `Race`/`Element` on Enemy selectors and `Count`. A
+  specific plan can `Disable` a broader plan's rule by name. Examples: Undead
+  and Ghost in companion-roles. The layers are, in order: monster, encounter,
+  kind, Boss, All, and on every layer, job, family, 1st class, All.
 - Beyond `OnePerParty`: claims on targets, so crowd control goes to different
   monsters and the party's Lex Aeterna is not wasted twice.
 
