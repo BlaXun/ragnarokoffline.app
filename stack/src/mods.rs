@@ -1365,9 +1365,39 @@ pub fn check_dir(dir: &Path) -> Result<String, String> {
     }
 }
 
-/// The mods that are actually being applied, in merge order.
+/// The mods that are switched on, in scan order.
 pub fn enabled(cfg: &Config) -> Vec<Installed> {
     scan(cfg).into_iter().filter(|m| m.status == Status::On).collect()
+}
+
+/// The mods `assemble` applies to the server, in the order it applies them:
+/// `apply_order`, without any caught in an `after` loop. For anything that
+/// has to merge server tables the way the server's import does (navmob.rs).
+pub fn applied(cfg: &Config) -> Vec<Installed> {
+    let mut live = enabled(cfg);
+    sort_applied(&mut live);
+    live
+}
+
+/// Sort switched-on mods into `apply_order`, dropping the ones in an `after`
+/// loop, whose names are returned.
+fn sort_applied<M: std::borrow::Borrow<Installed>>(live: &mut Vec<M>) -> Vec<String> {
+    let declared: Vec<(String, Vec<String>)> = live
+        .iter()
+        .map(|m| (m.borrow().name.clone(), m.borrow().manifest.after.clone()))
+        .collect();
+    match apply_order(&declared) {
+        Ok(order) => {
+            let rank: BTreeMap<&str, usize> =
+                order.iter().enumerate().map(|(i, n)| (n.as_str(), i)).collect();
+            live.sort_by_key(|m| rank.get(m.borrow().name.as_str()).copied().unwrap_or(usize::MAX));
+            Vec::new()
+        }
+        Err(cycle) => {
+            live.retain(|m| !cycle.contains(&m.borrow().name));
+            cycle
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1604,28 +1634,15 @@ pub fn assemble(cfg: &Config) -> Result<Assembled, String> {
 
     // The order layers are applied in, which is what decides who wins a
     // repeated key. Alphabetical unless a mod asked to come later.
-    let declared: Vec<(String, Vec<String>)> = live
-        .iter()
-        .map(|m| (m.name.clone(), m.manifest.after.clone()))
-        .collect();
-    match apply_order(&declared) {
-        Ok(order) => {
-            let rank: BTreeMap<&str, usize> =
-                order.iter().enumerate().map(|(i, n)| (n.as_str(), i)).collect();
-            live.sort_by_key(|m| rank.get(m.name.as_str()).copied().unwrap_or(usize::MAX));
-        }
-        Err(cycle) => {
-            // A loop cannot be ordered, so none of the mods in it are applied.
-            // Naming the ring is the only useful thing to say about it.
-            let names = cycle.join(", ");
-            for name in &cycle {
-                out.refused.push((
-                    name.clone(),
-                    format!("\"after\" forms a loop with {names}, so none of them were applied"),
-                ));
-            }
-            live.retain(|m| !cycle.contains(&m.name));
-        }
+    let cycle = sort_applied(&mut live);
+    // A loop cannot be ordered, so none of the mods in it are applied.
+    // Naming the ring is the only useful thing to say about it.
+    let names = cycle.join(", ");
+    for name in &cycle {
+        out.refused.push((
+            name.clone(),
+            format!("\"after\" forms a loop with {names}, so none of them were applied"),
+        ));
     }
 
     // Rebuilt from scratch every start: a mod removed from state/mods must stop
@@ -2104,19 +2121,17 @@ pub fn npc_sources(cfg: &Config, m: &Installed) -> Result<(Vec<String>, Vec<Path
 }
 
 /// A mod's copies of one `db/` table, in the order `assemble` merges them:
-/// each root's own, then its `when/<setting>/` copies while that setting is
-/// on. For the navigation monster table (navmob.rs), which reads mob_db.yml
-/// the way the server's import does.
+/// the last root's own copy (an era folder's replaces the mod's, as they share
+/// an owner), then every root's `when/<setting>/` copies while that setting is
+/// on, which are merged into it. For the navigation monster table (navmob.rs),
+/// which reads mob_db.yml the way the server's import does.
 pub fn db_sources(cfg: &Config, m: &Installed, table: &str) -> Result<Vec<PathBuf>, String> {
     let saved = read_settings(&cfg.state)?;
     let settings = effective(&m.manifest, saved.get(&m.name));
-    let mut out = Vec::new();
+    let mut out: Vec<PathBuf> =
+        m.roots.iter().map(|r| r.join("db").join(table)).filter(|p| p.is_file()).last().into_iter().collect();
     for root in &m.roots {
-        let db = root.join("db");
-        if db.join(table).is_file() {
-            out.push(db.join(table));
-        }
-        for (_, folder) in conditional_folders(&db, &m.name, "db", &settings) {
+        for (_, folder) in conditional_folders(&root.join("db"), &m.name, "db", &settings) {
             if folder.join(table).is_file() {
                 out.push(folder.join(table));
             }
@@ -4171,6 +4186,41 @@ mod tests {
                 (got, _) => panic!("{body}: {got:?}"),
             }
         }
+    }
+
+    // The navigation monster table merges mods' mob_db.yml the way the server
+    // does (navmob.rs): mods in apply order, and within a mod the era folder's
+    // copy replacing the mod's own, with its switched-on parts added after.
+    #[test]
+    fn server_tables_are_read_in_the_order_and_shape_assemble_writes_them() {
+        let cfg = kind_config("applied");
+        install(&cfg, "a-late", r#"{"after": ["b-early"]}"#);
+        install(&cfg, "b-early", "{}");
+        assert_eq!(on(&cfg), ["a-late", "b-early"]);
+        let applied: Vec<String> = applied(&cfg).into_iter().map(|m| m.name).collect();
+        assert_eq!(applied, ["b-early", "a-late"]);
+
+        let dir = cfg.state.join("mods/eras");
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(
+            dir.join("mod.json"),
+            r#"{"renewalFolder": "re", "settings": [{"key": "x", "type": "boolean", "default": true}]}"#,
+        )
+        .unwrap();
+        for f in ["db/mob_db.yml", "re/db/mob_db.yml", "db/when/x/mob_db.yml", "re/db/when/x/mob_db.yml"] {
+            fs::create_dir_all(dir.join(f).parent().unwrap()).unwrap();
+            fs::write(dir.join(f), "Body:\n").unwrap();
+        }
+        let m = enabled(&cfg).into_iter().find(|m| m.name == "eras").unwrap();
+        let got: Vec<String> = db_sources(&cfg, &m, "mob_db.yml")
+            .unwrap()
+            .iter()
+            .map(|p| p.strip_prefix(&dir).unwrap().to_string_lossy().replace('\\', "/"))
+            .collect();
+        assert_eq!(got, ["re/db/mob_db.yml", "db/when/x/mob_db.yml", "re/db/when/x/mob_db.yml"]);
+        // Without the era copy, the mod's own.
+        fs::remove_file(dir.join("re/db/mob_db.yml")).unwrap();
+        assert_eq!(db_sources(&cfg, &m, "mob_db.yml").unwrap()[0], dir.join("db/mob_db.yml"));
     }
 
     // A skin overlays the whole interface folder, so two at once is a
