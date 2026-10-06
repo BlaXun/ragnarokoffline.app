@@ -537,8 +537,31 @@ Body:
         Build: healer
         Requires: { Role: [support, none] }
         Rules:
-          # Below the party's heals (75-79), above buffs: Heal and Turn Undead as attacks,
-          # Magnus on a pack. SP is kept back for Resurrection and the party's heals.
+          # Below the party's heals (75-79), above buffs: Resurrection, Heal and Turn Undead
+          # as attacks, Sanctuary and Magnus on a pack. SP is kept back for reviving and
+          # the party's heals. rAthena turns Heal and Resurrection into attacks only when a
+          # player character casts them at the undead; shells are player characters.
+          # Resurrection destroys an undead monster outright; a boss shrugs it off.
+          - Name: resurrect_the_undead
+            Priority: 66
+            Cast: ALL_RESURRECTION
+            Target: { Enemy: attacking, Race: Undead }
+            When: [not_enemy_is_boss, self_sp_ge150]
+          - Name: resurrect_the_undead_element
+            Priority: 66
+            Cast: ALL_RESURRECTION
+            Target: { Enemy: attacking, Element: Undead }
+            When: [not_enemy_is_boss, self_sp_ge150]
+          # Sanctuary hurts what it would heal: only where no living monster stands in it
+          # (the engine refuses otherwise), and only for two or more.
+          - Name: sanctuary_the_undead
+            Priority: 64
+            Cast: PR_SANCTUARY
+            Target: { Enemy: attacking, Race: Undead }
+            Count: { Enemy: attacking, Race: Undead, Around: target, Range: 2, AtLeast: 2 }
+            When: self_sp_ge150
+            Consume: true                  # a Blue Gemstone in pre-renewal, once companions carry them
+            Cooldown: 6000
           - Name: magnus_the_pack
             Priority: 62
             Cast: PR_MAGNUS
@@ -569,6 +592,21 @@ Body:
             Target: { Ally: missing, Status: SC_ASPERSIO, Job: [Knight, Crusader, Assassin, Rogue, Blacksmith, Monk, Star_Gladiator] }
             When: self_sp_ge120
             Consume: true                  # a Holy Water, once companions carry them
+
+  # Demons: Sanctuary hurts them as it does the undead (Heal does not).
+  - Mob: { Race: Demon }
+    Jobs:
+      - Job: Priest
+        Build: healer
+        Requires: { Role: [support, none] }
+        Rules:
+          - Name: sanctuary_the_demons
+            Priority: 64
+            Cast: PR_SANCTUARY
+            Target: { Enemy: attacking, Race: Demon }
+            Count: { Enemy: attacking, Race: Demon, Around: target, Range: 2, AtLeast: 2 }
+            When: self_sp_ge150
+            Cooldown: 6000
 
   # Ghost: a plain weapon does little or nothing to it. Holy on the melee's weapons.
   - Mob: { Element: Ghost }

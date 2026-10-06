@@ -2641,6 +2641,9 @@ static const char *cast(Turn &t, const Rule &rule, block_list *target, uint16 id
 		return "out of range";
 	if (!status_check_skilluse(sd, target, id, 0))
 		return "refused";
+	// Sanctuary heals the monsters standing in it unless they are undead or demons (the combat file).
+	if ((inf & INF_GROUND_SKILL) && pop_ground_heal_helps_enemy(sd, id, target->x, target->y))
+		return "it would heal a monster";
 	const std::vector<std::pair<t_itemid, int32>> cost = rule.consume && kPayCatalysts
 		? item_cost(id, lv) : std::vector<std::pair<t_itemid, int32>>();
 	if (!can_pay(sd, cost))

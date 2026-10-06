@@ -208,6 +208,13 @@ reaches the engine's own buffs and heals: that is by design, and the plan names
 them. Any new hook must be placed with the same question: what does a rule that
 acts every turn take away?
 
+**Sanctuary heals monsters.** It heals every unit standing in it that is not
+undead or a demon, monsters included (`skill.cpp`, `UNT_SANCTUARY`), and damages
+those two. The engine placed it at a shell's own or an ally's feet, right where
+the monsters hitting them stood. `pop_ground_heal_helps_enemy` in the combat file
+now refuses a placement with such a monster within its 5x5. The engine's three
+placements and the strategy module's rule casts all ask it.
+
 **Let rAthena pace actions.** The cast timer (`ud.skilltimer`) and the after-cast
 delay (`ud.canact_tick`) already account for DEX, cards and Bragi. Adding the
 skill database's base cast and delay on top (`skill_get_cast`, `skill_get_delay`)
