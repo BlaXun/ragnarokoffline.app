@@ -148,6 +148,9 @@ struct Rule {
 
 	// Actions. Cast and Retreat end the turn; Say and Switch do not.
 	uint16 cast_skill = 0;
+	/// Cast: [A, B, C]: the one the target is weakest to, by rAthena's element table, among
+	/// those the companion knows and has the SP for; ties go to list order. cast_skill is the first.
+	std::vector<uint16> cast_options;
 	uint16 cast_lv = 0;          ///< 0 = the level the companion knows
 	Target target = Target::Enemy;
 	Selector sel;                ///< overrides target when sel.kind != None
@@ -1047,11 +1050,24 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 
 	if (this->nodeExists(node, "Cast")) {
 		std::string skill;
-		this->asString(node, "Cast", skill);
-		if ((rule->cast_skill = skill_of(skill)) == 0) {
-			this->invalidWarning(node["Cast"], "Unknown skill '%s'; the rule is skipped.\n", skill.c_str());
+		for (const std::string &s : scalars(node["Cast"])) {
+			const uint16 id = skill_of(s);
+			if (id == 0) {
+				this->invalidWarning(node["Cast"], "Unknown skill '%s'; the rule is skipped.\n", s.c_str());
+				return nullptr;
+			}
+			if (std::find(rule->cast_options.begin(), rule->cast_options.end(), id) == rule->cast_options.end())
+				rule->cast_options.push_back(id);
+			if (skill.empty())
+				skill = s;
+		}
+		if (rule->cast_options.empty()) {
+			this->invalidWarning(node["Cast"], "Cast names no skill; the rule is skipped.\n");
 			return nullptr;
 		}
+		rule->cast_skill = rule->cast_options.front();
+		if (rule->cast_options.size() == 1)
+			rule->cast_options.clear();
 		if (this->nodeExists(node, "Level"))
 			this->asUInt16(node, "Level", rule->cast_lv);
 		if (this->nodeExists(node, "Consume"))
@@ -2485,10 +2501,34 @@ static void say(Turn &t, const Rule &rule, const RuleState &rs, block_list *targ
 }
 
 /// Cast the rule's skill, refusing it wherever the rotation would. A reason on failure.
-static const char *cast(Turn &t, const Rule &rule, block_list *target)
+/// Cast: [list]: the skill the target is weakest to (see Rule::cast_options). 0 when none can be cast.
+static uint16 best_against(const map_session_data *sd, const Rule &rule, block_list *target)
+{
+	const int def_ele = target != nullptr && target != sd ? status_get_element(target) : ELE_NONE;
+	const int def_lv = target != nullptr && target != sd ? status_get_element_level(target) : 0;
+	uint16 best = 0;
+	int best_mult = 0;
+	for (const uint16 id : rule.cast_options) {
+		uint16 lv = pc_checkskill(const_cast<map_session_data *>(sd), id);
+		if (lv == 0)
+			continue;
+		if (rule.cast_lv > 0)
+			lv = std::min<uint16>(lv, rule.cast_lv);
+		if (skill_get_sp(id, lv) > static_cast<int32>(sd->battle_status.sp))
+			continue;
+		const int ele = skill_get_ele(id, lv);
+		const int mult = CHK_ELEMENT(ele) && CHK_ELEMENT(def_ele) ? elemental_attribute_db.getAttribute(def_lv, ele, def_ele) : 100;
+		if (mult > best_mult) {
+			best = id;
+			best_mult = mult;
+		}
+	}
+	return best;
+}
+
+static const char *cast(Turn &t, const Rule &rule, block_list *target, uint16 id)
 {
 	map_session_data *sd = t.sd;
-	const uint16 id = rule.cast_skill;
 	const uint16 known = pc_checkskill(sd, id);
 	const uint16 lv = rule.cast_lv > 0 ? std::min<uint16>(rule.cast_lv, known) : known;
 	const int32 inf = skill_get_inf(id);
@@ -2862,8 +2902,13 @@ static bool requires_ok(const map_session_data *sd, const Requirements &req)
 static bool requires_ok(const map_session_data *sd, const Rule &rule)
 {
 	// Unlike the skill rotation, a rule never casts a skill the companion has not learned.
-	if (rule.cast_skill != 0 && pc_checkskill(sd, rule.cast_skill) == 0)
+	if (!rule.cast_options.empty()) {
+		if (std::none_of(rule.cast_options.begin(), rule.cast_options.end(),
+				[&](uint16 id) { return pc_checkskill(const_cast<map_session_data *>(sd), id) > 0; }))
+			return false;
+	} else if (rule.cast_skill != 0 && pc_checkskill(sd, rule.cast_skill) == 0) {
 		return false;
+	}
 	return requires_ok(sd, rule.req);
 }
 
@@ -2893,9 +2938,15 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 	if (rule.set_target && t.target_set && rule.cast_skill == 0 && rule.say.empty() && rule.signal.empty()
 			&& rule.switch_to.empty())
 		return Outcome::Skipped;
-	const int range = rule.cast_skill != 0
-		? std::max(1, skill_get_range2(sd, rule.cast_skill, std::max<uint16>(1, pc_checkskill(sd, rule.cast_skill)), true))
-		: AREA_SIZE;
+	int range = AREA_SIZE;
+	if (rule.cast_skill != 0) {
+		range = 1;
+		for (const uint16 id : rule.cast_options.empty() ? std::vector<uint16>{ rule.cast_skill } : rule.cast_options) {
+			const uint16 lv = pc_checkskill(sd, id);
+			if (lv > 0)
+				range = std::max(range, skill_get_range2(sd, id, lv, true));
+		}
+	}
 	block_list *target = resolve_target(t, rule, rs, range);
 	if (rule.cast_skill != 0 && target == nullptr && !(skill_get_inf(rule.cast_skill) & INF_SELF_SKILL))
 		return Outcome::Skipped;
@@ -2969,14 +3020,19 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 	if (rule.cast_skill != 0) {
 		if (!do_skills || attack_only)
 			return Outcome::Skipped;
-		const char *why = cast(t, rule, target);
+		const uint16 skill = rule.cast_options.empty() ? rule.cast_skill : best_against(sd, rule, target);
+		if (skill == 0) {
+			trace(sd, *t.st, t.tick, "rule %s: nothing in its Cast list can be cast (SP, or the target resists them all)", name);
+			return Outcome::Skipped;
+		}
+		const char *why = cast(t, rule, target, skill);
 		if (why == nullptr)
 			return Outcome::Skipped;
 		if (*why != '\0') {
-			trace(sd, *t.st, t.tick, "rule %s: %s not cast (%s)", name, skill_get_desc(rule.cast_skill), why);
+			trace(sd, *t.st, t.tick, "rule %s: %s not cast (%s)", name, skill_get_desc(skill), why);
 			return Outcome::Skipped;
 		}
-		trace(sd, *t.st, t.tick, "rule %s: %s on %s", name, skill_get_desc(rule.cast_skill),
+		trace(sd, *t.st, t.tick, "rule %s: %s on %s", name, skill_get_desc(skill),
 			target != nullptr ? status_get_name(*target) : "self");
 		acted = true;
 	} else if (rule.retreat != Retreat::None) {

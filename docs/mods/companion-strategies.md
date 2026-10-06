@@ -207,7 +207,7 @@ And then does one thing:
 
 | Action | |
 |---|---|
-| `Cast:` skill, `Level:`, `Target:` | `enemy` (default), `self`, `owner`, `event` (who the event was about), `source` (the monster that caused it), `ally_lowest_hp`, `dead_ally`, or a [selector](#choosing-who-selectors). Ground skills land at the target's feet. Refused where the normal rotation would refuse it: SP, range, weapon, state. |
+| `Cast:` skill or `[list]`, `Level:`, `Target:` | `enemy` (default), `self`, `owner`, `event` (who the event was about), `source` (the monster that caused it), `ally_lowest_hp`, `dead_ally`, or a [selector](#choosing-who-selectors). Ground skills land at the target's feet. Refused where the normal rotation would refuse it: SP, range, weapon, state. A list casts the one the target is weakest to by rAthena's element table, among those the companion knows and has the SP for; ties go to list order, and one the target would resist entirely (or be healed by) is never cast. `Cast: [MG_COLDBOLT, MG_FIREBOLT, MG_LIGHTNINGBOLT]` is a bolt by element. |
 | `Consume: true` (with `Cast`) | Marks a cast that should pay its catalyst (a Flame Stone, a Blue Gemstone) as a player does. **Not paid yet:** companions have no inventory of their own, so for now the cast goes ahead as if the catalyst were paid, as the engine does for every companion. Once inventories exist, the same rule checks the inventory before casting and pays when the cast starts; tables written today need no change. |
 | `Retreat: away` / `owner`, `Distance:` | Steps that many cells away from the monster (or from an event's `source`), or walks back to the owner. |
 | `MoveTo: event` | Walks next to whoever the event is about: the companion that sent a `signal`, the member who spoke in party chat. Already beside them: the rule passes. |
@@ -255,7 +255,7 @@ together:
    the rotation is on.
 
 So a boss plan that says nothing leaves it to the role plan. For example, the
-caster plan in companion-roles turns the rotation on with a `Ban` list. A boss
+melee plan in companion-roles turns the rotation on with a `Ban` list. A boss
 plan that needs every cast counted (the Asura Monk) says `false`. `Ban` lists
 from every plan that applies add up.
 
@@ -553,6 +553,17 @@ Learned in the Phreeoni playtests, each one from something that went wrong.
 normal skill rotation off, so the companion casts what the plan names and hits.
 A Wizard that "randomly cast Ice Wall" was its rotation; with the plan in charge,
 the Wizard needs its damage spell written down (Fire Bolt, the Meteors).
+
+**A caster needs named spells; a ban list is not enough.** Melee did well on its
+rotation minus a few skills. A Wizard did not. The rotation casts at the
+engine's target, which can be a monster nobody is fighting, and walks into range
+of it after every cast. It also takes whatever is ready: Thunder Storm at
+nothing, Meteor Storm at a single Sandman. Name the bolts as one `Cast: [..]`
+list (the engine picks by element), aim them with selectors at what is on the
+party, and keep area spells for a `Count` of three.
+
+**Hold still while being petrified.** A member who runs from a Wide Stone Curse
+drags the healer's Status Recovery after it. `When: self_stonewait` and `Hold`.
 
 **End a caster's rules with `Hold`, and then name its buffs.** With nothing to
 cast, an ordinary turn walks the companion up to its target and hits it: a

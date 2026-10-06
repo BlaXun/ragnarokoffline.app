@@ -22,7 +22,7 @@ A companion's role comes from its **class family**. A party-chat Duty
 | Family | Role, with no Duty given | At a boss |
 |---|---|---|
 | Priest (High Priest, Arch Bishop, Cardinal) | healer | heals, walls, revives, cures, buffs; never melees |
-| Wizard, Sage | caster | its rotation, minus Ice Wall, Fire Wall and what a boss is immune to; 6 to 8 cells off the boss |
+| Wizard, Sage | caster | named spells only: a bolt by element at what is on itself, on the healer, the boss, then the rest of the party's attackers; an area spell only on three or more; 6 to 8 cells off the boss, steps away when hurt, stands between casts |
 | Hunter | ranged | its rotation; 4 to 8 cells off the boss |
 | Knight, Crusader, Assassin, Rogue, Blacksmith, Monk, Star Gladiator | melee | its rotation while SP lasts, then plain hits until SP is back; runs the boss round the healer when hurt |
 | anyone told `tank` | tank | holds the boss as its target |
@@ -49,7 +49,9 @@ SP is kept back for Resurrection. It stands out of the boss's melee, within
 Heal's reach of whoever is being hit. With nothing to cast it stands still, but
 only while a monster is near. Otherwise it follows its owner.
 
-**Everyone.** A hidden boss is revealed at once (Ruwach, Sight). When the healer
+**Everyone.** Anyone being petrified (Wide Stone Curse setting in) stands still
+for the healer's Status Recovery rather than run from it. A hidden boss is
+revealed at once (Ruwach, Sight). When the healer
 dies and no other is up, they fall back to their owner and fight nothing until
 a healer is back. A party that never had a Priest is not affected.
 

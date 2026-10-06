@@ -326,17 +326,20 @@ Body:
         Start: opening
         Rules:                        # every phase
           # New slaves: AoE them on the boss as they arrive. Fire hurts earth Sandmen most.
+          # Only once three stand around it: never a Meteor for a single Sandman.
           - Name: meteor_the_slaves
             Priority: 85
             On: { Event: casts, Skill: NPC_SUMMONSLAVE, Within: 10000 }   # outlasts a Fire Bolt cast
             Cast: WZ_METEOR
             Target: source
+            Count: { Enemy: slaves, Around: target, Range: 5, AtLeast: 3 }
           - Name: storm_the_slaves
             Priority: 84
             Requires: { Lacks: [WZ_METEOR] }
             On: { Event: casts, Skill: NPC_SUMMONSLAVE, Within: 10000 }   # outlasts a Fire Bolt cast
             Cast: WZ_STORMGUST
             Target: source
+            Count: { Enemy: slaves, Around: target, Range: 5, AtLeast: 3 }
           # Instant Call Slave brings them back around it with no warning: AoE once three are there.
           - Name: meteor_the_pack
             Priority: 83
