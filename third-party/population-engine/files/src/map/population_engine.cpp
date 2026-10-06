@@ -3838,6 +3838,9 @@ int population_engine_companion_set_heal_thresholds(uint32_t owner_account, int1
 		population_engine_persist_companion_gear(sd);
 		++applied;
 	}
+	// Re-send the roster, which carries the thresholds, so an open Companions window shows them.
+	if (map_session_data *owner_sd = map_charid2sd(owner_char); owner_sd != nullptr)
+		population_engine_push_companion_list(owner_sd);
 	return applied;
 }
 
@@ -3861,6 +3864,9 @@ int population_engine_companion_set_rest_thresholds(uint32_t owner_account, int1
 		population_engine_persist_companion_gear(sd);
 		++applied;
 	}
+	// Re-send the roster, which carries the thresholds, so an open Companions window shows them.
+	if (map_session_data *owner_sd = map_charid2sd(owner_char); owner_sd != nullptr)
+		population_engine_push_companion_list(owner_sd);
 	return applied;
 }
 
@@ -7979,7 +7985,7 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 	if (mmysql_handle == nullptr) return;
 	char q[400];
 	snprintf(q, sizeof(q),
-		"SELECT name, job_id, active, favorite, base_level, hom_enabled, duty, job_level FROM `cp_companion_persistence`"
+		"SELECT name, job_id, active, favorite, base_level, hom_enabled, duty, job_level, heal_at, emergency_at, rest_below, rest_until FROM `cp_companion_persistence`"
 		" WHERE owner_account_id=%u AND owner_char_id=%u ORDER BY favorite DESC, name ASC",
 		owner_account, pop_online_char(owner_account));
 	if (Sql_Query(mmysql_handle, q) != SQL_SUCCESS) {
@@ -8005,6 +8011,11 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 		int duty = data != nullptr ? atoi(data) : 0;
 		Sql_GetData(mmysql_handle, 7, &data, nullptr);
 		int row_job_lv = (data != nullptr && data[0] != '\0') ? atoi(data) : 0;
+		// The Battle tab's thresholds, so it shows what is saved instead of its defaults.
+		Sql_GetData(mmysql_handle, 8, &data, nullptr); int heal_at = data != nullptr ? atoi(data) : 75;
+		Sql_GetData(mmysql_handle, 9, &data, nullptr); int emergency_at = data != nullptr ? atoi(data) : 35;
+		Sql_GetData(mmysql_handle, 10, &data, nullptr); int rest_below = data != nullptr ? atoi(data) : 30;
+		Sql_GetData(mmysql_handle, 11, &data, nullptr); int rest_until = data != nullptr ? atoi(data) : 95;
 		// and a name is player-chosen, so scrub before sending.
 		for (char *c = namebuf; *c != '\0'; ++c) {
 			if (*c == '|' || *c == '\n' || *c == '\r')
@@ -8038,6 +8049,10 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 			live_class = sd->status.class_;
 			// The duty it is acting on; the row only catches up on the next snapshot.
 			duty = sd->pop.role;
+			heal_at = sd->pop.companion_heal_at;
+			emergency_at = sd->pop.companion_emergency_at;
+			rest_below = sd->pop.companion_rest_below;
+			rest_until = sd->pop.companion_rest_until;
 			live_jl = sd->status.job_level;
 			break;
 		}
@@ -8070,9 +8085,11 @@ void population_engine_companion_list_raw(uint32_t owner_account, int fd)
 		// The duty travels so the panel can show it (kept only in the panel's memory, its
 		// badge went blank on every restart or reload although the server still had it), and
 		// rebirth readiness after it so both appended fields keep their positions.
-		snprintf(msg, sizeof(msg), "@CP|%s|%s|%d|%d|%d|%d|%s|%d|%d|%d",
+		// The thresholds come last, so every field before them keeps its position.
+		snprintf(msg, sizeof(msg), "@CP|%s|%s|%d|%d|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d",
 			namebuf, job_name(job_id), base_lv, active, fav, live_lv,
-			live_job != nullptr ? live_job : "", hom, duty, rebirth);
+			live_job != nullptr ? live_job : "", hom, duty, rebirth,
+			heal_at, emergency_at, rest_below, rest_until);
 		clif_displaymessage(fd, msg);
 		count++;
 	}

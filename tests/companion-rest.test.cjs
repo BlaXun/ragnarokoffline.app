@@ -107,3 +107,22 @@ test('@companion rest sets them for the whole party, and the Battle tab sends it
 	assert.match(panel, /talk\(`@companion rest \$\{a\} \$\{b\}`, false\);/);
 	assert.match(panel, /Math\.max\(a \+ 5,/, 'the panel keeps until above below, as the server does');
 });
+
+test('the Battle tab opens on the saved thresholds, not its defaults', () => {
+	// The tab is rebuilt on every redraw, and it set its boxes to 75/35/30/95 each time, so a
+	// change seemed forgotten the next time the window opened (and after any roster push).
+	const list = body('void population_engine_companion_list_raw(');
+	assert.match(list, /heal_at, emergency_at, rest_below, rest_until FROM `cp_companion_persistence`/);
+	assert.match(list, /"@CP\|%s\|%s\|%d\|%d\|%d\|%d\|%s\|%d\|%d\|%d\|%d\|%d\|%d\|%d"/,
+		'appended after rebirth, so every earlier field keeps its position');
+	assert.match(list, /rest_below = sd->pop\.companion_rest_below;/, 'a summoned companion\'s live values win');
+	for (const setter of ['int population_engine_companion_set_rest_thresholds(', 'int population_engine_companion_set_heal_thresholds('])
+		assert.match(body(setter), /population_engine_push_companion_list\(owner_sd\);/, `${setter} must re-send the roster`);
+	assert.match(panel, /restBelow: _field\(parts, 13\),/);
+	assert.match(panel, /restUntil: _field\(parts, 14\)/);
+	assert.match(panel, /m\.restBelow !== _roster\[i\]\.restBelow/, 'a changed threshold redraws the window');
+	assert.match(panel, /restBelow\.value = String\(saved\.restBelow\);/);
+	assert.match(panel, /restUntil\.value = String\(saved\.restUntil\);/);
+	assert.match(panel, /normal\.value = String\(saved\.healAt\);/);
+	assert.match(panel, /emergency\.value = String\(saved\.emergencyAt\);/);
+});
