@@ -2292,6 +2292,72 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 static constexpr int16_t POP_REST_BELOW_PCT = 30;
 static constexpr int16_t POP_REST_UNTIL_PCT = 95;
 
+/// RAGNAROKMAC (potions): a shell carries a few of the potions a player of its level buys from a
+/// Tool Dealer, and drinks one while it is needed (the same test as for standing up from a rest)
+/// and below POP_POTION_*_PCT. Out of a fight it rests instead. The stock is given on its first
+/// combat tick, so a recalled companion gets its own level's potions rather than those of the
+/// level 99 it is spawned at, and a vendor, which never fights, gets none. It is topped up when
+/// a rest ends at the upper mark, and a shell back from a selling trip is a new shell with a
+/// new stock.
+static constexpr int16_t POP_POTION_HP_PCT = 40;
+static constexpr int16_t POP_POTION_SP_PCT = 20;
+static constexpr int POP_POTION_HP_STOCK = 10;
+static constexpr int POP_POTION_SP_STOCK = 5;
+static constexpr t_itemid POP_POTIONS[] = { 501, 502, 503, 504, 533, 505 };
+
+static t_itemid pop_shell_hp_potion(const map_session_data *sd)
+{
+	const int lv = sd->status.base_level;
+	return lv >= 80 ? 504 : lv >= 55 ? 503 : lv >= 30 ? 502 : 501; // White, Yellow, Orange, Red
+}
+
+static t_itemid pop_shell_sp_potion(const map_session_data *sd)
+{
+	return sd->status.base_level >= 55 ? 505 : 533; // Blue Potion, Grape Juice
+}
+
+/// Tops the stock up to POP_POTION_*_STOCK of its level's potions, and drops any other tier's: a
+/// companion that has levelled since moves on to the next potion.
+static void pop_shell_stock_potions(map_session_data *sd)
+{
+	sd->pop.potions_stocked = true;
+	const t_itemid hp = pop_shell_hp_potion(sd), sp = pop_shell_sp_potion(sd);
+	for (const t_itemid nameid : POP_POTIONS) {
+		if (nameid == hp || nameid == sp)
+			continue;
+		const int16 idx = pc_search_inventory(sd, nameid);
+		if (idx >= 0)
+			pc_delitem(sd, idx, sd->inventory.u.items_inventory[idx].amount, 0, 0, LOG_TYPE_NONE);
+	}
+	for (const auto &want : { std::make_pair(hp, POP_POTION_HP_STOCK), std::make_pair(sp, POP_POTION_SP_STOCK) }) {
+		const int16 idx = pc_search_inventory(sd, want.first);
+		const int have = idx >= 0 ? sd->inventory.u.items_inventory[idx].amount : 0;
+		if (have >= want.second || !itemdb_exists(want.first))
+			continue;
+		struct item it = {};
+		it.nameid = want.first;
+		it.identify = 1;
+		pc_additem(sd, &it, want.second - have, LOG_TYPE_NONE, false);
+	}
+}
+
+/// Drinks one potion if HP or SP is below its mark: HP first, as a player would.
+static void pop_shell_drink(map_session_data *sd, int hp_pct, int sp_pct, t_tick now)
+{
+	if (DIFF_TICK(now, sd->pop.next_potion_tick) < 0 || pc_isdead(sd) || pc_issit(sd))
+		return;
+	int16 idx = -1;
+	if (hp_pct < POP_POTION_HP_PCT)
+		idx = pc_search_inventory(sd, pop_shell_hp_potion(sd));
+	if (idx < 0 && sp_pct < POP_POTION_SP_PCT)
+		idx = pc_search_inventory(sd, pop_shell_sp_potion(sd));
+	if (idx < 0)
+		return;
+	// The player's own path: item delay, the use animation for everyone around, the heal script.
+	if (pc_useitem(sd, idx))
+		sd->pop.next_potion_tick = now + 1000;
+}
+
 static bool pop_shell_rest(map_session_data *sd, map_session_data *owner, uint32 target, t_tick now)
 {
 	const int below = owner != nullptr ? sd->pop.companion_rest_below : POP_REST_BELOW_PCT;
@@ -2314,13 +2380,22 @@ static bool pop_shell_rest(map_session_data *sd, map_session_data *owner, uint32
 	else
 		needed = needed || population_shell_loot_busy(sd);
 
+	if (!sd->pop.potions_stocked)
+		pop_shell_stock_potions(sd);
 	if (sd->pop.resting) {
 		if (needed || !pc_issit(sd) || below <= 0 || (sp >= until && hp >= until)) {
+			// A rest that ran its course restocks the potions; one cut short does not.
+			if (!needed && sp >= until && hp >= until)
+				pop_shell_stock_potions(sd);
 			pop_shell_stand(sd);
+			if (needed)
+				pop_shell_drink(sd, hp, sp, now);
 			return false;
 		}
 		return true;
 	}
+	if (needed)
+		pop_shell_drink(sd, hp, sp, now);
 	if (below <= 0 || needed || pc_issit(sd) || unit_is_walking(sd) || (sp >= below && hp >= below))
 		return false;
 	// The checks a player's sit request passes (clif_parse_ActionRequest_sub, DMG_SIT_DOWN).
@@ -3633,7 +3708,7 @@ static uint16_t pop_companion_next_job(uint16_t job_id, int32_t base_lv, int32_t
 
 static uint32_t pop_companion_given_worn(const map_session_data *shell);
 static bool pop_companion_hand_back(map_session_data *owner, map_session_data *shell, int16 i,
-	e_log_pick_type log_type);
+	e_log_pick_type log_type, int32 amount = 0);
 
 /// Change this companion's class. Shared by the automatic path and the player-triggered rebirth.
 ///
@@ -6927,7 +7002,7 @@ static uint32_t pop_companion_given_worn(const map_session_data *shell)
 /// player's, and "inventory full" is not a reason for it to stop existing. Returns false (and
 /// leaves the item on the companion) only when it could neither be carried nor dropped.
 static bool pop_companion_hand_back(map_session_data *owner, map_session_data *shell, int16 i,
-	e_log_pick_type log_type)
+	e_log_pick_type log_type, int32 amount)
 {
 	struct item &slot = shell->inventory.u.items_inventory[i];
 	if (!slot.nameid || slot.amount <= 0)
@@ -6938,7 +7013,9 @@ static bool pop_companion_hand_back(map_session_data *owner, map_session_data *s
 	shell->pop.companion_given_mask &= ~worn;
 	struct item tmp = slot;
 	tmp.equip = 0;
-	const int32 amount = slot.amount;
+	// 0 = the whole stack. A trade passes what it added: the rest of the stack is the
+	// companion's own (its potions).
+	amount = (amount <= 0 || amount > slot.amount) ? slot.amount : amount;
 	if (pc_additem(owner, &tmp, amount, log_type) != ADDITEM_SUCCESS
 		&& map_addflooritem(&tmp, amount, owner->m, owner->x, owner->y, 0, 0, 0, 0, 0) == 0) {
 		ShowWarning("population_engine: could not return item %u from companion %u to owner %u; "
@@ -7008,7 +7085,12 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 			shell->pop.companion_given_mask = pop_companion_given_worn(shell);
 		} else {
 			// Non-equipment goes back: into the owner's bag, or at their feet when it is full.
-			(void)pop_companion_hand_back(owner, shell, i, LOG_TYPE_TRADE);
+			// Only what the trade added: a potion of the kind the companion carries stacks
+			// onto its own, and handing back the whole stack gave the player those too.
+			const bool grew = before.size() == static_cast<size_t>(MAX_INVENTORY)
+				&& static_cast<uint32_t>(slot.nameid) == before[i].first;
+			(void)pop_companion_hand_back(owner, shell, i, LOG_TYPE_TRADE,
+				grew ? slot.amount - before[i].second : 0);
 		}
 	}
 	if (equipped_any)

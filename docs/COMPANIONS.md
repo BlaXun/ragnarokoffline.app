@@ -114,6 +114,22 @@ with each of them.
 
 Other fake players rest the same way, at a fixed 30% and 95%.
 
+Every companion carries a few potions of the kind a player of its level buys
+from a Tool Dealer: 10 for HP and 5 for SP.
+
+| Base level | HP | SP |
+|---|---|---|
+| 1-29 | Red Potion | Grape Juice |
+| 30-54 | Orange Potion | Grape Juice |
+| 55-79 | Yellow Potion | Blue Potion |
+| 80 and up | White Potion | Blue Potion |
+
+It drinks one, at most one a second, while it is needed and below 40% HP or
+20% SP; out of a fight it rests instead. A rest that ends with both back to the
+second percentage refills the potions, to the new kind if it has levelled since.
+They are not saved: a companion has a full stock again at each login. Other fake
+players carry and drink potions the same way.
+
 ## Death and resurrection
 
 A defeated companion stays in the party as a corpse while its owner remains on
