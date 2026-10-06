@@ -10,8 +10,8 @@
 # branch is resolved, and it only ever writes a commit.
 #
 # It does not build the new pin. Bump in its own commit, having built it. A
-# rathena bump also regenerates the navigation index (navigation-index.sh),
-# which describes the pinned server's scripts; commit it with the pin.
+# rathena bump also regenerates the navigation indexes (navigation-index.sh),
+# which describe the pinned server's scripts; commit them with the pin.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -47,11 +47,12 @@ case "$REPO" in https://github.com/*) echo "    review: $REPO/compare/$OLD...$WA
 # The navigation mods index the pinned rAthena's scripts, and CI fails while
 # the index describes the old pin.
 if [ "$NAME" = rathena ]; then
-    INDEX=mods/navigation-server-npcs/npc-index.tsv
     bash "$ROOT/scripts/navigation-index.sh" >/dev/null
-    if git -C "$ROOT" diff --quiet -- "$INDEX"; then
-        echo "    $INDEX: unchanged"
+    CHANGED=$(git -C "$ROOT" diff --name-only -- 'mods/navigation-server-*')
+    if [ -z "$CHANGED" ]; then
+        echo "    navigation indexes: unchanged"
     else
-        echo "    $INDEX: regenerated, commit it with the pin"
+        echo "    navigation indexes regenerated, commit them with the pin:"
+        printf '      %s\n' $CHANGED
     fi
 fi
