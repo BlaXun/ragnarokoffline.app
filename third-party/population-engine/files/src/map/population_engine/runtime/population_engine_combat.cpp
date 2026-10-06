@@ -394,6 +394,16 @@ static bool pop_ally_skill_refused(const map_session_data *shell, const map_sess
 		return shell != ally && battle_check_target(shell, ally, BCT_PARTY) <= 0;
 	case WL_WHITEIMPRISON: // mage/whiteimprison.cpp: the caster or an enemy, never an ally
 		return shell != ally;
+	// RAGNAROKMAC: skill.cpp, skill_castend_nodamage_id -- on the undead, by race or by an armour's
+	// element (Evil Druid card), these turn into attacks, and on an ally they fail. The Priest kept
+	// healing the most hurt member, an undead-armoured one, losing every cast; Sanctuary neither
+	// heals nor hurts such an ally.
+	case AL_HEAL:
+	case AB_HIGHNESSHEAL:
+	case ALL_RESURRECTION:
+	case PR_ASPERSIO:
+	case PR_SANCTUARY:
+		return battle_check_undead(ally->battle_status.race, ally->battle_status.def_ele) != 0;
 	default:
 		return false;
 	}
@@ -459,6 +469,9 @@ static int32 pop_dead_party_ally_scan_cb(block_list *bl, va_list ap)
 	PopDeadAllySearchCtx *ctx = va_arg(ap, PopDeadAllySearchCtx *);
 	if (!pop_is_party_ally(ctx->shell, ally) || !ally->state.active ||
 		ally->state.warping || !status_isdead(*ally))
+		return 0;
+	// RAGNAROKMAC: Resurrection fails on an undead-armoured ally (pop_ally_skill_refused).
+	if (battle_check_undead(ally->battle_status.race, ally->battle_status.def_ele))
 		return 0;
 	const int ally_distance = distance_bl(ctx->shell, ally);
 	if (ally_distance < ctx->best_distance) {

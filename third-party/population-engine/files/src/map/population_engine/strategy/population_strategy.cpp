@@ -2464,7 +2464,10 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 }
 
 /// Target: { Ally: ... }: the companion itself counts unless NotSelf.
-static block_list *select_ally(Turn &t, const Selector &sel, int range)
+/// `skill`: the rule's Cast, if any. A member it cannot help is passed over (pop_ally_skill_refused
+/// in the combat file: an undead-armoured ally for Heal, Resurrection, Sanctuary ...), so the rule
+/// picks the next one rather than losing every cast on the same member.
+static block_list *select_ally(Turn &t, const Selector &sel, int range, uint16 skill = 0)
 {
 	map_session_data *sd = t.sd;
 	// Ally: attacked -- who the monsters in sight are on; a boss counts three times.
@@ -2488,6 +2491,8 @@ static block_list *select_ally(Turn &t, const Selector &sel, int range)
 		if (sel.role >= 0 && (!population_engine_is_population_pc(m->id) || m->pop.role != sel.role))
 			continue;
 		if (!sel.jobs.empty() && std::none_of(sel.jobs.begin(), sel.jobs.end(), [&](int32 j) { return job_matches(m, j); }))
+			continue;
+		if (skill != 0 && pop_ally_skill_refused(sd, m, skill))
 			continue;
 		int rank = 0;
 		if (sel.pick == Selector::Pick::LowestHp) {
@@ -2519,7 +2524,7 @@ static block_list *resolve_target(Turn &t, const Rule &rule, const RuleState &rs
 	if (rule.sel.kind == Selector::Kind::Enemy)
 		return select_enemy(t, rule.sel, rule.sel.range > 0 ? rule.sel.range : range);
 	if (rule.sel.kind == Selector::Kind::Ally)
-		return select_ally(t, rule.sel, rule.sel.range > 0 ? rule.sel.range : range);
+		return select_ally(t, rule.sel, rule.sel.range > 0 ? rule.sel.range : range, rule.cast_skill);
 	switch (rule.target) {
 	case Target::Enemy:  return t.enemy;
 	case Target::Self:   return sd;
@@ -2532,7 +2537,8 @@ static block_list *resolve_target(Turn &t, const Rule &rule, const RuleState &rs
 		std::vector<map_session_data *> members = party_members(sd);
 		members.push_back(sd);
 		for (map_session_data *m : members) {
-			if (pc_isdead(m) || !check_distance_bl(sd, m, range))
+			if (pc_isdead(m) || !check_distance_bl(sd, m, range)
+					|| (rule.cast_skill != 0 && pop_ally_skill_refused(sd, m, rule.cast_skill)))
 				continue;
 			const int hp = hp_pct(m);
 			if (hp < best_hp || (hp == best_hp && best != nullptr && m->id < best->id)) {
@@ -2546,7 +2552,7 @@ static block_list *resolve_target(Turn &t, const Rule &rule, const RuleState &rs
 		block_list *best = nullptr;
 		int best_d = range + 1;
 		for (map_session_data *m : party_members(sd)) {
-			if (!pc_isdead(m))
+			if (!pc_isdead(m) || (rule.cast_skill != 0 && pop_ally_skill_refused(sd, m, rule.cast_skill)))
 				continue;
 			const int d = distance_bl(sd, m);
 			if (d < best_d || (d == best_d && best != nullptr && m->id < best->id)) {

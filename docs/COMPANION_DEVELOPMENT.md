@@ -215,6 +215,15 @@ the monsters hitting them stood. `pop_ground_heal_helps_enemy` in the combat fil
 now refuses a placement with such a monster within its 5x5. The engine's three
 placements and the strategy module's rule casts all ask it.
 
+**Heals fail on an undead-armoured ally.** On the undead, by race or by an
+armour's element (Evil Druid card), Heal, Highness Heal, Resurrection and
+Aspersio turn into attacks, and on an ally they fail (`skill.cpp`,
+`skill_castend_nodamage_id`). Sanctuary neither heals nor hurts such an ally. A
+healer that picked the most hurt member lost every cast on that one.
+`pop_ally_skill_refused` now names these skills, so the engine's ally scans and
+its party Resurrection pass such a member over. The strategy module's ally
+selectors ask it for a rule's `Cast` too.
+
 **Let rAthena pace actions.** The cast timer (`ud.skilltimer`) and the after-cast
 delay (`ud.canact_tick`) already account for DEX, cards and Bragi. Adding the
 skill database's base cast and delay on top (`skill_get_cast`, `skill_get_delay`)
