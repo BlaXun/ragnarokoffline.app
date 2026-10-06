@@ -1701,11 +1701,15 @@ static const char *POP_SHOP_TITLES[] = {
 // to need no rebuild. So where the map has monsters, let them say what level
 // its inhabitants should be.
 //
-// The result is clamped to the profile's own range, which is not a nicety: gear
-// sets are chosen per profile and pc_equipitem enforces each item's equip level,
-// so a shell pushed below its profile's band would silently equip nothing and
-// stand there unarmed. Picking a *band* stays a YAML decision; this picks a
-// level within it.
+// The profile's minimum is a floor, which is not a nicety: gear sets are chosen
+// per profile and pc_equipitem enforces each item's equip level, so a shell
+// pushed below its profile's band would silently equip nothing and stand there
+// unarmed. The band's top is not a ceiling. The tier table puts a band on a map
+// once for both eras, and the eras disagree: Renewal's Payon Cave 4 is level 66
+// and its Glast Heim churches are 115, where the bands stop at 26 and 99. Held to
+// the band, those shells were the weakest thing on the map. So the monsters may
+// lift a shell past its band, up to its class's max base level. No shipped gear
+// set has a maximum equip level, so the gear still fits.
 static std::unordered_map<int16_t, int> g_pop_map_mob_level;
 
 static int pop_collect_mob_level(struct block_list *bl, va_list ap) {
@@ -5417,11 +5421,13 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 		// RAGNAROKMAC: on a map with monsters, take the level from them rather
 		// than from a uniform roll across the profile's band. +8 because a
 		// player hunting a field is usually a little above what lives there.
+		// Past the band's top if they say so, never past the class's own cap.
 		if (battle_config.population_engine_level_from_map) {
 			const int mobs = pop_map_mob_level(sd->m);
 			if (mobs > 0)
 				rolled = static_cast<int16_t>(cap_value(mobs + 8,
-					static_cast<int>(pop_cfg->base_level_min), static_cast<int>(hi)));
+					static_cast<int>(pop_cfg->base_level_min),
+					std::max(static_cast<int>(hi), static_cast<int>(pc_maxbaselv(sd)))));
 		}
 		// RAGNAROKMAC: a hired companion comes at its owner's level, within
 		// the band its profile allows (population_engine_companion_hire).
