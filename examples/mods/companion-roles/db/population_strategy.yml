@@ -112,6 +112,18 @@ Body:
             Cast: PR_STRECOVERY
             Target: { Ally: having, Status: SC_FREEZE }
 
+      # Casters and healers never hit with a rod or a mace -- companions and the AI
+      # characters around the world alike (For: all). Out of SP, they stand rather than
+      # walk up and poke. Acolyte and Mage as themselves only (Exact): a Monk is built
+      # on the Acolyte and does melee.
+      - Job: [Priest, Wizard, Sage]
+        For: all
+        Attack: false
+      - Job: [Acolyte, Mage]
+        Exact: true
+        For: all
+        Attack: false
+
       # A Sage that sees a Storm Gust coming lays Land Protector at its feet and calls
       # the party to it; everyone else comes when called.
       - Job: Sage

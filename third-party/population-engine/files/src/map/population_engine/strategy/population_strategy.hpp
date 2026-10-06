@@ -48,6 +48,8 @@ bool population_strategy_holds_position(const map_session_data *sd, t_tick tick)
 bool population_strategy_rotation_allows(map_session_data *sd, block_list *target, uint16 skill_id);
 /// Whether the plans that apply let the engine's own heals and buffs use this skill (Allow, Ban).
 bool population_strategy_skill_allowed(map_session_data *sd, block_list *target, uint16 skill_id);
+/// Whether the plans that apply let the shell make plain attacks (Attack: false = skill_only).
+bool population_strategy_attack_allowed(map_session_data *sd);
 
 /// The companion's target after Targeting: (Priority, Ignore) has had its say over
 /// what the party controller chose (`desired`).

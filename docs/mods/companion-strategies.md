@@ -291,6 +291,30 @@ plan's skill gone.
 A strategy's own `Allow` and `Ban` count too, while it is active. A plan never
 stops a skill its own rules cast.
 
+### Plain attacks: `Attack: false`
+
+`Attack: false` on a job entry (or a strategy, while it is active) stops plain
+attacks while the plan applies: the companion uses skills only, and out of SP it
+stands. This is the engine's own `skill_only`. The most specific plan that says
+anything decides, so a boss strategy can say `Attack: true` for a moment against
+a broader `false`. With `For: all` it reaches the AI characters around the world
+too:
+
+```yaml
+- Mob: All
+  Jobs:
+    - Job: [Priest, Wizard, Sage]
+      For: all
+      Attack: false
+    - Job: [Acolyte, Mage]
+      Exact: true                 # not the Priests and Monks built on them
+      For: all
+      Attack: false
+```
+
+`Exact: true` limits a job entry to the jobs it names and their own family (a
+High Acolyte, a Baby Mage), not the classes built on them.
+
 `Allow`/`Ban` decide *which* skills. Rules decide *when* and *at whom*. A class
 with a rules plan (bolts at what is on the party, stand between casts) behaves
 precisely; a class without one gets the engine's own behaviour, limited to what

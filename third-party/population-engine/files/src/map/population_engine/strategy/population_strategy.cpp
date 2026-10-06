@@ -196,6 +196,7 @@ struct Strategy {
 	std::vector<std::string> disable; ///< added to the plan's Disable while this strategy is active
 	bool has_allow = false;      ///< Allow: given (an empty list allows nothing)
 	std::vector<uint16> allow;   ///< narrows the plan's Allow while this strategy is active
+	int8 attack = -1;            ///< -1: the plan's Attack; 0/1: overrides it while active
 };
 
 /// Who a plan is for: recruited companions (the default), the regular shells around the
@@ -224,6 +225,12 @@ struct Plan {
 	std::vector<uint16> allow;
 	/// Every skill this plan's own rules cast (sorted): its Allow and Ban never stop those.
 	std::vector<uint16> own;
+	/// Attack: false -- no plain attacks while this plan applies (the engine's skill_only);
+	/// -1 = no say. The most specific plan that says anything decides.
+	int8 attack = -1;
+	/// Exact: true -- only the jobs named and their own family (High and Baby), not the
+	/// classes built on them: Job: Acolyte without the Priests and Monks.
+	bool exact = false;
 };
 
 
@@ -470,9 +477,10 @@ public:
 	bool limits_rotation = false;
 	bool for_shells = false;     ///< some plan is For: shells or all, so regular shells take turns
 	bool revives = false;        ///< some rule casts Resurrection (or Death Valley) itself
-	bool boss_plans = false;     ///< some plan is Mob: Boss, so turns look for a boss nearby
-	bool category_plans = false; ///< some plan is Mob: { Race, Element }
+	uint8 boss_plans = 0;        ///< who has Mob: Boss plans (1 companions, 2 shells): their turns look for a boss
+	uint8 category_plans = 0;    ///< who has Mob: { Race, Element } plans (as boss_plans)
 	bool limits_skills = false;  ///< some plan or strategy has an Allow or a Ban
+	bool limits_attack = false;  ///< some plan or strategy says Attack
 
 	StrategyDatabase() : YamlDatabase("POPULATION_STRATEGY_DB", 1) {}
 
@@ -486,9 +494,10 @@ public:
 		this->limits_rotation = false;
 		this->for_shells = false;
 		this->revives = false;
-		this->boss_plans = false;
-		this->category_plans = false;
+		this->boss_plans = 0;
+		this->category_plans = 0;
 		this->limits_skills = false;
+		this->limits_attack = false;
 	}
 
 	const std::string getDefaultLocation() override
@@ -1306,7 +1315,7 @@ void StrategyDatabase::merge_rules(const ryml::NodeRef &seq, std::vector<RulePtr
 void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<uint32> &mobs)
 {
 	this->warn_unknown_keys(node, { "Job", "Build", "For", "Requires", "Remove", "Reset", "Rotation", "Ban", "Start", "Rules",
-		"Strategies", "Disable", "Allow" }, "a job entry");
+		"Strategies", "Disable", "Allow", "Attack", "Exact" }, "a job entry");
 	// Allow: [..]: the skill list, by name; an unknown one is a warning, and Allow: [] allows nothing.
 	auto allow_list = [&](const ryml::NodeRef &n, std::vector<uint16> &out) {
 		out.clear();
@@ -1397,6 +1406,13 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 			plan.has_allow = true;
 			allow_list(node["Allow"], plan.allow);
 		}
+		if (this->nodeExists(node, "Attack")) {
+			bool attack = true;
+			if (this->asBool(node, "Attack", attack))
+				plan.attack = attack ? 1 : 0;
+		}
+		if (this->nodeExists(node, "Exact"))
+			this->asBool(node, "Exact", plan.exact);
 		if (this->nodeExists(node, "Ban")) {
 			for (const std::string &s : scalars(node["Ban"])) {
 				const uint16 id = skill_of(s);
@@ -1416,7 +1432,8 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 				continue;
 			}
 			for (const ryml::NodeRef &s : list.children()) {
-				this->warn_unknown_keys(s, { "Name", "Remove", "Rules", "Ban", "Rotation", "Disable", "Allow" }, "a strategy");
+				this->warn_unknown_keys(s, { "Name", "Remove", "Rules", "Ban", "Rotation", "Disable", "Allow", "Attack" },
+					"a strategy");
 				std::string name;
 				if (!this->asString(s, "Name", name) || name.empty())
 					continue;
@@ -1437,6 +1454,11 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 				if (this->nodeExists(s, "Allow")) {
 					strategy.has_allow = true;
 					allow_list(s["Allow"], strategy.allow);
+				}
+				if (this->nodeExists(s, "Attack")) {
+					bool attack = true;
+					if (this->asBool(s, "Attack", attack))
+						strategy.attack = attack ? 1 : 0;
 				}
 				// While this strategy is active: "no magic while it reflects", "melee only in Pneuma".
 				if (this->nodeExists(s, "Rotation")) {
@@ -1583,10 +1605,11 @@ void StrategyDatabase::loadingFinished()
 		}
 		if (plan.rotation == 0 || (plan.rotation < 0 && is_particular(std::get<0>(entry.first))) || !plan.ban.empty())
 			this->limits_rotation = true;
+		const uint8 audience = plan.audience == Audience::Companions ? 1 : plan.audience == Audience::Shells ? 2 : 3;
 		if (std::get<0>(entry.first) == kBossMobs)
-			this->boss_plans = true;
+			this->boss_plans |= audience;
 		if (is_category(std::get<0>(entry.first)))
-			this->category_plans = true;
+			this->category_plans |= audience;
 		// What its own rules cast: its Allow and Ban never stop those.
 		plan.own.clear();
 		auto own = [&](const RulePtr &r) {
@@ -1603,6 +1626,11 @@ void StrategyDatabase::loadingFinished()
 		plan.own.erase(std::unique(plan.own.begin(), plan.own.end()), plan.own.end());
 		if (plan.has_allow || !plan.ban.empty())
 			this->limits_skills = this->limits_rotation = true;
+		if (plan.attack >= 0)
+			this->limits_attack = true;
+		for (const auto &st : plan.strategies)
+			if (st.second.attack >= 0)
+				this->limits_attack = true;
 		for (const auto &st : plan.strategies)
 			if (st.second.has_allow || !st.second.ban.empty())
 				this->limits_skills = this->limits_rotation = true;
@@ -3275,7 +3303,8 @@ static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_li
 	}
 	// A race or an element: of the monster it fights, or with none, of the nearest one on the
 	// party (a Priest seldom has a target of its own). Both fields first, then each alone.
-	if (g_db.category_plans) {
+	const uint8 me = population_engine_is_recruited_companion(sd) ? 1 : 2;
+	if (g_db.category_plans & me) {
 		const mob_data *about = target != nullptr && !status_isdead(*target) ? target : nullptr;
 		if (about == nullptr) {
 			MobScan scan;
@@ -3295,7 +3324,7 @@ static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_li
 				mobs.emplace_back(key, about->id);
 		}
 	}
-	if (g_db.boss_plans) {
+	if (g_db.boss_plans & me) {
 		if (target != nullptr && target->status.class_ == CLASS_BOSS && !status_isdead(*target)) {
 			mobs.emplace_back(kBossMobs, target->id);
 		} else {
@@ -3327,6 +3356,8 @@ static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_li
 				if (!for_me(it->second)
 						|| std::any_of(out.begin(), out.end(), [&](const PlanRef &p) { return p.plan == &it->second; }))
 					continue; // not for this kind of shell, or the same key twice (job == base)
+				if (it->second.exact && j != job && j != family)
+					continue; // Exact: not for a class built on this one
 				if (std::get<2>(it->first).empty()) {
 					every_build = &it->second;
 					every_key = it->first;
@@ -3618,6 +3649,21 @@ bool population_strategy_skill_allowed(map_session_data *sd, block_list *target,
 	if (!g_db.limits_skills || !takes_part(sd))
 		return true;
 	return plans_allow(sd, plans_this_tick(sd, target), skill_id, false);
+}
+
+bool population_strategy_attack_allowed(map_session_data *sd)
+{
+	if (!g_db.limits_attack || !takes_part(sd))
+		return true;
+	// The most specific plan that says anything decides: a boss's strategy that allows a plain
+	// hit for a moment overrides "casters never melee" from Mob: All.
+	for (const PlanRef &p : plans_this_tick(sd, map_id2bl(sd->pop.target_id))) {
+		const Strategy *active = active_strategy(sd, p);
+		const int8 attack = active != nullptr && active->attack >= 0 ? active->attack : p.plan->attack;
+		if (attack >= 0)
+			return attack != 0;
+	}
+	return true;
 }
 
 bool population_strategy_rotation_allows(map_session_data *sd, block_list *target, uint16 skill_id)

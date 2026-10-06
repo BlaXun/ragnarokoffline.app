@@ -1856,7 +1856,8 @@ static void population_shell_combat_process_tick(map_session_data *sd, t_tick cu
 
 	const bool flag_attack_only = (sd->pop.flags & PSF::AttackOnly) != 0
 		|| sd->sc.getSCE(SC_BERSERK) != nullptr; // Frenzy: auto-attack only, no skills
-	const bool flag_skill_only  = (sd->pop.flags & PSF::SkillOnly)  != 0;
+	const bool flag_skill_only  = (sd->pop.flags & PSF::SkillOnly)  != 0
+		|| !population_strategy_attack_allowed(sd); // RAGNAROKMAC (companion strategies): Attack: false
 	const PopulationRoleType shell_role = static_cast<PopulationRoleType>(sd->pop.role);
 	const int32 pai = battle_config.population_engine_ai;
 
