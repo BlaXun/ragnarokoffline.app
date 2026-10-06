@@ -62,3 +62,15 @@ test('trait stats are spent from the level\'s trait points too', () => {
 		'an undeclared trait stays 0');
 	assert.match(call.slice(0, 1200), /pop_shell_spend_traits_to_level\(sd, target\);/);
 });
+
+test('a recalled companion keeps none of the spawn build\'s leftover points', () => {
+	// A recall spawns at level 99 with no profile, so the spawn spends level 99's points on the job
+	// build and leaves the rest in status_point. The saved stats then replace that build, and the
+	// growth poll would spend the leftovers on top of it on every recall.
+	const recall = src.slice(src.indexOf('// Restore the exact snapshot build the companion had when recruited.'));
+	const block = recall.slice(0, recall.indexOf('population_engine_shell_equip_item(shell, armor'));
+	const stats = block.indexOf('shell->status.dex = dex; shell->status.luk = luk;');
+	assert.ok(stats > 0, 'the saved stats are restored here');
+	assert.ok(block.indexOf('shell->status.status_point = 0;') > stats, 'status points cleared after the restore');
+	assert.ok(block.indexOf('shell->status.trait_point  = 0;') > stats, 'trait points cleared after the restore');
+});

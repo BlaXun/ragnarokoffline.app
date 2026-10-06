@@ -8260,6 +8260,12 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 	shell->status.str = str; shell->status.agi = agi;
 	shell->status.vit = vit; shell->status.int_ = intl;
 	shell->status.dex = dex; shell->status.luk = luk;
+	// RAGNAROKMAC: the spawn above spent level 99's points on a job build and left
+	// what the build didn't need in status_point / trait_point. The saved build has
+	// replaced those stats, so the leftovers are not this companion's: kept, the
+	// next growth poll would spend them on top of it, on every recall.
+	shell->status.status_point = 0;
+	shell->status.trait_point  = 0;
 
 	population_engine_shell_equip_item(shell, armor, index_, "armor");
 	population_engine_shell_equip_item(shell, shoes, index_, "shoes");
