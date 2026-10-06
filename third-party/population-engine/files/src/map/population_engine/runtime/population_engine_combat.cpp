@@ -394,6 +394,16 @@ static bool pop_ally_skill_refused(const map_session_data *shell, const map_sess
 		return shell != ally && battle_check_target(shell, ally, BCT_PARTY) <= 0;
 	case WL_WHITEIMPRISON: // mage/whiteimprison.cpp: the caster or an enemy, never an ally
 		return shell != ally;
+	// RAGNAROKMAC: skill.cpp, skill_castend_nodamage_id -- on the undead, by race or by an armour's
+	// element (Evil Druid card), these turn into attacks, and on an ally they fail. The Priest kept
+	// healing the most hurt member, an undead-armoured one, losing every cast; Sanctuary neither
+	// heals nor hurts such an ally.
+	case AL_HEAL:
+	case AB_HIGHNESSHEAL:
+	case ALL_RESURRECTION:
+	case PR_ASPERSIO:
+	case PR_SANCTUARY:
+		return battle_check_undead(ally->battle_status.race, ally->battle_status.def_ele) != 0;
 	default:
 		return false;
 	}
@@ -459,6 +469,9 @@ static int32 pop_dead_party_ally_scan_cb(block_list *bl, va_list ap)
 	PopDeadAllySearchCtx *ctx = va_arg(ap, PopDeadAllySearchCtx *);
 	if (!pop_is_party_ally(ctx->shell, ally) || !ally->state.active ||
 		ally->state.warping || !status_isdead(*ally))
+		return 0;
+	// RAGNAROKMAC: Resurrection fails on an undead-armoured ally (pop_ally_skill_refused).
+	if (battle_check_undead(ally->battle_status.race, ally->battle_status.def_ele))
 		return 0;
 	const int ally_distance = distance_bl(ctx->shell, ally);
 	if (ally_distance < ctx->best_distance) {
@@ -1555,6 +1568,29 @@ static bool pop_row_is_rescue(uint8_t condition)
 }
 
 /// `rescue_only`: just the rows gated on someone's HP (pop_row_is_rescue).
+// RAGNAROKMAC: Sanctuary heals every unit standing in it that is neither undead nor a demon --
+// monsters included (skill.cpp, UNT_SANCTUARY) -- and damages those two. Shells placed it at their
+// own or an ally's feet, where the monsters hitting them stood, and healed the monsters. It is not
+// placed while a monster it would heal is within its 5x5; over undead and demons alone it is.
+static int32 pop_sanctuary_heals_cb(block_list *bl, va_list ap)
+{
+	bool *found = va_arg(ap, bool *);
+	const status_data *st = status_get_status_data(*bl);
+	if (!*found && !status_isdead(*bl) && st != nullptr
+			&& !battle_check_undead(st->race, st->def_ele) && st->race != RC_DEMON)
+		*found = true;
+	return 0;
+}
+
+static bool pop_ground_heal_helps_enemy(const map_session_data *sd, uint16 skill_id, int16 x, int16 y)
+{
+	if (skill_id != PR_SANCTUARY)
+		return false;
+	bool found = false;
+	map_foreachinallarea(pop_sanctuary_heals_cb, sd->m, x - 2, y - 2, x + 2, y + 2, BL_MOB, &found);
+	return found;
+}
+
 static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tick current_tick,
 	bool rescue_only = false)
 {
@@ -1641,6 +1677,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 			if (skill_get_inf(bs.skill_id) & (INF_GROUND_SKILL | INF_TRAP_SKILL)) {
 				int16_t tx = sd->x, ty = sd->y;
 				population_shell_resolve_placement(sd, bs.around_range, tx, ty);
+				if (pop_ground_heal_helps_enemy(sd, bs.skill_id, tx, ty)) // RAGNAROKMAC: not on a monster
+					continue;
 				if (unit_skilluse_pos(sd, tx, ty, bs.skill_id, use_lv)) {
 					if (bs.cooldown_ms > 0) sd->pop.skill_next_use_tick[bs.skill_id] = current_tick + static_cast<t_tick>(bs.cooldown_ms);
 					sd->pop.last_cast_skill_id = bs.skill_id;
@@ -1708,6 +1746,8 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 		if (skill_get_inf(bs.skill_id) & (INF_GROUND_SKILL | INF_TRAP_SKILL)) {
 			int16_t tx = sd->x, ty = sd->y;
 			population_shell_resolve_placement(sd, bs.around_range, tx, ty);
+			if (pop_ground_heal_helps_enemy(sd, bs.skill_id, tx, ty)) // RAGNAROKMAC: not on a monster
+				continue;
 			if (unit_skilluse_pos(sd, tx, ty, bs.skill_id, use_lv)) {
 				if (bs.cooldown_ms > 0) sd->pop.skill_next_use_tick[bs.skill_id] = current_tick + static_cast<t_tick>(bs.cooldown_ms);
 				sd->pop.last_cast_skill_id = bs.skill_id;
@@ -1812,6 +1852,8 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 		if (skill_get_inf(sk.skill_id) & (INF_GROUND_SKILL | INF_TRAP_SKILL)) {
 			int16_t tx = sd->x, ty = sd->y;
 			population_shell_resolve_placement(sd, sk.around_range, tx, ty);
+			if (pop_ground_heal_helps_enemy(sd, sk.skill_id, tx, ty)) // RAGNAROKMAC: not on a monster
+				continue;
 			used = unit_skilluse_pos(sd, tx, ty, sk.skill_id, sk.skill_lv);
 		} else
 			used = unit_skilluse_id(sd, ally->id, sk.skill_id, sk.skill_lv);
