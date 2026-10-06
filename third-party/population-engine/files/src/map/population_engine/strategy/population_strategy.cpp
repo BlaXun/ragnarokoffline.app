@@ -74,7 +74,7 @@ struct Requirements {
 	std::vector<uint16> lacks;
 	std::vector<t_itemid> items;
 	int32 base_level = 0;
-	int8 role = -1;              ///< PopulationRoleType the companion must have (-1 = any)
+	uint8 roles = 0;             ///< a bit per PopulationRoleType the companion may have (0 = any)
 };
 
 /// Who, among the party, a selector means.
@@ -90,7 +90,7 @@ struct Selector {
 	bool not_self = false;       ///< leave the companion itself out
 	Member prefer = Member::Any; ///< Enemy attacking: monsters on this member first
 	int8 role = -1;              ///< Ally: only members with this role
-	int32 job = -2;              ///< Ally: only this job (or its base class)
+	std::vector<int32> jobs;     ///< Ally: only these jobs (each with its family and base class)
 	int16 status = -1;           ///< Ally missing: lacking this status
 	int16 range = 0;             ///< 0 = the cast's range, or AREA_SIZE without a cast
 };
@@ -223,15 +223,11 @@ struct Targeting {
 constexpr bool kPayCatalysts = false;
 
 constexpr uint32 kAllMobs = 0;
+/// Mob: Boss, every boss-class monster: the plan applies while one is near (the nearest).
+constexpr uint32 kBossMobs = UINT32_MAX;
 constexpr int32 kAllJobs = -1;
-/// (mob id or kAllMobs, job id or kAllJobs, build name or "" for every build)
+/// (mob id, kBossMobs or kAllMobs; job id or kAllJobs; build name or "" for every build)
 using PlanKey = std::tuple<uint32, int32, std::string>;
-
-/// Whether the normal skill rotation runs under this plan (before its active strategy's say).
-static bool plan_rotation(const PlanKey &key, const Plan &plan)
-{
-	return plan.rotation >= 0 ? plan.rotation != 0 : std::get<0>(key) == kAllMobs;
-}
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -313,7 +309,8 @@ static t_itemid item_of(const std::string &name)
 	return id != nullptr ? id->nameid : 0;
 }
 
-/// "Priest", "High_Priest", "JOB_PRIEST" or 8. -2 when it names nothing.
+/// "Priest", "High_Priest", "JOB_PRIEST" or 8. -2 when it names nothing, -3 when it names a
+/// job this server's era does not have (a 4th class in pre-renewal): a list may name it anyway.
 static int32 job_of(const std::string &name)
 {
 	if (lower(name) == "all")
@@ -323,7 +320,22 @@ static int32 job_of(const std::string &name)
 		value = std::stol(name);
 	else if (!script_get_constant(upper("JOB_" + name).c_str(), &value) && !script_get_constant(name.c_str(), &value))
 		return -2;
-	return job_db.exists(static_cast<uint16>(value)) ? static_cast<int32>(value) : -2;
+	return job_db.exists(static_cast<uint16>(value)) ? static_cast<int32>(value) : -3;
+}
+
+/// The job's family, named by its plain 2nd class: Priest for a High Priest, Arch Bishop,
+/// Cardinal or Baby Priest. A 1st class is its own family. -1 when there is none.
+static int32 job_family(int32 class_, int32 sex)
+{
+	return pc_mapid2jobid(pc_jobid2mapid(static_cast<uint16>(class_)) & MAPID_SECONDMASK, sex);
+}
+
+/// Whether a member's job is `job`: the job itself, its family (Job: Priest takes in a High
+/// Priest) or its 1st class (Job: Acolyte takes in Priests and Monks alike).
+static bool job_matches(const map_session_data *sd, int32 job)
+{
+	const int32 c = sd->status.class_;
+	return c == job || job_family(c, sd->status.sex) == job || population_engine_job_base_class(c) == job;
 }
 
 static int16 slot_of(const std::string &name)
@@ -389,6 +401,7 @@ public:
 	bool limits_rotation = false;
 	bool for_shells = false;     ///< some plan is For: shells or all, so regular shells take turns
 	bool revives = false;        ///< some rule casts Resurrection (or Death Valley) itself
+	bool boss_plans = false;     ///< some plan is Mob: Boss, so turns look for a boss nearby
 
 	StrategyDatabase() : YamlDatabase("POPULATION_STRATEGY_DB", 1) {}
 
@@ -402,6 +415,7 @@ public:
 		this->limits_rotation = false;
 		this->for_shells = false;
 		this->revives = false;
+		this->boss_plans = false;
 	}
 
 	const std::string getDefaultLocation() override
@@ -600,12 +614,15 @@ bool StrategyDatabase::parse_event(const ryml::NodeRef &node, Rule &rule)
 bool StrategyDatabase::parse_requires(const ryml::NodeRef &node, Requirements &req)
 {
 	this->warn_unknown_keys(node, { "Skills", "Lacks", "Items", "BaseLevel", "Role" }, "Requires");
+	// A list takes any of them: [support, none] is "a support, or one with no duty given".
 	if (this->nodeExists(node, "Role")) {
-		std::string role;
-		this->asString(node, "Role", role);
-		if ((req.role = role_of(role)) == -2) {
-			this->invalidWarning(node["Role"], "Role must be tank, support, attacker or none.\n");
-			return false;
+		for (const std::string &name : scalars(node["Role"])) {
+			const int8 role = role_of(name);
+			if (role == -2) {
+				this->invalidWarning(node["Role"], "Role must be tank, support, attacker or none.\n");
+				return false;
+			}
+			req.roles |= static_cast<uint8>(1u << role);
 		}
 	}
 	auto skills = [&](const char *key, std::vector<uint16> &out) {
@@ -638,8 +655,9 @@ bool StrategyDatabase::parse_requires(const ryml::NodeRef &node, Requirements &r
 	return true;
 }
 
-/// Target: { Enemy: attacking, Who: party, NotSelf: true, Prefer: support, Range: n }
+/// Target: { Enemy: attacking, Who: party, NotSelf: true, Prefer: support, Job, Range: n }
 /// Target: { Ally: lowest_hp | nearest | missing, Role, Job, Status, NotSelf, Range }
+/// On an Enemy: attacking or target_of selector, Job is the member's: "what is hitting a Priest".
 bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 {
 	this->warn_unknown_keys(node, { "Enemy", "Ally", "Who", "NotSelf", "Prefer", "Role", "Job", "Status", "Range", "Boss" }, "Target");
@@ -705,10 +723,18 @@ bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 		}
 	}
 	if (this->nodeExists(node, "Job")) {
-		std::string job;
-		this->asString(node, "Job", job);
-		if ((sel.job = job_of(job)) == -2) {
-			this->invalidWarning(node["Job"], "Unknown job '%s'; the rule is skipped.\n", job.c_str());
+		std::vector<std::string> names = scalars(node["Job"]);
+		for (const std::string &name : names) {
+			const int32 job = job_of(name);
+			if (job == -2 || job == kAllJobs) {
+				this->invalidWarning(node["Job"], "Unknown job '%s'; the rule is skipped.\n", name.c_str());
+				return false;
+			}
+			if (job >= 0)
+				sel.jobs.push_back(job);
+		}
+		if (sel.jobs.empty()) {
+			this->invalidWarning(node["Job"], "No job in Job exists on this server; the rule is skipped.\n");
 			return false;
 		}
 	}
@@ -1180,14 +1206,22 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 		}
 		has_audience = true;
 	}
-	std::string job_name;
-	if (!this->asString(node, "Job", job_name))
-		return;
-	const int32 job = job_of(job_name);
-	if (job == -2) {
-		this->invalidWarning(node["Job"], "Unknown job '%s'; entry skipped.\n", job_name.c_str());
+	// Job: Priest is the whole family (High Priest, Arch Bishop, ...); a list is several. A job
+	// this era lacks is passed over, so one list serves renewal and pre-renewal.
+	if (!this->nodeExists(node, "Job")) {
+		this->invalidWarning(node, "A job entry needs Job; entry skipped.\n");
 		return;
 	}
+	std::vector<int32> jobs;
+	for (const std::string &name : scalars(node["Job"])) {
+		const int32 job = job_of(name);
+		if (job == -2)
+			this->invalidWarning(node["Job"], "Unknown job '%s'; skipped.\n", name.c_str());
+		else if (job != -3 && std::find(jobs.begin(), jobs.end(), job) == jobs.end())
+			jobs.push_back(job);
+	}
+	if (jobs.empty())
+		return;
 
 	// A Build is one way to play the job: its own rules and strategies, used by the companions
 	// that meet its Requires (a combo Monk Lacks Asura Strike, an Asura Monk has it).
@@ -1206,7 +1240,7 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 	if (this->nodeExists(node, "Reset"))
 		this->asBool(node, "Reset", reset);
 
-	for (const uint32 mob : mobs) {
+	for (const uint32 mob : mobs) for (const int32 job : jobs) {
 		const PlanKey key(mob, job, build);
 		if (remove) {
 			this->plans.erase(key);
@@ -1298,6 +1332,10 @@ uint64 StrategyDatabase::parseBodyNode(const ryml::NodeRef &node)
 			mobs.push_back(kAllMobs);
 			continue;
 		}
+		if (lower(n) == "boss") {
+			mobs.push_back(kBossMobs);
+			continue;
+		}
 		const uint32 id = mob_of(n);
 		if (id == 0)
 			this->invalidWarning(node, "Unknown monster '%s'; skipped.\n", n.c_str());
@@ -1311,8 +1349,8 @@ uint64 StrategyDatabase::parseBodyNode(const ryml::NodeRef &node)
 		bool encounter = false;
 		this->asBool(node, "Encounter", encounter);
 		for (const uint32 mob : mobs) {
-			if (mob == kAllMobs)
-				this->invalidWarning(node["Encounter"], "Encounter needs a monster, not All.\n");
+			if (mob == kAllMobs || mob == kBossMobs)
+				this->invalidWarning(node["Encounter"], "Encounter needs a monster, not All or Boss (a Boss plan is one already).\n");
 			else if (encounter)
 				this->encounter.insert(mob);
 			else
@@ -1324,8 +1362,8 @@ uint64 StrategyDatabase::parseBodyNode(const ryml::NodeRef &node)
 		const ryml::NodeRef t = node["Targeting"];
 		this->warn_unknown_keys(t, { "Priority", "Ignore", "MaxAttackers" }, "Targeting");
 		for (const uint32 mob : mobs) {
-			if (mob == kAllMobs) {
-				this->invalidWarning(t, "Targeting needs a monster, not All.\n");
+			if (mob == kAllMobs || mob == kBossMobs) {
+				this->invalidWarning(t, "Targeting needs a monster, not All or Boss.\n");
 				continue;
 			}
 			Targeting &tg = this->targeting[mob];
@@ -1369,8 +1407,10 @@ void StrategyDatabase::loadingFinished()
 			for (const RulePtr &r : s.second.rules)
 				note(r);
 		}
-		if (!plan_rotation(entry.first, plan) || !plan.ban.empty())
+		if (plan.rotation == 0 || (plan.rotation < 0 && std::get<0>(entry.first) != kAllMobs) || !plan.ban.empty())
 			this->limits_rotation = true;
+		if (std::get<0>(entry.first) == kBossMobs)
+			this->boss_plans = true;
 		if (plan.audience != Audience::Companions)
 			this->for_shells = true;
 		for (const auto &st : plan.strategies)
@@ -2095,6 +2135,11 @@ static bool enemy_matches(Turn &t, const Selector &sel, const mob_data *md, int 
 	case Selector::Pick::Attacking:
 		if (md->target_id == 0 || !member_is(t, md->target_id, sel.who) || (sel.not_self && md->target_id == sd->id))
 			return false;
+		if (!sel.jobs.empty()) {
+			const map_session_data *victim = map_id2sd(md->target_id);
+			if (victim == nullptr || std::none_of(sel.jobs.begin(), sel.jobs.end(), [&](int32 j) { return job_matches(victim, j); }))
+				return false;
+		}
 		rank = sel.prefer != Member::Any && member_is(t, md->target_id, sel.prefer) ? 0 : 1;
 		return true;
 	case Selector::Pick::LowestHp: rank = hp_pct(md); return true;
@@ -2130,6 +2175,8 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 		members.push_back(sd);
 		for (map_session_data *m : members) {
 			if (!member_is(t, m->id, sel.who) || (sel.not_self && m == sd))
+				continue;
+			if (!sel.jobs.empty() && std::none_of(sel.jobs.begin(), sel.jobs.end(), [&](int32 j) { return job_matches(m, j); }))
 				continue;
 			int32 id = population_engine_is_population_pc(m->id) ? m->pop.target_id : 0;
 			if (id == 0) {
@@ -2186,7 +2233,7 @@ static block_list *select_ally(Turn &t, const Selector &sel, int range)
 			continue;
 		if (sel.role >= 0 && (!population_engine_is_population_pc(m->id) || m->pop.role != sel.role))
 			continue;
-		if (sel.job >= 0 && m->status.class_ != sel.job && population_engine_job_base_class(m->status.class_) != sel.job)
+		if (!sel.jobs.empty() && std::none_of(sel.jobs.begin(), sel.jobs.end(), [&](int32 j) { return job_matches(m, j); }))
 			continue;
 		int rank = 0;
 		if (sel.pick == Selector::Pick::LowestHp) {
@@ -2645,7 +2692,7 @@ static bool requires_ok(const map_session_data *sd, const Requirements &req)
 {
 	if (req.base_level > 0 && static_cast<int32>(sd->status.base_level) < req.base_level)
 		return false;
-	if (req.role >= 0 && sd->pop.role != req.role)
+	if (req.roles != 0 && (req.roles & (1u << static_cast<uint8>(sd->pop.role))) == 0)
 		return false;
 	for (const uint16 id : req.skills)
 		if (pc_checkskill(sd, id) == 0)
@@ -2914,6 +2961,15 @@ struct PlanRef {
 	int32 instance;   ///< the monster this plan is for right now (0 for All): its fight
 };
 
+static int32 boss_scan_cb(block_list *bl, va_list ap)
+{
+	auto *found = va_arg(ap, std::vector<mob_data *> *);
+	mob_data *md = reinterpret_cast<mob_data *>(bl);
+	if (!status_isdead(*md) && md->status.class_ == CLASS_BOSS)
+		found->push_back(md);
+	return 0;
+}
+
 static int32 encounter_scan_cb(block_list *bl, va_list ap)
 {
 	auto *found = va_arg(ap, std::vector<mob_data *> *);
@@ -2924,24 +2980,40 @@ static int32 encounter_scan_cb(block_list *bl, va_list ap)
 }
 
 /// The plans that apply, most specific first: the monster it targets, then the encounter
-/// monsters near it (the nearest of each kind), then All; within each, this job before its
-/// base class before All, and the builds the companion meets before the plan for every
-/// build ("" sorts first in the table, so it is taken last).
+/// monsters near it (the nearest of each kind), then Boss (the boss it targets, else the
+/// nearest), then All; within each, this job before its family before its 1st class before
+/// All, and the builds the companion meets before the plan for every build ("" sorts first
+/// in the table, so it is taken last).
 static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_list *enemy)
 {
 	std::vector<std::pair<uint32, int32>> mobs; // (mob id, instance)
-	if (enemy != nullptr && enemy->type == BL_MOB)
-		mobs.emplace_back(reinterpret_cast<const mob_data *>(enemy)->mob_id, enemy->id);
-	if (!g_db.encounter.empty()) {
-		std::vector<mob_data *> found;
-		map_foreachinrange(encounter_scan_cb, sd, AREA_SIZE, BL_MOB, &found);
+	const mob_data *target = enemy != nullptr && enemy->type == BL_MOB ? reinterpret_cast<const mob_data *>(enemy) : nullptr;
+	if (target != nullptr)
+		mobs.emplace_back(target->mob_id, target->id);
+	auto nearest_first = [&](std::vector<mob_data *> &found) {
 		std::sort(found.begin(), found.end(), [&](const mob_data *a, const mob_data *b) {
 			const int da = distance_bl(sd, a), db = distance_bl(sd, b);
 			return da != db ? da < db : a->id < b->id;
 		});
+	};
+	if (!g_db.encounter.empty()) {
+		std::vector<mob_data *> found;
+		map_foreachinrange(encounter_scan_cb, sd, AREA_SIZE, BL_MOB, &found);
+		nearest_first(found);
 		for (const mob_data *md : found)
 			if (std::none_of(mobs.begin(), mobs.end(), [&](const auto &m) { return m.first == md->mob_id; }))
 				mobs.emplace_back(md->mob_id, md->id);
+	}
+	if (g_db.boss_plans) {
+		if (target != nullptr && target->status.class_ == CLASS_BOSS && !status_isdead(*target)) {
+			mobs.emplace_back(kBossMobs, target->id);
+		} else {
+			std::vector<mob_data *> found;
+			map_foreachinrange(boss_scan_cb, sd, AREA_SIZE, BL_MOB, &found);
+			nearest_first(found);
+			if (!found.empty())
+				mobs.emplace_back(kBossMobs, found.front()->id);
+		}
 	}
 	mobs.emplace_back(kAllMobs, 0);
 
@@ -2951,9 +3023,12 @@ static std::vector<PlanRef> plans_for(const map_session_data *sd, const block_li
 		return plan.audience == Audience::All || (plan.audience == Audience::Companions) == companion;
 	};
 	const int32 job = sd->status.class_;
+	int32 family = job_family(job, sd->status.sex);
+	if (family < 0) // none: -1 would read as kAllJobs
+		family = job;
 	const int32 base = population_engine_job_base_class(sd->status.class_);
 	for (const auto &m : mobs) {
-		for (const int32 j : { job, base, kAllJobs }) {
+		for (const int32 j : { job, family, base, kAllJobs }) {
 			const Plan *every_build = nullptr;
 			PlanKey every_key;
 			for (auto it = g_db.plans.lower_bound(PlanKey(m.first, j, std::string())); it != g_db.plans.end()
@@ -3000,9 +3075,16 @@ static void track_fight(Turn &t, const std::vector<PlanRef> &plans)
 	std::vector<std::pair<uint32, int32>> now;
 	for (const PlanRef &p : plans) {
 		const uint32 mob = std::get<0>(p.key);
-		if (mob != kAllMobs && p.instance != 0 && g_db.encounter.count(mob) != 0
-				&& std::find(now.begin(), now.end(), std::make_pair(mob, p.instance)) == now.end())
-			now.emplace_back(mob, p.instance);
+		uint32 kind = mob;
+		if (mob == kBossMobs) { // a Boss plan's boss is an encounter too, under its own id
+			const mob_data *md = map_id2md(p.instance);
+			kind = md != nullptr ? md->mob_id : 0;
+		} else if (g_db.encounter.count(mob) == 0) {
+			kind = 0;
+		}
+		if (kind != 0 && p.instance != 0
+				&& std::find(now.begin(), now.end(), std::make_pair(kind, p.instance)) == now.end())
+			now.emplace_back(kind, p.instance);
 	}
 	auto record = [&](Event kind, uint32 mob, int32 instance, bool died) {
 		st.occurrences.push_back({ ++g_occurrence_seq, t.tick, kind, mob, instance, died });
@@ -3016,7 +3098,8 @@ static void track_fight(Turn &t, const std::vector<PlanRef> &plans)
 				continue;
 			bool gone = false;
 			const bool died = gone_died(sd, e.second, gone);
-			record(Event::EncounterEnded, e.first, e.second, died);
+			if (died || gone) // still here: a Boss plan only turned to a nearer boss
+				record(Event::EncounterEnded, e.first, e.second, died);
 		}
 		if (st.last_target != 0 && st.last_target != sd->pop.target_id) {
 			bool gone = false;
@@ -3178,9 +3261,15 @@ bool population_strategy_rotation_allows(map_session_data *sd, block_list *targe
 		cached_target = target_id;
 		cached_generation = g_generation;
 	}
+	// Rotation layers: a plan (or its active strategy) that says false wins; else one that says
+	// true; else the default, which is off while a plan about a monster (or Boss) applies. So a
+	// boss's plan that says nothing leaves the decision to a role plan that does.
 	const auto st = g_shells.find(sd->id);
+	bool said_true = false, about_monster = false;
 	for (const PlanRef &p : cached) {
-		bool rotation = plan_rotation(p.key, *p.plan);
+		int8 rotation = p.plan->rotation;
+		if (std::get<0>(p.key) != kAllMobs)
+			about_monster = true;
 		const Strategy *active = nullptr;
 		if (st != g_shells.end() && st->second.char_id == sd->status.char_id) {
 			const auto ps = st->second.plans.find(p.key);
@@ -3191,15 +3280,16 @@ bool population_strategy_rotation_allows(map_session_data *sd, block_list *targe
 			}
 		}
 		if (active != nullptr && active->rotation >= 0)
-			rotation = active->rotation != 0;
-		if (!rotation)
+			rotation = active->rotation;
+		if (rotation == 0)
 			return false;
+		said_true = said_true || rotation > 0;
 		if (std::find(p.plan->ban.begin(), p.plan->ban.end(), skill_id) != p.plan->ban.end())
 			return false;
 		if (active != nullptr && std::find(active->ban.begin(), active->ban.end(), skill_id) != active->ban.end())
 			return false;
 	}
-	return true;
+	return said_true || !about_monster;
 }
 
 uint32 population_strategy_target(map_session_data *sd, map_session_data *owner, uint32 desired)

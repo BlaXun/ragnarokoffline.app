@@ -30,7 +30,8 @@ noticing: a `data/`-only mod has no empty `npc/` folder for symmetry.
 | [island-population](island-population) | `db/` | **Blocked.** Why AI population cannot be configured for a modded map yet. |
 | [start-in-your-town](start-in-your-town) | `conf/` `npc/` | New characters wake up on your island. Needs `custom-map`. |
 | [settings-window](settings-window) | `npc/` | A settings window of the mod's own: grouped options, one switch for a group, and its own Apply. |
-| [companion-tactics](companion-tactics) | `db/` | Recruited companions that fight by plan: per-monster, per-job and per-build rules with strategies they switch between. Loaded by a real server, not yet played. |
+| [companion-roles](companion-roles) | `db/` | Recruited companions play their part at any boss: Priests heal, wall and revive, casters keep their distance, melee keeps SP back. The class family picks the role, a party-chat Duty overrides it. |
+| [companion-tactics](companion-tactics) | `db/` | Boss plans on top of companion-roles: Phreeoni's phases, and Monk and Ninja builds against the Stalactic Golem. Needs `companion-roles`. |
 | [blaze-shield-lua](blaze-shield-lua) | `lua/` | A skill that behaves differently on hit — drain cards and Hylozoist Card on Blaze Shield — with no change to the server. |
 | [pregame-stage](pregame-stage) | `client/` | Login, character select and creation drawn by the mod: a painted scene, a portrait slot list and the character on a stage. |
 | [host-local-ai](host-local-ai) | `client/` `host/` | A host route: the host's local AI model, asked from a window in game by the host and invited friends. Unit-tested, not yet run in game. |

@@ -138,7 +138,8 @@ starting a cast, a party-chat line, a party member dying), to the engine's own
 `population_skill_db.yml` conditions, and to a few of their own (status charges,
 the companion's own ground units). They cast, step back, keep their distance,
 hold still, speak and switch strategy. `docs/mods/companion-strategies.md` is the
-reference, and `examples/mods/companion-tactics` a worked set.
+reference. `examples/mods/companion-roles` (each role at any boss) and
+`examples/mods/companion-tactics` (particular bosses) are worked sets.
 
 It is built to stay out of upstream's way. The whole feature is
 `src/map/population_engine/strategy/`, and the engine calls it from thirteen

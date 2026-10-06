@@ -2940,13 +2940,18 @@ mod tests {
         );
         assert_eq!(header_type(stub).as_deref(), Some("POPULATION_STRATEGY_DB"));
         assert!(!header_clears(stub));
-        let example = include_str!(
+        let roles = include_str!(
+            "../../examples/mods/companion-roles/db/population_strategy.yml"
+        );
+        let tactics = include_str!(
             "../../examples/mods/companion-tactics/db/population_strategy.yml"
         );
-        assert_eq!(header_type(example).as_deref(), Some("POPULATION_STRATEGY_DB"));
-        // Two mods shipping it are combined into one table.
-        let merged = merge_tables(example, example).expect("same Type merges");
+        assert_eq!(header_type(roles).as_deref(), Some("POPULATION_STRATEGY_DB"));
+        assert_eq!(header_type(tactics).as_deref(), Some("POPULATION_STRATEGY_DB"));
+        // The two example mods, which are meant to be on together, combine into one table.
+        let merged = merge_tables(roles, tactics).expect("same Type merges");
         assert_eq!(merged.matches("\nBody:").count(), 1, "{merged}");
+        assert!(merged.contains("Mob: Boss") && merged.contains("Mob: PHREEONI"), "{merged}");
     }
 
     #[test]
