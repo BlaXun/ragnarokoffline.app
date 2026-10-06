@@ -18,9 +18,10 @@ What it cannot see: an NPC a script hides or moves while it runs
 (`disablenpc`, `movenpc`) is listed where its script first puts it.
 
 `npc-index.tsv` lists the NPCs in the pinned rAthena's scripts, which live in
-the server image rather than on your machine. It is generated, and regenerated
-when the rAthena pin moves:
+the server image rather than on your machine. It is generated from the pin with
+the app's server mods applied, and regenerated whenever the rAthena pin moves
+(CI fails until it is):
 
 ```
-ragnarok-stack navigation-npc-index <rAthena checkout with scripts/apply-server-mods.sh applied>
+scripts/navigation-index.sh
 ```

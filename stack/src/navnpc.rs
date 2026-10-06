@@ -550,11 +550,13 @@ mod tests {
         let head = std::process::Command::new("git").arg("-C").arg(&rathena).args(["rev-parse", "HEAD"]).output().ok()
             .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string());
         if !rathena.join(".ragnarokmac-server-mods").exists() || pin.is_none() || head != pin {
+            // CI's server-language job sets this, having made that checkout.
+            assert!(std::env::var_os("REQUIRE_PINNED_RATHENA").is_none(), "vendor/rathena is not the pin with server mods applied");
             eprintln!("no server-modded rAthena at the pin in vendor/rathena; skipping");
             return;
         }
         let shipped = fs::read_to_string(app.join("mods").join(MOD).join(INDEX)).unwrap();
         let fresh = build_index(&rathena).unwrap().to_text();
-        assert!(shipped == fresh, "mods/{MOD}/{INDEX} is stale: regenerate it with ragnarok-stack navigation-npc-index");
+        assert!(shipped == fresh, "mods/{MOD}/{INDEX} is stale: run scripts/navigation-index.sh");
     }
 }
