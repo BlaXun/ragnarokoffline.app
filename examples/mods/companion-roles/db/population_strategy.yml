@@ -220,7 +220,15 @@ Body:
             Cast: ALL_RESURRECTION
             Target: dead_ally
             Say: "Getting you up, {ally}!"
-          # Resurrection reaches 9 cells: walk to a body that lies further away.
+          # Resurrection reaches 9 cells: walk to a body that lies further away, and keep
+          # walking every turn until it is within reach. An event rule is answered by its
+          # first step, and the positioning rules below then pulled the healer straight
+          # back (Phreeoni playtest 6: the owner lay 10 cells off and was never revived).
+          - Name: close_to_the_fallen
+            Priority: 104
+            Target: { Ally: dead, NotSelf: true }
+            KeepDistance: { Min: 1, Max: 8 }
+          # Beyond sight (14 cells), where no selector looks: the death itself starts the walk.
           - Name: go_to_the_fallen
             Priority: 103
             On: { Event: party_member_died, Within: 30000 }
