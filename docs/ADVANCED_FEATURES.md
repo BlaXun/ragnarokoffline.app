@@ -206,8 +206,16 @@ come from your client.
 search finds what the server spawns, on the maps it spawns them, with the
 level, element, race and size its monster database gives -- after every mod's
 changes, so a custom monster or a randomized one shows as it is in game. The
-frequency column counts every spawn line on the map. The two mods are
-independent; turn on either or both.
+frequency column counts every spawn line on the map.
+
+**Settings → Mods → navigation-server-warps** routes over the server's own
+warp portals, and the portals mods add, instead of kRO's: the routes then match
+pre-renewal towns, whose gates are not where kRO's renewal ones are, and reach
+maps a mod adds. The NPCs in your client's routes that move you when spoken to
+-- sailors, signposts -- are kept, since they cannot be read from the server's
+scripts the way a portal can.
+
+The three mods are independent; turn on any of them.
 
 ### When searches come back empty
 

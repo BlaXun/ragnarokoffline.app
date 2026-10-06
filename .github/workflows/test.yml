@@ -37,8 +37,8 @@ jobs:
       # renewal item database.
       - run: python3 third-party/population-engine/validate.py vendor/rathena
       # vendor/rathena is now the pin with the server mods applied, the tree the
-      # navigation-server-npcs and -monsters indexes describe (both tests match
-      # the name). The test skips without such a
+      # navigation-server-npcs, -monsters and -warps indexes describe (each
+      # one's test matches the name). The test skips without such a
       # checkout; here it must not, or a pin bump would leave the index stale
       # unnoticed. scripts/navigation-index.sh regenerates it.
       - uses: dtolnay/rust-toolchain@stable
@@ -102,9 +102,16 @@ jobs:
       - name: Build the pinned container client and verify private stdin capability
         shell: bash
         run: bash scripts/build-docker-slim.sh
+      # tests/navigation-names.test.cjs runs the client's navigation merge in
+      # a real Lua; it skips without one, so one runner must have it.
+      - name: Install Lua for the navigation merge test
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y -qq lua5.1 || (sudo apt-get update -qq && sudo apt-get install -y -qq lua5.1)
       - name: Test lifecycle and the real process protocol
         timeout-minutes: 5
         shell: bash
+        env:
+          REQUIRE_LUA: ${{ runner.os == 'Linux' && '1' || '' }}
         run: |
           binary_path="$(node -p 'require("node:path").resolve("bin/robrowser-remoteclient" + (process.platform === "win32" ? ".exe" : ""))')"
           stack_path="$(node -p 'require("node:path").resolve("stack/target/debug/ragnarok-stack" + (process.platform === "win32" ? ".exe" : ""))')"

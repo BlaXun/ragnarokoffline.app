@@ -10,6 +10,13 @@
  * A name the dictionary does not hold is left as it is: an iRO table already
  * in English, or an entry newer than the translation. With the translation off
  * there is no SystemEN to load, and every table keeps the client's own names.
+ *
+ * The navigation-server-warps mod adds navi_link_server.lub: the server's own
+ * warp portals (stack/src/navwarp.rs). Loaded with the dictionary, it takes
+ * the place of the GRF's portals (type 200) in Navi_Link, and the GRF's
+ * Navi_Distance, which describes routes over those portals by their ids, is
+ * set aside. The GRF's other links -- sailors, signposts -- stay. Without the
+ * mod the file is not there and nothing changes.
  */
 'use strict';
 
@@ -35,21 +42,42 @@ function navigationNamesTurn() {
 	_navigationNamesTurn = (_navigationNamesTurn || loadNavigationNames()).then(() => new Promise((resolve) => setTimeout(resolve, 0)));
 	return _navigationNamesTurn;
 }
+// What every navigation table waits for: the dictionary, then the server's
+// portals. One after the other, each in its own Client.loadFile callback, for
+// the reason above.
 function loadNavigationNames() {
-	if (!_navigationNamesLoad) _navigationNamesLoad = new Promise((resolve) => {
-		const file = "SystemEN/Navi_Data.lub";
+	const load = (file, what) => new Promise((resolve) => {
 		Client.loadFile(file, async (data) => {
 			try {
 				lua.mountFile(file, data instanceof ArrayBuffer ? new Uint8Array(data) : data);
 				await lua.doFile(file);
 				lua.unmountFile(file);
 			} catch (error) {
-				console.warn("(" + file + ") navigation names stay as the tables have them:", error);
+				console.warn("(" + file + ") " + what, error);
 			}
 			resolve();
 		}, () => resolve());
 	});
+	if (!_navigationNamesLoad) _navigationNamesLoad = load("SystemEN/Navi_Data.lub", "navigation names stay as the tables have them:")
+		.then(() => load(DB.LUA_PATH + "navigation/navi_link_server.lub", "routes keep the client's own portals:"));
 	return _navigationNamesLoad;
+}
+// Lua: the server's portals in place of the GRF's, and the GRF's route
+// distances, which name its portals by id, set aside.
+function navigationServerLinks(variableName) {
+	const present = 'type(Navi_Link_Server) == "table" and #Navi_Link_Server > 0';
+	if (variableName === "Navi_Link") return \`
+							if \${present} and type(Navi_Link) == "table" then
+								local links = {}
+								for _, row in ipairs(Navi_Link) do
+									if row[3] ~= 200 then links[#links + 1] = row end
+								end
+								for _, row in ipairs(Navi_Link_Server) do links[#links + 1] = row end
+								Navi_Link = links
+							end\`;
+	if (variableName === "Navi_Distance") return \`
+							if \${present} then Navi_Distance = {} end\`;
+	return "";
 }
 function navigationNameSwap(variableName) {
 	const columns = NAVIGATION_NAME_COLUMNS[variableName];
@@ -74,15 +102,16 @@ const LOAD_NEEDLE = 'await lua.doFile(file_path);';
 const EXTRACT_NEEDLE = 'extractValue(to_json(${variable_name}))';
 
 /**
- * Edit loadLuaValue's source: load the dictionary before a navigation table,
- * and rename the table's entries before it is converted to JSON.
+ * Edit loadLuaValue's source: load the dictionary and the server's portals
+ * before a navigation table, then put the portals in and rename the table's
+ * entries before it is converted to JSON.
  */
 function patchLoader(loader) {
   if (loader.split(LOAD_NEEDLE).length !== 2) throw Error('Navigation Lua load call not found');
   if (loader.split(EXTRACT_NEEDLE).length !== 2) throw Error('Navigation value extraction not found');
   return IMPLEMENTATION + loader
-    .replace(LOAD_NEEDLE, `if (NAVIGATION_NAME_COLUMNS[variable_name]) await navigationNamesTurn();\n\t\t\t\t${LOAD_NEEDLE}`)
-    .replace(EXTRACT_NEEDLE, '${navigationNameSwap(variable_name)}\n\t\t\t\t\t\t\t' + EXTRACT_NEEDLE);
+    .replace(LOAD_NEEDLE, `if (NAVIGATION_NAME_COLUMNS[variable_name] || variable_name === "Navi_Distance") await navigationNamesTurn();\n\t\t\t\t${LOAD_NEEDLE}`)
+    .replace(EXTRACT_NEEDLE, '${navigationServerLinks(variable_name)}${navigationNameSwap(variable_name)}\n\t\t\t\t\t\t\t' + EXTRACT_NEEDLE);
 }
 
 module.exports = { IMPLEMENTATION, patchLoader };
