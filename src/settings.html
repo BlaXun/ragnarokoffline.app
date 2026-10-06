@@ -2208,6 +2208,23 @@ function modRow(m, kindBoxes, pendingNames) {
   }
 
   const actions = el('div', 'mactions');
+  // What the mod keeps in the mod store, for every player. Any mod can have
+  // some, bundled or not, so every mod gets the button.
+  const reset = el('button', '', 'Reset data…');
+  reset.type = 'button';
+  reset.onclick = async () => {
+    const sure = await askInWindow({
+      title: `Reset ${m.name}'s data?`,
+      text: 'Everything this mod has saved for itself is deleted: its own records, and what it kept for every account and character. The game stops while it runs, and a backup is saved first. Characters and items are not touched.',
+      buttons: [{ value: 'cancel', label: 'Cancel', focus: true }, { value: 'reset', label: 'Reset data', className: 'danger' }],
+    });
+    if (!sure) return;
+    reset.disabled = true;
+    try { log(await invoke('mod_data_reset', { name: m.name })); }
+    catch (e) { log('error: ' + e); }
+    reset.disabled = false;
+  };
+  actions.append(reset);
   // Only what the player installed: a mod that ships with the app lives in
   // the app itself and can only be switched off.
   if (!m.bundled) {
