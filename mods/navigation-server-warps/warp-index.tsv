@@ -5,6 +5,8 @@
 #   load  <era> <script>        the era's default load order
 #   file  <script>
 #   warp  <map> <x> <y> <name> <dest> <dx> <dy>
+#   off   <name>                switched off under OnInit
+#   on    <name>                switched on
 load	renewal	npc/other/Global_Functions.txt
 load	renewal	npc/other/CashShop_Functions.txt
 load	renewal	npc/airports/airships.txt
@@ -1387,31 +1389,114 @@ warp	bat_room	253	81	bat29	bat_room	154	149
 warp	bat_room	253	90	bat30	bat_room	154	149
 warp	bat_room	253	220	bat31	bat_room	154	149
 warp	bat_room	253	211	bat32	bat_room	154	149
+on	Flavius Officer#01a
+on	Flavius Officer#01b
+on	Flavius Officer#02a
+on	Flavius Officer#02b
+on	Tierra Gorge Officer#01a
+on	Tierra Gorge Officer#01b
+on	Tierra Gorge Officer#02a
+on	Tierra Gorge Officer#02b
 file	npc/battleground/flavius/flavius01.txt
 warp	bat_room	85	220	back_bgroomb01a	bat_room	154	150
 warp	bat_room	85	211	back_bgroomb01b	bat_room	154	150
+off	Croix Vintenar#b01_b
+off	Guillaume Vintenar#b01_a
+off	Vintenar#bat_b01_aover
+off	Vintenar#bat_b01_bover
+on	Battle Therapist#b01_a
+on	Battle Therapist#b01_b
+on	Croix Vintenar#b01_b
+on	Guillaume Vintenar#b01_a
+on	Vintenar#bat_b01_aover
+on	Vintenar#bat_b01_bover
 file	npc/battleground/flavius/flavius02.txt
 warp	bat_room	141	220	back_bgroomb02a	bat_room	154	150
 warp	bat_room	141	211	back_bgroomb02b	bat_room	154	150
+off	Croix Vintenar#b02_b
+off	Guillaume Vintenar#b02_a
+off	Vintenar#bat_b02_aover
+off	Vintenar#bat_b02_bover
+on	Battle Therapist#b02_a
+on	Battle Therapist#b02_b
+on	Croix Vintenar#b02_b
+on	Guillaume Vintenar#b02_a
+on	Vintenar#bat_b02_aover
+on	Vintenar#bat_b02_bover
 file	npc/battleground/kvm/kvm01.txt
 warp	bat_room	169	220	#kvm801	bat_room	154	150
 warp	bat_room	169	211	#kvm802	bat_room	154	150
+off	#A_camp_start01
+off	#B_camp_start01
+off	KVM Officer#KVM01A
+off	KVM Officer#KVM01B
+on	#A_camp_start01
+on	#B_camp_start01
+on	KVM Officer#KVM01A
+on	KVM Officer#KVM01B
 file	npc/battleground/kvm/kvm02.txt
 warp	bat_room	197	220	#kvm601	bat_room	154	150
 warp	bat_room	197	21	#kvm602	bat_room	154	150
+off	#A_camp_start02
+off	#B_camp_start02
+off	KVM Officer#KVM02A
+off	KVM Officer#KVM02B
+on	#A_camp_start02
+on	#B_camp_start02
+on	KVM Officer#KVM02A
+on	KVM Officer#KVM02B
 file	npc/battleground/kvm/kvm03.txt
 warp	bat_room	225	220	#kvm701	bat_room	154	150
 warp	bat_room	225	211	#kvm702	bat_room	154	150
+off	#A_camp_start03
+off	#B_camp_start03
+off	KVM Officer#KVM03A
+off	KVM Officer#KVM03B
+on	#A_camp_start03
+on	#B_camp_start03
+on	KVM Officer#KVM03A
+on	KVM Officer#KVM03B
 file	npc/battleground/tierra/tierra01.txt
 warp	bat_room	57	220	back_bgrooma01a	bat_room	154	150
 warp	bat_room	57	211	back_bgrooma01b	bat_room	154	150
 warp	bat_a01	169	227	underladd#bat_a01_1	bat_a01	178	228
 warp	bat_a01	208	164	underladd#bat_a01_2	bat_a01	200	171
+off	Croix Blacksmith#bat_a01
+off	Croix Vintenar#a01_b
+off	Guillaume Blacksmith#a01
+off	Guillaume Vintenar#a01_a
+on	Battle Therapist#a01_a
+on	Battle Therapist#a01_b
+on	Croix Blacksmith#bat_a01
+on	Croix Vintenar#a01_b
+on	Guillaume Blacksmith#a01
+on	Guillaume Vintenar#a01_a
 file	npc/battleground/tierra/tierra02.txt
 warp	bat_room	113	220	back_bgrooma02a	bat_room	154	150
 warp	bat_room	113	211	back_bgrooma02b	bat_room	154	150
 warp	bat_a02	169	227	underladd#bat_a02_1	bat_a02	178	228
 warp	bat_a02	208	164	underladd#bat_a02_2	bat_a02	200	171
+off	Croix Blacksmith#bat_a02
+off	Croix Vintenar#a02_b
+off	Guillaume Blacksmith#a02
+off	Guillaume Vintenar#a02_a
+on	Battle Therapist#a02_a
+on	Battle Therapist#a02_b
+on	Croix Blacksmith#bat_a02
+on	Croix Vintenar#a02_b
+on	Guillaume Blacksmith#a02
+on	Guillaume Vintenar#a02_a
+file	npc/custom/events/devil_square.txt
+on	Devil Square Guardian#2
+on	ord11-12
+file	npc/custom/events/holiday/uneasy_cemetery.txt
+off	Mother Mathana
+on	Mother Mathana
+file	npc/custom/quests/event_6_new_hats.txt
+on	Blac
+on	Jac
+on	Pac
+on	Zac
 file	npc/custom/quests/thq/THQS_TTShop.txt
 warp	prt_in	159	172	thqwrp	yuno_in01	123	155
 file	npc/events/bossnia.txt
@@ -1419,18 +1504,667 @@ warp	bossnia_01	204	204	bossnia01	prontera	155	180
 warp	bossnia_02	204	204	bossnia02	prontera	155	180
 warp	bossnia_03	204	204	bossnia03	prontera	155	180
 warp	bossnia_04	204	204	bossnia04	prontera	155	180
+file	npc/events/christmas_2005.txt
+off	Christ#christ02
+off	Event#event02
+off	Happymerry#happymerry02
+off	Mas#mas02
+on	Christ#christ02
+on	Enjoy#enjoy
+on	Event#event02
+on	Happymerry#happymerry02
+on	Mas#mas02
 file	npc/events/gdevent_aru.txt
 warp	arug_que01	104	140	back#aru_gd	arug_dun01	199	192
+off	Dwarf#aru_gd
+off	Gergath#aru_gd
+off	removepp_aru_gd
+on	Dwarf#aru_gd
+on	Gergath#aru_gd
+on	removepp_aru_gd
 file	npc/events/gdevent_sch.txt
 warp	schg_que01	104	140	back#sch_gd	schg_dun01	199	192
+off	Dwarf#sch_gd
+off	Gergath#sch_gd
+off	removepp_sch_gd
+on	Dwarf#sch_gd
+on	Gergath#sch_gd
+on	removepp_sch_gd
+file	npc/events/god_se_festival.txt
+on	Rhehe Ravies#gq_fes03
+on	Rmimi Ravies#gq_fes01
+file	npc/events/halloween_2006.txt
+off	Chicken#06_hw_p01
+off	Chicken#06_hw_p02
+off	Chicken#06_hw_p03
+off	Chicken#06_hw_p04
+off	Chicken#06_hw_p05
+off	Chicken#06_hw_p06
+off	Chicken#06_hw_p07
+off	Chicken#06_hw_p08
+off	Chicken#06_hw_p09
+off	Chicken#06_hw_p10
+off	Chicken#06_hw_p11
+off	Chicken#06_hw_p12
+off	Chicken#06_hw_p13
+off	Chicken#06_hw_p14
+off	Chicken#06_hw_p15
+off	Chicken#06_hw_p16
+off	Chicken#06_hw_p17
+off	Chicken#06_hw_p18
+off	Chicken#06_hw_p19
+off	Chicken#06_hw_p20
+off	Chicken#06_hw_p21
+off	Chicken#06_hw_p22
+off	Chicken#06_hw_p23
+off	Chicken#06_hw_p24
+off	Chicken#06_hw_p25
+off	Chicken#06_hw_p26
+off	Chicken#06_hw_p27
+off	Chicken#06_hw_p28
+off	Chicken#06_hw_p29
+off	Chicken#06_hw_p30
+off	Chicken#06_hw_p31
+off	Chicken#06_hw_p32
+off	Chicken#06_hw_p33
+off	Chicken#06_hw_p34
+off	Chicken#06_hw_p35
+off	Chicken#06_hw_p36
+off	Chicken#06_hw_p37
+off	Chicken#06_hw_p38
+off	Chicken#06_hw_p39
+off	Chicken#06_hw_p40
+off	Chicken#06_hw_p41
+off	Chicken#06_hw_pf01
+off	Chicken#06_hw_pf02
+off	Chicken#06_hw_pf03
+off	Chicken#06_hw_pf04
+off	Chicken#06_hw_pf05
+off	Chicken#06_hw_pf06
+off	Chicken#06_hw_pf07
+off	Chicken#06_hw_pf08
+off	Chicken#06_hw_pf09
+off	Chicken#06_hw_pf10
+off	Chicken#06_hw_pf11
+off	Chicken#06_hw_pf12
+off	Chicken#06_hw_pf13
+off	Chicken#06_hw_pf14
+off	Chicken#06_hw_pf15
+off	Chicken#06_hw_pf16
+off	Chicken#06_hw_pf17
+off	Chicken#06_hw_pf18
+off	Chicken#06_hw_pf19
+off	Chicken#06_hw_pf20
+off	Chicken#06_hw_pf21
+off	Chicken#06_hw_pf22
+off	Chicken#06_hw_pf23
+off	Chicken#06_hw_pf24
+off	Chicken#06_hw_pf25
+off	Chicken#06_hw_pf26
+off	Chicken#06_hw_pf27
+on	Chicken#06_hw_p01
+on	Chicken#06_hw_p02
+on	Chicken#06_hw_p03
+on	Chicken#06_hw_p04
+on	Chicken#06_hw_p05
+on	Chicken#06_hw_p06
+on	Chicken#06_hw_p07
+on	Chicken#06_hw_p08
+on	Chicken#06_hw_p09
+on	Chicken#06_hw_p10
+on	Chicken#06_hw_p11
+on	Chicken#06_hw_p12
+on	Chicken#06_hw_p13
+on	Chicken#06_hw_p14
+on	Chicken#06_hw_p15
+on	Chicken#06_hw_p16
+on	Chicken#06_hw_p17
+on	Chicken#06_hw_p18
+on	Chicken#06_hw_p19
+on	Chicken#06_hw_p20
+on	Chicken#06_hw_p21
+on	Chicken#06_hw_p22
+on	Chicken#06_hw_p23
+on	Chicken#06_hw_p24
+on	Chicken#06_hw_p25
+on	Chicken#06_hw_p26
+on	Chicken#06_hw_p27
+on	Chicken#06_hw_p28
+on	Chicken#06_hw_p29
+on	Chicken#06_hw_p30
+on	Chicken#06_hw_p31
+on	Chicken#06_hw_p32
+on	Chicken#06_hw_p33
+on	Chicken#06_hw_p34
+on	Chicken#06_hw_p35
+on	Chicken#06_hw_p36
+on	Chicken#06_hw_p37
+on	Chicken#06_hw_p38
+on	Chicken#06_hw_p39
+on	Chicken#06_hw_p40
+on	Chicken#06_hw_p41
+on	Chicken#06_hw_pf01
+on	Chicken#06_hw_pf02
+on	Chicken#06_hw_pf03
+on	Chicken#06_hw_pf04
+on	Chicken#06_hw_pf05
+on	Chicken#06_hw_pf06
+on	Chicken#06_hw_pf07
+on	Chicken#06_hw_pf08
+on	Chicken#06_hw_pf09
+on	Chicken#06_hw_pf10
+on	Chicken#06_hw_pf11
+on	Chicken#06_hw_pf12
+on	Chicken#06_hw_pf13
+on	Chicken#06_hw_pf14
+on	Chicken#06_hw_pf15
+on	Chicken#06_hw_pf16
+on	Chicken#06_hw_pf17
+on	Chicken#06_hw_pf18
+on	Chicken#06_hw_pf19
+on	Chicken#06_hw_pf20
+on	Chicken#06_hw_pf21
+on	Chicken#06_hw_pf22
+on	Chicken#06_hw_pf23
+on	Chicken#06_hw_pf24
+on	Chicken#06_hw_pf25
+on	Chicken#06_hw_pf26
+on	Chicken#06_hw_pf27
+on	Masta's chicken#
+file	npc/events/nguild/nguild_managers.txt
+on	Kafra Staff#
+file	npc/events/xmas.txt
+off	Santa Claus
+file	npc/guild/agit_main.txt
+on	Kafra Staff#
+file	npc/guild2/agit_main_se.txt
+on	Kafra Employee#
+file	npc/instances/EndlessTower.txt
+off	Purification Stone#et1
+on	Purification Stone#et1
+file	npc/instances/NydhoggsNest.txt
+off	Purification Stone#nyd2
+on	Purification Stone#nyd2
+on	Yggdrasil Gatekeeper
+file	npc/jobs/2-1/assassin.txt
+off	Keeper of the Door#ASN
+on	Keeper of the Door#ASN
+on	[Barcardi]
+on	[Beholder]
+on	[Gayle Maroubitz]
+on	[Huey]
+on	[Khai]
+on	[The Anonymous One]
+on	[Thomas]
+file	npc/jobs/2-1/hunter.txt
+off	Manager#hnt
+off	exit#hnttest
+on	Manager#hnt
+on	Switch#hnt
+on	exit#hnttest
+file	npc/jobs/2-1/knight.txt
+off	Knight1
+off	Knight2
+off	Knight3
+off	Warp#knt
+on	Knight1
+on	Knight2
+on	Knight3
+on	Timer#knt
+on	Warp#knt
+file	npc/jobs/2-1/priest.txt
+off	Mummy1_1
+off	Mummy2_1
+off	Mummy3_1
+off	Mummy_Generator
+off	Peter S. Alberto#2
+off	Zombie1_1
+off	Zombie2_1
+off	Zombie3_1
+off	Zombie4_1
+off	Zombie5_1
+off	Zombie_Generator#prst
+on	Mummy1_1
+on	Mummy2_1
+on	Mummy3_1
+on	Peter S. Alberto
+on	Peter S. Alberto#2
+on	Zombie1_1
+on	Zombie2_1
+on	Zombie3_1
+on	Zombie4_1
+on	Zombie5_1
+file	npc/jobs/2-1/wizard.txt
+off	Room of Earth
+off	Room of Earth#Door
+off	Room of Earth#Failed
+off	Room of Fire
+off	Room of Fire#Door
+off	Room of Fire#Failed
+off	Room of Water
+off	Room of Water#Door
+off	Room of Water#Failed
+off	Test Helper#wiz
+on	Room of Earth
+on	Room of Earth#Door
+on	Room of Earth#Failed
+on	Room of Fire
+on	Room of Fire#Door
+on	Room of Fire#Failed
+on	Room of Water
+on	Room of Water#Door
+on	Room of Water#Failed
+file	npc/jobs/2-2/crusader.txt
+off	Monster Summon#cr0
+off	Monster Summon#cr1
+off	Monster Summon#cr2
+off	Monster Summon#cr3
+off	Monster Summon#cr4
+off	Monster Summon#cr6
+on	Monster Summon#cr0
+on	Monster Summon#cr1
+on	Monster Summon#cr2
+on	Monster Summon#cr3
+on	Monster Summon#cr4
+on	Monster Summon#cr6
+on	Summoner#cr1
+on	Summoner#cr2
+on	Summoner#cr3
+on	Summoner#cr4
+file	npc/jobs/2-2/dancer.txt
+on	dance#cen
+on	dance#down
+on	dance#left
+on	dance#return
+on	dance#return#2
+on	dance#return#3
+on	dance#right
+on	dance#up
+file	npc/jobs/2-2/sage.txt
+off	Arena#1
+off	Arena#2
+off	Arena#3
+off	Arena#Doorkeeper
+off	Test Helper#sg
+on	Arena#1
+on	Arena#2
+on	Arena#Doorkeeper
 file	npc/jobs/valkyrie.txt
 warp	valkyrie	48	73	valk01#1	valkyrie	48	64
 warp	valkyrie	48	66	valk01#2	valkyrie	48	75
+file	npc/other/arena/arena_aco.txt
+off	arn_warp_aco
+on	arena#aco
+on	arn_warp_aco
+on	force_01_02#aco
+on	force_01start#aco
+on	force_01start#pri
+on	force_02_03#aco
+on	force_02start#aco
+on	force_02start#pri
+on	force_03_04#aco
+on	force_03start#aco
+on	force_03start#pri
+on	force_04_05#aco
+on	force_04start#aco
+on	force_04start#pri
+on	force_05_06#aco
+on	force_05start#aco
+on	force_05start#pri
+on	force_06_07#aco
+on	force_06start#aco
+on	force_06start#pri
+on	force_07_08#aco
+on	force_07start#aco
+on	force_07start#pri
+on	force_08_09#aco
+on	force_08start#aco
+on	force_08start#pri
+on	force_09start#aco
+on	force_09start#pri
+on	force_exit#aco
+on	onlyaco#arena
+file	npc/other/arena/arena_lvl50.txt
+on	Heel and Toe#arena
+on	arena#50
+on	force_01_02#50
+on	force_02_03#50
+on	force_03_04#50
+on	force_04_05#50
+on	force_05_06#50
+on	force_06_07#50
+on	force_07_08#50
+on	force_08_01#50
+on	force_08_09#50
+on	force_exit#50
+file	npc/other/arena/arena_lvl60.txt
+on	Minilover#arena
+on	arena#60
+on	force_01_02#60
+on	force_02_03#60
+on	force_03_04#60
+on	force_04_05#60
+on	force_05_06#60
+on	force_06_07#60
+on	force_07_08#60
+on	force_08_01#60
+on	force_08_09#60
+on	force_exit#60
+file	npc/other/arena/arena_lvl70.txt
+on	Cadillac#arena
+on	arena#70
+on	force_01_02#70
+on	force_02_03#70
+on	force_03_04#70
+on	force_04_05#70
+on	force_05_06#70
+on	force_06_07#70
+on	force_07_08#70
+on	force_08_01#70
+on	force_08_09#70
+on	force_exit#70
+file	npc/other/arena/arena_lvl80.txt
+on	Octus#arena
+on	arena#80
+on	force_01_02#80
+on	force_02_03#80
+on	force_03_04#80
+on	force_04_05#80
+on	force_05_06#80
+on	force_06_07#80
+on	force_07_08#80
+on	force_08_01#80
+on	force_08_09#80
+on	force_exit#80
+file	npc/other/arena/arena_party.txt
+off	toarena#party
+off	toout#party
+on	Helper#party
+on	Slipslowrun#party
+on	arena_p
+on	force_01_00
+on	force_01start#party
+on	force_02_00
+on	force_02start#party
+on	force_03_00
+on	force_03_04
+on	force_03_05
+on	force_03start#party
+on	force_04_03
+on	force_04start#party
+on	force_05_06
+on	force_05start#party
+on	force_06_07
+on	force_06start#party
+on	force_07_08
+on	force_07start#party
+on	force_08_09
+on	force_08start#party
+on	force_09_10
+on	force_09_exit
+on	force_09start#party
+on	force_10_09
+on	force_10start#party
+on	force_exit#party
+on	toarena#party
+on	toout#party
+file	npc/other/arena/arena_room.txt
+off	#arena_1039
+off	#arena_1046
+off	#arena_1115
+off	#arena_1159
+off	#arena_1251
+off	#arena_1272
+off	#arena_1389
+off	#arena_1492
+off	#arena_6969
+off	#arena_7777
+off	#arena_ss_2
+off	#arena_ss_3
+off	#arena_ss_4
+on	#arena_
+on	#arena_ss_2
+on	#arena_ss_3
+on	#arena_ss_4
+on	Teleporter#arena
 file	npc/other/auction.txt
 warp	auction_01	180	49	auction_entrance_moc	moc_ruins	78	171
 warp	auction_01	22	37	auction_entrance_prt	prontera	214	120
 warp	auction_02	151	17	auction_enterance_juno	yuno	132	119
 warp	auction_02	43	17	auction_enterance_lhz	lighthalzen	209	169
+file	npc/other/hugel_bingo.txt
+off	10a#bingo
+off	10b#bingo
+off	10c#bingo
+off	10d#bingo
+off	10e#bingo
+off	11a#bingo
+off	11b#bingo
+off	11c#bingo
+off	11d#bingo
+off	11e#bingo
+off	12a#bingo
+off	12b#bingo
+off	12c#bingo
+off	12d#bingo
+off	12e#bingo
+off	13a#bingo
+off	13b#bingo
+off	13c#bingo
+off	13d#bingo
+off	13e#bingo
+off	14a#bingo
+off	14b#bingo
+off	14c#bingo
+off	14d#bingo
+off	14e#bingo
+off	15a#bingo
+off	15b#bingo
+off	15c#bingo
+off	15d#bingo
+off	15e#bingo
+off	16a#bingo
+off	16b#bingo
+off	16c#bingo
+off	16d#bingo
+off	16e#bingo
+off	17a#bingo
+off	17b#bingo
+off	17c#bingo
+off	17d#bingo
+off	17e#bingo
+off	18a#bingo
+off	18b#bingo
+off	18c#bingo
+off	18d#bingo
+off	18e#bingo
+off	19a#bingo
+off	19b#bingo
+off	19c#bingo
+off	19d#bingo
+off	19e#bingo
+off	1a#bingo
+off	1b#bingo
+off	1c#bingo
+off	1d#bingo
+off	1e#bingo
+off	20a#bingo
+off	20b#bingo
+off	20c#bingo
+off	20d#bingo
+off	20e#bingo
+off	21a#bingo
+off	21b#bingo
+off	21c#bingo
+off	21d#bingo
+off	21e#bingo
+off	22a#bingo
+off	22b#bingo
+off	22c#bingo
+off	22d#bingo
+off	22e#bingo
+off	23a#bingo
+off	23b#bingo
+off	23c#bingo
+off	23d#bingo
+off	23e#bingo
+off	24a#bingo
+off	24b#bingo
+off	24c#bingo
+off	24d#bingo
+off	24e#bingo
+off	25a#bingo
+off	25b#bingo
+off	25c#bingo
+off	25d#bingo
+off	25e#bingo
+off	2a#bingo
+off	2b#bingo
+off	2c#bingo
+off	2d#bingo
+off	2e#bingo
+off	3a#bingo
+off	3b#bingo
+off	3c#bingo
+off	3d#bingo
+off	3e#bingo
+off	4a#bingo
+off	4b#bingo
+off	4c#bingo
+off	4d#bingo
+off	4e#bingo
+off	5a#bingo
+off	5b#bingo
+off	5c#bingo
+off	5d#bingo
+off	5e#bingo
+off	6a#bingo
+off	6b#bingo
+off	6c#bingo
+off	6d#bingo
+off	6e#bingo
+off	7a#bingo
+off	7b#bingo
+off	7c#bingo
+off	7d#bingo
+off	7e#bingo
+off	8a#bingo
+off	8b#bingo
+off	8c#bingo
+off	8d#bingo
+off	8e#bingo
+off	9a#bingo
+off	9b#bingo
+off	9c#bingo
+off	9d#bingo
+off	9e#bingo
+off	end1a#bingo
+off	end1b#bingo
+off	end1c#bingo
+off	end1d#bingo
+off	end1e#bingo
+off	out3#bingo
+off	plate1#bingo
+off	plate2#bingo
+off	plate3#bingo
+off	plate4#bingo
+off	plate5#bingo
+off	win2a#bingo
+off	win2b#bingo
+off	win2c#bingo
+off	win2d#bingo
+off	win2e#bingo
+on	end1a#bingo
+on	end1b#bingo
+on	end1c#bingo
+on	end1d#bingo
+on	end1e#bingo
+on	out3#bingo
+on	plate1#bingo
+on	plate2#bingo
+on	plate3#bingo
+on	plate4#bingo
+on	plate5#bingo
+on	win2a#bingo
+on	win2b#bingo
+on	win2c#bingo
+on	win2d#bingo
+on	win2e#bingo
+file	npc/other/mercenary_rent.txt
+on	Mercenary Manager#
+on	Mercenary Merchant#
+file	npc/other/monster_race.txt
+off	#race_timer2-2
+off	#race_timer2-3
+off	Medal Distributor#medal
+off	Medal Distributor#single
+off	Race Progress Timer
+off	Ticket Helper#2
+off	Ticket Helper#single
+on	#race_timer1-1
+on	#race_timer2-1
+on	#race_timer2-2
+on	#race_timer2-3
+on	Eckar Ellebird#single
+on	Eckar Erenes#double
+on	Luk
+on	Luk#race02_
+on	Luk1#
+on	Medal Distributor#medal
+on	Medal Distributor#single
+on	Race Progress Timer
+on	Ticket Helper#2
+on	Ticket Helper#single
+on	Tire
+on	Tire#race02_
+on	Tire1#
+on	TrapGlobal#race02
+on	starting#
+on	starting#race02_
+file	npc/other/poring_war.txt
+off	#aroom_ingate_wop
+off	#aroom_outgate_wop
+off	#droom_ingate_wop
+off	#droom_outgate_wop
+off	#wop_warp_a
+off	#wop_warp_d
+off	#wop_warp_rtry
+off	Deviruchi#wop_endmaster
+off	Mr. Doppel#wop_team_a
+off	Mr. Doppel#wop_team_d
+on	#aroom_ingate_wop
+on	#aroom_outgate_wop
+on	#droom_ingate_wop
+on	#droom_outgate_wop
+on	#wop_warp_a
+on	#wop_warp_d
+on	#wop_warp_rtry
+on	Deviruchi#wop_endmaster
+on	Mr. Doppel#wop_team_a
+on	Mr. Doppel#wop_team_d
+file	npc/other/turbo_track.txt
+off	#cos_
+off	Broadcast#
+off	Guide#TBT_
+off	Master#
+off	Point Give-Away Guy#
+off	Winner Helper#TBT_
+off	bing2#
+on	#cos_
+on	Broadcast#
+on	Disposable_Switch#
+on	Flasher_Exit_1#
+on	Flasher_Exit_2#
+on	Guide#TBT_
+on	Master#
+on	No_Unfair_Start#
+on	Notice_Maker1#TBT_
+on	Notice_Maker3#TBT_
+on	Notice_Maker4#TBT_
+on	Point Give-Away Guy#
+on	Winner Helper#TBT_
+on	bing#
+on	bing2#
 file	npc/pre-re/jobs/1-1/swordman.txt
 warp	job_sword1	223	243	checkp1-2#swd_1	job_sword1	11	206
 warp	job_sword1	223	205	checkp2-3#swd_1	job_sword1	11	168
@@ -1438,6 +2172,9 @@ warp	job_sword1	65	117	pitfall01-01	job_sword1	10	245
 warp	job_sword1	98	27	pitfall02-01	job_sword1	11	207
 warp	job_sword1	161	27	pitfall02-02	job_sword1	11	207
 warp	job_sword1	239	117	pitfall03-01	job_sword1	11	169
+file	npc/pre-re/jobs/2-2/crusader.txt
+off	Monster Summon#cr5
+on	Monster Summon#cr5
 file	npc/pre-re/quests/quests_morocc.txt
 warp	prt_castle	317	364	#eisen2	prt_castle	318	273
 warp	prt_castle	317	304	eisen22	prt_castle	318	273
@@ -1454,6 +2191,26 @@ warp	prt_castle	273	284	#room21	prt_castle	221	338
 warp	prt_castle	225	318	#room12	prt_castle	276	263
 warp	prt_castle	273	264	#room22	prt_castle	221	318
 warp	prt_castle	221	308	#princeout	prt_castle	176	167
+off	Aged Noble#rihart
+off	Prince#another_ern
+off	Prince#another_ern1
+off	Prince#eisen1
+off	Prince#eisen2
+off	Prince#eisen3
+off	Prince#eisen4
+off	Prince#eisen5
+off	Prince#eisen6
+off	Young Noble#valter
+on	Aged Noble#rihart
+on	Prince#another_ern
+on	Prince#another_ern1
+on	Prince#eisen1
+on	Prince#eisen2
+on	Prince#eisen3
+on	Prince#eisen4
+on	Prince#eisen5
+on	Prince#eisen6
+on	Young Noble#valter
 file	npc/pre-re/warps/cities/alberta.txt
 warp	alberta	134	38	alb02	alberta_in	70	141
 warp	alberta_in	73	141	alb02-1	alberta	137	37
@@ -2019,11 +2776,144 @@ warp	um_in	11	18	sign06a	um_dun01	129	90
 warp	que_sign01	113	132	sign07	nif_in	117	173
 warp	que_sign01	45	15	sign08	niflheim	146	245
 warp	que_sign02	22	313	sign09	niflheim	30	156
+file	npc/quests/cooking_quest.txt
+off	Wickebine#cook
+on	Wickebine#cook
 file	npc/quests/dandelion_request.txt
 warp	que_job01	6	94	#maobar2	morocc	45	103
 warp	que_job01	17	48	#maobar3	que_job01	68	92
 warp	que_job01	68	96	#maobar4	que_job01	17	53
 warp	que_job01	65	50	#maobar4-2	que_job01	84	77
+off	#Rabsent
+off	#mao_empty
+off	#mao_table
+off	#maobar7
+off	#maobar8
+off	#maogate1_end
+off	#maogate1_end2
+off	#maogate1_talk1
+off	#maogate2_end
+off	#maogate2_end2
+off	#maogate2_talk1
+off	Dandelion Member#1_bt
+off	Dandelion Member#2_bt
+off	Dandelion#maogate1_1
+off	Dandelion#maogate1_2
+off	Dandelion#maogate1_3
+off	Dandelion#maogate1_4
+off	Dandelion#maogate2_1
+off	Dandelion#maogate2_2
+off	Dandelion#maogate2_3
+off	Dandelion#maogate2_4
+off	Kidd#1
+off	Kidd#2
+off	Kidd#3
+off	Kidd#book
+off	Kidd#maogate1_1
+off	Kidd#maogate1_2
+off	Kidd#maogate2_1
+off	Kidd#maogate2_2
+off	Lin#1
+off	Lin#2
+off	Lin#3
+off	Lin#maogate1_1
+off	Lin#maogate1_2
+off	Lin#maogate2_1
+off	Lin#maogate2_2
+off	Lin#stairs
+off	R#maogate1
+off	R#maogate2
+off	Valdes#1
+off	Valdes#2
+off	Valdes#3
+on	#Rabsent
+on	#mao_empty
+on	#mao_table
+on	#maobar7
+on	#maobar8
+on	#maogate1
+on	#maogate1_battle
+on	#maogate1_end
+on	#maogate1_end2
+on	#maogate1_setting
+on	#maogate1_talk1
+on	#maogate1_talk2
+on	#maogate1_talk3
+on	#maogate1_talk4
+on	#maogate1_talk5
+on	#maogate1_talk6
+on	#maogate1_talk7
+on	#maogate1_talk8
+on	#maogate2
+on	#maogate2_battle
+on	#maogate2_end
+on	#maogate2_end2
+on	#maogate2_setting
+on	#maogate2_talk1
+on	#maogate2_talk2
+on	#maogate2_talk3
+on	#maogate2_talk4
+on	#maogate2_talk5
+on	#maogate2_talk6
+on	#maogate2_talk7
+on	#maogate2_talk8
+on	Dandelion Member#1_bt
+on	Dandelion Member#2_bt
+on	Dandelion#maogate1_1
+on	Dandelion#maogate1_2
+on	Dandelion#maogate1_3
+on	Dandelion#maogate1_4
+on	Dandelion#maogate2_1
+on	Dandelion#maogate2_2
+on	Dandelion#maogate2_3
+on	Dandelion#maogate2_4
+on	Kidd#1
+on	Kidd#book
+on	Kidd#maogate1_1
+on	Kidd#maogate1_2
+on	Kidd#maogate2_1
+on	Kidd#maogate2_2
+on	Lin#1
+on	Lin#maogate1_1
+on	Lin#maogate1_2
+on	Lin#maogate2_1
+on	Lin#maogate2_2
+on	Lin#stairs
+on	Member#mao1
+on	Member#mao2
+on	Member#mao3
+on	Member#mao4
+on	R#maogate1
+on	R#maogate2
+on	Valdes#1
+file	npc/quests/kiel_hyre_quest.txt
+off	Big_Door_1_Warp
+off	Big_Door_2_Warp
+off	Big_Door_3_Warp
+off	Big_Door_4_Warp
+off	Big_Door_5_Warp
+off	Kiehl_Room_Exit
+off	Kiehl_Room_Warp
+on	Big_Door_1_Warp
+on	Big_Door_2_Warp
+on	Big_Door_3_Warp
+on	Big_Door_4_Warp
+on	Big_Door_5_Warp
+on	Kiehl_Room_Exit
+on	Kiehl_Room_Warp
+file	npc/quests/newgears/2004_headgears.txt
+off	 #Alarm Mask Man1
+off	 #Alarm Mask Man2
+off	 #Alarm Mask Man3
+off	 #Alarm Mask Man4
+off	Nine Tails#Kitsune Man
+off	Nine Tails#Kitsune Mask
+on	 #Alarm Mask Man1
+on	 #Alarm Mask Man2
+on	 #Alarm Mask Man3
+on	 #Alarm Mask Man4
+on	Nine Tails#Kitsune Man
+on	Nine Tails#Kitsune Mask
 file	npc/quests/okolnir.txt
 warp	que_qaru01	345	23	Gate02#gq_aru01	arug_cas01	157	369
 warp	que_qaru02	345	23	Gate02#gq_aru02	arug_cas02	349	355
@@ -2045,6 +2935,33 @@ warp	que_qsch02	113	165	windpath02_sch02	que_qsch02	139	172
 warp	que_qsch03	113	165	windpath02_sch03	que_qsch03	139	172
 warp	que_qsch04	113	165	windpath02_sch04	que_qsch04	139	172
 warp	que_qsch05	113	165	windpath02_sch05	que_qsch05	139	172
+off	#
+off	#event_start01_
+off	#getspell0
+off	#nm_switch_
+off	#to_agit_
+off	Bloody Hunter#
+off	Gate01#gq_
+off	Guard of Shadow#
+off	Temple Keeper#
+off	Wish Maiden#
+off	windpath03_
+off	windpath04_
+on	#
+on	#event_start01_
+on	#getspell0
+on	#nm_switch_
+on	#to_agit_
+on	Bloody Hunter#
+on	Gate01#gq_
+on	Guard of Shadow#
+on	Guide#gq_
+on	Piamette#
+on	Temple Keeper#
+on	Wish Maiden#
+on	Wish Maiden#gq_
+on	windpath03_
+on	windpath04_
 file	npc/quests/quests_13_1.txt
 warp	que_job01	6	94	morocc#01	morocc	45	103
 warp	que_job01	17	48	que_job01#02	que_job01	68	92
@@ -2053,18 +2970,411 @@ warp	que_job01	65	50	que_job01#05	que_job01	84	77
 warp	yuno_fild09	234	133	#moc2_fild09-que_dan02	que_dan02	13	10
 warp	que_dan02	13	6	#moc_que_dan02-fild09	yuno_fild09	234	129
 warp	que_dan02	88	11	#moc2_b1-b2	que_dan02	21	33
+off	Botanist#ep13_1
+off	Command Timer#edq
+off	Expedition Messenger#2
+off	Expedition Messenger#3
+off	Hansenne#ep131_rhea07
+off	Head of the Alliance#moo
+off	Hue#ep131_rhea06
+off	Ryosen#ep131_rhea05
+on	#moc2_event01
+on	#moc2_event_on
+on	#room1_warp13
+on	#room2_1_warp
+on	#room2_2_warp
+on	Botanist#ep13_1
+on	Command Timer#edq
+on	Cornus#alba03
+on	Corpse#moc2_dead01
+on	Expedition Messenger#2
+on	Expedition Messenger#3
+on	Hansenne#ep131_rhea07
+on	Head of the Alliance#moo
+on	Hillsrion#alba01
+on	Hue#ep131_rhea06
+on	Mr. Kidd#moc_extra01
+on	Rayan#moc_room2_2
+on	Research Official#ep131
+on	Rin#moc_room2_2
+on	Ryosen#ep131_rhea05
+on	Tatacho#alba02
+on	Valdes#moc_master_1
+on	ep13_man_fild01_mon_edq
+on	ep13_man_fild03_mon_edq
+on	ep13_spl_fild02_mon_edq
+on	ep13_spl_fild03_mon_edq
 file	npc/quests/quests_13_2.txt
 warp	man_in01	10	125	to_out1#ep13mdwarp02	man_in01	179	58
 warp	man_in01	65	125	to_out2#ep13mdwarp03	man_in01	179	58
 warp	spl_in02	236	86	terrashome_out	splendide	285	139
 warp	nyd_dun01	255	142	nynm_dun1f_to_2f	nyd_dun02	61	265
 warp	nyd_dun02	56	264	nynm_dun2f_to_1f	nyd_dun01	249	143
+on	#hu_01
+on	#hu_02
+on	#hu_03
+on	#hu_04
+on	#hu_05
+on	#mj01_01
+on	#mj01_02
+on	#mj02_01
+on	#mj02_02
+on	#mj04_01
+on	#mj04_02
+on	#mj09_01
+on	#mj10_01
+on	#ve_01
+on	#ve_02
+on	#ve_03
+on	#ve_04
+on	Egg Keeper Draco#13_1
+on	Egg Keeper Draco#13_2
+on	Exhausted Soldier#1
+on	Exhausted Soldier#2
+on	Exhausted Soldier#3
+on	Exhausted Soldier#4
+on	Exhausted Soldier#5
+on	Exhausted Soldier#6
+on	Exhausted Soldier#7
+on	Snorren#ep13md17
+on	Stranger#ep13_2_dan01
+on	Stranger#ep13_2_dan02
+on	ep13_warp_22_2
+on	ep13_warp_24_2
+on	ep13_warp_43_2
+on	ep13_warp_45_2
+on	ep13_warp_61_2
+on	ep13_warp_65_2
+on	ep13_warp_81_2
+on	ep13_warp_83_2
+on	ep13_warp_85_2
+file	npc/quests/quests_airship.txt
+off	Ferlock#lab
+on	Ferlock#lab
+file	npc/quests/quests_amatsu.txt
+off	Am Mut#ama
+off	Coach#after
+off	Coach#ama
+off	Dokebi#ez
+off	Dokebi#hd
+off	Grandma#ama1
+off	Grandpa#ama
+off	Timer#ama
+off	backwarp#ama
+on	Am Mut#ama
+on	Coach#after
+on	Coach#ama
+on	Dokebi#ez
+on	Dokebi#hd
+on	Grandma#ama1
+on	Grandpa#ama
+on	Timer#ama
+on	backwarp#ama
+file	npc/quests/quests_ayothaya.txt
+off	Haggard Man
+on	Haggard Man
 file	npc/quests/quests_brasilis.txt
 warp	bra_in01	138	174	outbathroom#bra	bra_in01	12	183
 warp	bra_in01	206	98	tobath#bra	bra_in01	138	176
+off	Ghost#bra
+off	Ghost#bra_end
+on	Ghost#bra
+on	Ghost#bra_end
+file	npc/quests/quests_ein.txt
+on	Einbroch Smog Alert
+file	npc/quests/quests_gonryun.txt
+off	#getitem1-1
+off	#getitem1-2
+off	#getitem1-3
+off	#getitem1-4
+off	#getitem1-5
+off	#getitem2-1
+off	#getitem2-2
+off	#getitem2-3
+off	#getitem2-4
+off	#getitem2-5
+off	#getitem2-6
+off	#getitem3-1
+off	#getitem3-2
+off	#getitem3-3
+off	#getitem3-4
+off	#getitem3-5
+off	#getitem3-6
+off	#getitem3-7
+off	timer1-1
+off	timer1-2
+off	timer1-3
+off	timer1-4
+off	timer1-5
+off	timer2-1
+off	timer2-2
+off	timer2-3
+off	timer2-4
+off	timer2-5
+off	timer2-6
+off	timer3-1
+off	timer3-2
+off	timer3-3
+off	timer3-4
+off	timer3-5
+off	timer3-6
+off	timer3-7
+off	trace1-1#gnbs
+off	trace1-2#gnbs
+off	trace1-3#gnbs
+off	trace1-4#gnbs
+off	trace1-5#gnbs
+off	trace2-1#gnbs
+off	trace2-2#gnbs
+off	trace2-3#gnbs
+off	trace2-4#gnbs
+off	trace2-5#gnbs
+off	trace2-6#gnbs
+off	trace3-1#gnbs
+off	trace3-2#gnbs
+off	trace3-3#gnbs
+off	trace3-4#gnbs
+off	trace3-5#gnbs
+off	trace3-6#gnbs
+off	trace3-7#gnbs
+on	#getitem1-1
+on	#getitem1-2
+on	#getitem1-3
+on	#getitem1-4
+on	#getitem1-5
+on	#getitem2-1
+on	#getitem2-2
+on	#getitem2-3
+on	#getitem2-4
+on	#getitem2-5
+on	#getitem2-6
+on	#getitem3-1
+on	#getitem3-2
+on	#getitem3-3
+on	#getitem3-4
+on	#getitem3-5
+on	#getitem3-6
+on	#getitem3-7
+on	timer1-1
+on	timer1-2
+on	timer1-3
+on	timer1-4
+on	timer1-5
+on	timer2-1
+on	timer2-2
+on	timer2-3
+on	timer2-4
+on	timer2-5
+on	timer2-6
+on	timer3-1
+on	timer3-2
+on	timer3-3
+on	timer3-4
+on	timer3-5
+on	timer3-6
+on	timer3-7
+on	trace1-1#gnbs
+on	trace1-2#gnbs
+on	trace1-3#gnbs
+on	trace1-4#gnbs
+on	trace1-5#gnbs
+on	trace2-1#gnbs
+on	trace2-2#gnbs
+on	trace2-3#gnbs
+on	trace2-4#gnbs
+on	trace2-5#gnbs
+on	trace2-6#gnbs
+on	trace3-1#gnbs
+on	trace3-2#gnbs
+on	trace3-3#gnbs
+on	trace3-4#gnbs
+on	trace3-5#gnbs
+on	trace3-6#gnbs
+on	trace3-7#gnbs
+file	npc/quests/quests_hugel.txt
+off	#DrawerOpener
+off	HiddenExplosion
+off	Postell Schuwell#D
+off	Strange Man#Hugel
+off	Upper Drawer#Second
+off	Young Man#Hu_Quest
+off	warpinside#1
+off	warpinside#2
+off	warpinside#3
+off	warpinside#4
+off	warpinside#5
+on	#DrawerOpener
+on	Clam#C1
+on	Clam#C2
+on	Clam#C3
+on	Clam#C4
+on	HiddenExplosion
+on	Moks Bugs#Bug1
+on	Moks Bugs#Bug2
+on	Moks Bugs#Bug3
+on	Moks Bugs#Bug4
+on	Moks Mushrooms#Mush1
+on	Moks Mushrooms#Mush2
+on	Moks Mushrooms#Mush3
+on	Postell Schuwell#D
+on	Strange Man#Hugel
+on	Suspicious Barrel
+on	Upper Drawer#First
+on	Upper Drawer#Second
+on	Young Man#Hu_Quest
+on	warpinside#1
+on	warpinside#2
+on	warpinside#3
+on	warpinside#4
+on	warpinside#5
+file	npc/quests/quests_juperos.txt
+off	4F Enter#ufe
+off	Annihilation#ufe
+off	Elevator Escape#ufe
+off	Elevator Guard1#ufe
+off	Elevator On#ufe
+off	Elevator Safety#ufe
+off	GuardEnd#ufe
+off	LeverWarp#ufe
+off	LeverWarp#ufe2
+off	Monster1#1-1
+off	Monster1#1-2
+off	Monster1#1-3
+off	Monster1#1-4
+off	Monster1#2-1
+off	Monster1#2-2
+off	Monster1#2-3
+off	Monster1#2-4
+off	Monster2#1-1
+off	Monster2#1-2
+off	Monster2#1-3
+off	Monster2#1-4
+off	Monster2#2-1
+off	Monster2#2-2
+off	Monster2#2-3
+off	Monster2#2-4
+off	Red Alarm On#1-1
+off	Red Alarm On#1-2
+off	Red Alarm On#1-3
+off	Red Alarm On#1-4
+off	Red Alarm On#2-1
+off	Red Alarm On#2-2
+off	Red Alarm On#2-3
+off	Red Alarm On#2-4
+off	Red Alarm#1-1
+off	Red Alarm#1-2
+off	Red Alarm#1-3
+off	Red Alarm#1-4
+off	Red Alarm#2-1
+off	Red Alarm#2-2
+off	Red Alarm#2-3
+off	Red Alarm#2-4
+off	Restricted Area#jupe
+off	Switch On#ufe
+off	Warp#1-1
+off	Warp#1-2
+off	Warp#1-3
+off	Warp#1-4
+off	Warp#2-1
+off	Warp#2-2
+off	Warp#2-3
+off	Warp#2-4
+off	gate#start#2
+off	jupe_goto#2
+on	#hole#1-1
+on	#hole#1-2
+on	#hole#1-3
+on	#hole#1-4
+on	#hole#2-1
+on	#hole#2-2
+on	#hole#2-3
+on	#hole#2-4
+on	3F Gate Switch#jupe
+on	4F Enter#ufe
+on	Annihilation#ufe
+on	Elevator Escape#ufe
+on	Elevator Guard1#ufe
+on	Elevator On#ufe
+on	Elevator Safety#ufe
+on	GuardEnd#ufe
+on	Lever#ufe
+on	Lever#ufe2
+on	LeverWarp#ufe
+on	LeverWarp#ufe2
+on	Monster1#1-1
+on	Monster1#1-2
+on	Monster1#1-3
+on	Monster1#1-4
+on	Monster1#2-1
+on	Monster1#2-2
+on	Monster1#2-3
+on	Monster1#2-4
+on	Monster2#1-1
+on	Monster2#1-2
+on	Monster2#1-3
+on	Monster2#1-4
+on	Monster2#2-1
+on	Monster2#2-2
+on	Monster2#2-3
+on	Monster2#2-4
+on	Red Alarm On#1-1
+on	Red Alarm On#1-2
+on	Red Alarm On#1-3
+on	Red Alarm On#1-4
+on	Red Alarm On#2-1
+on	Red Alarm On#2-2
+on	Red Alarm On#2-3
+on	Red Alarm On#2-4
+on	Red Alarm#1-1
+on	Red Alarm#1-2
+on	Red Alarm#1-3
+on	Red Alarm#1-4
+on	Red Alarm#2-1
+on	Red Alarm#2-2
+on	Red Alarm#2-3
+on	Red Alarm#2-4
+on	Restricted Area#jupe
+on	Switch On#ufe
+on	Switch#ufe
+on	Warp#1-1
+on	Warp#1-2
+on	Warp#1-3
+on	Warp#1-4
+on	Warp#2-1
+on	Warp#2-2
+on	Warp#2-3
+on	Warp#2-4
+on	gate#start
+on	gate#start#2
+on	jupe_goto#1
+on	jupe_goto#2
 file	npc/quests/quests_lighthalzen.txt
 warp	lhz_que01	97	33	#li_toin01	lhz_in01	43	120
 warp	lhz_in01	278	132	#li_toin02	lhz_in01	43	120
+off	#bully1
+off	#bully2
+off	#packidentity
+off	A Fine Gentleman
+off	A Neat Gentleman
+off	Mysterious Woman
+off	Secretary#2
+off	Suspicious Guy#lhz_02
+off	Suspicious Guy#lhz_03
+off	Timer_Sneak
+off	Wounded Man
+on	#bully1
+on	#bully2
+on	#packidentity
+on	A Fine Gentleman
+on	A Neat Gentleman
+on	Man#Lyozien
+on	Mysterious Woman
+on	Secretary#2
+on	Suspicious Guy#lhz_01
+on	Suspicious Guy#lhz_02
+on	Suspicious Guy#lhz_03
+on	Timer_Sneak
+on	Wounded Man
 file	npc/quests/quests_louyang.txt
 warp	louyang	129	121	Storage Warp#1	lou_in02	203	161
 warp	louyang	125	121	Storage Warp#2	lou_in02	198	161
@@ -2078,20 +3388,184 @@ warp	ein_fild01	28	261	cave_in1	cave	97	24
 warp	cave	97	21	case_out1	ein_fild01	28	255
 warp	cave	86	167	zid_in	cave	77	185
 warp	cave	79	180	zid_out	cave	90	162
+off	#barmut_onna
+off	Jaeda#garas1
+off	Satan Broadcast#edq
+off	Satan Summon#edq
+off	Time-Space Gap#edq
+on	#barmut_onna
+on	Group of Evil#edq
+on	Jaeda#garas1
+on	Satan Broadcast#edq
+on	Satan Summon#edq
+on	Time-Space Gap#edq
 file	npc/quests/quests_moscovia.txt
 warp	mosk_que	47	217	Escape#rus30	mosk_fild02	237	266
+off	#findship
+off	1#rus27
+off	Gray Wolf#rus03
+off	Koshei#rus47
+off	Lusalka#rus23
+on	#findship
+on	1#rus27
+on	Baba Yaga#rus32
+on	Cow#rus3
+on	Gray Wolf#rus03
+on	House Ghost Jar#rus43
+on	Koshei#rus47
+on	Lusalka#rus23
+on	Old Treasure Box#rus37
+on	Wall#rus04
 file	npc/quests/quests_nameless.txt
 warp	que_temsky	99	7	quetemskyout	ra_temin	276	231
+off	#ZGuard
+off	#zdan_broad
+off	Out_from_Monastery
+on	#ZGuard
+on	#em_end
+on	#zdan_broad
+on	Out_from_Monastery
+on	Wanted Notice#edq
 file	npc/quests/quests_prontera.txt
 warp	prt_church	115	122	#sazekan	prt_church	168	106
 warp	prt_church	166	106	#prtchhall	prt_church	112	122
+off	Marjana#poison
+on	Marjana#poison
+file	npc/quests/quests_rachel.txt
+off	#ice_4f_1
+off	#ice_4f_2
+off	#ice_4f_3
+off	#ice_4f_4
+on	#ice_4f_1
+on	#ice_4f_2
+on	#ice_4f_3
+on	#ice_4f_4
+file	npc/quests/quests_umbala.txt
+off	#!@#$%
+off	#unpc
+off	Umpokoriohtan
+on	#!@#$%
+on	#unpc
+on	Umpokoriohtan
 file	npc/quests/quests_veins.txt
 warp	ra_in01	48	352	que_sch_jail	morocc	56	89
+off	????#sch1
+off	????#sch2
+off	????#sch3
+off	Aitra#vol
+off	Arunafeltz Figure
+off	Colonel Vito#1
+off	Colonel Vito#2
+off	Corporate Figure
+off	Jesse#sch
+off	Rachel Guard#vol1_1
+off	Rachel Guard#vol2_1
+on	????#sch1
+on	????#sch2
+on	????#sch3
+on	Aitra#vol
+on	Arunafeltz Figure
+on	Arunafeltz Figure#sch
+on	Colonel Vito#1
+on	Colonel Vito#2
+on	Corporate Figure
+on	Corporate Figure#sch
+on	Flower Vase#vol
+on	Jesse#sch
+on	Rachel Guard#vol1
+on	Rachel Guard#vol1_1
+on	Rachel Guard#vol2
+on	Rachel Guard#vol2_1
+file	npc/quests/seals/god_weapon_creation.txt
+on	god_failwarp#
+file	npc/quests/skills/bard_skills.txt
+off	Yhelle#bard_chick2
+off	Yhelle#bard_chick3
+off	Yhelle#bard_chick4
+off	Yhelle#bard_chick5
+on	Yhelle#bard_chick1
+on	Yhelle#bard_chick2
+on	Yhelle#bard_chick3
+on	Yhelle#bard_chick4
+on	Yhelle#bard_chick5
+file	npc/quests/skills/rogue_skills.txt
+off	#1st5min
+off	#1stmove
+off	#killershow01
+off	Kienna#1st
+off	Kienna#2nd
+off	Kienna#3rd
+off	Kienna#4th
+off	Kienna#5th
+off	Kienna#6th
+off	Kienna#7th
+off	Kienna#8th
+off	Killer#Rogueguild
+on	#1st5min
+on	#1stmove
+on	#1strecog
+on	#killershow01
+on	Kienna#1st
+on	Kienna#2nd
+on	Kienna#3rd
+on	Kienna#4th
+on	Kienna#5th
+on	Kienna#6th
+on	Kienna#7th
+on	Kienna#8th
+on	Killer#Rogueguild
+on	Waiting Room#rogue10
 file	npc/quests/thana_quest.txt
 warp	tha_scene01	30	30	scene	tha_scene01	131	220
 warp	tha_t04	81	36	to 5th Floor	tha_t05	62	8
+off	#gateto_thanatos
+off	3rdf_warp#tt
+off	Memory Seal#tt5
+on	#gateto_thanatos
+on	#thanatos_seal
+on	3rdf_warp#tt
+on	Memory Seal#tt5
+file	npc/quests/the_sign_quest.txt
+off	Dark Lord#serin
+off	Examiner#sd
+off	Geffenia Warp
+off	Serin#dummy
+off	Warp#serin
+off	Warp#witch
+off	s_dance#up
+on	Dark Lord#serin
+on	Examiner#sd
+on	Geffenia Warp
+on	Serin#dummy
+on	Serin#serin
+on	Serin#witch
+on	Starter#serin
+on	Starter#witch
+on	Warp#serin
+on	Warp#witch
+on	s_dance#cen
+on	s_dance#down
+on	s_dance#left
+on	s_dance#right
+on	s_dance#up
+file	npc/re/guild/invest_main.txt
+off	Revoting Manager#Invest2
+on	Revoting Manager#Invest1
+on	Revoting Manager#Invest2
+file	npc/re/guild3/agit_main_te.txt
+on	Kafra Employee#
+on	to_gloria
+on	to_kafragarten
+file	npc/re/instances/DevilTower.txt
+on	#tnmtks01
 file	npc/re/instances/WolfchevLaboratory.txt
 warp	lhz_dun04	244	61	lhz_dun04_lhz_dun03	lhz_dun03	240	75
+file	npc/re/jobs/2-2/crusader.txt
+off	Monster Summon#cr5
+on	Monster Summon#cr5
+file	npc/re/jobs/2e/kagerou_oboro.txt
+on	Kuuga Gai#ko2
+on	Red Leopard Joe#ko2
 file	npc/re/jobs/2e/rebellion.txt
 warp	job_gun	56	26	rebelroom#1	einbroch	49	97
 warp	job_gun	18	10	rebelroom#2	job_gun	81	29
@@ -2102,6 +3576,155 @@ warp	job_gun	105	97	shootingrange#2	job_gun	125	98
 warp	job_gun	156	115	shootingrange#3	job_gun	157	137
 warp	job_gun	152	154	shootingrange#4	job_gun	135	154
 warp	job_gun	130	146	shootingrange#5	job_gun	120	130
+off	Furnace Controller#2
+on	Furnace Controller#1
+on	Furnace Controller#2
+file	npc/re/jobs/3-1/archbishop.txt
+off	#arch_2_01
+off	#arch_2_02
+off	#arch_2_03
+off	#arch_2_04
+off	#arch_2_05
+off	#arch_2_06
+off	#arch_2_07
+off	#arch_2_08
+off	#arch_2_09
+off	#arch_2_10
+off	#arch_2_11
+off	#arch_2_boss
+off	#arch_3_03
+off	#arch_end
+on	#arch_1_01
+on	#arch_1_02
+on	#arch_1_03
+on	#arch_1_04
+on	#arch_1_05
+on	#arch_1_06
+on	#arch_1_07
+on	#arch_1_08
+on	#arch_1_09
+on	#arch_1_10
+on	#arch_1_11
+on	#arch_1_12
+on	#arch_1_boss
+on	#arch_1_start
+on	#arch_2_01
+on	#arch_2_02
+on	#arch_2_03
+on	#arch_2_04
+on	#arch_2_05
+on	#arch_2_06
+on	#arch_2_07
+on	#arch_2_08
+on	#arch_2_09
+on	#arch_2_10
+on	#arch_2_11
+on	#arch_2_boss
+on	#arch_3_01
+on	#arch_3_02
+on	#arch_3_03
+on	#arch_end
+file	npc/re/jobs/3-1/guillotine_cross.txt
+off	Renzak#3rdgc16
+on	#3rdgc_event01
+on	#3rdgc_room01_mag01
+on	Back Gate Guard#g01
+on	Barbed-Wire Entanglement
+on	Dandelion#3rdgc12
+on	Estillda#3rdgc10
+on	Exterior Guard#g01
+on	Exterior Guard#g02
+on	Exterior Guard#g03
+on	Exterior Guard#g04
+on	Exterior Guard#g05
+on	Exterior Guard#g06
+on	Front Gate Guard#g01
+on	Guard Dog#dog01
+on	Guard Dog#dog02
+on	Interior Guard#g01
+on	Renzak#3rdgc16
+file	npc/re/jobs/3-1/mechanic.txt
+on	#Door
+file	npc/re/jobs/3-1/ranger.txt
+off	First Test Timer#jr_05
+off	Second Test Timer#jr_08
+off	Staff Rust#jr_09
+off	Summon Monster#jr_10
+off	Test Supervisor#jr_04
+off	Test Supervisor#jr_11
+off	Test Supervisor#jr_13
+off	Third Test Timer#jr_12
+on	CallCorrectAnswer#jr
+on	CallWrongAnswer#jr
+on	First Test Timer#jr_05
+on	Second Test Timer#jr_08
+on	Staff Rust#jr_09
+on	Summon Monster#jr_10
+on	Test Supervisor#jr_04
+on	Test Supervisor#jr_11
+on	Test Supervisor#jr_13
+on	Third Test Timer#jr_12
+file	npc/re/jobs/3-1/rune_knight.txt
+off	job_rune_edq#1st_tb
+off	job_rune_edq#1st_tc
+off	job_rune_edq#1st_tcmc
+off	job_rune_edq#1st_tcmc2
+off	job_rune_edq#1st_tcnc
+off	job_rune_edq#3rd_tb
+off	job_rune_edq#3rd_tc
+off	job_rune_edq#3rd_tc1
+off	job_rune_edq#3rd_tc2
+off	job_rune_edq#3rd_tc3
+on	#RK Test Hidden Portal 1
+on	Captain Tigris#jrt1
+on	Rune Knight Lunarea#jrt1
+on	Rune Knight Renoa#jrt1
+on	Rune Knight Velpino#jrt1
+on	job_rune_edq#1st_tb
+on	job_rune_edq#1st_tc
+on	job_rune_edq#1st_tcmc
+on	job_rune_edq#1st_tcmc2
+on	job_rune_edq#1st_tcnc
+on	job_rune_edq#3rd_tb
+on	job_rune_edq#3rd_tc
+on	job_rune_edq#3rd_tc1
+on	job_rune_edq#3rd_tc2
+on	job_rune_edq#3rd_tc3
+file	npc/re/jobs/3-1/warlock.txt
+off	Ebein#E1
+off	Ebein#E2
+off	Hollow Stone#Warlock
+off	The chamber of magic#4
+on	Hollow Stone#Warlock
+on	The chamber of magic#4
+file	npc/re/jobs/3-2/minstrel.txt
+off	Karian#cmd1
+off	Karian#cmd5
+off	Karian#cmd9
+on	Karian#cmd1
+on	Karian#cmd5
+on	Karian#cmd9
+file	npc/re/jobs/3-2/sura.txt
+off	???#bcmd
+off	Buddy#Sura_Salon
+on	#Sura_garajjom
+on	???#bcmd
+on	Buddy#Sura_Salon
+on	Buddy#job_shuaneh
+file	npc/re/jobs/3-2/wanderer.txt
+off	Dancer Kim#xmas
+on	Dancer Kim#xmas
+on	Guitar Song#xmas
+on	Mimi#xmas
+on	Soy#xmas
+on	Spectator#xmas1
+on	Spectator#xmas2
+on	Spectator#xmas3
+on	Spectator#xmas4
+file	npc/re/jobs/novice/academy.txt
+off	Etinifni#
+on	Cultivated Red Plant#
+on	Etinifni#
 file	npc/re/merchants/eden_market.txt
 warp	paramk	97	5	paramk#ex	moc_para01	106	35
 file	npc/re/merchants/enchantgrade.txt
@@ -2109,13 +3732,154 @@ warp	prontera	50	293	Grademk_Int	grademk	13	172
 warp	grademk	9	172	Grademk_Out	prontera	50	290
 warp	paramk	8	171	grade_in	paramk	141	64
 warp	paramk	145	64	grade_out	paramk	11	171
+file	npc/re/other/dimensional_gap.txt
+off	#dalichat
+off	Merchant Prince#HUMERC2
+on	#dalichat
+on	Merchant Prince#HUMERC
+on	Merchant Prince#HUMERC2
+file	npc/re/quests/newgears/2010_headgears.txt
+on	Roda Frog#Frog_Cap
 file	npc/re/quests/quests_14_3_bis.txt
 warp	moro_cav	64	13	#ep14_3What caveExit	moro_vol	198	176
+off	#f_boss0
+off	#soltalk01
+off	#soltalk02
+on	#soltalk01
+on	#soltalk02
+file	npc/re/quests/quests_15_1.txt
+off	Fallen Man#ep15_1_elyo
+off	Guide Elisha#ep15_1bs2
+on	Alph#ep15_1elb
+on	Du#ep15_1elb
+on	Fallen Man#ep15_1_elyo
+on	Guide Elisha#ep15_1bs
+on	Guide Elisha#ep15_1bs2
+on	Guide Scarlet#ep15_1bs
+on	Maggi#ep15_1elb
+on	Mark#ep15_1elb
+on	Tamarin#ep15_1elb
+file	npc/re/quests/quests_15_2.txt
+on	Patient#EP15.2MR_01
+on	Patient#EP15.2MR_02
+on	Patient#EP15.2MR_03
+on	Patient#EP15.2MR_04
+on	Patient#EP15.2MR_05
+on	Patient#EP15.2MR_06
+on	Patient#EP15.2MR_07
+file	npc/re/quests/quests_16_1.txt
+off	Bachelor#ep16wig01
+off	Strong Guards#ep16wig03
+off	Strong Guards#ep16wig04
+off	Strong Guards#ep16wig05
+off	Strong Guards#ep16wig06
+off	Womenfolk#ep16wig01
+on	Bachelor#ep16wig01
+on	Dark Shape#EP161A0
+on	Strong Guards#ep16wig03
+on	Strong Guards#ep16wig04
+on	Strong Guards#ep16wig05
+on	Strong Guards#ep16wig06
+on	Womenfolk#ep16wig01
+file	npc/re/quests/quests_16_2.txt
+on	Hiding researcher#
+on	Naga#16.2rmA
+file	npc/re/quests/quests_dicastes.txt
+on	Hibba Agip#ep133_is07
+file	npc/re/quests/quests_eclage.txt
+on	Euncheong#No.
+on	Rosi#No.
 file	npc/re/quests/quests_illusion_dungeons.txt
 warp	tur_d03_i	217	73	illtur03_04	tur_d04_i	99	186
 warp	tur_d04_i	99	191	illtur04_03	tur_d03_i	217	82
 warp	com_d02_i	254	243	IL_Luanda#Luanda	beach_dun2	249	243
 warp	ant_d02_i	170	190	antd02i_anthell02	anthell02	172	185
+on	Dracula#ilgf02
+on	Wizard#ilgf001
+on	Wizard#ilgf01
+file	npc/re/quests/quests_malangdo.txt
+off	Eff#gamer
+off	Ketchup#gamer
+off	Linguist Devore#mald
+off	Stew#gamer
+on	Eff#gamer
+on	Eryu#gamer
+on	Gobonge#ml
+on	Ketchup#gamer
+on	Linguist Devore#mald
+on	Stew#gamer
+file	npc/re/quests/quests_malaya.txt
+off	#buwaya_soil
+off	Beat Catching Boy#pin09
+off	Dog#buwaya
+off	Dog#buwaya_totoi
+off	Drumming Young Man#pin06
+off	Drumming Young Man#pin07
+off	Drumming Young Man#pin08
+off	Guard#buwayacave
+off	Tourist#pin01
+off	Tourist#pin02
+off	Tourist#pin03
+off	Tourist#pin05
+off	Young Tattooist#pin04
+on	#buwaya_soil
+on	Beat Catching Boy#pin09
+on	Dog#buwaya
+on	Dog#buwaya_totoi
+on	Drumming Young Man#pin06
+on	Drumming Young Man#pin07
+on	Drumming Young Man#pin08
+on	Guard#buwayacave
+on	Lost Child#malaya01
+on	Lost Child#malaya02
+on	Lost Child#malaya03
+on	Tourist#pin01
+on	Tourist#pin02
+on	Tourist#pin03
+on	Tourist#pin05
+on	Young Tattooist#pin04
+file	npc/re/quests/quests_mora.txt
+off	Black Shadow#ep14_muk
+off	Cheshire#ep14_1_xq01
+off	Cheshire#ep14_extra
+on	Black Shadow#ep14_muk
+on	Cheshire#ep14_1_xq01
+on	Cheshire#ep14_extra
+on	Lope#pa
+file	npc/re/quests/woe_te/te_goditem_alde1.txt
+off	Aira#fake01_alde01
+off	Ezella#fake01_alde01
+off	Kuluna#fake01_alde01
+off	Lune#fake01_alde01
+off	Mallina#fake01_alde01
+off	Morin#fake01_alde01
+off	Nasarin#fake01_alde01
+on	Aira#fake01_alde01
+on	Blacksmith Cano#tegod01
+on	Ezella#fake01_alde01
+on	Kuluna#fake01_alde01
+on	Lune#fake01_alde01
+on	Mallina#fake01_alde01
+on	Morin#fake01_alde01
+on	Nasarin#fake01_alde01
+on	aldeg-1-11_aldeg-1-15#te
+file	npc/re/quests/woe_te/te_goditem_prt01.txt
+off	Aira#fake01_prt01
+off	Ezella#fake01_prt01
+off	Kuluna#fake01_prt01
+off	Lune#fake01_prt01
+off	Mallina#fake01_prt01
+off	Morin#fake01_prt01
+off	Nasarin#fake01_prt01
+on	Aira#fake01_prt01
+on	Blacksmith Kai#tegod01
+on	Ezella#fake01_prt01
+on	Kuluna#fake01_prt01
+on	Lune#fake01_prt01
+on	Mallina#fake01_prt01
+on	Morin#fake01_prt01
+on	Nasarin#fake01_prt01
+on	prtg-1-22_prtg-1-31#te
 file	npc/re/warps/cities/alberta.txt
 warp	alberta	45	145	Room_Entrance#alberta-01	alberta_in	69	141
 warp	alberta_in	73	142	Room_Exit#alberta-01	alberta	48	145
@@ -5067,6 +6831,9 @@ warp	xmas	143	314	xmas_dun1-1	xmas_dun01	205	16
 warp	xmas_dun01	205	13	xmas_dun1-2	xmas	143	311
 warp	xmas_dun01	129	130	xmas_dun2-1	xmas_dun02	131	130
 warp	xmas_dun02	129	130	xmas_dun2-2	xmas_dun01	132	130
+file	npc/warps/fields/abyss_warper.txt
+off	AbyssWarp
+on	AbyssWarp
 file	npc/warps/fields/amatsu_fild.txt
 warp	amatsu	248	292	ama_fild1-1	ama_fild01	75	33
 warp	ama_fild01	75	30	ama_fild1-2	amatsu	248	289
@@ -5816,6 +7583,7 @@ warp	force_1-2	107	145	force_07_08	force_1-2	173	118
 warp	force_1-2	158	178	force_08_09	force_1-2	133	178
 warp	force_1-2	55	178	force_09_10	force_1-2	29	178
 warp	force_1-2	33	178	force_10_09	force_1-2	59	178
+on	welcome_arena
 file	npc/warps/other/god.txt
 warp	yuno	218	180	yuno_god01	que_god01	99	84
 warp	que_god01	99	81	god01_yuno	yuno	218	177

@@ -9,8 +9,10 @@ those routes lead to the wrong place or nowhere.
 With this mod on, routes use the server's portals instead: the `warp` and
 `warp2` lines in the scripts the server loads for your era, the stock scripts
 other mods switch on (`stock-npc.txt`), and the scripts other mods ship. A
-portal a mod switches off with `disablenpc "<name>"` is left out, so a mod that
-reroutes a gate is routed over correctly.
+portal switched off when the server starts (`disablenpc "<name>"` under
+`OnInit`) is left out, so a mod that reroutes a gate is routed over correctly.
+One that some script switches back on with `enablenpc` is kept: it is a gate an
+event or a quest opens, and open some of the time.
 
 Your client's other links stay: a sailor or a signpost is a script that warps
 you when spoken to, which cannot be read the way a portal can. Its precomputed

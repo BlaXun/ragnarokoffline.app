@@ -13,9 +13,10 @@
 //!
 //! As for NPCs and monsters, the stock scripts are indexed when the rAthena
 //! pin moves (`warp-index.tsv`, by `ragnarok-stack navigation-warp-index`),
-//! and mods are read at link time. A mod that switches a stock portal off --
-//! `disablenpc "prt001"` in its scripts, the way MODDING.md reroutes a gate --
-//! takes that portal out too.
+//! and mods are read at link time. A portal switched off when the server
+//! starts -- `disablenpc "prt001"` under `OnInit`, the way MODDING.md reroutes
+//! a gate -- is taken out too, unless some script switches it back on: one
+//! that does is a gate opened by an event or a quest, so it is left routed.
 
 use crate::config::Config;
 use crate::navnpc::{collect_txt, instance_map, load_order, script_lines};
@@ -89,22 +90,111 @@ pub fn parse_warps(text: &[u8]) -> Vec<Warp> {
         .collect()
 }
 
-/// The NPCs and portals a mod's script switches off by name:
-/// `disablenpc "name"`, with a literal name.
-pub fn disabled_names(text: &[u8]) -> Vec<String> {
-    let text = String::from_utf8_lossy(text);
-    let mut out = Vec::new();
-    let mut rest = text.as_ref();
-    while let Some(at) = rest.find("disablenpc") {
-        rest = &rest[at + "disablenpc".len()..];
-        let after = rest.trim_start_matches([' ', '\t', '(']);
-        if let Some(quoted) = after.strip_prefix('"') {
-            if let Some(end) = quoted.find('"') {
-                out.push(quoted[..end].to_string());
+/// What a script does to NPCs by name, as far as routing cares: `off`, the
+/// names it switches off under `OnInit` (so they start closed), and `on`, the
+/// names it switches on anywhere. Only literal names count, and comments are
+/// skipped.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Gates {
+    pub off: Vec<String>,
+    pub on: Vec<String>,
+}
+
+impl Gates {
+    pub fn is_empty(&self) -> bool {
+        self.off.is_empty() && self.on.is_empty()
+    }
+}
+
+/// The script with its comments blanked out, strings kept.
+fn without_comments(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars().peekable();
+    let (mut in_string, mut in_block) = (false, false);
+    while let Some(c) = chars.next() {
+        if in_block {
+            if c == '*' && chars.peek() == Some(&'/') {
+                chars.next();
+                in_block = false;
+            } else if c == '\n' {
+                out.push(c);
             }
+        } else if in_string {
+            out.push(c);
+            if c == '\\' {
+                if let Some(n) = chars.next() {
+                    out.push(n);
+                }
+            } else if c == '"' || c == '\n' {
+                in_string = false;
+            }
+        } else if c == '/' && chars.peek() == Some(&'/') {
+            while chars.peek().is_some_and(|n| *n != '\n') {
+                chars.next();
+            }
+        } else if c == '/' && chars.peek() == Some(&'*') {
+            chars.next();
+            in_block = true;
+        } else {
+            in_string = c == '"';
+            out.push(c);
         }
     }
     out
+}
+
+/// The literal name after a command, `cmd "name"` or `cmd("name")`.
+fn quoted_name(after: &str) -> Option<String> {
+    let after = after.trim_start_matches([' ', '\t', '(']);
+    let quoted = after.strip_prefix('"')?;
+    Some(quoted[..quoted.find('"')?].to_string())
+}
+
+/// A label on a line of its own, `OnInit:`.
+fn label(line: &str) -> Option<&str> {
+    let l = line.trim().strip_suffix(':')?;
+    (!l.is_empty() && l.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')).then_some(l)
+}
+
+pub fn gates(text: &[u8]) -> Gates {
+    let text = without_comments(&String::from_utf8_lossy(text));
+    let mut gates = Gates::default();
+    let mut at_init = false;
+    for line in text.lines() {
+        if let Some(l) = label(line) {
+            at_init = l == "OnInit";
+            continue;
+        }
+        // A new object, or the end of one, ends the label.
+        let header = !line.starts_with([' ', '\t']) && line.split('\t').count() >= 3;
+        if header || line.trim_start().starts_with('}') {
+            at_init = false;
+        }
+        for (cmd, list, counts) in [("disablenpc", &mut gates.off, at_init), ("enablenpc", &mut gates.on, true)] {
+            let mut rest = line;
+            while let Some(at) = rest.find(cmd) {
+                let before = rest[..at].chars().next_back();
+                rest = &rest[at + cmd.len()..];
+                if counts && !before.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_') {
+                    if let Some(name) = quoted_name(rest) {
+                        list.push(name);
+                    }
+                }
+            }
+        }
+    }
+    for list in [&mut gates.off, &mut gates.on] {
+        list.sort();
+        list.dedup();
+    }
+    gates
+}
+
+/// The names that start closed and nothing opens: switched off under some
+/// script's `OnInit`, and switched on by none.
+pub fn closed(all: &[&Gates]) -> HashSet<String> {
+    let on: HashSet<&String> = all.iter().flat_map(|g| &g.on).collect();
+    all.iter().flat_map(|g| &g.off).filter(|n| !on.contains(n)).cloned().collect()
 }
 
 /// The stock index: each era's load order, and the portals in every script.
@@ -113,6 +203,8 @@ pub struct Index {
     pub renewal: Vec<String>,
     pub prerenewal: Vec<String>,
     pub files: BTreeMap<String, Vec<Warp>>,
+    /// What each script switches off and on, for the scripts that do.
+    pub gates: BTreeMap<String, Gates>,
 }
 
 /// Build it from a rAthena checkout with the app's server mods applied.
@@ -130,6 +222,10 @@ pub fn build_index(rathena: &Path) -> Result<Index, String> {
     for rel in scripts {
         let text = fs::read(rathena.join(&rel)).map_err(|e| format!("reading {rel}: {e}"))?;
         let warps = parse_warps(&text);
+        let script_gates = gates(&text);
+        if !script_gates.is_empty() {
+            index.gates.insert(rel.clone(), script_gates);
+        }
         if !warps.is_empty() {
             index.files.insert(rel, warps);
         }
@@ -146,17 +242,27 @@ impl Index {
              #\n\
              #   load  <era> <script>        the era's default load order\n\
              #   file  <script>\n\
-             #   warp  <map> <x> <y> <name> <dest> <dx> <dy>\n",
+             #   warp  <map> <x> <y> <name> <dest> <dx> <dy>\n\
+             #   off   <name>                switched off under OnInit\n\
+             #   on    <name>                switched on\n",
         );
         for (era, list) in [("renewal", &self.renewal), ("prerenewal", &self.prerenewal)] {
             for p in list {
                 s.push_str(&format!("load\t{era}\t{p}\n"));
             }
         }
-        for (file, warps) in &self.files {
+        let none = Gates::default();
+        let files: std::collections::BTreeSet<&String> = self.files.keys().chain(self.gates.keys()).collect();
+        for file in files {
             s.push_str(&format!("file\t{file}\n"));
-            for w in warps {
+            for w in self.files.get(file).map(Vec::as_slice).unwrap_or_default() {
                 s.push_str(&format!("warp\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", w.map, w.x, w.y, w.name, w.dest, w.dx, w.dy));
+            }
+            let g = self.gates.get(file).unwrap_or(&none);
+            for (kind, names) in [("off", &g.off), ("on", &g.on)] {
+                for n in names {
+                    s.push_str(&format!("{kind}\t{n}\n"));
+                }
             }
         }
         s
@@ -171,6 +277,11 @@ impl Index {
                 ["load", "renewal", p] => index.renewal.push(p.to_string()),
                 ["load", "prerenewal", p] => index.prerenewal.push(p.to_string()),
                 ["file", p] => file = Some(p.to_string()),
+                [kind @ ("off" | "on"), name] => {
+                    let Some(f) = &file else { continue };
+                    let g = index.gates.entry(f.clone()).or_default();
+                    if *kind == "off" { &mut g.off } else { &mut g.on }.push(name.to_string());
+                }
                 ["warp", map, x, y, name, dest, dx, dy] => {
                     let (Some(f), Ok(x), Ok(y), Ok(dx), Ok(dy)) = (&file, x.parse(), y.parse(), dx.parse(), dy.parse()) else {
                         continue;
@@ -193,8 +304,8 @@ impl Index {
 }
 
 /// The table as kRO's link rows are laid out, every row a portal (type 200):
-/// `{ map, id, 200, 99999, name, "", x, y, dest, dx, dy }`. A portal a mod
-/// switches off is left out, and one listed twice is listed once.
+/// `{ map, id, 200, 99999, name, "", x, y, dest, dx, dy }`. A portal that
+/// starts closed is left out, and one listed twice is listed once.
 pub fn table_lua(warps: &[Warp], disabled: &HashSet<String>) -> Vec<u8> {
     let mut seen = HashSet::new();
     let mut out = b"-- Built by Ragnarok Offline from the server's own warps (navigation-server-warps).\nNavi_Link_Server = {\n".to_vec();
@@ -230,7 +341,7 @@ pub fn stage(cfg: &Config, server_root: &Path) -> Result<Option<Vec<u8>>, String
     let index = Index::from_text(&text);
     let mut stock = if crate::cmds::is_prerenewal(cfg) { index.prerenewal.clone() } else { index.renewal.clone() };
     let mut warps = Vec::new();
-    let mut disabled = HashSet::new();
+    let mut mod_gates = Vec::new();
     let mut mod_warps = Vec::new();
     for m in &enabled {
         let (more, files) = crate::mods::npc_sources(cfg, m)?;
@@ -241,7 +352,7 @@ pub fn stage(cfg: &Config, server_root: &Path) -> Result<Option<Vec<u8>>, String
         }
         for f in files {
             let text = fs::read(&f).map_err(|e| format!("reading {}: {e}", f.display()))?;
-            disabled.extend(disabled_names(&text));
+            mod_gates.push(gates(&text));
             mod_warps.extend(parse_warps(&text));
         }
     }
@@ -249,6 +360,9 @@ pub fn stage(cfg: &Config, server_root: &Path) -> Result<Option<Vec<u8>>, String
         warps.extend(index.files.get(f).cloned().unwrap_or_default());
     }
     warps.extend(mod_warps);
+    let mut all: Vec<&Gates> = stock.iter().filter_map(|f| index.gates.get(f)).collect();
+    all.extend(&mod_gates);
+    let disabled = closed(&all);
     let table = table_lua(&warps, &disabled);
     let path = server_root.join(TABLE);
     if let Some(parent) = path.parent() {
@@ -287,19 +401,53 @@ mod tests {
     fn a_portal_a_mod_switches_off_is_not_routed_over() {
         let modded = b"-\tscript\tmy_retheme\t-1,{\n\tend;\nOnInit:\n\tdisablenpc \"prt001\";\n\tdisablenpc(\"prt002\");\n\tend;\n}\n\
             prontera,156,22,0\twarp\tmy_gate\t3,2,my_isle,40,40\n";
-        assert_eq!(disabled_names(modded), ["prt001", "prt002"]);
+        let g = gates(modded);
+        assert_eq!(g.off, ["prt001", "prt002"]);
         let mut warps = vec![
             Warp { map: "prontera".into(), x: 156, y: 22, name: "prt001".into(), dest: "prt_fild08".into(), dx: 1, dy: 1 },
             Warp { map: "prontera".into(), x: 156, y: 22, name: "prt001".into(), dest: "prt_fild08".into(), dx: 1, dy: 1 },
             Warp { map: "prontera".into(), x: 10, y: 10, name: "prt003".into(), dest: "izlude".into(), dx: 2, dy: 2 },
         ];
         warps.extend(parse_warps(modded));
-        let disabled: HashSet<String> = disabled_names(modded).into_iter().collect();
+        let disabled = closed(&[&g]);
         let lua = String::from_utf8(table_lua(&warps, &disabled)).unwrap();
         assert!(!lua.contains("prt001"), "{lua}");
         assert!(lua.contains("\t{ \"prontera\", 1000000, 200, 99999, \"prt003\", \"\", 10, 10, \"izlude\", 2, 2 },\n"), "{lua}");
         assert!(lua.contains("\t{ \"prontera\", 1000001, 200, 99999, \"my_gate\", \"\", 156, 22, \"my_isle\", 40, 40 },\n"), "{lua}");
         assert!(lua.starts_with("--") && lua.contains("Navi_Link_Server = {\n"));
+    }
+
+    /// Only a portal closed from the start stays closed: one switched off in a
+    /// comment, under another label or by an event that switches it back on is
+    /// open some of the time, so it is routed over.
+    #[test]
+    fn only_a_portal_closed_from_the_start_is_left_out() {
+        let event = b"-\tscript\tgates\t-1,{\n\
+            \tdisablenpc \"clicked\";\n\
+            \tend;\n\
+            OnInit:\n\
+            \t// disablenpc \"commented\";\n\
+            \t/* disablenpc \"blocked\"; */\n\
+            \tmes \"// not a comment\"; disablenpc \"shut\";\n\
+            \tdisablenpc \"event\";\n\
+            \tend;\n\
+            OnClock0000:\n\
+            \tdisablenpc \"timed\";\n\
+            \tenablenpc \"event\";\n\
+            \tend;\n\
+            }\n\
+            -\tscript\tafter\t-1,{\n\
+            \tdisablenpc \"next_object\";\n\
+            }\n";
+        let g = gates(event);
+        assert_eq!(g.off, ["event", "shut"]);
+        assert_eq!(g.on, ["event"]);
+        assert_eq!(closed(&[&g]), HashSet::from(["shut".to_string()]));
+        // A mod that opens a stock gate opens it.
+        let stock = Gates { off: vec!["prt001".into()], on: vec![] };
+        let opener = Gates { off: vec![], on: vec!["prt001".into()] };
+        assert!(closed(&[&stock]).contains("prt001"));
+        assert!(closed(&[&stock, &opener]).is_empty());
     }
 
     #[test]
@@ -308,10 +456,13 @@ mod tests {
         index.files.insert("npc/a.txt".into(), vec![
             Warp { map: "prontera".into(), x: 1, y: 2, name: "prt01".into(), dest: "prt_in".into(), dx: 3, dy: 4 },
         ]);
+        index.gates.insert("npc/a.txt".into(), Gates { off: vec!["prt01".into()], on: vec![] });
+        index.gates.insert("npc/c.txt".into(), Gates { off: vec![], on: vec!["prt01".into()] });
         let back = Index::from_text(&index.to_text());
         assert_eq!(back.renewal, index.renewal);
         assert_eq!(back.prerenewal, index.prerenewal);
         assert_eq!(back.files, index.files);
+        assert_eq!(back.gates, index.gates);
     }
 
     /// As for NPCs and monsters: against a server-modded rAthena at the pin.
