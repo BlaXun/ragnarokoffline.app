@@ -4709,13 +4709,21 @@ TIMER_FUNC(population_engine_global_combat_timer)
 				const int32 jid = sd->status.class_;
 				const bool pre_third = (jid == 0) || (jid >= 1 && jid <= 23)
 					|| (jid >= 4001 && jid <= 4022);
-				if (!pre_third) {
+				// Paid per base level gained, not per poll: this runs every combat tick
+				// (population_engine_shell_timer_ms, 100 ms), and paying on each one
+				// handed a 3rd-job companion its whole profile's maxima at once.
+				const int16_t lv = static_cast<int16_t>(sd->status.base_level);
+				if (sd->pop.points_granted_level == 0 || lv < sd->pop.points_granted_level)
+					sd->pop.points_granted_level = lv;
+				if (!pre_third && lv > sd->pop.points_granted_level) {
 					const int grant = static_cast<int>(battle_config.population_engine_companion_points_per_level);
 					if (grant > 0) {
-						sd->status.status_point += grant;
-						sd->status.trait_point  += grant;
+						const int levels = lv - sd->pop.points_granted_level;
+						sd->status.status_point += grant * levels;
+						sd->status.trait_point  += grant * levels;
 					}
 				}
+				sd->pop.points_granted_level = lv;
 				pop_companion_spend_stat_points(sd, prof);
 				(void)pop_companion_apply_job_change(sd, 0);
 				// RAGNAROKMAC: the party window shows levels from the map's own party

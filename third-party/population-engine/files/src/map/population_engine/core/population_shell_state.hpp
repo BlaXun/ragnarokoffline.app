@@ -255,6 +255,10 @@ struct s_population {
 	/// companion's level in the party window only ever updated on a map change.
 	/// The growth poll compares against this and re-broadcasts locally instead.
 	int16_t  last_party_level_broadcast = 0;
+	/// RAGNAROKMAC (growth): base level the extra point grant has been paid up to. Set on the
+	/// first growth poll after spawn or recall without paying, so only levels gained from
+	/// then on are paid, and reset down when a rebirth starts the level over.
+	int16_t  points_granted_level = 0;
 	int16_t  companion_emergency_at = 35; ///< emergency/big-heal below this HP%
 	/// RAGNAROKMAC (gear custody): equip positions (EQP_* bits) worn by items the OWNER gave this
 	/// companion, as opposed to the gear it was generated with. Only these come back through
