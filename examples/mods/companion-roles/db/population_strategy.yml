@@ -258,6 +258,7 @@ Body:
         Build: healer
         Requires: { Role: [support, none] }
         Rotation: false
+        Allow: []                       # the engine casts nothing on its own: no Sanctuary
         Rules:
           - Name: stay_near_the_stoned
             Priority: 79
@@ -346,6 +347,7 @@ Body:
         Build: caster
         Requires: { Role: [attacker, none] }
         Rotation: false
+        Allow: []                       # only what its rules name
         Rules:
           # Hurt, with something on it: step away and let the healer catch up.
           - Name: step_away
@@ -471,6 +473,7 @@ Body:
         Build: assassin
         Requires: { Role: [attacker, none] }
         Rotation: false
+        Allow: []                       # only what its rules name
         Rules:
           - Name: enchant_deadly_poison
             Priority: 50

@@ -178,7 +178,8 @@ reaches it from these lines, each marked `RAGNAROKMAC (companion strategies)`:
 | `population_engine.cpp` | companion loop: the idle stop-walking and `pop_companion_update_formation` | an idle companion's rule-started walk and spot are kept |
 | `population_engine_combat.cpp` | include of the header | |
 | `population_engine_combat.cpp` | `population_shell_combat_process_tick`, right after party resurrection | the companion's turn: resurrection outranks every rule |
-| `population_engine_combat.cpp` | rotation loop of `population_shell_pick_attack_skill`, and the sphere chain's `pick` | `Ban:` and `Rotation: false` |
+| `population_engine_combat.cpp` | rotation loop of `population_shell_pick_attack_skill`, and the sphere chain's `pick` | `Allow:`, `Ban:` and `Rotation: false` |
+| `population_engine_combat.cpp` | `population_shell_cast_expired_self_buffs`, `population_shell_cast_ally_attack_skill`, the emergency Hiding pick | `Allow:` and `Ban:` bind the engine's own buffs, heals and Hiding too (`population_strategy_skill_allowed`); a Priest's Sanctuary at a boss came from here |
 
 Re-vendoring upstream means re-applying exactly these. Every entry point returns
 at once when no rules are loaded or the shell is not a recruited companion.
