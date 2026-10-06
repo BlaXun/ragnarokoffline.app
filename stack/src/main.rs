@@ -31,6 +31,7 @@ mod groups;
 mod json;
 mod mapcache;
 mod mods;
+mod navnpc;
 mod process_identity;
 mod registration;
 mod hosting;
@@ -101,6 +102,19 @@ fn main() {
     if verb == "ports" {
         match ports::Ports::from_env() {
             Ok(p) => println!("{}", p.to_json()),
+            Err(error) => { eprintln!("{error}"); exit(1); }
+        }
+        return;
+    }
+
+    // Build the navigation-server-npcs mod's stock index from a rAthena
+    // checkout (navnpc.rs). A developer tool for when the pin moves: no app,
+    // no config.
+    if verb == "navigation-npc-index" {
+        let result = args.get(1).ok_or_else(|| "a rAthena checkout is required".to_string())
+            .and_then(|root| navnpc::build_index(std::path::Path::new(root)));
+        match result {
+            Ok(index) => print!("{}", index.to_text()),
             Err(error) => { eprintln!("{error}"); exit(1); }
         }
         return;

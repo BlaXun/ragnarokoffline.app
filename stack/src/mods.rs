@@ -1200,6 +1200,13 @@ impl Installed {
         }
         roots.iter().any(|root| CLIENT_LAYERS.iter().any(|layer| root.join(layer).is_dir()))
     }
+
+    /// Whether the mod has the map server load scripts: its own `npc/`, or
+    /// stock ones named in `stock-npc.txt`. Server-side, except that with
+    /// navigation-server-npcs on they reach the client's NPC table too.
+    pub fn has_npc_layers(&self) -> bool {
+        self.roots.iter().any(|root| root.join("npc").is_dir() || root.join("stock-npc.txt").is_file())
+    }
 }
 
 /// Every mod folder, in merge order, with its manifest checked.
@@ -2048,6 +2055,43 @@ fn write_map_layer(db: &Path, maps: &[mapcache::Map]) -> Result<(), String> {
     fs::write(&index, body).map_err(|e| format!("writing {}: {e}", index.display()))
 }
 
+/// The scripts a mod has the map server load, for the navigation table
+/// (navnpc.rs): the stock ones its `stock-npc.txt` names, and its own `.txt`
+/// files as `assemble` lays them down -- every root, a later root's file
+/// replacing an earlier one of the same path, and a `when/<setting>/` folder
+/// only while that setting is on.
+pub fn npc_sources(cfg: &Config, m: &Installed) -> Result<(Vec<String>, Vec<PathBuf>), String> {
+    fn walk(dir: &Path, rel: &str, top: bool, out: &mut BTreeMap<String, PathBuf>) {
+        let Ok(rd) = fs::read_dir(dir) else { return };
+        for e in rd.flatten() {
+            let name = e.file_name().to_string_lossy().into_owned();
+            let path = e.path();
+            if top && name == "when" && path.is_dir() {
+                continue;
+            }
+            let rel = if rel.is_empty() { name.clone() } else { format!("{rel}/{name}") };
+            if path.is_dir() {
+                walk(&path, &rel, false, out);
+            } else if name.ends_with(".txt") {
+                out.insert(rel, path);
+            }
+        }
+    }
+    let saved = read_settings(&cfg.state)?;
+    let settings = effective(&m.manifest, saved.get(&m.name));
+    let mut stock = Vec::new();
+    let mut files = BTreeMap::new();
+    for root in &m.roots {
+        read_stock_npc(root, &m.name, &mut stock);
+        let npc = root.join("npc");
+        walk(&npc, "", true, &mut files);
+        for (key, folder) in conditional_folders(&npc, &m.name, "npc", &settings) {
+            walk(&folder, &format!("when/{key}"), false, &mut files);
+        }
+    }
+    Ok((stock, files.into_values().collect()))
+}
+
 /// Scripts rAthena already ships that a mod asks to switch on.
 ///
 /// rAthena carries a job changer, a warper, a healer and a stylist in
@@ -2727,8 +2771,12 @@ fn load_report(state: &Path) -> BTreeMap<String, Vec<String>> {
 pub fn list(cfg: &Config) -> Vec<[String; 14]> {
     let saved = read_settings(&cfg.state).unwrap_or_default();
     let reported = load_report(&cfg.state);
-    scan(cfg)
-        .into_iter()
+    let mods = scan(cfg);
+    // With navigation-server-npcs on, the client's NPC table is built from
+    // every mod's scripts (navnpc.rs), so a change to one needs the game
+    // reopened like any client file; so does switching that mod itself.
+    let navigation = mods.iter().any(|m| m.name == crate::navnpc::MOD && matches!(m.status, Status::On));
+    mods.into_iter()
         .map(|m| {
             let (state, reason) = match &m.status {
                 Status::On => ("on", String::new()),
@@ -2778,7 +2826,15 @@ pub fn list(cfg: &Config) -> Vec<[String; 14]> {
                 // `client` when the mod has layers the game window loads, so
                 // Settings asks for the game to be reopened only after an
                 // Apply that changed one of those.
-                if m.has_client_layers() { "client" } else { "" }.to_string(),
+                if m.has_client_layers()
+                    || m.name == crate::navnpc::MOD
+                    || (navigation && m.has_npc_layers())
+                {
+                    "client"
+                } else {
+                    ""
+                }
+                .to_string(),
             ]
         })
         .collect()
@@ -4133,5 +4189,29 @@ mod tests {
         }
         let era = Manifest { prerenewal_folder: "pre-renewal".into(), ..Manifest::default() };
         assert!(mk("client-era", &["npc", "pre-renewal/data"], era).has_client_layers());
+    }
+
+    /// With navigation-server-npcs on, a mod's scripts reach the client's NPC
+    /// table, so changing one needs the game reopened; switching the
+    /// navigation mod itself always does. Other server-only mods still don't.
+    #[test]
+    fn scripts_count_as_client_side_while_server_npcs_feed_navigation() {
+        let cfg = kind_config("client-navnpc");
+        install(&cfg, crate::navnpc::MOD, r#"{"default": "off"}"#);
+        install(&cfg, "town", "{}");
+        install(&cfg, "healers", "{}");
+        install(&cfg, "rates", "{}");
+        let mods = cfg.state.join("mods");
+        fs::create_dir_all(mods.join("town/npc")).unwrap();
+        fs::write(mods.join("healers/stock-npc.txt"), "npc/custom/healer.txt\n").unwrap();
+        fs::create_dir_all(mods.join("rates/db")).unwrap();
+        let client = |cfg: &Config| -> Vec<String> {
+            list(cfg).into_iter().filter(|r| r[13] == "client").map(|r| r[1].clone()).collect()
+        };
+        assert_eq!(client(&cfg), [crate::navnpc::MOD]);
+        enable(&cfg, crate::navnpc::MOD).unwrap();
+        let mut on = client(&cfg);
+        on.sort();
+        assert_eq!(on, ["healers", crate::navnpc::MOD, "town"]);
     }
 }
