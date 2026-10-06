@@ -160,6 +160,12 @@ struct Rule {
 	bool hold = false;           ///< stand still and end the turn
 	int16 keep_distance = 0;     ///< step out to at least this many cells from the monster (0 = off)
 	int16 keep_max = 0;          ///< and back in to at most this many (0 = no limit): stay in range of it
+	// Kite: away from the monster on the companion, within reach of an anchor (the rule's
+	// target, else the owner), but not on top of it.
+	bool kite = false;
+	int16 kite_away = 4;         ///< at least this far from the monster
+	int16 kite_within = 7;       ///< at most this far from the anchor
+	int16 kite_gap = 3;          ///< and no closer to the anchor than this
 	// Leave: step off ground units of leave_skill (0 = any) placed by leave_owner.
 	bool leave = false;
 	uint16 leave_skill = 0;
@@ -730,7 +736,7 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		return nullptr;
 	}
 	this->warn_unknown_keys(node, { "Name", "Priority", "Remove", "Requires", "On", "When", "Charges", "Field",
-		"Enemy", "Count", "Reach", "Absent", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "KeepDistance", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
+		"Enemy", "Count", "Reach", "Absent", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
 		"OnePerParty" }, "a rule");
 
 	auto rule = std::make_shared<Rule>();
@@ -1033,6 +1039,24 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 			return nullptr;
 		}
 	}
+	if (this->nodeExists(node, "Kite")) {
+		const ryml::NodeRef k = node["Kite"];
+		if (k.is_map()) {
+			this->warn_unknown_keys(k, { "Away", "Within", "Gap" }, "Kite");
+			if (this->nodeExists(k, "Away"))
+				this->asInt16(k, "Away", rule->kite_away);
+			if (this->nodeExists(k, "Within"))
+				this->asInt16(k, "Within", rule->kite_within);
+			if (this->nodeExists(k, "Gap"))
+				this->asInt16(k, "Gap", rule->kite_gap);
+			rule->kite = true;
+		} else if (!this->asBool(node, "Kite", rule->kite)) {
+			return nullptr;
+		}
+		rule->kite_away = static_cast<int16>(cap_value(static_cast<int>(rule->kite_away), 1, AREA_SIZE));
+		rule->kite_within = static_cast<int16>(cap_value(static_cast<int>(rule->kite_within), 1, AREA_SIZE));
+		rule->kite_gap = static_cast<int16>(cap_value(static_cast<int>(rule->kite_gap), 0, rule->kite_within));
+	}
 	if (this->nodeExists(node, "KeepDistance")) {
 		const ryml::NodeRef k = node["KeepDistance"];
 		if (k.is_map()) {
@@ -1070,13 +1094,13 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		this->asBool(node, "OnePerParty", rule->one_per_party);
 
 	const int moves = (rule->cast_skill != 0) + (rule->retreat != Retreat::None) + rule->hold + (rule->keep_distance > 0)
-		+ (rule->move != Move::None) + rule->leave;
+		+ (rule->move != Move::None) + rule->leave + rule->kite;
 	if (moves == 0 && rule->say.empty() && rule->switch_to.empty() && rule->signal.empty() && !rule->set_target) {
-		this->invalidWarning(node, "A rule needs Cast, Retreat, KeepDistance, MoveTo, Leave, Hold, Say, Switch, Signal or SetTarget; the rule is skipped.\n");
+		this->invalidWarning(node, "A rule needs Cast, Retreat, KeepDistance, Kite, MoveTo, Leave, Hold, Say, Switch, Signal or SetTarget; the rule is skipped.\n");
 		return nullptr;
 	}
 	if (moves > 1) {
-		this->invalidWarning(node, "A rule takes only one of Cast, Retreat, KeepDistance, MoveTo, Leave and Hold; the rule is skipped.\n");
+		this->invalidWarning(node, "A rule takes only one of Cast, Retreat, KeepDistance, Kite, MoveTo, Leave and Hold; the rule is skipped.\n");
 		return nullptr;
 	}
 	if (rule->move == Move::EventCell && rule->event != Event::Casts) {
@@ -2285,11 +2309,11 @@ static const char *cast(Turn &t, const Rule &rule, block_list *target)
 		return "refused";
 	// Paid when the cast starts, not when it lands: an interrupted cast still costs the stone.
 	pay(sd, cost);
-	// The same pacing the engine's own casts use (see population_shell_try_party_resurrection),
-	// except for a skill that can open a combo: the next step has to fit in its delay.
+	// rAthena paces the next action itself: the cast timer (skilltimer) and the after-cast delay
+	// (canact_tick), both after DEX, cards and Bragi, are checked above. Adding the skill's BASE
+	// cast and delay on top made a Priest heal slower than a player could; only a short gap stays.
 	const t_tick pace = static_cast<t_tick>(std::max(1, battle_config.population_engine_shell_attack_skill_delay_ms));
-	sd->pop.skill_cd = t.tick + skill_get_cast(id, lv)
-		+ (skill_is_combo(id) != 0 ? pace : std::max<t_tick>(skill_get_delay(id, lv), pace));
+	sd->pop.skill_cd = t.tick + pace;
 	sd->pop.last_cast_skill_id = id;
 	return "";
 }
@@ -2528,6 +2552,81 @@ static const char *leave_ground(Turn &t, const Rule &rule, bool &clear)
 	return "no path";
 }
 
+struct ChaserScan {
+	int32 me;
+	mob_data *nearest;
+	int best_d;
+	const block_list *center;
+};
+
+static int32 chaser_cb(block_list *bl, va_list ap)
+{
+	ChaserScan *scan = va_arg(ap, ChaserScan *);
+	mob_data *md = reinterpret_cast<mob_data *>(bl);
+	if (status_isdead(*md) || md->target_id != scan->me)
+		return 0;
+	const int d = distance_bl(scan->center, md);
+	if (scan->nearest == nullptr || d < scan->best_d || (d == scan->best_d && md->id < scan->nearest->id)) {
+		scan->nearest = md;
+		scan->best_d = d;
+	}
+	return 0;
+}
+
+/// Kite: safe (the rule passes) when far enough from the monster and within the anchor's ring;
+/// "" when it set off; else why not. Each step takes the reachable cell furthest from the monster
+/// inside the ring around the anchor, so a monster that keeps chasing is led round the anchor --
+/// the healer -- rather than onto it or away from it.
+static const char *kite(Turn &t, const Rule &rule, block_list *anchor, block_list *about, bool &safe)
+{
+	map_session_data *sd = t.sd;
+	safe = false;
+	if (!unit_can_move(sd))
+		return nullptr;
+	if (anchor == nullptr)
+		anchor = t.owner;
+	if (anchor == nullptr || anchor == sd)
+		return "nobody to stay near";
+	ChaserScan scan{ sd->id, nullptr, 0, sd };
+	map_foreachinrange(chaser_cb, sd, AREA_SIZE, BL_MOB, &scan);
+	block_list *from = scan.nearest != nullptr ? static_cast<block_list *>(scan.nearest) : about;
+	const int to_anchor = distance_bl(sd, anchor);
+	const bool in_ring = to_anchor <= rule.kite_within && to_anchor >= rule.kite_gap;
+	if (from == nullptr || (distance_bl(sd, from) >= rule.kite_away && in_ring)) {
+		safe = true;
+		return "";
+	}
+	if (unit_is_walking(sd) && in_ring)
+		return ""; // on its way to a cell already chosen
+	const map_data *md = map_getmapdata(sd->m);
+	if (md == nullptr)
+		return "no map";
+	// (- distance from the monster, distance from here, x, y): the furthest from it first.
+	std::vector<std::tuple<int, int, int16, int16>> cells;
+	for (int dx = -6; dx <= 6; ++dx) {
+		for (int dy = -6; dy <= 6; ++dy) {
+			const int x = sd->x + dx, y = sd->y + dy;
+			if ((dx == 0 && dy == 0) || x < 0 || y < 0 || x >= md->xs || y >= md->ys
+					|| !map_getcell(sd->m, x, y, CELL_CHKPASS))
+				continue;
+			const int a = std::max(std::abs(x - anchor->x), std::abs(y - anchor->y));
+			if (a > rule.kite_within || a < rule.kite_gap)
+				continue;
+			const int m = from != nullptr ? std::max(std::abs(x - from->x), std::abs(y - from->y)) : 0;
+			cells.emplace_back(-m, std::max(std::abs(dx), std::abs(dy)), static_cast<int16>(x), static_cast<int16>(y));
+		}
+	}
+	if (cells.empty())
+		return "no room near them";
+	std::sort(cells.begin(), cells.end());
+	if (!population_shell_can_emit_movement(sd, MovementOwner::Combat, "strategy:kite"))
+		return nullptr;
+	for (size_t i = 0; i < cells.size() && i < 8; ++i)
+		if (unit_walktoxy(sd, std::get<2>(cells[i]), std::get<3>(cells[i]), 4))
+			return "";
+	return "no path";
+}
+
 static bool requires_ok(const map_session_data *sd, const Requirements &req)
 {
 	if (req.base_level > 0 && static_cast<int32>(sd->status.base_level) < req.base_level)
@@ -2699,6 +2798,17 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		}
 		trace(sd, *t.st, t.tick, "rule %s: moving to %s", name, rule.move == Move::EventCell ? "the cast's cell"
 			: rule.move == Move::EventUnit ? "them" : rule.move == Move::Reachable ? "where it can reach" : skill_get_desc(rule.move_skill));
+		acted = true;
+	} else if (rule.kite) {
+		bool safe = false;
+		const char *why = kite(t, rule, target != nullptr && target->type == BL_PC ? target : nullptr, about, safe);
+		if (safe || why == nullptr)
+			return Outcome::Skipped;
+		if (*why != '\0') {
+			trace(sd, *t.st, t.tick, "rule %s: cannot kite (%s)", name, why);
+			return Outcome::Skipped;
+		}
+		trace(sd, *t.st, t.tick, "rule %s: kiting", name);
 		acted = true;
 	} else if (rule.keep_distance > 0) {
 		bool far_enough = false;

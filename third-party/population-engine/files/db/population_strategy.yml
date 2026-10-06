@@ -104,6 +104,9 @@
 #                Already there: the rule passes and the next one runs.
 #   Leave:       { Field: WZ_STORMGUST, Owner: enemy, Within: 8 } -- standing on such a ground
 #                unit (any skill without Field): walk to the nearest free cell.
+#   Kite:        { Away: 4, Within: 7, Gap: 3 } -- run from the monster on the companion,
+#                staying within Within of the rule's target (else the owner) but not
+#                closer than Gap: the monster is led round the healer, not onto it.
 #   Hold:        true -- stand still (no chasing) and end the turn.
 #                Hold, MoveTo, KeepDistance, Retreat and Leave also hold the companion where
 #                they put it: following its owner waits (warps to another map do not).

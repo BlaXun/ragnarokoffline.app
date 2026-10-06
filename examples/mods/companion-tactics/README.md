@@ -99,11 +99,14 @@ once). In every phase:
   whoever is being hit;
 - when someone dies, the Priest walks toward the body until it is within
   Resurrection's 9 cells, and keeps SP back for it;
+- after a Wide Stone Curse the Priest stays within reach of the petrified and
+  cures them, already while it is still setting in;
 - the Priest heals, walls and Kyries whoever the monsters are on first, keeps
   Blessing, Increase AGI and (on attackers) Impositio up, and reveals a hidden
   Phreeoni only when it is within Ruwach's reach;
-- the Assassin steps out and waits for heals below 30 % HP, instead of the
-  engine's own flee running it off.
+- below 30 % HP the Assassin runs Phreeoni round the Priest: away from the
+  boss, within Heal's reach, never onto the Priest (`Kite`). Without it, the
+  engine's own flee ran it off, dragging the boss away from everyone.
 
 **Regular AI characters** (`For: shells`): Wizards around the world keep Storm
 Gust, Meteor Storm, Lord of Vermilion and Heaven's Drive for packs of three or
