@@ -47,6 +47,24 @@ pub struct Spawn {
     /// The monster as the line names it: an id, or rarely an AegisName.
     pub mob: String,
     pub amount: u32,
+    /// The name it shows, which the map server takes from the line
+    /// (`override_mob_names: 0`): `Aged Hydra` is a Hydra by this name.
+    /// Empty for `--en--` and `--ja--`, which mean mob_db's.
+    pub name: Vec<u8>,
+    /// A level the line gives it (`name,level`), over mob_db's.
+    pub level: Option<u32>,
+}
+
+/// The name field as rAthena reads it: up to 23 bytes before a comma, then
+/// an optional level (`sscanf("%23[^,],%11d")`).
+fn spawn_name(field: &[u8]) -> (Vec<u8>, Option<u32>) {
+    let (name, level) = match field.iter().position(|b| *b == b',') {
+        Some(i) => (&field[..i], std::str::from_utf8(&field[i + 1..]).ok().and_then(|l| l.trim().parse().ok())),
+        None => (field, None),
+    };
+    let name = &name[..name.len().min(23)];
+    let name = if name == b"--en--" || name == b"--ja--" { Vec::new() } else { name.to_vec() };
+    (name, level.filter(|l| *l > 0))
 }
 
 /// The spawn lines in a script:
@@ -59,7 +77,7 @@ pub fn parse_spawns(text: &[u8]) -> Vec<Spawn> {
             let mut fields = line.split(|b| *b == b'\t');
             let place = std::str::from_utf8(fields.next()?).ok()?;
             let kind = std::str::from_utf8(fields.next()?).ok()?;
-            fields.next()?;
+            let (name, level) = spawn_name(fields.next()?);
             let rest = std::str::from_utf8(fields.next()?).ok()?;
             if kind != "monster" && kind != "boss_monster" {
                 return None;
@@ -75,7 +93,7 @@ pub fn parse_spawns(text: &[u8]) -> Vec<Spawn> {
             if mob.is_empty() || amount == 0 {
                 return None;
             }
-            Some(Spawn { map: map.to_string(), mob, amount })
+            Some(Spawn { map: map.to_string(), mob, amount, name, level })
         })
         .collect()
 }
@@ -182,7 +200,7 @@ impl Index {
              #   load   <era> <script>        the era's default load order\n\
              #   mob    <era> <id> <aegis> <level> <race> <size> <element> <element level> <mvp 0|1> <name>\n\
              #   file   <script>\n\
-             #   spawn  <map> <id or aegis> <amount>\n",
+             #   spawn  <map> <id or aegis> <amount> <level, 0 for mob_db's> <name, empty for mob_db's>\n",
         );
         for (era, list) in [("renewal", &self.renewal), ("prerenewal", &self.prerenewal)] {
             for p in list {
@@ -200,7 +218,10 @@ impl Index {
         for (file, spawns) in &self.files {
             s.push_str(&format!("file\t{file}\n"));
             for sp in spawns {
-                s.push_str(&format!("spawn\t{}\t{}\t{}\n", sp.map, sp.mob, sp.amount));
+                s.push_str(&format!(
+                    "spawn\t{}\t{}\t{}\t{}\t{}\n",
+                    sp.map, sp.mob, sp.amount, sp.level.unwrap_or(0), escape(&sp.name)
+                ));
             }
         }
         s
@@ -233,9 +254,16 @@ impl Index {
                     };
                 }
                 ["file", p] => file = Some(p.to_string()),
-                ["spawn", map, mob, amount] => {
+                ["spawn", map, mob, amount, level, name] => {
                     let (Some(f), Ok(amount)) = (&file, amount.parse()) else { continue };
-                    index.files.entry(f.clone()).or_default().push(Spawn { map: map.to_string(), mob: mob.to_string(), amount });
+                    let level = level.parse().ok().filter(|l| *l > 0);
+                    index.files.entry(f.clone()).or_default().push(Spawn {
+                        map: map.to_string(),
+                        mob: mob.to_string(),
+                        amount,
+                        name: unescape(name),
+                        level,
+                    });
                 }
                 _ => {}
             }
@@ -265,21 +293,27 @@ fn element_code(element: &str, level: u32) -> u32 {
     kind * 20 + level.min(19)
 }
 
-/// One row per monster per map, in the order the scripts first spawn it:
+/// One row per monster per map and name it shows, in the order the scripts
+/// first spawn it:
 /// `{ map, id, 300|301, count << 16 | mob id, name, aegis, level,
 /// element << 16 | size << 8 | race }` -- 301 for an MVP -- as kRO packs them.
 /// A spawn of a monster mob_db does not have is left out: the server cannot
 /// spawn it either.
 pub fn table_lua(spawns: &[Spawn], mobs: &BTreeMap<u32, Mob>) -> Vec<u8> {
     let by_aegis: HashMap<&str, u32> = mobs.iter().map(|(id, m)| (m.aegis.as_str(), *id)).collect();
-    let mut order: Vec<(String, u32)> = Vec::new();
-    let mut counts: HashMap<(String, u32), u32> = HashMap::new();
+    // A row is what a player sees: a monster by the name over its head, at
+    // its level, on one map.
+    type Row = (String, u32, Vec<u8>, u32);
+    let mut order: Vec<Row> = Vec::new();
+    let mut counts: HashMap<Row, u32> = HashMap::new();
     for sp in spawns {
         let Some(id) = sp.mob.parse::<u32>().ok().or_else(|| by_aegis.get(sp.mob.as_str()).copied()) else { continue };
-        if !mobs.contains_key(&id) || id > 0xffff {
+        let Some(m) = mobs.get(&id) else { continue };
+        if id > 0xffff {
             continue;
         }
-        let key = (sp.map.clone(), id);
+        let name = if sp.name.is_empty() { m.name.clone() } else { sp.name.clone() };
+        let key = (sp.map.clone(), id, name, sp.level.unwrap_or(m.level));
         let count = counts.entry(key.clone()).or_insert_with(|| {
             order.push(key.clone());
             0
@@ -288,21 +322,21 @@ pub fn table_lua(spawns: &[Spawn], mobs: &BTreeMap<u32, Mob>) -> Vec<u8> {
     }
     let mut out = b"-- Built by Ragnarok Offline from the server's own spawns (navigation-server-monsters).\nNavi_Mob = {\n".to_vec();
     for (i, key) in order.iter().enumerate() {
-        let (map, id) = key;
+        let (map, id, name, level) = key;
         let m = &mobs[id];
         let count = counts[key].min(0xffff);
         let info = element_code(&m.element, m.element_level) << 16 | size_code(&m.size) << 8 | race_code(&m.race);
         out.extend_from_slice(
             format!("\t{{ \"{map}\", {}, {}, {}, \"", i + 1, if m.mvp { 301 } else { 300 }, count << 16 | id).as_bytes(),
         );
-        for &b in &m.name {
+        for &b in name {
             match b {
                 b'"' | b'\\' => out.extend_from_slice(&[b'\\', b]),
                 0..=0x1f => out.extend_from_slice(format!("\\{b:03}").as_bytes()),
                 _ => out.push(b),
             }
         }
-        out.extend_from_slice(format!("\", \"{}\", {}, {} }},\n", m.aegis.replace(['"', '\\'], ""), m.level, info).as_bytes());
+        out.extend_from_slice(format!("\", \"{}\", {level}, {info} }},\n", m.aegis.replace(['"', '\\'], "")).as_bytes());
     }
     out.extend_from_slice(b"}\n");
     out
@@ -416,20 +450,46 @@ mod tests {
         let script = b"prt_fild08,0,0\tmonster\tPoring\t1002,20,5000\n\
             prt_fild08,305,233,10,10\tmonster\tPoring\t1002,2,15000\n\
             prt_maze03\tboss_monster\tBaphomet\t1039,1,7200000,600000,1\n\
-            pay_dun04,0,0,0,0\tmonster\tAegis named\t BAPHOMET ,1\n\
+            pay_dun04,0,0,0,0\tmonster\t--ja--\t BAPHOMET ,1\n\
+            iz_dun00,0,0,0,0\tmonster\tAged Hydra,40\t1068,50,5000,0,BountyBoard::OnHuntKill\n\
+            gef_fild00,0,0\tmonster\tSwift Baroness of Retribution\t1002,1\n\
             1@tower,0,0\tmonster\tInstance\t1002,5\n\
             prt_fild08,0,0\tmonster\tNone\t1002,0\n\
             prontera,1,1,1\tscript\tNPC\t112,{\n\
             /* prt_fild08,0,0\tmonster\tCommented\t1002,99 */\n";
         let spawns = parse_spawns(script);
-        let got: Vec<_> = spawns.iter().map(|s| (s.map.as_str(), s.mob.as_str(), s.amount)).collect();
-        assert_eq!(got, [("prt_fild08", "1002", 20), ("prt_fild08", "1002", 2), ("prt_maze03", "1039", 1), ("pay_dun04", "BAPHOMET", 1)]);
+        let got: Vec<_> = spawns
+            .iter()
+            .map(|s| (s.map.as_str(), s.mob.as_str(), s.amount, String::from_utf8_lossy(&s.name).into_owned(), s.level))
+            .collect();
+        let row = |map: &'static str, mob: &'static str, amount, name: &str, level| (map, mob, amount, name.to_string(), level);
+        assert_eq!(got, [
+            row("prt_fild08", "1002", 20, "Poring", None),
+            row("prt_fild08", "1002", 2, "Poring", None),
+            row("prt_maze03", "1039", 1, "Baphomet", None),
+            row("pay_dun04", "BAPHOMET", 1, "", None),
+            row("iz_dun00", "1068", 50, "Aged Hydra", Some(40)),
+            // 23 bytes, as the server reads it.
+            row("gef_fild00", "1002", 1, "Swift Baroness of Retri", None),
+        ]);
+    }
+
+    /// The server shows a spawn line's own name (override_mob_names: 0), so a
+    /// renamed spawn is its own row, findable by that name.
+    #[test]
+    fn a_renamed_spawn_is_its_own_row_under_the_name_it_shows() {
+        let spawns = parse_spawns(b"prt_fild08,0,0\tmonster\tPoring\t1002,20\n\
+            prt_fild08,0,0\tmonster\tAged Poring,30\t1002,5\n\
+            prt_fild08,0,0\tmonster\t--en--\t1002,1\n");
+        let lua = String::from_utf8(table_lua(&spawns, &db())).unwrap();
+        assert!(lua.contains(&format!("\"prt_fild08\", 1, 300, {}, \"Poring\", \"PORING\", 1, ", 21 << 16 | 1002)), "{lua}");
+        assert!(lua.contains(&format!("\"prt_fild08\", 2, 300, {}, \"Aged Poring\", \"PORING\", 30, ", 5 << 16 | 1002)), "{lua}");
     }
 
     #[test]
     fn rows_count_a_monster_per_map_and_pack_as_kro_does() {
-        let spawns = parse_spawns(b"prt_fild08,0,0\tmonster\tP\t1002,20\nprt_fild08,1,1,5,5\tmonster\tP\t1002,2\n\
-            prt_maze03,0,0\tboss_monster\tB\tBAPHOMET,1\nprt_fild08,0,0\tmonster\tGone\t9999,5\n");
+        let spawns = parse_spawns(b"prt_fild08,0,0\tmonster\tPoring\t1002,20\nprt_fild08,1,1,5,5\tmonster\tPoring\t1002,2\n\
+            prt_maze03,0,0\tboss_monster\tBaphomet\tBAPHOMET,1\nprt_fild08,0,0\tmonster\tGone\t9999,5\n");
         let lua = String::from_utf8(table_lua(&spawns, &db())).unwrap();
         // 22 Porings: 22 << 16 | 1002. Water 1, Medium, Plant: 21 << 16 | 1 << 8 | 3 -- kRO's own value.
         assert!(lua.contains("\t{ \"prt_fild08\", 1, 300, 1442794, \"Poring\", \"PORING\", 1, 1376515 },\n"), "{lua}");
@@ -442,7 +502,10 @@ mod tests {
     fn the_index_reads_back_what_it_wrote() {
         let mut index = Index { renewal: vec!["npc/a.txt".into()], prerenewal: vec!["npc/b.txt".into()], mobs_renewal: db(), ..Index::default() };
         index.mobs_prerenewal.insert(1, Mob { name: b"Tab\there".to_vec(), ..Mob::default() });
-        index.files.insert("npc/a.txt".into(), vec![Spawn { map: "prt_fild08".into(), mob: "1002".into(), amount: 3 }]);
+        index.files.insert("npc/a.txt".into(), vec![
+            Spawn { map: "prt_fild08".into(), mob: "1002".into(), amount: 3, name: Vec::new(), level: None },
+            Spawn { map: "iz_dun00".into(), mob: "1068".into(), amount: 50, name: b"Aged\tHydra".to_vec(), level: Some(40) },
+        ]);
         let back = Index::from_text(&index.to_text());
         assert_eq!(back.renewal, index.renewal);
         assert_eq!(back.prerenewal, index.prerenewal);

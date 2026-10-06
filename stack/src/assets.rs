@@ -1788,12 +1788,12 @@ mod tests {
             "load\trenewal\tnpc/re.txt\nload\tprerenewal\tnpc/pre.txt\n\
              mob\trenewal\t1002\tPORING\t1\tPlant\tMedium\tWater\t1\t0\tPoring\n\
              mob\tprerenewal\t1002\tPORING\t1\tPlant\tMedium\tWater\t1\t0\tClassic Poring\n\
-             file\tnpc/re.txt\nspawn\tprt_fild08\t1002\t20\n\
-             file\tnpc/pre.txt\nspawn\tprt_fild08\t1002\t70\n",
+             file\tnpc/re.txt\nspawn\tprt_fild08\t1002\t20\t0\t\n\
+             file\tnpc/pre.txt\nspawn\tprt_fild08\t1002\t70\t0\t\n",
         );
         let isle = cfg.state.join("mods/isle");
         write(&isle.join("mod.json"), r#"{"settings": [{"key": "angry", "type": "boolean", "default": false}]}"#);
-        write(&isle.join("npc/spawns.txt"), "my_isle,0,0\tmonster\tMine\t30000,4\nprt_fild08,0,0\tmonster\tPoring\t1002,5\n");
+        write(&isle.join("npc/spawns.txt"), "my_isle,0,0\tmonster\t--en--\t30000,4\nprt_fild08,0,0\tmonster\tPoring\t1002,5\n");
         write(&isle.join("db/mob_db.yml"), "Body:\n  - Id: 30000\n    AegisName: MY_MOB\n    Name: Isle Crab\n    Level: 12\n    Size: Small\n    Race: Fish\n    Element: Water\n    ElementLevel: 2\n");
         write(&isle.join("db/when/angry/mob_db.yml"), "Body:\n  - Id: 1002\n    Name: Angry Poring\n    Level: 50\n");
         crate::mods::enable(&cfg, "isle").unwrap();
@@ -1816,13 +1816,17 @@ mod tests {
 
         crate::mods::save_settings(&cfg, "isle", r#"{"angry": true}"#).unwrap();
         link(&cfg, &args).unwrap();
-        assert!(table().unwrap().contains("\"Angry Poring\", \"PORING\", 50, "), "{:?}", table());
+        // The stock spawns show mob_db's new name; the mod's, which name
+        // their monster, keep that name at the new level.
+        let angry = table().unwrap();
+        assert!(angry.contains(&format!("{}, \"Angry Poring\", \"PORING\", 50, ", 20 << 16 | 1002)), "{angry}");
+        assert!(angry.contains(&format!("{}, \"Poring\", \"PORING\", 50, ", 5 << 16 | 1002)), "{angry}");
         assert_ne!(id(), first, "a mod's mob_db reaching the table must clear the cache");
 
         write(&cfg.state.join("prerenewal"), "true");
         crate::mods::save_settings(&cfg, "isle", r#"{"angry": false}"#).unwrap();
         link(&cfg, &args).unwrap();
-        assert!(table().unwrap().contains(&format!("{}, \"Classic Poring\"", 75 << 16 | 1002)), "{:?}", table());
+        assert!(table().unwrap().contains(&format!("{}, \"Classic Poring\"", 70 << 16 | 1002)), "{:?}", table());
 
         crate::mods::set_enabled(&cfg.state, crate::navmob::MOD, false).unwrap();
         link(&cfg, &args).unwrap();
