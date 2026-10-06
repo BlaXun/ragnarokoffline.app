@@ -367,7 +367,14 @@ function parseRosterLine(text) {
 		// The duty the server holds: 'tank', 'support', 'attacker', or null for none yet (and
 		// for an older server that does not send it). Kept only in _duties before, the badge
 		// went blank on every restart, reload and relog although the server still had it.
-		duty: DUTY_NAMES[parseInt(parts[9], 10)] || null
+		duty: DUTY_NAMES[parseInt(parts[9], 10)] || null,
+		// Rebirth readiness: -1 = this class cannot be reborn, 0 = a 2nd class that has not
+		// met the gate yet, 1 = ready. APPENDED after duty so the fields either side already
+		// relies on keep their positions; an older server simply offers no rebirth.
+		rebirth: (() => {
+			const raw = parts.length > 10 ? parseInt(parts[10], 10) : NaN;
+			return Number.isFinite(raw) ? raw : -1;
+		})()
 	});
 	// The server has answered for this companion; its duty is the one to show.
 	if (parts.length > 9) {
@@ -392,6 +399,7 @@ function _render() {
 		_drawBattle();
 		_drawSkills();
 		_drawGear();
+		_drawRebirth();
 		_mountSkillPicker();
 	});
 }
@@ -982,6 +990,73 @@ function _mountSkillPicker() {
 	}
 }
 
+/// The Rebirth tab: a companion that has maxed its 2nd job can be reborn, and the player chooses
+/// how. Both options change class, which unequips anything the new class cannot wear - gear the
+/// player handed over goes back to the player, so the choice is made with that on screen rather than
+/// discovered afterwards.
+function _drawRebirth() {
+	const page = _page('rebirth');
+	if (!page) {
+		return;
+	}
+	page.replaceChildren();
+
+	const hint = document.createElement('div');
+	hint.className = 'hint';
+	hint.textContent = 'Reborn companions start again, so this is never automatic. Entering a transcendent class also unequips gear it can no longer wear; what you gave it comes back to you. Only a 2nd class at base 99 / job 50 can be reborn.';
+	page.append(hint);
+
+	const ready = _roster.filter(m => m.rebirth === 1);
+	const waiting = _roster.filter(m => m.rebirth === 0);
+
+	if (!ready.length && !waiting.length) {
+		const e = document.createElement('div');
+		e.className = 'empty';
+		e.textContent = 'No companion here can be reborn. 1st classes advance on their own; only a maxed 2nd class is offered this.';
+		page.append(e);
+		return;
+	}
+
+	ready.forEach(m => {
+		const h = document.createElement('h4');
+		h.textContent = `${m.name} - ready to be reborn`;
+		page.append(h);
+
+		const grid = document.createElement('div');
+		grid.className = 'grid';
+		grid.append(_button('High Novice', 'b', () => {
+			confirmInWindow(
+				`Rebirth ${m.name} as a High Novice?`,
+				`It restarts at level 1 and climbs back up as a high class, then a transcendent one. Gear it can no longer wear is unequipped, and anything you gave it comes back to you.`,
+				'Rebirth', true
+			).then(ok => {
+				if (!ok) return;
+				talk(`@companion rebirth ${m.name} novice`, false);
+				window.setTimeout(refreshRoster, 900);
+			});
+		}, 'The proper rebirth: High Novice at level 1, then the full climb'));
+		grid.append(_button('Transcendent', 'b', () => {
+			confirmInWindow(
+				`Advance ${m.name} straight to its transcendent class?`,
+				`It keeps its level and becomes the transcendent class immediately. Gear it can no longer wear is unequipped, and anything you gave it comes back to you.`,
+				'Advance', false
+			).then(ok => {
+				if (!ok) return;
+				talk(`@companion rebirth ${m.name} trans`, false);
+				window.setTimeout(refreshRoster, 900);
+			});
+		}, 'Straight to the transcendent class, keeping its level'));
+		page.append(grid);
+	});
+
+	waiting.forEach(m => {
+		const p = document.createElement('div');
+		p.className = 'hint';
+		p.textContent = `${m.name} - not ready yet: needs base 99 and job 50.`;
+		page.append(p);
+	});
+}
+
 function _drawGear() {
 	const page = _page('gear');
 	if (!page) {
@@ -1063,7 +1138,10 @@ function installChatHook() {
  * @param {string} detail
  * @return {Promise<boolean>}
  */
-function confirmInWindow(question, detail) {
+/// Ask a yes/no in-window. `okLabel` names the confirming action, because the same dialog is used
+/// for things that are not deletions (a rebirth is not a delete, and a button that says Delete for
+/// it says the opposite of what it does). The default keeps the delete caller's wording unchanged.
+function confirmInWindow(question, detail, okLabel = 'Delete', okDanger = true) {
 	return new Promise(resolve => {
 		const root = CompanionPanel.getRoot();
 		const overlay = document.createElement('div');
@@ -1074,11 +1152,16 @@ function confirmInWindow(question, detail) {
 				<div class="confirm-detail"></div>
 				<div class="confirm-buttons">
 					<button class="b" data-act="cancel">Cancel</button>
-					<button class="b danger" data-act="ok">Delete</button>
+					<button class="b" data-act="ok"></button>
 				</div>
 			</div>`;
 		overlay.querySelector('.confirm-question').textContent = question;
 		overlay.querySelector('.confirm-detail').textContent = detail || '';
+		const okButton = overlay.querySelector('[data-act="ok"]');
+		okButton.textContent = okLabel;
+		if (okDanger) {
+			okButton.classList.add('danger');
+		}
 
 		const done = answer => {
 			overlay.remove();
@@ -1171,7 +1254,8 @@ CompanionPanel.init = function init() {
 			});
 			// Switching to a tab re-reads the roster, so a stale list cannot sit
 			// there looking broken after companions are summoned or benched.
-			if (btn.dataset.tab === 'party' || btn.dataset.tab === 'gear') {
+			if (btn.dataset.tab === 'party' || btn.dataset.tab === 'gear' ||
+				btn.dataset.tab === 'rebirth') {
 				refreshRoster();
 			}
 			// The Skills tab shows a chooser, so it opens with the list already fresh.
