@@ -183,6 +183,61 @@ reaches it from these lines, each marked `RAGNAROKMAC (companion strategies)`:
 Re-vendoring upstream means re-applying exactly these. Every entry point returns
 at once when no rules are loaded or the shell is not a recruited companion.
 
+### Companion strategies: lessons from the playtests
+
+What the Phreeoni playtests taught about how the strategy module, the engine's
+own companion behaviour and rAthena fit together. Read before changing the
+module or the hooks.
+
+**rAthena does not check whether a unit may move when the server walks it.**
+`unit_walktoxy` / `unit_walktobl` never consult `unit_can_move` or `sc.cant.move`:
+clients are checked before their walk request, monsters in their AI, but server
+code that walks a shell is not. A Stone Cursed companion was walked off the screen
+by following, chasing and the low-HP flee. Every walk the engine or the module
+issues for a shell must check first; the companion loop now skips a companion
+with `sc.cant.move` entirely, and every movement rule asks `unit_can_move`.
+
+**Where the strategy turn sits in `population_shell_combat_process_tick` decides
+what it starves.** A rule that acts ends the turn. Before party Resurrection, it
+starved Resurrection (near a boss some rule acts every turn); so it runs after it,
+unless the plan revives itself (`population_strategy_handles_resurrection`). It
+also runs before the support passes, so a plan whose last rule is `Hold` never
+reaches the engine's own buffs and heals: that is by design, and the plan names
+them. Any new hook must be placed with the same question: what does a rule that
+acts every turn take away?
+
+**Let rAthena pace actions.** The cast timer (`ud.skilltimer`) and the after-cast
+delay (`ud.canact_tick`) already account for DEX, cards and Bragi. Adding the
+skill database's base cast and delay on top (`skill_get_cast`, `skill_get_delay`)
+made companions slower than players. Combo steps must even be cast inside the
+previous step's delay, which rAthena checks itself.
+
+**The engine's own behaviours compete with rules.** FleeOnLowHP is on by default
+(`population_engine_ai` 0x1FF includes 0x010) and runs every non-tank shell off
+below 30 % HP; the Support role walks toward hurt allies; following, the leash,
+the idle stop and the formation step move companions; the built-in Resurrection
+casts at once. A rule wins only by acting earlier in the same turn, or by a hook
+that yields. Document each new interplay here.
+
+**Change an upstream line as little as possible.** `tests/companion-*.test.cjs`
+pin engine source text (the leash test failed on all three runners when its line
+was edited). Prefer one added line with its own marker, or widening a value the
+engine already computes (holding position widens the leash rather than bypassing
+it), over rewriting an existing line.
+
+**A plan must be able to express "nobody" and "who".** Most new keys came from
+plans that could not say what they needed: `Absent`/`Present` (nobody of that kind
+is left / someone lies dead), `Ally: attacked` (who is being hit, not who is
+lowest), `Enemy: hidden` with `Boss` (not every burrowed slave), distance bands
+measured from a member, `Kite`. When a playtest problem cannot be fixed in YAML,
+the missing piece is usually one of these: a word, not a special case.
+
+**Scratch builds.** rAthena's Makefile does not see changes to the `.cpp` files the
+engine `#include`s (the factory unity build): touch `population_engine.cpp` before
+an incremental `make`, or the binary is stale. The working tree is checked out with
+CRLF; stage LF content (`tr -d '\r' | git hash-object -w --stdin`) so a commit is
+not a whole-file rewrite.
+
 ## Invariants that must not regress
 
 1. A shell is never treated as recruited solely because it has a real-looking

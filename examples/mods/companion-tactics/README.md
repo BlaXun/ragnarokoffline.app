@@ -6,8 +6,10 @@ Recruited companions that fight by plan rather than by skill rotation. One table
 is the reference.
 
 **Status:** loaded by a real map-server in both eras, renewal and pre-renewal,
-with no warnings (35 rules). Not yet played: the plans below are worked examples
-of the format, and how well each one fights is still to be seen in game. Turn on
+with no warnings. The Phreeoni plan has been played in several rounds and
+reworked after each (the lessons are in
+[Writing plans that hold up in a fight](../../../docs/mods/companion-strategies.md#writing-plans-that-hold-up-in-a-fight));
+the other plans are worked examples of the format, not yet played. Turn on
 the population engine and recruit a companion first. The table does nothing
 without one.
 

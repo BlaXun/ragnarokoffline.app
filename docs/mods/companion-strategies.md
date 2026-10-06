@@ -420,6 +420,82 @@ adds to what an earlier one said:
 
 Give rules a `Name` so another mod can replace or remove them.
 
+## Writing plans that hold up in a fight
+
+Learned in the Phreeoni playtests, each one from something that went wrong.
+`examples/mods/companion-tactics` follows all of them.
+
+**Name everything the companion should cast.** A plan about a monster turns the
+normal skill rotation off, so the companion casts what the plan names and hits.
+A Wizard that "randomly cast Ice Wall" was its rotation; with the plan in charge,
+the Wizard needs its damage spell written down (Fire Bolt, the Meteors).
+
+**End a caster's rules with `Hold`, and then name its buffs.** With nothing to
+cast, an ordinary turn walks the companion up to its target and hits it: a
+Priest meleeing Phreeoni with its staff. A last, lowest-priority `Hold: true`
+stops that. But `Hold` ends the turn before the engine's own buffing and healing
+come round, so the buffs the Priest should keep up (Blessing, Increase AGI,
+Impositio) are rules too.
+
+**Aim at what is within reach, not at the current target.** A rule's default
+target is the companion's current target, which can be across the screen: a
+Wizard stood idle because its Fire Bolt aimed at a slave out of range. A selector
+(`Target: { Enemy: boss }`, then `{ Enemy: nearest }`) only looks within the
+skill's range.
+
+**Place a companion by who it serves, not only by what to avoid.** "At least 6
+cells from the boss" left a Priest 12 cells from the people it heals, and with
+`Hold` it never came back. Use a band (`KeepDistance: { Min, Max }`) and measure
+it from the right one: out of the boss's reach (`Target: { Enemy: boss }`), within
+Heal's reach of whoever is hit (`Target: { Ally: attacked }`).
+
+**Low on HP, kite round the healer.** Stepping away from a chasing boss dragged
+it off the screen; walking to the healer brings it onto the healer. `Kite` runs
+from the monster but stays within the healer's reach, never on top of it.
+
+**Make the rule ask about the right member.** "Whoever is lowest" is not "whoever
+is being hit" (`Ally: attacked`), and "a status somewhere" is not "this member
+has it" (`Ally: having`, `Ally: missing`).
+
+**Be specific about hidden monsters.** `enemy_hidden` is any hidden monster in
+sight, and Phreeoni's Hodes burrow, which is hiding: a Priest cast Ruwach over
+and over. Ask for the one that matters within the skill's reach:
+`Count: { Enemy: hidden, Boss: true, Range: 2, AtLeast: 1 }`.
+
+**A status that lasts only while standing somewhere is not a guard.** Safety
+Wall's effect is there only while the member stands on the wall, and members
+move: a Priest re-walled the same Assassin again and again. Ask the ground
+(`Field: { Skill: MG_SAFETYWALL, Owner: party, At: target, Range: 0, Below: 1 }`)
+and give it a `Cooldown`.
+
+**Keep resources back in absolute terms.** "Heal down to 10 % SP" left a small SP
+pool below Resurrection's 60. Write `self_sp_ge70`, not `self_sp_pct_ge10`, when a
+specific cast must stay affordable. Companions do not pay catalysts yet, so
+nothing else runs out on its own.
+
+**Check every phase of a status.** Stone Curse first sets in (`SC_STONEWAIT`; the
+member can still walk) and then holds (`SC_STONE`). Status Recovery cures both;
+curing in the first phase saves a member before they are stuck.
+
+**Plan for the healer dying, and for the healer being alone.** Without a rule the
+others fight on and die one by one. `Absent: { Ally: nearest, Job: Priest }`
+switches to a strategy that falls back to the owner. A Priest left alone needs
+the opposite of fleeing: heal itself, wall its own cell, Kyrie, then revive behind
+the wall (`Present: { Ally: dead }`). A plan with its own Resurrection rule
+replaces the engine's, which would start the cast at once and be broken by every
+hit.
+
+**Things the engine does on its own that a plan has to outrank:**
+- shells flee from their target below 30 % HP (FleeOnLowHP): a rule that acts at
+  low HP comes first;
+- an ordinary turn walks up to the target and hits it: `Hold`;
+- following the owner and the idle formation step: positional rules hold their
+  ground;
+- the built-in Party Resurrection: a plan's own Resurrection rule.
+
+**YAML changes need a server restart, not a rebuild.** Only a change to the
+engine or the strategy module needs a new server build.
+
 ## Finding out what it is doing
 
 In party chat, the owner types the companion's name and `trace`:
