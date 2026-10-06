@@ -1579,6 +1579,9 @@ static bool population_shell_cast_expired_self_buffs(map_session_data *sd, t_tic
 	for (const PopulationShellBuffSkill &bs : sd->pop.buff_skills) {
 		if (rescue_only && !pop_row_is_rescue(bs.condition))
 			continue;
+		// RAGNAROKMAC (companion strategies): a plan's Allow and Ban bind the engine's own buffs.
+		if (!population_strategy_skill_allowed(sd, map_id2bl(sd->pop.target_id), bs.skill_id))
+			continue;
 		// YAML-authoritative: when the class doesn't have the skill learned
 		// (e.g. Monk/Champion using TF_HIDING), use the YAML level directly.
 		const uint16_t plv = pc_checkskill(sd, bs.skill_id);
@@ -1755,6 +1758,9 @@ static bool population_shell_cast_ally_attack_skill(map_session_data *sd, t_tick
 			continue;
 		if (rescue_only && !pop_row_is_rescue(sk.condition))
 			continue;
+		// RAGNAROKMAC (companion strategies): ... and its heals and ally buffs (no Sanctuary at a boss).
+		if (!population_strategy_skill_allowed(sd, map_id2bl(sd->pop.target_id), sk.skill_id))
+			continue;
 		if (!rescue_only && sk.rate < 10000 && static_cast<uint16_t>(rnd() % 10000) >= sk.rate)
 			continue;
 		// Condition check (no enemy target_bl for ally skills).
@@ -1883,7 +1889,9 @@ static void population_shell_combat_process_tick(map_session_data *sd, t_tick cu
 		if (!already_hiding) {
 			const PopulationShellBuffSkill *hide_bs = nullptr;
 			for (const PopulationShellBuffSkill &b : sd->pop.buff_skills) {
-				if (b.skill_id == TF_HIDING || b.skill_id == AS_CLOAKING) {
+				// RAGNAROKMAC (companion strategies): ... and its emergency Hiding.
+				if ((b.skill_id == TF_HIDING || b.skill_id == AS_CLOAKING)
+						&& population_strategy_skill_allowed(sd, map_id2bl(sd->pop.target_id), b.skill_id)) {
 					hide_bs = &b;
 					break;
 				}

@@ -47,6 +47,71 @@ Body:
             Cast: AL_BLESSING
             Target: { Ally: missing, Status: SC_BLESSING, Role: tank }
 
+      # The healer's survival and resurrection, in every fight and not only near a boss:
+      # in Mob: Boss they were lost whenever the Priest stepped more than 14 cells from
+      # the boss (walking to a body, keeping its distance), and the engine's own
+      # behaviour, Sanctuary included, came back (Phreeoni playtest 7).
+      - Job: Priest
+        Build: healer
+        Requires: { Role: [support, none] }
+        Rules:
+          # Survive first.
+          - Name: heal_self
+            Priority: 110
+            Cast: AL_HEAL
+            Target: self
+            When: self_hp_pct_lt50
+          # Then bring them back. With something on it, every hit breaks the cast: wall
+          # its own cell first, Kyrie, then revive. This rule revives, so the engine's
+          # immediate attempt stands aside.
+          - Name: wall_before_rez
+            Priority: 108
+            Present: { Ally: dead, Range: 9 }
+            When: [self_targeted, not_self_safetywall]
+            Cast: MG_SAFETYWALL
+            Target: self
+          - Name: kyrie_before_rez
+            Priority: 107
+            Present: { Ally: dead, Range: 9 }
+            When: [self_targeted, not_self_kyrie]
+            Cast: PR_KYRIE
+            Target: self
+          - Name: resurrect
+            Priority: 106
+            When: { OR: [self_safetywall, not_self_targeted] }
+            Cast: ALL_RESURRECTION
+            Target: dead_ally
+            Say: "Getting you up, {ally}!"
+          # Resurrection reaches 9 cells: walk to a body that lies further away, and keep
+          # walking every turn until it is within reach. An event rule is answered by its
+          # first step, and the positioning rules below then pulled the healer straight
+          # back (Phreeoni playtest 6: the owner lay 10 cells off and was never revived).
+          - Name: close_to_the_fallen
+            Priority: 104
+            Target: { Ally: dead, NotSelf: true }
+            KeepDistance: { Min: 1, Max: 8 }
+          # Beyond sight (14 cells), where no selector looks: the death itself starts the walk.
+          - Name: go_to_the_fallen
+            Priority: 103
+            On: { Event: party_member_died, Within: 30000 }
+            Target: event
+            When: ally_distance_gt8
+            MoveTo: event
+          # Petrified, frozen or stunned members cannot come to it. Status Recovery cures
+          # a Stone Curse already while it sets in (SC_STONEWAIT).
+          - Name: unstone_early
+            Priority: 102
+            Cast: PR_STRECOVERY
+            Target: { Ally: having, Status: SC_STONEWAIT }
+          - Name: unstone
+            Priority: 101
+            Cast: PR_STRECOVERY
+            Target: { Ally: having, Status: SC_STONE }
+          - Name: unfreeze
+            Priority: 100
+            Cast: PR_STRECOVERY
+            Target: { Ally: having, Status: SC_FREEZE }
+
       # A Sage that sees a Storm Gust coming lays Land Protector at its feet and calls
       # the party to it; everyone else comes when called.
       - Job: Sage
@@ -185,70 +250,16 @@ Body:
                 Hold: true
 
       # --- Healer: the Priest family, unless told to do something else ----------
-      # Every turn ends in one of its rules (the last is Hold), so it never walks up and
+      # Its survival, resurrection and cures are in the Mob: All healer plan above. Here:
+      # every turn ends in one of its rules (the last is Hold), so it never walks up and
       # hits with its staff, and the engine's own buffing never comes round: what it
       # keeps up is named here.
       - Job: Priest
         Build: healer
         Requires: { Role: [support, none] }
         Rotation: false
+        Allow: []                       # the engine casts nothing on its own: no Sanctuary
         Rules:
-          # Survive first.
-          - Name: heal_self
-            Priority: 110
-            Cast: AL_HEAL
-            Target: self
-            When: self_hp_pct_lt50
-          # Then bring them back. With something on it, every hit breaks the cast: wall
-          # its own cell first, Kyrie, then revive. This rule revives, so the engine's
-          # immediate attempt stands aside while a boss is near.
-          - Name: wall_before_rez
-            Priority: 108
-            Present: { Ally: dead, Range: 9 }
-            When: [self_targeted, not_self_safetywall]
-            Cast: MG_SAFETYWALL
-            Target: self
-          - Name: kyrie_before_rez
-            Priority: 107
-            Present: { Ally: dead, Range: 9 }
-            When: [self_targeted, not_self_kyrie]
-            Cast: PR_KYRIE
-            Target: self
-          - Name: resurrect
-            Priority: 106
-            When: { OR: [self_safetywall, not_self_targeted] }
-            Cast: ALL_RESURRECTION
-            Target: dead_ally
-            Say: "Getting you up, {ally}!"
-          # Resurrection reaches 9 cells: walk to a body that lies further away, and keep
-          # walking every turn until it is within reach. An event rule is answered by its
-          # first step, and the positioning rules below then pulled the healer straight
-          # back (Phreeoni playtest 6: the owner lay 10 cells off and was never revived).
-          - Name: close_to_the_fallen
-            Priority: 104
-            Target: { Ally: dead, NotSelf: true }
-            KeepDistance: { Min: 1, Max: 8 }
-          # Beyond sight (14 cells), where no selector looks: the death itself starts the walk.
-          - Name: go_to_the_fallen
-            Priority: 103
-            On: { Event: party_member_died, Within: 30000 }
-            Target: event
-            When: ally_distance_gt8
-            MoveTo: event
-          # Petrified, frozen or stunned members cannot come to it. Status Recovery cures
-          # a Stone Curse already while it sets in (SC_STONEWAIT).
-          - Name: unstone_early
-            Priority: 102
-            Cast: PR_STRECOVERY
-            Target: { Ally: having, Status: SC_STONEWAIT }
-          - Name: unstone
-            Priority: 101
-            Cast: PR_STRECOVERY
-            Target: { Ally: having, Status: SC_STONE }
-          - Name: unfreeze
-            Priority: 100
-            Cast: PR_STRECOVERY
-            Target: { Ally: having, Status: SC_FREEZE }
           - Name: stay_near_the_stoned
             Priority: 79
             Target: { Ally: having, Status: SC_STONE, NotSelf: true, Range: 14 }
@@ -336,6 +347,7 @@ Body:
         Build: caster
         Requires: { Role: [attacker, none] }
         Rotation: false
+        Allow: []                       # only what its rules name
         Rules:
           # Hurt, with something on it: step away and let the healer catch up.
           - Name: step_away
@@ -399,6 +411,8 @@ Body:
       # The rotation runs while SP lasts, then plain hits until it is back, so there is
       # SP for the skill that matters later. Low on HP with the boss on it: run it round
       # the healer -- away from the boss, within Heal's reach, never onto the healer.
+      # A family with named skills of its own (the Assassins, below) turns the rotation
+      # off for itself; the rest of this plan (kiting, the boss, the healer) still applies.
       - Job: [Knight, Crusader, Assassin, Rogue, Blacksmith, Monk, Star_Gladiator]
         Build: melee
         Requires: { Role: [attacker, none] }
@@ -450,6 +464,41 @@ Body:
               - Name: sp_back
                 When: self_sp_pct_ge60
                 Switch: fight
+
+      # --- Melee, Assassins (Assassin Cross, Guillotine Cross, Shadow Cross) -------
+      # Named skills only: on its rotation an Assassin Cross cast whatever was ready
+      # (Envenom, Soul Destroyer, Meteor Assault at a single target). Poison on the
+      # weapon, the strong single hit at the boss, the area hit only on a pack.
+      - Job: Assassin
+        Build: assassin
+        Requires: { Role: [attacker, none] }
+        Rotation: false
+        Allow: []                       # only what its rules name
+        Rules:
+          - Name: enchant_deadly_poison
+            Priority: 50
+            When: [not_self_edp, self_sp_pct_ge40]
+            Enemy: { Boss: true }
+            Cast: ASC_EDP                  # pre-renewal also wants a Poison Bottle: not paid yet
+            Target: self
+          - Name: enchant_poison
+            Priority: 49
+            When: [not_self_encpoison, not_self_edp]
+            Cast: AS_ENCHANTPOISON
+            Target: self
+          # Three or more around it: Meteor Assault hits all of them.
+          - Name: meteor_assault_the_pack
+            Priority: 45
+            Cast: ASC_METEORASSAULT
+            Target: self
+            Count: { Enemy: attacking, Range: 2, AtLeast: 3 }
+            When: self_sp_pct_ge40
+          # At the boss: Soul Destroyer when the SP is there, else Sonic Blow.
+          - Name: burst_the_boss
+            Priority: 42
+            Enemy: { Boss: true }
+            Cast: [ASC_BREAKER, AS_SONICBLOW]
+            When: self_sp_pct_ge30
 
       # --- Tank: whoever is told "tank" ---------------------------------------------
       # Provoke does not work on a boss; it holds the boss itself while the others

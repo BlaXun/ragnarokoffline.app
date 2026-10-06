@@ -36,7 +36,8 @@ Body:
         Build: combo              # optional: one way to play the job
         Requires: { Skills: [MO_CHAINCOMBO], Lacks: [MO_EXTREMITYFIST] }
         Rotation: false           # optional: the normal skill rotation (see below)
-        Ban: [MO_FINGEROFFENSIVE] # optional: these rotation skills not against it
+        Allow: [...]              # optional: the only skills it may use (see below)
+        Ban: [MO_FINGEROFFENSIVE] # optional: these skills not against it
         Start: approach           # the strategy each new fight starts in
         Rules: [...]              # rules for every strategy
         Strategies:
@@ -256,8 +257,44 @@ together:
 
 So a boss plan that says nothing leaves it to the role plan. For example, the
 melee plan in companion-roles turns the rotation on with a `Ban` list. A boss
-plan that needs every cast counted (the Asura Monk) says `false`. `Ban` lists
-from every plan that applies add up.
+plan that needs every cast counted (the Asura Monk) says `false`.
+
+### Which skills: `Allow` and `Ban`
+
+By default a companion may use every skill it has. A plan narrows that:
+
+```yaml
+- Mob: Boss
+  Jobs:
+    - Job: Priest
+      Allow: []                   # nothing on its own: only what its rules name
+    - Job: Hunter
+      Allow: [AC_DOUBLE, AC_SHOWER, HT_BLITZBEAT]
+- Mob: PHREEONI
+  Jobs:
+    - Job: All
+      Ban: [MG_FIREWALL]          # nobody, not even a rule of another plan
+```
+
+**`Allow`** is what the engine may cast **on its own**: the rotation, and its
+heals, buffs and emergency Hiding (a Priest's Sanctuary at a boss came from
+there). A skill the engine wants must be in every `Allow` of the plans that apply
+(no `Allow` lists everything), so a more specific plan can only narrow it, never
+widen it. `Allow: []` lets the engine cast nothing; the companion then casts
+only what its rules name. `Allow` does not bind rules: a rule is already an
+explicit decision.
+
+**`Ban`** binds everything: the engine's own casts and the rules of the
+**other** plans. Use it, or `Disable`, when a more specific plan wants a broader
+plan's skill gone.
+
+A strategy's own `Allow` and `Ban` count too, while it is active. A plan never
+stops a skill its own rules cast.
+
+`Allow`/`Ban` decide *which* skills. Rules decide *when* and *at whom*. A class
+with a rules plan (bolts at what is on the party, stand between casts) behaves
+precisely; a class without one gets the engine's own behaviour, limited to what
+the plans allow.
 
 A caster under such a plan still takes ordinary turns whenever no rule acts, and
 an ordinary turn walks up to its target and hits it. End a caster's rules with

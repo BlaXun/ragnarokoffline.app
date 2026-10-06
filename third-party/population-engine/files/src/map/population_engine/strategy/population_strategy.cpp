@@ -194,6 +194,8 @@ struct Strategy {
 	std::vector<uint16> ban;     ///< added to the plan's Ban while this strategy is active
 	int8 rotation = -1;          ///< -1: the plan's Rotation; 0/1: overrides it while active
 	std::vector<std::string> disable; ///< added to the plan's Disable while this strategy is active
+	bool has_allow = false;      ///< Allow: given (an empty list allows nothing)
+	std::vector<uint16> allow;   ///< narrows the plan's Allow while this strategy is active
 };
 
 /// Who a plan is for: recruited companions (the default), the regular shells around the
@@ -215,6 +217,13 @@ struct Plan {
 	/// Rules of the other plans that apply, by Name, that do not run while this plan applies:
 	/// a boss's plan putting a role's rule aside.
 	std::vector<std::string> disable;
+	/// Allow: the only skills the engine may use on its own while this plan applies -- the
+	/// rotation, its heals and buffs. Every plan that applies must allow a skill, so a more
+	/// specific plan can only narrow. No Allow: all. Rules are not bound by it (Ban binds them).
+	bool has_allow = false;
+	std::vector<uint16> allow;
+	/// Every skill this plan's own rules cast (sorted): its Allow and Ban never stop those.
+	std::vector<uint16> own;
 };
 
 
@@ -463,6 +472,7 @@ public:
 	bool revives = false;        ///< some rule casts Resurrection (or Death Valley) itself
 	bool boss_plans = false;     ///< some plan is Mob: Boss, so turns look for a boss nearby
 	bool category_plans = false; ///< some plan is Mob: { Race, Element }
+	bool limits_skills = false;  ///< some plan or strategy has an Allow or a Ban
 
 	StrategyDatabase() : YamlDatabase("POPULATION_STRATEGY_DB", 1) {}
 
@@ -478,6 +488,7 @@ public:
 		this->revives = false;
 		this->boss_plans = false;
 		this->category_plans = false;
+		this->limits_skills = false;
 	}
 
 	const std::string getDefaultLocation() override
@@ -1295,7 +1306,19 @@ void StrategyDatabase::merge_rules(const ryml::NodeRef &seq, std::vector<RulePtr
 void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<uint32> &mobs)
 {
 	this->warn_unknown_keys(node, { "Job", "Build", "For", "Requires", "Remove", "Reset", "Rotation", "Ban", "Start", "Rules",
-		"Strategies", "Disable" }, "a job entry");
+		"Strategies", "Disable", "Allow" }, "a job entry");
+	// Allow: [..]: the skill list, by name; an unknown one is a warning, and Allow: [] allows nothing.
+	auto allow_list = [&](const ryml::NodeRef &n, std::vector<uint16> &out) {
+		out.clear();
+		for (const std::string &s : scalars(n)) {
+			const uint16 id = skill_of(s);
+			if (id == 0)
+				this->invalidWarning(n, "Unknown skill '%s' in Allow.\n", s.c_str());
+			else if (std::find(out.begin(), out.end(), id) == out.end())
+				out.push_back(id);
+		}
+		std::sort(out.begin(), out.end());
+	};
 	bool has_audience = false;
 	Audience audience = Audience::Companions;
 	if (this->nodeExists(node, "For")) {
@@ -1370,6 +1393,10 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 			for (const std::string &n : scalars(node["Disable"]))
 				if (std::find(plan.disable.begin(), plan.disable.end(), n) == plan.disable.end())
 					plan.disable.push_back(n);
+		if (this->nodeExists(node, "Allow")) {
+			plan.has_allow = true;
+			allow_list(node["Allow"], plan.allow);
+		}
 		if (this->nodeExists(node, "Ban")) {
 			for (const std::string &s : scalars(node["Ban"])) {
 				const uint16 id = skill_of(s);
@@ -1389,7 +1416,7 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 				continue;
 			}
 			for (const ryml::NodeRef &s : list.children()) {
-				this->warn_unknown_keys(s, { "Name", "Remove", "Rules", "Ban", "Rotation", "Disable" }, "a strategy");
+				this->warn_unknown_keys(s, { "Name", "Remove", "Rules", "Ban", "Rotation", "Disable", "Allow" }, "a strategy");
 				std::string name;
 				if (!this->asString(s, "Name", name) || name.empty())
 					continue;
@@ -1407,6 +1434,10 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 					for (const std::string &n : scalars(s["Disable"]))
 						if (std::find(strategy.disable.begin(), strategy.disable.end(), n) == strategy.disable.end())
 							strategy.disable.push_back(n);
+				if (this->nodeExists(s, "Allow")) {
+					strategy.has_allow = true;
+					allow_list(s["Allow"], strategy.allow);
+				}
 				// While this strategy is active: "no magic while it reflects", "melee only in Pneuma".
 				if (this->nodeExists(s, "Rotation")) {
 					bool rotation = true;
@@ -1556,6 +1587,25 @@ void StrategyDatabase::loadingFinished()
 			this->boss_plans = true;
 		if (is_category(std::get<0>(entry.first)))
 			this->category_plans = true;
+		// What its own rules cast: its Allow and Ban never stop those.
+		plan.own.clear();
+		auto own = [&](const RulePtr &r) {
+			if (r->cast_skill != 0)
+				plan.own.push_back(r->cast_skill);
+			plan.own.insert(plan.own.end(), r->cast_options.begin(), r->cast_options.end());
+		};
+		for (const RulePtr &r : plan.rules)
+			own(r);
+		for (const auto &s : plan.strategies)
+			for (const RulePtr &r : s.second.rules)
+				own(r);
+		std::sort(plan.own.begin(), plan.own.end());
+		plan.own.erase(std::unique(plan.own.begin(), plan.own.end()), plan.own.end());
+		if (plan.has_allow || !plan.ban.empty())
+			this->limits_skills = this->limits_rotation = true;
+		for (const auto &st : plan.strategies)
+			if (st.second.has_allow || !st.second.ban.empty())
+				this->limits_skills = this->limits_rotation = true;
 		if (plan.audience != Audience::Companions)
 			this->for_shells = true;
 		for (const auto &st : plan.strategies)
@@ -1948,6 +1998,12 @@ static void pay(map_session_data *sd, const std::vector<std::pair<t_itemid, int3
 // Events
 // ---------------------------------------------------------------------------
 
+struct PlanRef {
+	PlanKey key;
+	const Plan *plan;
+	int32 instance;   ///< the monster this plan is for right now (0 for All): its fight
+};
+
 struct Turn {
 	map_session_data *sd;
 	map_session_data *owner;    ///< null when not on the companion's map
@@ -1955,6 +2011,7 @@ struct Turn {
 	t_tick tick;
 	ShellState *st;
 	bool target_set = false;    ///< a higher-priority rule already chose the target this turn
+	const std::vector<PlanRef> *plans = nullptr; ///< the plans that apply this turn
 };
 
 struct CastScan {
@@ -2501,8 +2558,12 @@ static void say(Turn &t, const Rule &rule, const RuleState &rs, block_list *targ
 }
 
 /// Cast the rule's skill, refusing it wherever the rotation would. A reason on failure.
-/// Cast: [list]: the skill the target is weakest to (see Rule::cast_options). 0 when none can be cast.
-static uint16 best_against(const map_session_data *sd, const Rule &rule, block_list *target)
+static bool plans_allow(const map_session_data *sd, const std::vector<PlanRef> &plans, uint16 skill, bool by_rule);
+
+/// Cast: [list]: the skill the target is weakest to (see Rule::cast_options), among those the
+/// plans allow. 0 when none can be cast.
+static uint16 best_against(const map_session_data *sd, const Rule &rule, block_list *target,
+	const std::vector<PlanRef> *plans)
 {
 	const int def_ele = target != nullptr && target != sd ? status_get_element(target) : ELE_NONE;
 	const int def_lv = target != nullptr && target != sd ? status_get_element_level(target) : 0;
@@ -2510,7 +2571,7 @@ static uint16 best_against(const map_session_data *sd, const Rule &rule, block_l
 	int best_mult = 0;
 	for (const uint16 id : rule.cast_options) {
 		uint16 lv = pc_checkskill(const_cast<map_session_data *>(sd), id);
-		if (lv == 0)
+		if (lv == 0 || (plans != nullptr && !plans_allow(sd, *plans, id, true)))
 			continue;
 		if (rule.cast_lv > 0)
 			lv = std::min<uint16>(lv, rule.cast_lv);
@@ -3020,9 +3081,13 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 	if (rule.cast_skill != 0) {
 		if (!do_skills || attack_only)
 			return Outcome::Skipped;
-		const uint16 skill = rule.cast_options.empty() ? rule.cast_skill : best_against(sd, rule, target);
+		const uint16 skill = rule.cast_options.empty() ? rule.cast_skill : best_against(sd, rule, target, t.plans);
 		if (skill == 0) {
-			trace(sd, *t.st, t.tick, "rule %s: nothing in its Cast list can be cast (SP, or the target resists them all)", name);
+			trace(sd, *t.st, t.tick, "rule %s: nothing in its Cast list can be cast (SP, Allow, or the target resists them all)", name);
+			return Outcome::Skipped;
+		}
+		if (t.plans != nullptr && !plans_allow(sd, *t.plans, skill, true)) {
+			trace(sd, *t.st, t.tick, "rule %s: %s not cast (another plan's Ban)", name, skill_get_desc(skill));
 			return Outcome::Skipped;
 		}
 		const char *why = cast(t, rule, target, skill);
@@ -3164,11 +3229,6 @@ static bool takes_part(const map_session_data *sd)
 	return g_db.for_shells && population_engine_is_population_pc(sd->id) && sd->pop.arena_team == 0;
 }
 
-struct PlanRef {
-	PlanKey key;
-	const Plan *plan;
-	int32 instance;   ///< the monster this plan is for right now (0 for All): its fight
-};
 
 static int32 boss_scan_cb(block_list *bl, va_list ap)
 {
@@ -3390,6 +3450,7 @@ bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills,
 		return false;
 
 	Turn t{ sd, population_engine_companion_loot_owner(sd), enemy, tick, &shell_state(sd, tick) };
+	t.plans = &plans;
 	track_fight(t, plans);
 
 	// Every plan keeps its own active strategy. A monster's plan starts over with each
@@ -3489,11 +3550,51 @@ bool population_strategy_holds_position(const map_session_data *sd, t_tick tick)
 		&& DIFF_TICK(tick, it->second.hold_until) < 0;
 }
 
-bool population_strategy_rotation_allows(map_session_data *sd, block_list *target, uint16 skill_id)
+namespace pop_strategy {
+
+/// The active strategy of one of a companion's plans, if it has one.
+static const Strategy *active_strategy(const map_session_data *sd, const PlanRef &p)
 {
-	if (!g_db.limits_rotation || !takes_part(sd))
+	const auto st = g_shells.find(sd->id);
+	if (st == g_shells.end() || st->second.char_id != sd->status.char_id)
+		return nullptr;
+	const auto ps = st->second.plans.find(p.key);
+	if (ps == st->second.plans.end())
+		return nullptr;
+	const auto it = p.plan->strategies.find(ps->second.active);
+	return it != p.plan->strategies.end() ? &it->second : nullptr;
+}
+
+/// Whether every plan that applies lets the companion use this skill: no Ban (the plan's, or its
+/// active strategy's) may name it, and -- for what the engine casts on its own -- each Allow must
+/// list it. A rule is an explicit decision, so Allow does not bind rules; another plan's Ban does.
+/// A plan never stops a skill its own rules cast.
+static bool plans_allow(const map_session_data *sd, const std::vector<PlanRef> &plans, uint16 skill, bool by_rule)
+{
+	if (!g_db.limits_skills)
 		return true;
-	// Asked once per skill in the rotation; the plans cannot change within one tick.
+	for (const PlanRef &p : plans) {
+		const Plan &plan = *p.plan;
+		if (std::binary_search(plan.own.begin(), plan.own.end(), skill))
+			continue;
+		const Strategy *active = active_strategy(sd, p);
+		if (!by_rule && plan.has_allow && !std::binary_search(plan.allow.begin(), plan.allow.end(), skill))
+			return false;
+		if (!by_rule && active != nullptr && active->has_allow
+				&& !std::binary_search(active->allow.begin(), active->allow.end(), skill))
+			return false;
+		if (std::find(plan.ban.begin(), plan.ban.end(), skill) != plan.ban.end())
+			return false;
+		if (active != nullptr && std::find(active->ban.begin(), active->ban.end(), skill) != active->ban.end())
+			return false;
+	}
+	return true;
+}
+
+/// The plans for a companion and target, kept for the rest of the tick: the engine asks once
+/// per skill it considers, and the plans cannot change within one tick.
+static const std::vector<PlanRef> &plans_this_tick(map_session_data *sd, block_list *target)
+{
 	static int32 cached_id = 0, cached_target = 0;
 	static t_tick cached_tick = 0;
 	static uint32 cached_generation = 0;
@@ -3507,33 +3608,39 @@ bool population_strategy_rotation_allows(map_session_data *sd, block_list *targe
 		cached_target = target_id;
 		cached_generation = g_generation;
 	}
+	return cached;
+}
+
+} // namespace pop_strategy
+
+bool population_strategy_skill_allowed(map_session_data *sd, block_list *target, uint16 skill_id)
+{
+	if (!g_db.limits_skills || !takes_part(sd))
+		return true;
+	return plans_allow(sd, plans_this_tick(sd, target), skill_id, false);
+}
+
+bool population_strategy_rotation_allows(map_session_data *sd, block_list *target, uint16 skill_id)
+{
+	if (!g_db.limits_rotation || !takes_part(sd))
+		return true;
+	const std::vector<PlanRef> &cached = plans_this_tick(sd, target);
+	if (!plans_allow(sd, cached, skill_id, false))
+		return false;
 	// Rotation layers: a plan (or its active strategy) that says false wins; else one that says
 	// true; else the default, which is off while a plan about a particular monster applies. So
 	// a boss's plan that says nothing leaves the decision to a role plan that does.
-	const auto st = g_shells.find(sd->id);
 	bool said_true = false, about_monster = false;
 	for (const PlanRef &p : cached) {
 		int8 rotation = p.plan->rotation;
 		if (is_particular(std::get<0>(p.key)))
 			about_monster = true;
-		const Strategy *active = nullptr;
-		if (st != g_shells.end() && st->second.char_id == sd->status.char_id) {
-			const auto ps = st->second.plans.find(p.key);
-			if (ps != st->second.plans.end()) {
-				const auto it = p.plan->strategies.find(ps->second.active);
-				if (it != p.plan->strategies.end())
-					active = &it->second;
-			}
-		}
+		const Strategy *active = active_strategy(sd, p);
 		if (active != nullptr && active->rotation >= 0)
 			rotation = active->rotation;
 		if (rotation == 0)
 			return false;
 		said_true = said_true || rotation > 0;
-		if (std::find(p.plan->ban.begin(), p.plan->ban.end(), skill_id) != p.plan->ban.end())
-			return false;
-		if (active != nullptr && std::find(active->ban.begin(), active->ban.end(), skill_id) != active->ban.end())
-			return false;
 	}
 	return said_true || !about_monster;
 }
