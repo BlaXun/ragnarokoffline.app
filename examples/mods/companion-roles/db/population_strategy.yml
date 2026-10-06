@@ -406,17 +406,29 @@ Body:
             When: self_hp_pct_lt30
             Target: { Ally: nearest, Job: Priest, NotSelf: true, Range: 14 }
             Kite: { Away: 4, Within: 7, Gap: 3 }
-          - Name: wait_for_heal
+          # Nothing chasing it, so nothing to kite: go and stand by the healer instead of
+          # waiting beside the boss (Phreeoni playtest 6).
+          - Name: go_to_the_healer
             Priority: 59
+            When: self_hp_pct_lt30
+            Target: { Ally: nearest, Job: Priest, NotSelf: true, Range: 14 }
+            KeepDistance: { Min: 1, Max: 4 }
+          - Name: wait_for_heal
+            Priority: 58
             When: self_hp_pct_lt30
             Present: { Ally: nearest, Job: Priest, NotSelf: true, Range: 14 }
             Hold: true
           # Slaves on the healer: one of them takes them off.
           - Name: guard_the_healer
-            Priority: 58
+            Priority: 57
             Target: { Enemy: attacking, Job: Priest }
             SetTarget: true
             OnePerParty: true
+          # Otherwise the boss, not its slaves.
+          - Name: focus_boss
+            Priority: 30
+            Target: { Enemy: boss, Range: 12 }
+            SetTarget: true
         Strategies:
           - Name: fight
             Rotation: true
