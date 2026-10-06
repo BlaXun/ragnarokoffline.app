@@ -562,6 +562,14 @@ nothing, Meteor Storm at a single Sandman. Name the bolts as one `Cast: [..]`
 list (the engine picks by element), aim them with selectors at what is on the
 party, and keep area spells for a `Count` of three.
 
+**An event starts something; a condition keeps it going.** A rule with `On:` is
+answered by its first action. "Walk to the body" as an event took one step, and
+then the positioning rules pulled the Priest straight back. The fallen owner lay
+10 cells off, out of Resurrection's 9, and was never revived. For a goal that
+takes many turns, write a rule that holds while the goal is unmet:
+`Target: { Ally: dead }` with `KeepDistance: { Max: 8 }`. Keep the event rule
+only for what no selector can see (beyond 14 cells).
+
 **Hold still while being petrified.** A member who runs from a Wide Stone Curse
 drags the healer's Status Recovery after it. `When: self_stonewait` and `Hold`.
 
