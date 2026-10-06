@@ -347,7 +347,9 @@ pub fn table_lua(spawns: &[Spawn], mobs: &BTreeMap<u32, Mob>) -> Vec<u8> {
 /// ship; stats from the era's mob_db with every mod's mob_db.yml merged over
 /// it. Returns the table written, for the cache fingerprint.
 pub fn stage(cfg: &Config, server_root: &Path) -> Result<Option<Vec<u8>>, String> {
-    let enabled = crate::mods::enabled(cfg);
+    // In the order the server applies them, so a monster two mods change ends
+    // up as the server has it.
+    let enabled = crate::mods::applied(cfg);
     let Some(this) = enabled.iter().find(|m| m.name == MOD) else { return Ok(None) };
     let Some(text) = this.roots.iter().find_map(|r| fs::read_to_string(r.join(INDEX)).ok()) else {
         eprintln!("{MOD}: no {INDEX}; the client keeps its own monster table");
