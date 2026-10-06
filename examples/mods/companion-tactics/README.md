@@ -98,7 +98,10 @@ once). In every phase:
   Bolt's, and the Priest stays out of its melee but within Heal's reach of
   whoever is being hit;
 - when someone dies, the Priest walks toward the body until it is within
-  Resurrection's 9 cells, and keeps SP back for it;
+  Resurrection's 9 cells and keeps SP back for it. With Phreeoni on it, it heals
+  itself below 50 %, walls its own cell and casts Kyrie, then revives behind the
+  wall, so the cast is not broken. Its plan revives with its own rule, so the
+  engine's immediate attempt stands aside;
 - after a Wide Stone Curse the Priest stays within reach of the petrified and
   cures them, already while it is still setting in;
 - the Priest heals, walls and Kyries whoever the monsters are on first, keeps

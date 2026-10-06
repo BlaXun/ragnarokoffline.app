@@ -567,8 +567,35 @@ Body:
       # so besides the shared rules above this is all they cast; between casts they hit.
       - Job: Priest
         Rules:
-          # Someone died: the engine's own Resurrection comes before every rule, but it
-          # reaches 9 cells and never walks. So walk to the body while it lies further away.
+          # Survive first.
+          - Name: heal_self
+            Priority: 110
+            Cast: AL_HEAL
+            Target: self
+            When: self_hp_pct_lt50
+          # Then bring them back. With something on it, a Resurrection cast is broken by
+          # every hit: wall its own cell first (stops Phreeoni's melee), Kyrie, then revive.
+          # This plan revives with its own rule, so the engine's immediate attempt stands
+          # aside while Phreeoni is near.
+          - Name: wall_before_rez
+            Priority: 108
+            Present: { Ally: dead, Range: 9 }
+            When: [self_targeted, not_self_safetywall]
+            Cast: MG_SAFETYWALL
+            Target: self
+          - Name: kyrie_before_rez
+            Priority: 107
+            Present: { Ally: dead, Range: 9 }
+            When: [self_targeted, not_self_kyrie]
+            Cast: PR_KYRIE
+            Target: self
+          - Name: resurrect
+            Priority: 106
+            When: { OR: [self_safetywall, not_self_targeted] }
+            Cast: ALL_RESURRECTION
+            Target: dead_ally
+            Say: "Getting you up, {ally}!"
+          # Resurrection reaches 9 cells: walk to a body that lies further away.
           - Name: go_to_the_fallen
             Priority: 103
             On: { Event: party_member_died, Within: 30000 }

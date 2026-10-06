@@ -87,6 +87,7 @@ A rule applies when all of the following hold:
 | `Charges: { Status, Below \| AtLeast, Value }` | while a status's counter is in range. Cicada Skin Shed keeps its blocks left in its second value (the default), so `{ Status: SC_UTSUSEMI, Below: 2 }` is "1 or 0 left". No status counts as 0. |
 | `Field: { Skill, Below \| AtLeast, Range, Owner, At }` | while that many ground units of the skill stand within `Range` cells (default 5; `0` is the cell itself) of the companion, or with `At: target` of the rule's target (the boss in its own Pneuma). `Owner` says whose: `self` (default: Blaze Shield's pillars, its own Fire Wall), `party` (a Sage's Land Protector), `monster`, `enemy`, `anyone`. |
 | `Count: { Enemy, Who, Around, Range, Below \| AtLeast }` | while that many monsters stand within `Range` cells (default 5) of the companion, or with `Around: target` of the rule's target. `Enemy`: `any` (default), `attacking` (with `Who`, `NotSelf`), `boss`, `slaves`, `casting`. "Three slaves around the boss": `{ Enemy: slaves, Around: target, AtLeast: 3 }` with `Target: { Enemy: boss }`. |
+| `Present: { Ally \| Enemy: ..., ... }` | while a selector finds **someone**: `Present: { Ally: dead, Range: 9 }` is "someone lies dead within Resurrection's reach". |
 | `Absent: { Ally \| Enemy: ..., ... }` | while a [selector](#choosing-who-selectors) finds **nobody**: `Absent: { Ally: nearest, Job: Priest }` is "no living Priest within sight", the moment to fall back. |
 | `Reach: false` / `true` | while the monster the rule is about could not (or could) fight back against the companion where it stands. rAthena teleports a boss hit by someone it can neither hit back from where it stands nor walk to within its chase range; a monster held in place (Ankle Snare, Spider Web) cannot walk at all. `Reach` asks the same question. |
 | `Enemy: { Element, Race, Size, Boss }` | while the monster the rule is about (its selector's, or the current target) is one of those: `Element: [Holy, Ghost]`, `Race: Demon`, `Size: Large`, `Boss: true`. Names as rAthena writes them without `ELE_` / `RC_`. For a boss that changes element. |
@@ -123,7 +124,9 @@ of them is allowed per rule. `Say`, `Switch` and `Signal` do not end it and can
 come with any of them, after it has succeeded. When no rule acts, the companion takes its
 ordinary turn: heals, buffs and the skill rotation (minus anything `Ban` or
 `Rotation` takes away). The built-in Party Resurrection comes before all rules:
-a dead party member is revived first.
+a dead party member is revived first, unless the companion's plan revives with
+its own rule (a `Cast: ALL_RESURRECTION` it knows): then the plan decides when,
+for instance only behind a Safety Wall.
 
 **The normal skill rotation is off under a plan about a monster.** A plan for
 `Mob: PHREEONI` (or its encounter) says what to cast, and the companion casts
@@ -155,6 +158,7 @@ whose selector finds nobody does not apply.
 | `{ Enemy: attacking, Who, NotSelf, Prefer }` | a monster attacking `Who` (`party` by default; `owner`, `self`, `tank`, `support`, `attacker`, `any`). `NotSelf: true` leaves out the ones attacking the companion itself; `Prefer` puts those on one member first. |
 | `{ Enemy: target_of, Who }` | the monster `Who` is fighting (`owner` by default): assisting. |
 | `{ Enemy: nearest \| lowest_hp \| boss \| slaves \| casting \| hidden }` | the nearest, the most hurt, a boss, a summoned slave, one that is casting, one that is hidden (Hiding, Cloaking, a Hode's burrow). `Boss: true` on any Enemy selector or `Count` keeps to bosses. |
+| `{ Ally: dead }` | the nearest fallen party member. |
 | `{ Ally: lowest_hp \| nearest \| missing \| having \| attacked, Role, Job, Status, NotSelf }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, the nearest with it (Status Recovery on the petrified), or the one the monsters in sight are on (a boss counts three times); only those with that `Role` or `Job` (its own or base class). |
 
 With an `Enemy` selector, `When`'s `enemy_*` tokens ask about the chosen monster,

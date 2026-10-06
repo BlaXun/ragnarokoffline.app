@@ -1857,7 +1857,8 @@ static void population_shell_combat_process_tick(map_session_data *sd, t_tick cu
 	// Party resurrection outranks ordinary role behaviour.  This intentionally
 	// also applies to a priest assigned Tank, Attacker, or None: class capability
 	// determines whether the party can recover from a death.
-	if (!flag_attack_only && do_skills &&
+	// RAGNAROKMAC (companion strategies): unless the companion's plan revives with its own rule.
+	if (!flag_attack_only && do_skills && !population_strategy_handles_resurrection(sd) &&
 		population_shell_try_party_resurrection(sd, current_tick))
 		return;
 

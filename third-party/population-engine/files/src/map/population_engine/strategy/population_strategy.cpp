@@ -84,7 +84,7 @@ enum class Member : uint8 { Any, Party, Owner, Self, Tank, Support, Attacker };
 struct Selector {
 	enum class Kind : uint8 { None, Enemy, Ally } kind = Kind::None;
 	enum class Pick : uint8 { Attacking, TargetOf, Nearest, LowestHp, Boss, Slaves, Casting, Missing, Having, Hidden,
-		Attacked } pick = Pick::Nearest;
+		Attacked, Dead } pick = Pick::Nearest;
 	bool boss_only = false;      ///< Enemy selectors and Count: bosses only
 	Member who = Member::Party;  ///< Enemy attacking/target_of: whose attacker or whose target
 	bool not_self = false;       ///< leave the companion itself out
@@ -150,6 +150,7 @@ struct Rule {
 	Target target = Target::Enemy;
 	Selector sel;                ///< overrides target when sel.kind != None
 	Selector absent;             ///< Absent: the rule applies only while this finds nobody
+	Selector present;            ///< Present: the rule applies only while this finds someone
 	bool set_target = false;     ///< make the chosen monster the companion's combat target
 	std::string say;
 	bool say_area = false;
@@ -387,6 +388,7 @@ public:
 	bool uses_chat = false;
 	bool limits_rotation = false;
 	bool for_shells = false;     ///< some plan is For: shells or all, so regular shells take turns
+	bool revives = false;        ///< some rule casts Resurrection (or Death Valley) itself
 
 	StrategyDatabase() : YamlDatabase("POPULATION_STRATEGY_DB", 1) {}
 
@@ -399,6 +401,7 @@ public:
 		this->uses_chat = false;
 		this->limits_rotation = false;
 		this->for_shells = false;
+		this->revives = false;
 	}
 
 	const std::string getDefaultLocation() override
@@ -662,12 +665,12 @@ bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 		static const std::map<std::string, Selector::Pick> picks = {
 			{ "lowest_hp", Selector::Pick::LowestHp }, { "nearest", Selector::Pick::Nearest },
 			{ "missing", Selector::Pick::Missing }, { "having", Selector::Pick::Having },
-			{ "attacked", Selector::Pick::Attacked },
+			{ "attacked", Selector::Pick::Attacked }, { "dead", Selector::Pick::Dead },
 		};
 		this->asString(node, "Ally", pick);
 		const auto it = picks.find(lower(pick));
 		if (it == picks.end()) {
-			this->invalidWarning(node["Ally"], "Ally is lowest_hp, nearest, missing, having or attacked; the rule is skipped.\n");
+			this->invalidWarning(node["Ally"], "Ally is lowest_hp, nearest, missing, having, attacked or dead; the rule is skipped.\n");
 			return false;
 		}
 		sel.kind = Selector::Kind::Ally;
@@ -736,7 +739,7 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		return nullptr;
 	}
 	this->warn_unknown_keys(node, { "Name", "Priority", "Remove", "Requires", "On", "When", "Charges", "Field",
-		"Enemy", "Count", "Reach", "Absent", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
+		"Enemy", "Count", "Reach", "Absent", "Present", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
 		"OnePerParty" }, "a rule");
 
 	auto rule = std::make_shared<Rule>();
@@ -869,9 +872,17 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 			return nullptr;
 		rule->has_count = true;
 	}
-	if (this->nodeExists(node, "Absent")) {
-		// "No Priest alive any more": a selector that must find nobody.
-		if (!node["Absent"].is_map() || !this->parse_selector(node["Absent"], rule->absent))
+	// Absent: "no Priest alive any more", a selector that must find nobody; Present: "someone
+	// lies dead within reach", one that must find someone.
+	for (const char *key : { "Absent", "Present" }) {
+		if (!this->nodeExists(node, key))
+			continue;
+		const ryml::NodeRef g = node[c4::to_csubstr(key)];
+		if (!g.is_map()) {
+			this->invalidWarning(g, "%s takes a selector, like { Ally: dead }; the rule is skipped.\n", key);
+			return nullptr;
+		}
+		if (!this->parse_selector(g, std::string(key) == "Absent" ? rule->absent : rule->present))
 			return nullptr;
 	}
 	if (this->nodeExists(node, "Reach")) {
@@ -1343,6 +1354,8 @@ void StrategyDatabase::loadingFinished()
 	auto by_priority = [](const RulePtr &a, const RulePtr &b) { return a->priority > b->priority; };
 	auto note = [&](const RulePtr &r) {
 		++this->rule_count;
+		if (r->cast_skill == ALL_RESURRECTION || r->cast_skill == WM_DEADHILLHERE)
+			this->revives = true;
 		if (r->event == Event::PartyChat)
 			this->uses_chat = true;
 	};
@@ -2168,7 +2181,8 @@ static block_list *select_ally(Turn &t, const Selector &sel, int range)
 	map_session_data *best = nullptr;
 	std::tuple<int, int, int32> best_key;
 	for (map_session_data *m : members) {
-		if (pc_isdead(m) || !check_distance_bl(sd, m, range))
+		// Ally: dead picks the fallen, nearest first; every other pick, the living.
+		if (pc_isdead(m) != (sel.pick == Selector::Pick::Dead) || !check_distance_bl(sd, m, range))
 			continue;
 		if (sel.role >= 0 && (!population_engine_is_population_pc(m->id) || m->pop.role != sel.role))
 			continue;
@@ -2698,11 +2712,12 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 				rule.field_below, rule.field_atleast))
 			return Outcome::Skipped;
 	}
-	if (rule.absent.kind != Selector::Kind::None) {
-		const int r = rule.absent.range > 0 ? rule.absent.range : AREA_SIZE;
-		const block_list *found = rule.absent.kind == Selector::Kind::Ally ? select_ally(t, rule.absent, r)
-			: select_enemy(t, rule.absent, r);
-		if (found != nullptr)
+	for (const Selector *gate : { &rule.absent, &rule.present }) {
+		if (gate->kind == Selector::Kind::None)
+			continue;
+		const int r = gate->range > 0 ? gate->range : AREA_SIZE;
+		const block_list *found = gate->kind == Selector::Kind::Ally ? select_ally(t, *gate, r) : select_enemy(t, *gate, r);
+		if ((found != nullptr) != (gate == &rule.present))
 			return Outcome::Skipped;
 	}
 	if (rule.has_count) {
@@ -3110,6 +3125,28 @@ bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills,
 		}
 		if (!switched)
 			return false;
+	}
+	return false;
+}
+
+bool population_strategy_handles_resurrection(map_session_data *sd)
+{
+	if (!g_db.revives || !takes_part(sd))
+		return false;
+	// A plan that revives with its own rule (and the skill to cast it) does it its own way --
+	// typically behind a Safety Wall -- and the engine's immediate attempt would cut across it.
+	for (const PlanRef &p : plans_for(sd, same_map_bl(sd, sd->pop.target_id))) {
+		auto revives = [&](const std::vector<RulePtr> &rules) {
+			return std::any_of(rules.begin(), rules.end(), [&](const RulePtr &r) {
+				return (r->cast_skill == ALL_RESURRECTION || r->cast_skill == WM_DEADHILLHERE)
+					&& pc_checkskill(sd, r->cast_skill) > 0 && requires_ok(sd, r->req);
+			});
+		};
+		if (revives(p.plan->rules))
+			return true;
+		for (const auto &st : p.plan->strategies)
+			if (revives(st.second.rules))
+				return true;
 	}
 	return false;
 }
