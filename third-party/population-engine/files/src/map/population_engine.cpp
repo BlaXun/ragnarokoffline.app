@@ -5555,7 +5555,11 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 	sd->canequip_tick     = 0;
 	sd->cantalk_tick      = 0;
 	sd->canskill_tick     = 0;
-	sd->state.autocast    = 1; // bypass skill_isNotOk checks that prevent skill spam
+	// RAGNAROKMAC: no sd->state.autocast here. It was set to get past skill_isNotOk's cast-spam
+	// check, but skill_amotion_leniency 0 (rAthena's default, which the app keeps) turns that check
+	// off, and raised it would only hold a shell to its attack speed, as it does a player.
+	// autocast also made every skill free (skill_consume_requirement), so shells cast without
+	// paying SP.
 	sd->cansendmail_tick  = 0;
 	sd->idletime          = tick;
 
