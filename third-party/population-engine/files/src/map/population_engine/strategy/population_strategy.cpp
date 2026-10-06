@@ -3125,8 +3125,8 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 			trace(sd, *t.st, t.tick, "rule %s: %s not cast (%s)", name, skill_get_desc(skill), why);
 			return Outcome::Skipped;
 		}
-		trace(sd, *t.st, t.tick, "rule %s: %s on %s", name, skill_get_desc(skill),
-			target != nullptr ? status_get_name(*target) : "self");
+		trace(sd, *t.st, t.tick, "rule %s: %s on %s (SP %u/%u)", name, skill_get_desc(skill),
+			target != nullptr ? status_get_name(*target) : "self", sd->battle_status.sp, sd->battle_status.max_sp);
 		acted = true;
 	} else if (rule.retreat != Retreat::None) {
 		const char *why = retreat(t, rule, rs);
