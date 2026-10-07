@@ -325,6 +325,12 @@ on the street only while someone has found one and nobody has bought it yet.
   forged, refined and carded gear, pet eggs and anything the hunters can't
   find stay as they are. A stall whose theme has nothing in stock doesn't
   open; another theme takes the spot.
+- **Fewer sellers while stock is low.** Every hour the number of sell stalls
+  follows how much of a settled market's variety is in stock (each item up
+  to one copy, so a pile of Elunium is not a full market): 30 % of **Sell
+  stalls** with nothing in stock, rising to all of them once the market
+  has settled.
+  Stalls past the count pack up; buying stores are not affected.
 
 At the defaults (20 parties, 2 days, 1x rates) about 48 Elunium and 11
 cards a day reach the market; about 140 Elunium and 130 cards in all are on
