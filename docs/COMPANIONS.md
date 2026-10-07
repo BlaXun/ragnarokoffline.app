@@ -101,7 +101,7 @@ engages, while each role decides *how* that companion behaves once involved.
 A mod can give companions a plan for a particular monster, job and build: which
 skills to open with, when to step back, what to say. The table is
 `db/population_strategy.yml`, and
-[docs/mods/companion-strategies.md](mods/companion-strategies.md) describes it.
+[docs/mods/companion-strategies/](mods/companion-strategies/README.md) describes it.
 Without such a mod, companions fight as described above.
 
 To see what a companion's plan makes it do, type its name and `trace` in party

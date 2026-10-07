@@ -5,13 +5,13 @@ Plans for recruited companions against particular bosses. It builds on
 Priests heal, casters keep their distance and melee keep SP back at any boss.
 This one adds what is particular to each boss. It is one table,
 `db/population_strategy.yml`, and nothing else.
-[docs/mods/companion-strategies.md](../../../docs/mods/companion-strategies.md)
+[docs/mods/companion-strategies/](../../../docs/mods/companion-strategies/README.md)
 is the reference.
 
 **Status:** loaded by a real map-server in both eras, renewal and pre-renewal,
 with no warnings. The Phreeoni plan has been played in several rounds and
 reworked after each (the lessons are in
-[Writing plans that hold up in a fight](../../../docs/mods/companion-strategies.md#writing-plans-that-hold-up-in-a-fight)).
+[Writing plans that hold up in a fight](../../../docs/mods/companion-strategies/reference.md#writing-plans-that-hold-up-in-a-fight)).
 Since then, everything in it that is not about Phreeoni has moved to
 companion-roles. The Stalactic Golem plans are worked examples of the format,
 not yet played.

@@ -1,7 +1,7 @@
 # companion-tactics: what recruited companions do against particular bosses.
 # It builds on companion-roles (healer, casters, melee, at any boss); this adds
 # each boss's own mechanics, at priorities 80-99 so they come before a role's core.
-# Reference: docs/mods/companion-strategies.md
+# Reference: docs/mods/companion-strategies/ (guide, team play, cookbook, reference, FAQ)
 
 Header:
   Type: POPULATION_STRATEGY_DB
