@@ -48,6 +48,10 @@
 # trading, dropping, vending (no cart), mail, auction or guild storage. It may
 # still go to personal storage or be sold to an NPC.
 #
+# Price: an NPC pays 100z for a Lv 1 card and 100z more a level, up to 1,000z
+# for Lv 10 -- half the Buy price, as for any item, so Buy is 200z a level
+# (no NPC sells the cards). Selling is the only way to get rid of one.
+#
 # Version 3 is the ITEM_DB version this build reads; take it from the
 # header of vendor/rathena/db/import-tmpl/item_db.yml if you retarget.
 Header:
@@ -60,7 +64,7 @@ Body:
     AegisName: Base_Exp_Card_1
     Name: Base Exp Card Lv1
     Type: Usable
-    Buy: 0
+    Buy: 200
     Weight: 1
     Trade:
       NoDrop: true
@@ -79,7 +83,7 @@ Body:
     AegisName: Base_Exp_Card_2
     Name: Base Exp Card Lv2
     Type: Usable
-    Buy: 0
+    Buy: 400
     Weight: 1
     Trade:
       NoDrop: true
@@ -98,7 +102,7 @@ Body:
     AegisName: Base_Exp_Card_3
     Name: Base Exp Card Lv3
     Type: Usable
-    Buy: 0
+    Buy: 600
     Weight: 1
     Trade:
       NoDrop: true
@@ -117,7 +121,7 @@ Body:
     AegisName: Base_Exp_Card_4
     Name: Base Exp Card Lv4
     Type: Usable
-    Buy: 0
+    Buy: 800
     Weight: 1
     Trade:
       NoDrop: true
@@ -136,7 +140,7 @@ Body:
     AegisName: Base_Exp_Card_5
     Name: Base Exp Card Lv5
     Type: Usable
-    Buy: 0
+    Buy: 1000
     Weight: 1
     Trade:
       NoDrop: true
@@ -155,7 +159,7 @@ Body:
     AegisName: Base_Exp_Card_6
     Name: Base Exp Card Lv6
     Type: Usable
-    Buy: 0
+    Buy: 1200
     Weight: 1
     Trade:
       NoDrop: true
@@ -174,7 +178,7 @@ Body:
     AegisName: Base_Exp_Card_7
     Name: Base Exp Card Lv7
     Type: Usable
-    Buy: 0
+    Buy: 1400
     Weight: 1
     Trade:
       NoDrop: true
@@ -193,7 +197,7 @@ Body:
     AegisName: Base_Exp_Card_8
     Name: Base Exp Card Lv8
     Type: Usable
-    Buy: 0
+    Buy: 1600
     Weight: 1
     Trade:
       NoDrop: true
@@ -212,7 +216,7 @@ Body:
     AegisName: Base_Exp_Card_9
     Name: Base Exp Card Lv9
     Type: Usable
-    Buy: 0
+    Buy: 1800
     Weight: 1
     Trade:
       NoDrop: true
@@ -231,7 +235,7 @@ Body:
     AegisName: Base_Exp_Card_10
     Name: Base Exp Card Lv10
     Type: Usable
-    Buy: 0
+    Buy: 2000
     Weight: 1
     Trade:
       NoDrop: true
@@ -251,7 +255,7 @@ Body:
     AegisName: Job_Exp_Card_1
     Name: Job Exp Card Lv1
     Type: Usable
-    Buy: 0
+    Buy: 200
     Weight: 1
     Trade:
       NoDrop: true
@@ -270,7 +274,7 @@ Body:
     AegisName: Job_Exp_Card_2
     Name: Job Exp Card Lv2
     Type: Usable
-    Buy: 0
+    Buy: 400
     Weight: 1
     Trade:
       NoDrop: true
@@ -289,7 +293,7 @@ Body:
     AegisName: Job_Exp_Card_3
     Name: Job Exp Card Lv3
     Type: Usable
-    Buy: 0
+    Buy: 600
     Weight: 1
     Trade:
       NoDrop: true
@@ -308,7 +312,7 @@ Body:
     AegisName: Job_Exp_Card_4
     Name: Job Exp Card Lv4
     Type: Usable
-    Buy: 0
+    Buy: 800
     Weight: 1
     Trade:
       NoDrop: true
@@ -327,7 +331,7 @@ Body:
     AegisName: Job_Exp_Card_5
     Name: Job Exp Card Lv5
     Type: Usable
-    Buy: 0
+    Buy: 1000
     Weight: 1
     Trade:
       NoDrop: true
@@ -346,7 +350,7 @@ Body:
     AegisName: Job_Exp_Card_6
     Name: Job Exp Card Lv6
     Type: Usable
-    Buy: 0
+    Buy: 1200
     Weight: 1
     Trade:
       NoDrop: true
@@ -365,7 +369,7 @@ Body:
     AegisName: Job_Exp_Card_7
     Name: Job Exp Card Lv7
     Type: Usable
-    Buy: 0
+    Buy: 1400
     Weight: 1
     Trade:
       NoDrop: true
@@ -384,7 +388,7 @@ Body:
     AegisName: Job_Exp_Card_8
     Name: Job Exp Card Lv8
     Type: Usable
-    Buy: 0
+    Buy: 1600
     Weight: 1
     Trade:
       NoDrop: true
@@ -403,7 +407,7 @@ Body:
     AegisName: Job_Exp_Card_9
     Name: Job Exp Card Lv9
     Type: Usable
-    Buy: 0
+    Buy: 1800
     Weight: 1
     Trade:
       NoDrop: true
@@ -422,7 +426,7 @@ Body:
     AegisName: Job_Exp_Card_10
     Name: Job Exp Card Lv10
     Type: Usable
-    Buy: 0
+    Buy: 2000
     Weight: 1
     Trade:
       NoDrop: true

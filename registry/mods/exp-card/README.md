@@ -48,7 +48,8 @@ downing a Lv 10 base card for several levels in one click.
 
 **Untradeable.** A card stays with the character who picked it up: it cannot
 be traded, dropped, vended (it cannot go in a cart), mailed, auctioned or put
-in guild storage. Personal storage and selling it to an NPC still work. The
+in guild storage. Personal storage and selling it to an NPC still work: an
+NPC pays 100z for a Lv 1 card and 100z more a level, 1,000z for Lv 10. The
 drop itself lands on the ground as before, so once the killer's pickup window
 is over anyone can pick it up, as with any drop.
 
@@ -80,16 +81,15 @@ The mob's own drop table is untouched.
 `F_ModSetting` on each server start (so **Apply** takes effect on the
 next restart):
 
-- **Drop chance** (`drop_chance`, default 225 = 2.25%) — in 0.01% units,
-  matching rAthena's drop-rate convention. 1,000 is 10%, 10,000 is
-  guaranteed.
+- **Drop chance** (`drop_chance`, default 200 = 2%; 225 before 1.2.0) — in
+  0.01% units, matching rAthena's drop-rate convention. 1,000 is 10%,
+  10,000 is guaranteed.
 
   Sizing rule of thumb: at ~150 kills per hour and the 50/50 base/job
-  split, `drop_chance` × 0.0006 is roughly the "% of a level per hour"
-  bonus on whichever axis the player is currently pushing. At the default
-  2.25% and 1x rates that is ~5–9% of a level per hour (scaling with the
-  rates, like kill exp) — meaningful without
-  trivialising the grind. Bump to 500 for a more generous curve, drop to
+  split, 2% is about 1.5 cards an hour on whichever axis the player is
+  pushing, each worth 3–5% of a level where it drops: ~4.5–7.5% of a level
+  per hour at 1x (scaling with the rates, like kill exp) — meaningful
+  without trivialising the grind. Bump to 500 for a more generous curve, drop to
   100 for background-noise pace.
 
 Card exp values are hard-coded in `db/item_db.yml` (twenty scripts, one
