@@ -1712,32 +1712,69 @@ static const char *POP_SHOP_TITLES[] = {
 // set has a maximum equip level, so the gear still fits.
 static std::unordered_map<int16_t, int> g_pop_map_mob_level;
 
+using PopMobLevels = std::vector<std::pair<int, int>>; // level, count
+
 static int pop_collect_mob_level(struct block_list *bl, va_list ap) {
-	auto *out = va_arg(ap, std::vector<int>*);
-	if (bl == nullptr || out->size() >= 64)
+	auto *out = va_arg(ap, PopMobLevels*); // an alias: va_arg is a macro, and the pair's comma splits it
+	if (bl == nullptr)
 		return 0;
 	const int lv = status_get_lv(bl);
 	if (lv > 0)
-		out->push_back(lv);
+		out->emplace_back(lv, 1);
 	return 1;
 }
 
 /// Median monster level on a map, or 0 where it has none (towns). Computed once
-/// per map: mob spawns are in place long before shells are, and this is called
-/// on every spawn.
+/// per map, since this is called on every spawn.
+///
+/// Read from the map's spawn lines (mapdata->moblist, every line while
+/// dynamic_mobs is on, as it is by default), each weighted by its count. Live
+/// monsters were the source before, and they misled: dynamic_mobs removes them
+/// from a map nobody is on, and the sample stopped at the first 64 in block
+/// order, one corner of the map. Renewal's Payon Cave 2 (median 34 by its spawn
+/// lines) put level 13 shells there. Live monsters remain the fallback, and a
+/// map without any is not cached, so it is looked at again once they are back.
 static int pop_map_mob_level(int16_t m) {
 	const auto it = g_pop_map_mob_level.find(m);
 	if (it != g_pop_map_mob_level.end())
 		return it->second;
 
-	std::vector<int> levels;
-	map_foreachinmap(pop_collect_mob_level, m, BL_MOB, &levels);
+	PopMobLevels levels;
+	bool from_spawns = false;
+	if (const struct map_data *mapdata = map_getmapdata(m)) {
+		for (const struct spawn_data *spawn : mapdata->moblist) {
+			if (spawn == nullptr || spawn->num == 0)
+				continue;
+			int lv = static_cast<int>(spawn->level);
+			if (lv <= 0) {
+				const std::shared_ptr<s_mob_db> db = mob_db.find(static_cast<uint32>(spawn->id));
+				lv = db != nullptr ? db->lv : 0;
+			}
+			if (lv > 0) {
+				levels.emplace_back(lv, spawn->num);
+				from_spawns = true;
+			}
+		}
+	}
+	if (levels.empty())
+		map_foreachinmap(pop_collect_mob_level, m, BL_MOB, &levels);
 	int out = 0;
 	if (!levels.empty()) {
 		std::sort(levels.begin(), levels.end());
-		out = levels[levels.size() / 2];
+		int64_t total = 0;
+		for (const auto &l : levels)
+			total += l.second;
+		int64_t seen = 0;
+		for (const auto &l : levels) {
+			seen += l.second;
+			if (seen * 2 > total) {
+				out = l.first;
+				break;
+			}
+		}
 	}
-	g_pop_map_mob_level[m] = out;
+	if (from_spawns || out > 0)
+		g_pop_map_mob_level[m] = out;
 	return out;
 }
 

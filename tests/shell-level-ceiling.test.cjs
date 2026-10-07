@@ -36,3 +36,16 @@ test('the class is set before the level is rolled', () => {
 	const roll = src.indexOf('if (battle_config.population_engine_level_from_map)');
 	assert.ok(cls > 0 && roll > cls);
 });
+
+// The live-monster sample misled: dynamic_mobs removes monsters from an empty map, and it stopped at
+// the first 64 in block order, one corner of the map. Renewal's Payon Cave 2 (34 by its spawn lines)
+// got level 13 shells.
+test("a map's level comes from its spawn lines, weighted by count", () => {
+	const at = src.indexOf('static int pop_map_mob_level(int16_t m) {');
+	const fn = src.slice(at, src.indexOf('\n}\n', at));
+	assert.match(fn, /for \(const struct spawn_data \*spawn : mapdata->moblist\)/);
+	assert.match(fn, /levels\.emplace_back\(lv, spawn->num\);/);
+	assert.ok(fn.indexOf('mapdata->moblist') < fn.indexOf('map_foreachinmap('), 'live monsters only as the fallback');
+	assert.match(fn, /if \(from_spawns \|\| out > 0\)\n\t\tg_pop_map_mob_level\[m\] = out;/, 'an empty live sample is not cached');
+	assert.doesNotMatch(src, /out->size\(\) >= 64/, 'no 64-monster cap');
+});
