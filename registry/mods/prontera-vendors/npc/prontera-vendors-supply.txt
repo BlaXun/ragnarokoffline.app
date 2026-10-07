@@ -469,8 +469,14 @@ OnAtSupply:
 		dispbottom "The hunted supply is off: Settings > Mods > prontera-vendors > Hunted supply: parties.";
 		end;
 	}
-	if (!.ready)
-		callsub S_Start;
+	// Not here: starting can sleep while it catches up, and a sleep detaches
+	// the player, so nothing below would reach them.
+	if (!.ready) {
+		dispbottom "The hunted supply is still starting; try again in a moment.";
+		end;
+	}
+	// The listings below walk every item and party: past rAthena's 2048 jumps.
+	freeloop(1);
 	.@arg$ = .@atcmd_numparameters > 0 ? .@atcmd_parameters$[0] : "";
 	if (.@arg$ == "reset") {
 		if (.busy) {
