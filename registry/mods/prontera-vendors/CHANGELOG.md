@@ -1,0 +1,11 @@
+## 1.5.0
+- New: **Hunted supply** (off by default). Parties of fake players hunt the world's fields and dungeons around the clock, by each map's spawns, respawn timers and the server's drop rates, and what only monsters drop reaches the sell stalls only once they have found it.
+- Loot leaves the market again over time: **How long loot stays** sets the half-life (equipment lasts three times as long, cards and MvP loot five times).
+- **Hunting parties** sets how many hunt on an average hour, fewer at night and more in the evening and at weekends. Every map gets its turn.
+- MvPs die a few times a day at most (**MvP kills**), never faster than they respawn.
+- Buying from a stall takes from the supply, and selling into a buying store puts it back.
+- The time the server was off is hunted too.
+- **Start with a filled market**, or switch it off to watch the market fill up from empty.
+- What NPCs sell and what players make (potions, forged, refined and carded gear) stays as before.
+- GMs: `@supply` shows the parties, the last MvP and the stock.
+- Needs app 1.5.2 for the supply, and app 1.5.4 for the stalls to follow it.

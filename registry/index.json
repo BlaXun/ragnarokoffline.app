@@ -624,6 +624,10 @@
       },
       "files": [
         {
+          "path": "CHANGELOG.md",
+          "sha256": "94e1c26b3396c578521f1acfc2e34a9169aae9a7c8c87d67ab2c9dccb337128c"
+        },
+        {
           "path": "README.md",
           "sha256": "70865faef122d63d29aa322f1c06f0034d06c07e0cfa886836eeb9aeddc2d4f7"
         },
