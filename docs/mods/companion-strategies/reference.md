@@ -50,6 +50,7 @@ each one does. New to it? Start with the [guide](guide.md). For party play see
 | `Enemy` | the monster's element, race, size, boss | **Also, with or without an action:** | |
 | `Cooldown` | not fired for so long | `Say` (+ `Channel`) | speak |
 | `OnePerParty` | no other companion just did it | `Switch` | change strategy |
+| `Claim` | pass over targets another companion claimed | | |
 | | | `Signal` | tell the other companions |
 | | | `SetTarget` | make the rule's monster the target |
 
@@ -245,6 +246,7 @@ A rule applies when all of the following hold:
 | `Enemy: { Element, Race, Size, Boss }` | while the monster the rule is about (its selector's, or the current target) is one of those: `Element: [Holy, Ghost]`, `Race: Demon`, `Size: Large`, `Boss: true`. Names as rAthena writes them without `ELE_` / `RC_`. For a boss that changes element. |
 | `Cooldown:` | when it has not fired in that many ms. |
 | `OnePerParty: true` | when no other companion of the party has just fired it at the same target. |
+| `Claim: name`, or `Claim: { Name, For }` | on a target no other companion of the party has claimed under that name. Acting puts the claim on the rule's target for `For` ms (default 5000), renewed each time it acts again. A selector passes claimed targets over and picks the next, so `Claim: frozen` on a Frost Diver rule spreads two Wizards over two monsters, and `Claim: { Name: lex, For: 10000 }` keeps a second Priest from a second Lex Aeterna on the boss. Unlike `OnePerParty`, it works across different rules: any rule with the same claim name respects it. |
 
 And then does one thing:
 

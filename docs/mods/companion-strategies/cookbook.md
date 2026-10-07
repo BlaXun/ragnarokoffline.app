@@ -26,6 +26,7 @@ not yet. Adjust names, priorities and numbers to your plan. The
 - [A bolt by element at what is on the party](#a-bolt-by-element-at-what-is-on-the-party)
 - [Area spells only on a pack](#area-spells-only-on-a-pack)
 - [Go for the boss, but take slaves off the healer](#go-for-the-boss-but-take-slaves-off-the-healer)
+- [Two of a kind: split the targets](#two-of-a-kind-split-the-targets)
 - [Turn heals on the undead](#turn-heals-on-the-undead)
 
 **Boss mechanics**
@@ -299,6 +300,27 @@ something across the screen, nor at a monster nobody is fighting.
 
 `SetTarget` only chooses the target; the engine (or a skill rule) does the
 hitting.
+
+## Two of a kind: split the targets
+
+With two Wizards or two Priests in the party, claims keep them from doubling up:
+
+```yaml
+- Name: freeze_one
+  Priority: 44
+  Cast: MG_FROSTDIVER
+  Target: { Enemy: attacking }         # passes over a monster the other Wizard claimed
+  Claim: frozen
+- Name: lex_once
+  Priority: 45
+  Cast: PR_LEXAETERNA
+  Target: { Enemy: boss }
+  When: not_enemy_aeterna
+  Claim: { Name: lex, For: 10000 }     # the second Priest leaves the boss's Lex to the first
+```
+
+Any rule with the same claim name respects it, across plans and mods. Loads
+cleanly; not played yet.
 
 ## Turn heals on the undead
 

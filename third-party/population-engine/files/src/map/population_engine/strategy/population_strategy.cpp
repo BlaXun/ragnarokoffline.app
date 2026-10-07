@@ -187,6 +187,11 @@ struct Rule {
 
 	uint32 cooldown_ms = 0;
 	bool one_per_party = false;
+	/// Claim: a party-wide claim on the target under this name while the rule acts, so other
+	/// companions' rules with the same claim take another target (one Lex per boss, crowd
+	/// control spread). Held claim_ms after the last action.
+	std::string claim;
+	uint32 claim_ms = 5000;
 };
 using RulePtr = std::shared_ptr<Rule>;
 
@@ -889,7 +894,7 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		return nullptr;
 	}
 	this->warn_unknown_keys(node, { "Name", "Priority", "Remove", "Requires", "On", "When", "Charges", "Field",
-		"Enemy", "Count", "Reach", "Absent", "Present", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "Sit", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
+		"Enemy", "Count", "Reach", "Absent", "Present", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "Sit", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown", "Claim",
 		"OnePerParty" }, "a rule");
 
 	auto rule = std::make_shared<Rule>();
@@ -1282,6 +1287,24 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		this->asUInt32(node, "Cooldown", rule->cooldown_ms);
 	if (this->nodeExists(node, "OnePerParty"))
 		this->asBool(node, "OnePerParty", rule->one_per_party);
+	if (this->nodeExists(node, "Claim")) {
+		// Claim: lex, or Claim: { Name: lex, For: 10000 }
+		const ryml::NodeRef c = node["Claim"];
+		if (c.is_map()) {
+			this->warn_unknown_keys(c, { "Name", "For" }, "Claim");
+			if (this->nodeExists(c, "Name"))
+				this->asString(c, "Name", rule->claim);
+			if (this->nodeExists(c, "For"))
+				this->asUInt32(c, "For", rule->claim_ms);
+		} else {
+			this->asString(node, "Claim", rule->claim);
+		}
+		rule->claim = lower(rule->claim);
+		if (rule->claim.empty()) {
+			this->invalidWarning(c, "Claim needs a name; the rule is skipped.\n");
+			return nullptr;
+		}
+	}
 
 	const int moves = (rule->cast_skill != 0) + (rule->retreat != Retreat::None) + rule->hold + rule->sit
 		+ (rule->keep_distance > 0) + (rule->move != Move::None) + rule->leave + rule->kite;
@@ -1810,6 +1833,17 @@ static uint64 g_signal_seq = 0;
 static uint64 g_occurrence_seq = 0;
 /// OnePerParty: (party, rule, target) -> (who claimed it, until when)
 static std::map<std::tuple<int32, uint32, int32>, std::pair<int32, t_tick>> g_claims;
+/// Claim: (party, claim name, target) -> (the companion holding it, until).
+static std::map<std::tuple<int32, std::string, int32>, std::pair<int32, t_tick>> g_named_claims;
+
+/// Whether another companion of the party holds `name` on `target` right now.
+static bool claimed_by_other(const map_session_data *sd, const std::string &name, int32 target, t_tick tick)
+{
+	if (sd->status.party_id <= 0)
+		return false;
+	const auto it = g_named_claims.find(std::make_tuple(sd->status.party_id, name, target));
+	return it != g_named_claims.end() && it->second.first != sd->id && DIFF_TICK(tick, it->second.second) < 0;
+}
 static t_tick g_next_prune = 0;
 
 /// Bumped whenever the table is loaded, reloaded or cleared: anything holding pointers into it
@@ -1823,6 +1857,7 @@ static void reset_runtime()
 	g_chat.clear();
 	g_signals.clear();
 	g_claims.clear();
+	g_named_claims.clear();
 }
 
 static void prune(t_tick tick)
@@ -1839,6 +1874,8 @@ static void prune(t_tick tick)
 	}
 	for (auto it = g_claims.begin(); it != g_claims.end();)
 		it = DIFF_TICK(tick, it->second.second) >= 0 ? g_claims.erase(it) : std::next(it);
+	for (auto it = g_named_claims.begin(); it != g_named_claims.end();)
+		it = DIFF_TICK(tick, it->second.second) >= 0 ? g_named_claims.erase(it) : std::next(it);
 	for (auto it = g_chat.begin(); it != g_chat.end();)
 		it = it->second.empty() ? g_chat.erase(it) : std::next(it);
 	for (auto it = g_signals.begin(); it != g_signals.end();) {
@@ -2088,6 +2125,7 @@ struct Turn {
 	ShellState *st;
 	bool target_set = false;    ///< a higher-priority rule already chose the target this turn
 	bool sitting = false;       ///< a Sit rule applied this turn
+	const std::string *claim = nullptr; ///< while a Claim rule picks its target: skip what others hold
 	const std::vector<PlanRef> *plans = nullptr; ///< the plans that apply this turn
 };
 
@@ -2488,7 +2526,8 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 					id = ud->target > 0 ? ud->target : (ud->skilltimer != INVALID_TIMER ? ud->skilltarget : 0);
 			}
 			mob_data *md = id != 0 ? map_id2md(id) : nullptr;
-			if (md != nullptr && md->m == sd->m && !status_isdead(*md) && check_distance_bl(sd, md, range))
+			if (md != nullptr && md->m == sd->m && !status_isdead(*md) && check_distance_bl(sd, md, range)
+					&& (t.claim == nullptr || !claimed_by_other(sd, *t.claim, md->id, t.tick)))
 				return md;
 		}
 		return nullptr;
@@ -2502,6 +2541,8 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 			continue;
 		int rank = 0; // lower is better
 		if (!enemy_matches(t, sel, md, rank) || at_cap(sd, t.owner, md))
+			continue;
+		if (t.claim != nullptr && claimed_by_other(sd, *t.claim, md->id, t.tick))
 			continue;
 		const auto key = std::make_tuple(rank, distance_bl(sd, md), 0, md->id);
 		if (best == nullptr || key < best_key) {
@@ -2542,6 +2583,8 @@ static block_list *select_ally(Turn &t, const Selector &sel, int range, uint16 s
 		if (!sel.jobs.empty() && std::none_of(sel.jobs.begin(), sel.jobs.end(), [&](int32 j) { return job_matches(m, j); }))
 			continue;
 		if (skill != 0 && pop_ally_skill_refused(sd, m, skill))
+			continue;
+		if (t.claim != nullptr && claimed_by_other(sd, *t.claim, m->id, t.tick))
 			continue;
 		int rank = 0;
 		if (sel.pick == Selector::Pick::LowestHp) {
@@ -3160,7 +3203,12 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 				range = std::max(range, skill_get_range2(sd, id, lv, true));
 		}
 	}
+	t.claim = rule.claim.empty() ? nullptr : &rule.claim;   // selectors pass over claimed targets
 	block_list *target = resolve_target(t, rule, rs, range);
+	t.claim = nullptr;
+	// A fixed target (the current one, an event's) that another companion has claimed: not this rule.
+	if (!rule.claim.empty() && target != nullptr && target != sd && claimed_by_other(sd, rule.claim, target->id, t.tick))
+		return Outcome::Skipped;
 	// A monster the rule picked itself: the companion's mode decides, as for the engine's own
 	// choice. (The current target, t.enemy, already went through it.)
 	if (rule.sel.kind == Selector::Kind::Enemy && target != nullptr && !mode_allows_enemy(t, target)) {
@@ -3387,6 +3435,9 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		rs.cooldown_until = t.tick + static_cast<t_tick>(rule.cooldown_ms);
 	if (rule.one_per_party)
 		g_claims[claim_key] = std::make_pair(sd->id, t.tick + static_cast<t_tick>(std::max<uint32>(rule.cooldown_ms, 3000)));
+	if (acted && !rule.claim.empty() && claim_on != 0 && claim_on != sd->id && sd->status.party_id > 0)
+		g_named_claims[std::make_tuple(sd->status.party_id, rule.claim, claim_on)]
+			= std::make_pair(sd->id, t.tick + static_cast<t_tick>(rule.claim_ms));
 	if (acted)
 		return Outcome::Acted;
 	return switched ? Outcome::Switched : Outcome::Done;

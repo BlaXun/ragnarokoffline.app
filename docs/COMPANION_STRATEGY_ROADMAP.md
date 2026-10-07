@@ -16,7 +16,7 @@ how it would work, what it would add, and where to start.
 | 3 | Choosing who to help or fight (selectors, `SetTarget`) | built, played (Phreeoni) |
 | 4 | Items and gear | **not done**: needs [inventories](#inventories-the-foundation) |
 | 5 | [Time and memory](#5-time-and-memory) | **not done** |
-| 6 | Companions coordinating | signals built, not yet played; role plans built and played; [roles that change in a fight and claims](#6-coordination-roles-that-change-in-a-fight-and-claims) **not done** |
+| 6 | Companions coordinating | signals and claims built, not yet played; role plans built and played; [roles that change in a fight](#6-coordination-roles-that-change-in-a-fight-and-claims) **not done** |
 | 7 | Boss mechanics (MVP survey, A to F) | built; phases, reacting to a summon and revealing a hidden boss played |
 | 8 | [AI raid parties](#8-ai-raid-parties) | **not done** |
 
@@ -369,26 +369,15 @@ family-default lists. Regular shells get roles, and with them role plans.
 **Where to start.** `plans_for` and `requires_ok` in
 `strategy/population_strategy.cpp`; `member_is` for `Who:`.
 
-### Claims
+### Claims (built)
 
-**What is missing.** `OnePerParty` stops two companions firing the same rule at
-the same target at the same moment. Nothing stops two companions using
-*different* rules for the same job: two Lex Aeternas on one boss, both
-crowd-controllers on one monster while another runs free.
-
-**Why not now.** The Phreeoni party had one of each role, so nothing doubled up.
-
-**How it would work.** A rule takes `Claim: <name>` (for example `Claim: lex`). Acting
-on a target puts a party-wide claim on (name, target) for the rule's duration or
-until the target changes. Other companions' rules with the same claim skip a
-claimed target and pick another. The module already keeps party-wide state for
-`OnePerParty` and signals, and claims extend it.
-
-**What it adds.** Parties with two of a role: crowd control spread over
-different monsters, one Lex Aeterna per boss, two tanks holding two monsters.
-
-**Where to start.** The `OnePerParty` bookkeeping in
-`strategy/population_strategy.cpp`.
+`Claim: lex`, or `Claim: { Name: lex, For: 10000 }`, on a rule. Acting puts a
+party-wide claim on the rule's target under that name, for `For` ms (default 5
+s), renewed while the companion keeps acting on it. Any other companion's rule
+with the same claim name passes a claimed target over, and its selector picks
+the next one. This spreads crowd control over different monsters and keeps Lex
+Aeterna to one per boss. Built and loaded; not yet played. See the
+[reference](mods/companion-strategies/reference.md#rules).
 
 ## 8. AI raid parties
 
