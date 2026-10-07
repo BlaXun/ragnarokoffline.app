@@ -14,7 +14,7 @@ how it would work, what it would add, and where to start.
 | 1 | Holding position wins over following | built, played (Phreeoni) |
 | 2 | Leaving hostile ground (`Leave:`) | built, not yet played |
 | 3 | Choosing who to help or fight (selectors, `SetTarget`) | built, played (Phreeoni) |
-| 4 | Items and gear | **not done**: needs [inventories](#inventories-the-foundation) |
+| 4 | Items and gear | [inventories](#inventories-the-foundation) and catalysts built; using items and switching gear **not done** |
 | 5 | [Time and memory](#5-time-and-memory) | **not done** |
 | 6 | Companions coordinating | signals built, not yet played; role plans built and played; [roles that change in a fight and claims](#6-coordination-roles-that-change-in-a-fight-and-claims) **not done** |
 | 7 | Boss mechanics (MVP survey, A to F) | built; phases, reacting to a summon and revealing a hidden boss played |
@@ -158,68 +158,51 @@ Each item below has the same headings, so it can be picked up cold.
 
 ## Inventories: the foundation
 
-**What is missing.** Shells and companions have no inventory of their own that
-anyone manages. A companion's bag holds what the engine hands it (gear, virtual
-ammunition) and what a trade puts there, and only its *worn* gear is saved
-(`cp_companion_persistence`, `gear_detail`). The rest is lost with the shell.
-Nothing restocks it, and the owner cannot see or manage it. On top of that, the
-engine's rAthena patch (`0001`, `skill_get_requirement`) waives every item
-requirement for population characters, so even an item that is there is never
-needed or spent.
+**Built**, behind **Settings → Population → Companion inventory**
+(`population_engine_companion_inventory`, off by default). With it on, a
+recruited companion owns its bag (`runtime/population_shell_inventory.cpp`):
+- Nothing refills it. The engine's potion stock and ammunition top-up are for
+  ambient shells only; a companion drinks and fires what it carries, and drinks
+  any healing or SP potion it has when its level's kind is missing. Ammunition
+  comes from the engine's lists (`population_shell_ammo.cpp`, element-aware) and,
+  when they have nothing for it, from any stack of the right kind it carries
+  (cannonballs and throwing items included).
+- Patch `0033` lifts the `skill_get_requirement` waiver for companions, so rAthena
+  checks and takes their item and ammunition costs as a player's.
+  `pop_skill_state_ok` and the Resurrection check pass over a skill whose items
+  are not in the bag, instead of having it refused on every turn.
+- A trade leaves everything but equipment in the bag; equipment is worn, as
+  before.
+- The whole bag (every unworn stack and the worn ammunition, in full) is saved in
+  `cp_companion_persistence.inventory_detail` and put back on recall. It is
+  written when the gear is (trade, recall, logout) and otherwise at most every
+  10 seconds while it changes. A row saved before this keeps what the recall
+  spawn gives, once.
+- `max_weight` comes right at the end of recall, so the `overweight` event and
+  rAthena's weight limits see the real bag.
 
-**Why not now.** Three decisions belong to the inventory itself, not to
-strategies: where the bag is saved, who fills it (the owner by trade, a shopping
-trip, a virtual supply), and how the owner sees and manages it (the companion
-panel). Making items matter before that would only make companions weaker:
-every catalyst skill would fail on an empty bag.
-
-**How it would work.**
-- Save the bag with the companion, beside its worn gear, so it survives a relog
-  and a recall.
-- Stock it by trade, which already lands items in the companion's bag
-  (patch `0025` snapshots it).
-- Show and manage it in the companion panel.
-- Then stop waiving item requirements for companions in patch `0001`, behind a
-  setting, so ambient shells can keep the waiver.
-
-**What it adds.** The three items below, and real economy: a companion's gems,
-potions and spare gear come from its owner.
-
-**Where to start.** `cp_companion_persistence.sql` and the save and recall code
-in `population_engine.cpp`; `patches/0025-companion-trade-snapshot.patch`;
-`patches/0001-population-engine-hooks.patch` (`skill_get_requirement`);
-`patches/CompanionPanel.*` for the UI.
+**Still missing.**
+- A window for the owner to see the bag and take items back (the companion
+  panel). Until then the bag is filled by trade only.
+- Deleting a saved companion loses its bag.
+- The engine's potion drinking is to become a setting, so a plan can take it
+  over (see Using items).
 
 ### Catalysts for skills
 
-**What is missing.** Skills that cost an item (Blue Gemstone for Resurrection,
-Sanctuary and Magnus, Holy Water for Aspersio, Flame Stone for Blaze Shield)
-are cast for free.
-
-**Why not now.** No inventory: with an empty bag every such skill would fail.
-
-**How it would work.** It is prepared already. Rules mark such casts
-`Consume: true`, and the server checks at load that the skill has an item cost.
-The strategy module has the paying code (`item_cost`, `can_pay`, `pay`) behind
-one switch, `kPayCatalysts`, which is off. With inventories: turn the switch on,
-and stop the patch-`0001` waiver for companions. A `Consume` rule then checks
-the bag before casting and pays when the cast starts. The engine's own rotation
-pays through rAthena as a player does. Rules can react to running low with
-`item_below` (already an event) and, for example, say "out of gems".
-
-**What it adds.** Catalysts become a resource the owner provides, so a
-companion's strongest skills cost something, as they do for players.
-
-**Where to start.** `kPayCatalysts` in `strategy/population_strategy.cpp`;
-`Consume` in [the reference](mods/companion-strategies/reference.md#rules).
-Tables written today need no change.
+**Built** with inventories (with the setting on): a companion's Blue Gemstone, Holy Water or Flame
+Stone comes from its bag, and rAthena takes it when the cast lands, as for a
+player. A `Consume: true` rule needs no switch: `pop_skill_state_ok` refuses the
+cast when the bag lacks the items. `kPayCatalysts` stays off, because it would
+pay a second time. Rules can react to running low with `item_below`.
 
 ### Using items
 
 **What is missing.** Companions use no items: no potions, no Yggdrasil Leaf, no
 Fly Wing, no elemental converters.
 
-**Why not now.** No inventory.
+**Why not now.** The bag exists now, but the owner has no window to stock it
+knowingly; a plan that names items is easier to use once it does.
 
 **How it would work.** A new rule action, `UseItem: <item>` with `Target:`
 (`self`, an ally selector, a dead ally for a Yggdrasil Leaf). It calls rAthena's
@@ -239,7 +222,8 @@ consumables as part of boss plans (a Yggdrasil Berry at Phreeoni's Power Up).
 
 **What is missing.** A companion wears one set of gear whatever it fights.
 
-**Why not now.** No inventory to hold the other sets.
+**Why not now.** The bag can hold the other sets now, but traded equipment is
+worn at once, so there is no way yet to hand a companion a spare set.
 
 **How it would work.** Named gear sets on a plan (`Gear: { ghost: [...] }`) and a
 rule action `Equip: <set>`, which equips the set's pieces from the bag. The

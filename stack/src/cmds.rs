@@ -1313,6 +1313,9 @@ const COMPANION_COLUMNS: &[(&str, &str)] = &[
     // window. An existing row gets the defaults every companion starts with.
     ("rest_below", "TINYINT NOT NULL DEFAULT 30"),
     ("rest_until", "TINYINT NOT NULL DEFAULT 95"),
+    // v13: the companion's own bag beyond its worn gear. NULL on an existing row, which keeps
+    // what the recall spawn gives it until the first save makes that its own.
+    ("inventory_detail", "TEXT NULL DEFAULT NULL"),
 ];
 
 /// Indexes added after the table first shipped, as (name, columns).

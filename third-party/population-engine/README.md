@@ -554,6 +554,37 @@ one and a recalled companion gets its restored level's kind, and it is topped
 up when a rest ends at the upper mark. A shell back from a selling trip is
 spawned anew, so it has a fresh stock too.
 
+### A companion lives on its bag
+
+Every shell has rAthena's inventory, and the engine used it as a free supply:
+the potions above, ammunition topped up before each attack
+(`population_shell_ammo.cpp`), and every item cost waived by the early return
+0001 puts in `skill_get_requirement`. With `population_engine_companion_inventory`
+on (Settings → Population → Companion inventory, off by default, registered by
+patch 0033), a recruited companion is taken off all three, in
+`runtime/population_shell_inventory.cpp`:
+
+- the potion stock and the ammunition top-up return early for it, so it drinks
+  and fires what it carries; `pop_shell_drink` takes any healing or SP potion it
+  has when its level's kind is missing;
+- `patches/0033-companion-inventory.patch` lets it fall through the
+  waiver, so rAthena checks and takes its catalysts and ammunition. What else the
+  waiver relaxed (max-HP triggers, required statuses and equipped items, the
+  weapon unless `population_engine_skill_weapon_check` is on) is relaxed again at
+  the end of the function, for it alone;
+- the combat file's skill checks pass over a skill whose items are not in the
+  bag, Resurrection included;
+- when the ammo code's lists have nothing for its weapon or skill, it equips
+  the strongest fitting stack it carries
+  (`population_shell_inventory_equip_carried_ammo`): arrows and bullets the
+  lists leave out, cannonballs, throwing items;
+- a trade leaves everything but equipment with it;
+- the bag is saved in `cp_companion_persistence.inventory_detail` beside the
+  worn gear and restored on recall, replacing what the recall spawn stocked.
+
+Ambient shells keep the free supply, and so do companions while the setting is
+off. A bag saved while it was on stays in the row, untouched, until it is on again.
+
 ## Measured cost
 
 Alpine/musl, arm64, packetver 20221005, map server only, 4 GiB guest:
