@@ -340,18 +340,39 @@ static std::vector<std::string> scalars(const ryml::NodeRef &node)
 	return out;
 }
 
+/// A number written in a mod's table, up to `max`. False for anything longer or larger: the
+/// name then names nothing, where std::stoul would throw (and stop the map server) on a long
+/// one and a cast would wrap a large one round to another id (65537 to skill 1).
+static bool number_upto(const std::string &name, uint64 max, uint64 &out)
+{
+	if (name.empty() || name.size() > 20)
+		return false;
+	uint64 v = 0;
+	for (const char c : name) {
+		if (c < '0' || c > '9')
+			return false;
+		if (v > (max - static_cast<uint64>(c - '0')) / 10)
+			return false;
+		v = v * 10 + static_cast<uint64>(c - '0');
+	}
+	out = v;
+	return true;
+}
+
 static uint16 skill_of(const std::string &name)
 {
-	if (is_number(name))
-		return skill_db.find(static_cast<uint16>(std::stoul(name))) != nullptr ? static_cast<uint16>(std::stoul(name)) : 0;
+	if (is_number(name)) {
+		uint64 id = 0;
+		return number_upto(name, UINT16_MAX, id) && skill_db.find(static_cast<uint16>(id)) != nullptr ? static_cast<uint16>(id) : 0;
+	}
 	return skill_name2id(name.c_str());
 }
 
 static uint32 mob_of(const std::string &name)
 {
 	if (is_number(name)) {
-		const uint32 id = static_cast<uint32>(std::stoul(name));
-		return mob_db.find(id) != nullptr ? id : 0;
+		uint64 id = 0;
+		return number_upto(name, INT32_MAX, id) && mob_db.find(static_cast<uint32>(id)) != nullptr ? static_cast<uint32>(id) : 0;
 	}
 	const std::shared_ptr<s_mob_db> db = mobdb_search_aegisname(name.c_str());
 	return db != nullptr ? db->id : 0;
@@ -360,8 +381,8 @@ static uint32 mob_of(const std::string &name)
 static t_itemid item_of(const std::string &name)
 {
 	if (is_number(name)) {
-		const t_itemid id = static_cast<t_itemid>(std::stoul(name));
-		return item_db.exists(id) ? id : 0;
+		uint64 id = 0;
+		return number_upto(name, UINT32_MAX, id) && item_db.exists(static_cast<t_itemid>(id)) ? static_cast<t_itemid>(id) : 0;
 	}
 	const std::shared_ptr<item_data> id = item_db.search_aegisname(name.c_str());
 	return id != nullptr ? id->nameid : 0;
@@ -374,9 +395,12 @@ static int32 job_of(const std::string &name)
 	if (lower(name) == "all")
 		return kAllJobs;
 	int64 value = 0;
-	if (is_number(name))
-		value = std::stol(name);
-	else if (!script_get_constant(upper("JOB_" + name).c_str(), &value) && !script_get_constant(name.c_str(), &value))
+	uint64 number = 0;
+	if (is_number(name)) {
+		if (!number_upto(name, UINT16_MAX, number))
+			return -2;
+		value = static_cast<int64>(number);
+	} else if (!script_get_constant(upper("JOB_" + name).c_str(), &value) && !script_get_constant(name.c_str(), &value))
 		return -2;
 	return job_db.exists(static_cast<uint16>(value)) ? static_cast<int32>(value) : -3;
 }
@@ -506,6 +530,7 @@ public:
 	}
 
 	uint64 parseBodyNode(const ryml::NodeRef &node) override;
+	uint64 parseEntry(const ryml::NodeRef &node);
 	void loadingFinished() override;
 
 private:
@@ -1283,6 +1308,11 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		rule->cooldown_ms = 10000;
 	if (!rule->signal.empty() && rule->event == Event::None && rule->cooldown_ms == 0)
 		rule->cooldown_ms = 5000;
+	// An event rule that speaks or signals gets a short one too: two `On: signal` rules that
+	// signal each other would otherwise go back and forth every tick, and with Say flood
+	// party chat. Long enough to stop that, short enough to still answer the event.
+	if ((!rule->say.empty() || !rule->signal.empty()) && rule->event != Event::None && rule->cooldown_ms == 0)
+		rule->cooldown_ms = 2000;
 	return rule;
 }
 
@@ -1480,7 +1510,21 @@ void StrategyDatabase::merge_job(const ryml::NodeRef &node, const std::vector<ui
 	}
 }
 
+/// One entry, guarded. ryml reports a node of the wrong shape (a list where a map belongs:
+/// `Requires: [AL_HEAL]`) by throwing, from deep inside a lookup, and YamlDatabase lets it
+/// through -- so a mistake in any mod's table would stop the map server at boot or reload.
+/// Here it is that entry's warning, and the rest of the table loads.
 uint64 StrategyDatabase::parseBodyNode(const ryml::NodeRef &node)
+{
+	try {
+		return this->parseEntry(node);
+	} catch (const std::exception &e) {
+		this->invalidWarning(node, "This entry is shaped wrong (%s) and is skipped; check its lists and maps against the reference.\n", e.what());
+		return 0;
+	}
+}
+
+uint64 StrategyDatabase::parseEntry(const ryml::NodeRef &node)
 {
 	this->warn_unknown_keys(node, { "Mob", "Mobs", "Encounter", "Targeting", "Jobs" }, "an entry");
 	std::vector<std::string> names;
@@ -2670,6 +2714,14 @@ static const char *cast(Turn &t, const Rule &rule, block_list *target, uint16 id
 	return "";
 }
 
+/// Whether the walk the companion is on is one a rule started (hold_position marks it). A walk
+/// the engine started -- following the owner -- is not the rule's, and must not count as the
+/// rule having acted: that ended the turn without retreating.
+static bool rule_walking(const Turn &t)
+{
+	return DIFF_TICK(t.tick, t.st->hold_until) < 0;
+}
+
 static const char *retreat(Turn &t, const Rule &rule, const RuleState &rs)
 {
 	map_session_data *sd = t.sd;
@@ -2677,7 +2729,7 @@ static const char *retreat(Turn &t, const Rule &rule, const RuleState &rs)
 	// stunned shell was walked away. Players and monsters are checked before it; so are rules.
 	if (!unit_can_move(sd))
 		return nullptr;
-	if (unit_is_walking(sd))
+	if (unit_is_walking(sd) && rule_walking(t))
 		return ""; // already on its way; let it arrive
 	if (rule.retreat == Retreat::Owner) {
 		if (t.owner == nullptr)
@@ -2734,7 +2786,7 @@ static const char *keep_away(Turn &t, const Rule &rule, const RuleState &rs, blo
 		far_enough = true;
 		return "";
 	}
-	if (unit_is_walking(sd))
+	if (unit_is_walking(sd) && rule_walking(t))
 		return ""; // already on its way
 	const map_data *md = map_getmapdata(sd->m);
 	if (md == nullptr)
@@ -3017,6 +3069,23 @@ static void hold_position(Turn &t)
 	t.st->hold_until = t.tick + 600;
 }
 
+/// Whether a recruited companion's mode lets a rule pick `mob` itself, as the engine's own
+/// targeting does (population_strategy_target): Passive picks no monster, Defensive only one
+/// already in the party's fight -- the owner's target, or one hitting a party member.
+static bool mode_allows_enemy(const Turn &t, const block_list *mob)
+{
+	map_session_data *sd = t.sd;
+	if (mob == nullptr || mob->type != BL_MOB || !population_engine_is_recruited_companion(sd))
+		return true;
+	if (sd->pop.companion_mode == PopulationCompanionMode::Attack)
+		return true;
+	if (sd->pop.companion_mode == PopulationCompanionMode::Passive)
+		return false;
+	const mob_data *md = reinterpret_cast<const mob_data *>(mob);
+	const unit_data *owner_ud = t.owner != nullptr ? unit_bl2ud(t.owner) : nullptr;
+	return (owner_ud != nullptr && owner_ud->target == md->id) || (md->target_id != 0 && is_party(sd, md->target_id));
+}
+
 static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &ps, bool do_skills, bool attack_only)
 {
 	map_session_data *sd = t.sd;
@@ -3046,6 +3115,12 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		}
 	}
 	block_list *target = resolve_target(t, rule, rs, range);
+	// A monster the rule picked itself: the companion's mode decides, as for the engine's own
+	// choice. (The current target, t.enemy, already went through it.)
+	if (rule.sel.kind == Selector::Kind::Enemy && target != nullptr && !mode_allows_enemy(t, target)) {
+		trace(sd, *t.st, t.tick, "rule %s: %s left alone (companion mode)", rule.name.c_str(), status_get_name(*target));
+		return Outcome::Skipped;
+	}
 	if (rule.cast_skill != 0 && target == nullptr && !(skill_get_inf(rule.cast_skill) & INF_SELF_SKILL))
 		return Outcome::Skipped;
 	if ((rule.sel.kind != Selector::Kind::None || rule.set_target) && target == nullptr)
@@ -3127,7 +3202,13 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 			trace(sd, *t.st, t.tick, "rule %s: %s not cast (another plan's Ban)", name, skill_get_desc(skill));
 			return Outcome::Skipped;
 		}
+		// An instant cast can kill the target, and a monster with no spawn entry (a slave, a
+		// summon) is freed as it dies, before cast() returns: hold ids across it, never pointers.
+		const int32 target_id = target != nullptr ? target->id : 0;
+		const int32 enemy_id = t.enemy != nullptr ? t.enemy->id : 0;
 		const char *why = cast(t, rule, target, skill);
+		target = target_id != 0 ? map_id2bl(target_id) : nullptr;
+		t.enemy = enemy_id != 0 ? map_id2bl(enemy_id) : nullptr;
 		if (why == nullptr)
 			return Outcome::Skipped;
 		if (*why != '\0') {
@@ -3135,7 +3216,8 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 			return Outcome::Skipped;
 		}
 		trace(sd, *t.st, t.tick, "rule %s: %s on %s (SP %u/%u)", name, skill_get_desc(skill),
-			target != nullptr ? status_get_name(*target) : "self", sd->battle_status.sp, sd->battle_status.max_sp);
+			target != nullptr ? status_get_name(*target) : target_id != 0 ? "a target now gone" : "self",
+			sd->battle_status.sp, sd->battle_status.max_sp);
 		acted = true;
 	} else if (rule.retreat != Retreat::None) {
 		const char *why = retreat(t, rule, rs);
@@ -3574,9 +3656,19 @@ bool population_strategy_handles_resurrection(map_session_data *sd)
 		};
 		if (revives(p.plan->rules))
 			return true;
-		for (const auto &st : p.plan->strategies)
-			if (revives(st.second.rules))
-				return true;
+		// Only the strategy the companion is in now (or will start in): a revive rule kept
+		// for a later phase must not stand the engine's own revive aside in this one.
+		const std::string *active = &p.plan->start;
+		const auto shell = g_shells.find(sd->id);
+		if (shell != g_shells.end()) {
+			const auto ps = shell->second.plans.find(p.key);
+			if (ps != shell->second.plans.end() && ps->second.started
+					&& (std::get<0>(p.key) == kAllMobs || ps->second.fight == p.instance))
+				active = &ps->second.active;
+		}
+		const auto it = p.plan->strategies.find(*active);
+		if (it != p.plan->strategies.end() && revives(it->second.rules))
+			return true;
 	}
 	return false;
 }

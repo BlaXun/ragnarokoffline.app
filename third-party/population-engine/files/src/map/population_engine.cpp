@@ -5047,10 +5047,11 @@ TIMER_FUNC(population_engine_global_combat_timer)
 		// so party Resurrection and Yggdrasil Leaf can target the original actor.
 		if (pc_isdead(sd))
 			continue;
-		// RAGNAROKMAC: nor does one that cannot move (petrified, frozen, asleep, stunned) take a
-		// turn: rAthena's unit_walktoxy does not check it, so following, chasing and the low-HP
-		// flee walked a Stone Cursed companion away.
-		if (sd->sc.cant.move)
+		// RAGNAROKMAC: nor does one that can do nothing at all (petrified, frozen, asleep, stunned:
+		// no moving, casting or attacking). Only all three: Ankle Snare, Spider Web, Madness
+		// Canceller and Intensive Aim stop movement alone, and a companion under them still fights
+		// -- and has to, to turn a toggle like Intensive Aim back off.
+		if (sd->sc.cant.move && sd->sc.cant.cast && sd->sc.cant.attack)
 			continue;
 		// Town-origin Wander/Support shells do not normally own a combat session.
 		// Start one only after real party membership exists so every recruited

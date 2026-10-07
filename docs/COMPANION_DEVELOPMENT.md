@@ -191,13 +191,16 @@ What the Phreeoni playtests taught about how the strategy module, the engine's
 own companion behaviour and rAthena fit together. Read before changing the
 module or the hooks.
 
-**rAthena does not check whether a unit may move when the server walks it.**
-`unit_walktoxy` / `unit_walktobl` never consult `unit_can_move` or `sc.cant.move`:
-clients are checked before their walk request, monsters in their AI, but server
-code that walks a shell is not. A Stone Cursed companion was walked off the screen
-by following, chasing and the low-HP flee. Every walk the engine or the module
-issues for a shell must check first; the companion loop now skips a companion
-with `sc.cant.move` entirely, and every movement rule asks `unit_can_move`.
+**A companion that can do nothing takes no turn.** A Stone Cursed companion was
+moved off the screen during the playtests. On the pinned rAthena, `unit_walktoxy`
+and `unit_walktobl` do check `unit_can_move` before starting a walk (unless
+`unit_walktoxy` is passed `flag&2`), so the move came from somewhere else: a walk
+already under way, or the follow code's warp to the owner. The companion loop
+skips a companion that can neither move, cast nor attack (petrified, frozen,
+asleep, stunned), and every movement rule asks `unit_can_move`. It does **not**
+skip one that can only not move: Ankle Snare, Spider Web, Madness Canceller and
+Intensive Aim stop movement alone, and a companion under them still fights (and
+has to, to turn Intensive Aim back off).
 
 **Where the strategy turn sits in `population_shell_combat_process_tick` decides
 what it starves.** A rule that acts ends the turn. Before party Resurrection, it

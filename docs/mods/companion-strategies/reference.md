@@ -262,10 +262,10 @@ And then does one thing:
 | `KeepDistance: { Min, Max }` | A band: closer than `Min`, step out; further than `Max`, come back in (to stay within a spell's range). Within it, the rule passes. Measured from the rule's selector pick when it has one: `Target: { Ally: attacked }` keeps a healer within reach of whoever is hit, `Target: { Enemy: boss }` keeps it out of the boss's. |
 | `KeepDistance: n` | Closer than `n` cells to the monster: walks to the nearest open cell at least `n` away. Already that far: the rule passes, and the next rule (a cast) runs. |
 | `Hold: true` | Stands still, without chasing or walking to the target. Without it, a turn no rule took is an ordinary turn, and an ordinary turn walks up to the target. |
-| `Say:` text, `Channel: party` / `area` | Speaks. `{name}` `{owner}` `{target}` `{ally}` `{skill}` `{hp}` are filled in. A `Say` rule without an event waits 10 s between lines unless it has a `Cooldown`. |
+| `Say:` text, `Channel: party` / `area` | Speaks. `{name}` `{owner}` `{target}` `{ally}` `{skill}` `{hp}` are filled in. A `Say` rule without an event waits 10 s between lines, and one with an event 2 s, unless it has a `Cooldown`. |
 | `SetTarget: true` | Makes the rule's monster (a selector's, or `source`) the companion's combat target, held for 3 s and renewed while the rule applies. Alone, it does not end the turn. |
 | `Switch:` strategy | Makes another strategy of the same plan active. |
-| `Signal:` name | Tells the party's other companions, who react with `On: { Event: signal, Name }`. A signal rule without an event waits 5 s between sends unless it has a `Cooldown`. |
+| `Signal:` name | Tells the party's other companions, who react with `On: { Event: signal, Name }`. A signal rule without an event waits 5 s between sends, and one with an event (an answer to another signal) 2 s, so two rules can't signal each other every tick, unless it has a `Cooldown`. |
 
 A companion that cannot move (petrified, frozen, stunned: whatever rAthena's
 `unit_can_move` refuses) skips every movement rule; it does not walk away while
