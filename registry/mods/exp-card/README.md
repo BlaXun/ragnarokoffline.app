@@ -13,23 +13,27 @@ content the player is fighting.
 
 Exp per card (at a 1x rate — see [Exp rates](#exp-rates)) is about **5% of
 the next level at the lowest base level that may use it**, and about 3% nine
-levels later, measured against Renewal's exp table for a second job. Tiers 1
-to 4 grow about 2× a level; from tier 5 the curve is flatter, because a card
-that kept doubling outran the levels it is meant for (before 1.2.0 tiers 6–9
-were 9–14% of a level each).
+levels later, measured against each era's own exp table for a second job. In Renewal
+tiers 1 to 4 grow about 2× a level and the curve flattens from tier 5 (before
+1.2.0 tiers 6–9 were 9–14% of a level each). Pre-renewal levels cost far less
+early and far more late, so it has its own amounts (`pre-re/db/item_db.yml`,
+laid over the mod by `prerenewalFolder`).
 
-| Level | Exp at 1x | Required base level | Item ids (base / job) |
-|---|---|---|---|
-| 1  | 100    | 1  | 50051 / 50061 |
-| 2  | 250    | 11 | 50052 / 50062 |
-| 3  | 500    | 21 | 50053 / 50063 |
-| 4  | 1,000  | 31 | 50054 / 50064 |
-| 5  | 1,500  | 41 | 50055 / 50065 |
-| 6  | 2,250  | 51 | 50056 / 50066 |
-| 7  | 3,000  | 61 | 50057 / 50067 |
-| 8  | 5,500  | 71 | 50058 / 50068 |
-| 9  | 11,000 | 81 | 50059 / 50069 |
-| 10 | 30,000 | 91 | 50060 / 50070 |
+| Level | Exp at 1x, Renewal | Exp at 1x, pre-renewal | Required base level | Item ids (base / job) |
+|---|---|---|---|---|
+| 1  | 100    | 5       | 1  | 50051 / 50061 |
+| 2  | 250    | 20      | 11 | 50052 / 50062 |
+| 3  | 500    | 95      | 21 | 50053 / 50063 |
+| 4  | 1,000  | 450     | 31 | 50054 / 50064 |
+| 5  | 1,500  | 2,000   | 41 | 50055 / 50065 |
+| 6  | 2,250  | 6,500   | 51 | 50056 / 50066 |
+| 7  | 3,000  | 20,000  | 61 | 50057 / 50067 |
+| 8  | 5,500  | 80,000  | 71 | 50058 / 50068 |
+| 9  | 11,000 | 200,000 | 81 | 50059 / 50069 |
+| 10 | 30,000 | 580,000 | 91 | 50060 / 50070 |
+
+An app older than 1.4.3 does not know era folders and gives a pre-renewal
+server the Renewal amounts, as before 1.2.0.
 
 Base cards grant only base exp; Job cards grant only job exp. The two are
 symmetric — a Base Lv 10 gives 30,000 base exp, a Job Lv 10 gives 30,000
@@ -43,6 +47,7 @@ it in the bag until they reach the level. Prevents a level 20 alt from
 downing a Lv 10 base card for several levels in one click.
 
 If you want a different curve, edit the twenty scripts in `db/item_db.yml`
+(and `pre-re/db/item_db.yml` for pre-renewal)
 — the tooltips name no number, so nothing else needs to change.
 
 ## How drops work

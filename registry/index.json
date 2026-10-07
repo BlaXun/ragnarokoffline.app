@@ -362,11 +362,11 @@
       "files": [
         {
           "path": "CHANGELOG.md",
-          "sha256": "61aa7d7e16b0ff83d7fe4d9ea9a417086672f3894172bb0369a4335e64d15602"
+          "sha256": "3ef03f010dafe0f6b184c5f334e30af32bca13cf6603c8ca8543d28b7f93730c"
         },
         {
           "path": "README.md",
-          "sha256": "a9706b97b7672236d38d327fb260965517bca1e1cf9ca8f50c8b1053a7fbe823"
+          "sha256": "c287912b99d483faae7d82023f65e25c9f61665c11722e4f3e789c005d927cff"
         },
         {
           "path": "System/itemInfo.lua",
@@ -386,11 +386,15 @@
         },
         {
           "path": "mod.json",
-          "sha256": "3ea74d9acbbd61734c79344885222d4de1613ecf4a56daf23dfde754001c3b59"
+          "sha256": "3cfcbb010fb603f1007c1e77db286b54ed4924a20c804c8f62cc392b68dd7dc8"
         },
         {
           "path": "npc/exp_card.txt",
           "sha256": "e06490d46d57710a922eb67fffdb3f584e98725fb8bebb1a4264d8b0536bd774"
+        },
+        {
+          "path": "pre-re/db/item_db.yml",
+          "sha256": "63a86e7695bbcce29ea822c8b7833fceed8aa116c38691ea5595a4ac26cb93f0"
         }
       ]
     },

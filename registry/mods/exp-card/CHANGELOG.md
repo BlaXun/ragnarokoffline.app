@@ -2,6 +2,7 @@
 - Higher-tier cards give less exp. Every card is now about 5% of the next level at the lowest base level that can use it, as intended; tiers 6 to 9 were 9–14% of a level each.
 - New amounts at 1x: Lv 5 1,500 (was 2,000), Lv 6 2,250 (was 4,000), Lv 7 3,000 (was 7,500), Lv 8 5,500 (was 15,000), Lv 9 11,000 (was 30,000), Lv 10 30,000 (was 60,000).
 - Levels 1 to 4 are unchanged. Amounts still scale with the server's Base/Job EXP rates. Cards already in a bag give the new amount when used.
+- Pre-renewal has its own amounts, also about 5% of a level where each card becomes usable: 5, 20, 95, 450, 2,000, 6,500, 20,000, 80,000, 200,000 and 580,000 for Lv 1 to Lv 10. Until now it used the Renewal ones, which made low cards worth whole levels and high cards almost nothing. Needs app 1.4.3 or later; older apps keep the Renewal amounts.
 
 ## 1.1.0
 - Card exp scales with the server's Base and Job EXP rates, so a card stays the same share of what kills give at any rate.
