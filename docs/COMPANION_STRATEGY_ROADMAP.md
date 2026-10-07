@@ -351,7 +351,7 @@ patterns.
 `InStrategy` and `InFight` (ms). They are not `When:` tokens, which would have
 meant changing the engine's shared condition parser. Time left on a status is a
 selector option, `{ Ally: missing, Status, Expiring: ms }`. companion-roles uses
-it: the healer renews Blessing, Increase AGI and Impositio with 10 s left.
+it: the healer renews Blessing, Increase AGI and Impositio with 3 s left.
 Risks 2, 3 and 6 are covered by `tests/companion-strategy-time.test.cjs`
 (timestamps, statuses without a timer, the parser knowing the keys) and by the
 load test. A playtest still has to confirm them in a fight.

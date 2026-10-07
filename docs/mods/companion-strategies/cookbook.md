@@ -71,7 +71,7 @@ help (undead armor) is passed over automatically.
 - Name: blessing
   Priority: 50
   Cast: AL_BLESSING
-  Target: { Ally: missing, Status: SC_BLESSING, Expiring: 10000 }  # without it, or under 10 s left
+  Target: { Ally: missing, Status: SC_BLESSING, Expiring: 3000 }   # without it, or under 3 s left
   When: self_sp_ge120
 ```
 
