@@ -498,7 +498,7 @@ test('a mod installed from the mod list hears of a newer version there', () => {
     { name: 'prontera-vendors', version: '1.1.0' },
     { name: 'autoloot', version: '1.0.0' },
     { name: 'future-mod', version: '1.0.0' },
-    { name: 'standart-npc', version: '4.9.0' },   // a source entry now: its releases answer, not this
+    { name: 'standart-npc', version: '4.9.0' },   // a source entry, but this copy has no source record
     { name: 'my-own-mod', version: '0.1' },       // not in the list at all
   ];
   const out = source.registryUpdates(installed, listing, { appVersion: '1.4.9' });
@@ -507,6 +507,9 @@ test('a mod installed from the mod list hears of a newer version there', () => {
     { name: 'autoloot', listed: true, registry: true, installed: '1.0.0', latest: '1.0.0', update: false },
     { name: 'future-mod', listed: true, registry: true, installed: '1.0.0', latest: '2.0.0', update: false,
       needsApp: 'needs app >=9.0.0, and this is 1.4.9' },
+    // Never offered an update -- its releases can't be compared with a copy that
+    // didn't come from them -- but reported, so Settings can say why.
+    { name: 'standart-npc', localCopy: true, repo: 'MondoTruth/standart-npc', installed: '4.9.0', update: false },
   ]);
   // A version the installed mod.json does not say counts as older.
   assert.strictEqual(source.registryUpdates([{ name: 'autoloot', version: '' }], listing, { appVersion: '1.4.9' })[0].update, true);
