@@ -23,7 +23,7 @@
 # For: shells or all) the regular AI characters too. It ships empty: with no
 # rules, everyone behaves exactly as without it. Mods add rules through
 # db/import/population_strategy.yml (a mod ships db/population_strategy.yml).
-# The full reference is docs/mods/companion-strategies.md in the app.
+# The full reference is docs/mods/companion-strategies/reference.md in the app.
 #
 # - Mob:              AegisName, mob id or All. Mobs: [list] for several.
 #   Encounter:        true -- its plans apply while one is near (14 cells), whatever the

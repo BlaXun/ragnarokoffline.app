@@ -1,7 +1,7 @@
 # Companion strategies: roadmap
 
 What companion strategies (`db/population_strategy.yml`,
-[docs/mods/companion-strategies.md](mods/companion-strategies.md)) still need
+[docs/mods/companion-strategies/](mods/companion-strategies/README.md)) still need
 before companions can beat a boss **together** rather than each fighting well
 on its own. Written down before building, so each step is judged against the
 whole.
@@ -216,6 +216,13 @@ Until then:
   each boss's own mechanics. Rotation is layered: a plan saying `false` wins,
   then one saying `true`, then the default. Taken from the Phreeoni plan; not
   yet played against a second boss.
+- **Agreed, not built:** a `Roles:` step that works each party member's role out
+  every turn from job, status and stats (`Stats: { Flee: ">=180" }`): a Monk
+  under Steel Body tanks, a high-Flee Assassin tanks. First match wins, most
+  specific scope first; a typed Duty replaces the defaults, and an entry marked
+  `OverridesDuty` can still override it while its condition holds; a short
+  minimum hold stops flapping. All in the strategy module. Regular shells get
+  roles this way too.
 - **Built:** kinds of monster, `Mob: { Race, Element }`, between a particular
   monster and `Boss`, with `Race`/`Element` on Enemy selectors and `Count`. A
   specific plan can `Disable` a broader plan's rule by name. Examples: Undead

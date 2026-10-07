@@ -137,7 +137,7 @@ between (a small state machine per plan). Rules react to events (a monster
 starting a cast, a party-chat line, a party member dying), to the engine's own
 `population_skill_db.yml` conditions, and to a few of their own (status charges,
 the companion's own ground units). They cast, step back, keep their distance,
-hold still, speak and switch strategy. `docs/mods/companion-strategies.md` is the
+hold still, speak and switch strategy. `docs/mods/companion-strategies/` is the
 reference. `examples/mods/companion-roles` (each role at any boss) and
 `examples/mods/companion-tactics` (particular bosses) are worked sets.
 

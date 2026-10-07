@@ -3,7 +3,7 @@
 What each kind of recruited companion does at **any** boss, and a few things it
 does in every fight. It is one table, `db/population_strategy.yml`, and nothing
 else.
-[docs/mods/companion-strategies.md](../../../docs/mods/companion-strategies.md)
+[docs/mods/companion-strategies/](../../../docs/mods/companion-strategies/README.md)
 is the reference. [companion-tactics](../companion-tactics) adds particular
 bosses on top of it.
 

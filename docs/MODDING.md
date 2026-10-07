@@ -500,7 +500,7 @@ in a directory nothing opens.
 **How recruited companions fight** is a table a mod can ship as well:
 `db/population_strategy.yml` gives them per-monster, per-job and per-build rules,
 with strategies they switch between.
-[docs/mods/companion-strategies.md](mods/companion-strategies.md) is its
+[docs/mods/companion-strategies/](mods/companion-strategies/README.md) is its
 reference. [`examples/mods/companion-roles`](../examples/mods/companion-roles)
 is what each kind of companion does at any boss, and
 [`examples/mods/companion-tactics`](../examples/mods/companion-tactics) adds
