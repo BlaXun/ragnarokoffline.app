@@ -274,7 +274,7 @@ consumables as part of boss plans (a Yggdrasil Berry at Phreeoni's Power Up).
 **What is wanted.** An Archer fighting an earth monster checks whether it carries
 Fire Arrows. If so, it equips them, and afterwards goes back to its default
 ammunition. The same goes for a Gunslinger's bullets and spheres, and a Ninja's
-shuriken and kunai.
+shuriken and its elemental kunai.
 
 **What exists already.** The engine does the element part on its own
 (`runtime/population_shell_ammo.cpp`):
@@ -300,27 +300,57 @@ companion's owner never provides it.
    companion actually carries ("if it has Fire Arrows"). It should stop when a
    kind runs out, and the virtual stock becomes a setting.
 
-**Why not now.** Item 2 needs inventories. Item 1 would work on today's virtual
-stock, but no plan has needed it: the automatic choice by element already covers
-the common case.
+3. **Running out.** `item_below` reacts to one particular item. Nothing reacts to
+   "low on *any* ammunition my weapon can use", and with a real inventory that is
+   what matters: a Hunter with no arrows left should say so and fall back.
 
-**How it would work.**
-- An ammunition preference on a plan or strategy, applied by the engine's
-  choice: `Ammo: { Prefer: [Silver_Arrow], Avoid: [Poison_Arrow] }`. Prefer
-  outranks the element bonus; Avoid removes a kind. That needs the engine's
-  ammunition choice to ask the strategy module: one more call, like `Allow`.
-- Or a rule action, `Equip: Fire_Arrow`, with `When`/`Enemy: { Element: Earth }`
-  conditions, and a rule without it to switch back. That's simpler to read, but
-  it fights the engine's own choice every turn unless the engine yields to it.
-- With inventories: the engine's choice only considers what is in the bag, and
-  `item_below` lets a rule react to running low ("out of Fire Arrows, back to
-  normal ones").
+**Why not now.** It waits for the real inventory, which is being built as its
+own PR; that one is to be accepted first. With today's virtual stock nothing
+ever runs out (it refills below 100), and the automatic choice by element
+already covers the common case.
 
-**What it adds.** Ammunition as part of a boss plan, and as a resource the owner
-provides.
+**How it would work** (agreed shape):
+- **`Ammo: { Prefer: [...], Avoid: [...] }`** on a plan or a strategy, layered
+  like `Allow`: the most specific plan that says something decides. The
+  engine's ammunition choice asks the strategy module for each kind it scores:
+  one more marked call in `pe_shell_ammochange`, the size of the `Allow` hook.
+  `Prefer` adds a bonus that outranks the element bonus; `Avoid` drops a kind.
+  Examples: "Silver Arrows against the undead", "never Poison Arrows here",
+  "save the rare ones for the boss".
+- **An "out of ammunition" event and condition:** `On: { Event: ammo_below,
+  Value: 50 }` fires once when the total of ammunition the current weapon can
+  use drops below `Value`. `Ammo: { Below: 50 }` as a rule condition holds while
+  it is that low, so a rule can keep acting on it: "out of arrows: stay by the
+  owner and plain-attack", "say so once".
+- **With the real inventory:** the engine chooses only from what is in the bag,
+  and the virtual stock becomes a setting.
+
+**Effort.** About the size of `Claim`: a plan key, one engine call, the event
+and condition, and a source-pin test.
+
+**Risks, and the guard for each.**
+1. **An `Avoid` that removes every usable kind** would leave a ranged class
+   unable to shoot. Guard: if nothing is left, ignore `Avoid` for that attack
+   and say so in the trace.
+2. **A preferred kind the target absorbs or resists** (Fire Arrows at a fire
+   monster) would heal it or do nothing. Guard: a preference never overrides the
+   engine's "avoid what the target resists" check (`pe_shell_elemallowed`); it
+   only reorders the allowed kinds.
+3. **Skills that need a particular ammunition** have their own path
+   (`population_shell_equip_ammo_for_skill`). Guard: leave it alone; the
+   preference applies only to the normal choice.
+4. **More swapping** when a preference disagrees with the element choice. Low
+   risk: swapping is cheap, and rAthena's swap delay (after Desperado, Arrow
+   Vulcan) is already respected (`canequip_tick`).
+5. **Regular AI characters** are only affected through plans marked
+   `For: shells` or `For: all`, as with everything else.
+
+**What it adds.** Ammunition as part of a boss plan, as a resource the owner
+provides, and a sensible reaction when it runs out.
 
 **Where to start.** `pe_shell_ammochange` in `runtime/population_shell_ammo.cpp`
-(the choice); the strategy module for the preference.
+(the choice); the strategy module for `Ammo:` and `ammo_below`; the inventory PR
+for what is in the bag.
 
 ### Switching gear to the situation
 
