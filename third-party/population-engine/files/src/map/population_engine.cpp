@@ -5319,7 +5319,9 @@ static bool pop_mod_vendor_done(const map_session_data* sd) {
 		return !sd->state.buyingstore;
 	if (sd->state.vending)
 		return sd->vend_num <= 0;
-	return battle_config.population_engine_vending_enable != 0;
+	// Only a stall its supply kept shut: one that failed to open for any other reason stands
+	// idle as before, rather than being re-rolled every rotation tick.
+	return battle_config.population_engine_vending_enable != 0 && sd->pop.vendor_supply_empty;
 }
 
 TIMER_FUNC(population_engine_vendor_rotation_timer)
@@ -7052,6 +7054,9 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 				for (const auto &s : kDefaultStock)
 					stock.push_back(s);
 			}
+
+			// RAGNAROKMAC: shut by its mod's supply, not by a failure (pop_mod_vendor_done).
+			sd->pop.vendor_supply_empty = supply_short && stock.empty();
 
 			// Grant MC_VENDING and cart.
 			pc_skill(sd, MC_VENDING, 10, ADDSKILL_PERMANENT_GRANTED);
