@@ -269,6 +269,59 @@ consumables as part of boss plans (a Yggdrasil Berry at Phreeoni's Power Up).
 **Where to start.** A new action in `parse_rule` and `run_rule`
 (`strategy/population_strategy.cpp`), modelled on `Cast`.
 
+### Choosing ammunition: Archers, Gunslingers, Ninjas
+
+**What is wanted.** An Archer fighting an earth monster checks whether it carries
+Fire Arrows. If so, it equips them, and afterwards goes back to its default
+ammunition. The same goes for a Gunslinger's bullets and spheres, and a Ninja's
+shuriken and kunai.
+
+**What exists already.** The engine does the element part on its own
+(`runtime/population_shell_ammo.cpp`):
+- every shell is stocked with each kind of ammunition its weapon uses (arrows,
+  bullets, spheres, shuriken, kunai), 500 of each, refilled below 100;
+- before each attack, it equips the kind that is strongest against the target's
+  element (`pe_shell_elemstrong`) and avoids one the target resists
+  (`pe_shell_elemallowed`), so an Archer already shoots Fire Arrows at an earth
+  monster;
+- skills that need a particular ammunition get it
+  (`population_shell_equip_ammo_for_skill`).
+
+This is a virtual supply, like the engine's potions. Nothing limits it, and a
+companion's owner never provides it.
+
+**What is missing.**
+1. **Plan control.** A plan can't say which ammunition to prefer or avoid.
+   Examples: "Silver Arrows against the undead even though Fire would do more",
+   "never Poison Arrows here", "save the rare ones for the boss". A plan also
+   can't name a default to return to: today, the next target's element simply
+   decides again.
+2. **Real ammunition.** With inventories, the choice should come from what the
+   companion actually carries ("if it has Fire Arrows"). It should stop when a
+   kind runs out, and the virtual stock becomes a setting.
+
+**Why not now.** Item 2 needs inventories. Item 1 would work on today's virtual
+stock, but no plan has needed it: the automatic choice by element already covers
+the common case.
+
+**How it would work.**
+- An ammunition preference on a plan or strategy, applied by the engine's
+  choice: `Ammo: { Prefer: [Silver_Arrow], Avoid: [Poison_Arrow] }`. Prefer
+  outranks the element bonus; Avoid removes a kind. That needs the engine's
+  ammunition choice to ask the strategy module: one more call, like `Allow`.
+- Or a rule action, `Equip: Fire_Arrow`, with `When`/`Enemy: { Element: Earth }`
+  conditions, and a rule without it to switch back. That's simpler to read, but
+  it fights the engine's own choice every turn unless the engine yields to it.
+- With inventories: the engine's choice only considers what is in the bag, and
+  `item_below` lets a rule react to running low ("out of Fire Arrows, back to
+  normal ones").
+
+**What it adds.** Ammunition as part of a boss plan, and as a resource the owner
+provides.
+
+**Where to start.** `pe_shell_ammochange` in `runtime/population_shell_ammo.cpp`
+(the choice); the strategy module for the preference.
+
 ### Switching gear to the situation
 
 **What is missing.** A companion wears one set of gear whatever it fights.
