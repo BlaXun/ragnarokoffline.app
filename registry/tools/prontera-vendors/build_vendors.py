@@ -2141,6 +2141,282 @@ def write_market_script():
     print(f"  market: {len(vol)} item volumes, {len(groups)} groups, {len(events)} news events", file=sys.stderr)
 
 
+# ---------------------------------------------------------------------------
+# Supply: what the world's hunters find
+# ---------------------------------------------------------------------------
+#
+# npc/prontera-vendors-supply.txt simulates parties hunting the world's
+# fields and dungeons, an hour at a time, and keeps a supply of each item
+# that only monsters drop. The engine lists no more of one than the supply
+# holds ($@pop_item_supply). This writes what that script needs: each map's
+# yield per party-hour, the MvPs, and per item its decay class and cap.
+
+# Kills one party makes in an hour on a map with monsters to spare (one
+# every 12 s), and the seconds a monster takes to find and kill on top of its
+# respawn: a map's spawns cap its kills, however many parties hunt it.
+SUPPLY_PARTY_KILLS = 300
+SUPPLY_HUNT_SECONDS = 30
+# A map needs this many monsters worth hunting to draw a party.
+SUPPLY_MIN_MOBS = 8
+# How much likelier a party picks a known hunting ground (FIELD_SPOTS and the
+# dungeons with a loot stall or buyer).
+SUPPLY_KNOWN_SPOT = 3
+# Each item's stock never goes past this many times the most a stall line
+# lists, and at least SUPPLY_CAP_MIN: drops nobody lists don't pile up.
+SUPPLY_CAP_TIMES = 4
+SUPPLY_CAP_MIN = 5
+# Half-life class: the "How long loot stays" setting times this. Cards and
+# MvP loot are held longest, equipment longer than loot.
+SUPPLY_HL_EQUIP = 3
+SUPPLY_HL_RARE = 5
+# rAthena's drop-rate classes (mob.cpp, the item_rate_* battle flags), in the
+# order the supply script reads them with getbattleflag.
+RATE_CLASSES = ["common", "common_boss", "common_mvp", "heal", "heal_boss", "heal_mvp",
+                "use", "use_boss", "use_mvp", "equip", "equip_boss", "equip_mvp",
+                "card", "card_boss", "card_mvp", "treasure", "mvp"]
+# Spawn files the hunters go to: the world's fields and dungeons, not towns,
+# castles, the academy or event spawns.
+SUPPLY_SPAWN_DIRS = ("fields/", "dungeons/")
+SUPPLY_SPAWN_FILES = ("tra_fild.txt", "verus.txt")
+# Filled in by main() as the sell themes resolve: item id -> the most any
+# plain line of a sell stall lists.
+SELL_PLAIN = {}
+
+
+def produced_items():
+    """What a player can make (forge, brew, cook...): produce_db's results."""
+    out = set()
+    path = os.path.join(RA, "db", ERA, "produce_db.txt")
+    if not os.path.exists(path):
+        return out
+    for line in open(path, encoding="utf-8", errors="replace"):
+        parts = line.split("//")[0].strip().split(",")
+        if len(parts) > 1 and parts[1].strip().isdigit():
+            out.add(int(parts[1]))
+    return out
+
+
+def mob_bosstype(m):
+    """rAthena's boss type: "mvp", "boss" (a mini-boss) or ""."""
+    if (m.get("Modes") or {}).get("Mvp") or m.get("MvpExp", 0) > 0:
+        return "mvp"
+    return "boss" if m.get("Class") == "Boss" else ""
+
+
+def rate_class(e, m, mvp_reward=False):
+    """The index in RATE_CLASSES of the drop-rate setting rAthena scales this
+    drop by (mob.cpp, the mob_db load)."""
+    if mvp_reward:
+        return RATE_CLASSES.index("mvp")
+    if "Treasure" in (m.get("RaceGroups") or {}):
+        return RATE_CLASSES.index("treasure")
+    t = (e.get("Type") or "Etc").lower()
+    kind = {"healing": "heal", "usable": "use", "cash": "use", "weapon": "equip", "armor": "equip",
+            "petarmor": "equip", "card": "card"}.get(t, "common")
+    bt = mob_bosstype(m)
+    return RATE_CLASSES.index(kind + ("_" + bt if bt else ""))
+
+
+def supply_spawns():
+    """(map, mob id, count, average respawn in seconds, boss_monster?) for
+    every spawn line in the hunters' fields and dungeons."""
+    out = []
+    base = os.path.join(RA, "npc", ERA, "mobs")
+    for root, _, files in os.walk(base):
+        for f in files:
+            rel = os.path.relpath(os.path.join(root, f), base).replace(os.sep, "/")
+            if not f.endswith(".txt") or not (rel.startswith(SUPPLY_SPAWN_DIRS) or rel in SUPPLY_SPAWN_FILES):
+                continue
+            for line in open(os.path.join(root, f), encoding="utf-8", errors="replace"):
+                if line.lstrip().startswith("//"):
+                    continue
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 4 or not parts[1].startswith(("monster", "boss_monster")):
+                    continue
+                mid = mob_ref(parts[3])
+                if mid not in MOBS:
+                    continue
+                fields = [x.strip() for x in parts[3].split(",")]
+                n = int(fields[1]) if len(fields) > 1 and fields[1].isdigit() else 1
+                d1 = int(fields[2]) if len(fields) > 2 and fields[2].isdigit() else 0
+                d2 = int(fields[3]) if len(fields) > 3 and fields[3].isdigit() else 0
+                mp = parts[0].split(",")[0].strip()
+                if n > 0 and re.fullmatch(r"[A-Za-z0-9_]+", mp):
+                    out.append((mp, mid, n, (d1 + d2 / 2) / 1000, parts[1].startswith("boss_monster")))
+    return out
+
+
+# An NPC selling an item for up to this many times its market price is where
+# players get it, so hunting doesn't limit it. Dearer NPCs (a special shop
+# with Elunium at 200,000z) don't count.
+SUPPLY_NPC_TIMES = 1.5
+
+
+def supply_gated(spawn_rows):
+    """Items the supply limits: those a sell stall lists plain that only
+    monsters on the hunters' maps give (no NPC sells them near the market
+    price, nobody makes them). What the hunters can't find stays as it is,
+    or it would never show."""
+    found = set()
+    for _, mid, _, _, _ in spawn_rows:
+        m = MOBS[mid]
+        for d in (m.get("Drops") or []) + (m.get("MvpDrops") or []):
+            e = item(d["Item"])
+            if e:
+                found.add(e["Id"])
+    made = produced_items()
+
+    def npc_source(i):
+        if i not in NPC_PRICE:
+            return False
+        hi = TABLE.get(i, (0, 0, ""))[1]
+        return not hi or NPC_PRICE[i] <= SUPPLY_NPC_TIMES * hi
+
+    return {i for i in SELL_PLAIN if i in found and not npc_source(i) and i not in made}
+
+
+def write_supply_script():
+    """npc/prontera-vendors-supply-data.txt: the hunting simulation's data,
+    filled into temporary server variables at start ($@pvs_*)."""
+    rows = supply_spawns()
+    gated = supply_gated(rows)
+    known = {mp for _, _, maps, _ in FIELD_SPOTS for mp in maps}
+    known_files = {f for _, _, files in AREAS_LOOT + BUY_ONLY_DUNGEONS for f in files}
+    # Maps of the known dungeons: their spawn files name them.
+    for rel, mp, _, _ in SPAWN_LINES:
+        if rel.split("/")[-1] in known_files:
+            known.add(mp)
+
+    by_map, mvps = {}, {}
+    for mp, mid, n, respawn, boss in rows:
+        if mob_bosstype(MOBS[mid]) == "mvp":
+            mv = mvps.setdefault(mid, {"copies": 0, "respawn": respawn, "maps": set()})
+            mv["copies"] += n
+            mv["respawn"] = min(mv["respawn"], respawn)
+            mv["maps"].add(mp)
+            continue
+        by_map.setdefault(mp, []).append((mid, n, respawn))
+
+    maps = []
+    for mp in sorted(by_map):
+        lines = by_map[mp]
+        # Plants and eggs are hit now and then, not hunted.
+        def weight(mid, n):
+            m = MOBS[mid]
+            return n * (0.3 if m.get("Race") == "Plant" or m["Name"].endswith("Egg") else 1.0)
+        hunted = sum(weight(mid, n) for mid, n, _ in lines)
+        if hunted < SUPPLY_MIN_MOBS:
+            continue
+        lv = round(sum(MOBS[mid].get("Level", 1) * weight(mid, n) for mid, n, _ in lines) / hunted)
+        cap = 0
+        yields = {}
+        for mid, n, respawn in lines:
+            # Each line gets its share of a party's kills, no more than its
+            # monsters can respawn in an hour.
+            line_cap = n * 3600 / (respawn + SUPPLY_HUNT_SECONDS)
+            cap += line_cap
+            kills = min(SUPPLY_PARTY_KILLS * weight(mid, n) / hunted, line_cap)
+            m = MOBS[mid]
+            for d in m.get("Drops") or []:
+                e = item(d["Item"])
+                if not e or e["Id"] not in gated:
+                    continue
+                k = (e["Id"], rate_class(e, m))
+                yields[k] = yields.get(k, 0) + kills * d.get("Rate", 0) / 10000
+        yields = {k: round(v * 1_000_000) for k, v in yields.items() if round(v * 1_000_000) > 0}
+        maps.append((mp, lv, min(round(cap), 1_000_000), SUPPLY_KNOWN_SPOT if mp in known else 1, yields))
+
+    # Each item's yield per party-hour, over where parties go (by map weight):
+    # the long-run inflow, for a market started filled and for long downtime.
+    total_w = sum(w for _, _, _, w, _ in maps) or 1
+    avg = {}
+    for _, _, _, w, yields in maps:
+        for (iid, cls), v in yields.items():
+            a = avg.setdefault(iid, {})
+            a[cls] = a.get(cls, 0) + v * w / total_w
+
+    out = ["//===== Ragnarok Offline: prontera-vendors =================================",
+           "//= The hunted supply's data, for npc/prontera-vendors-supply.txt.",
+           "//= GENERATED by registry/tools/prontera-vendors/build_vendors.py",
+           "//= (write_supply_script); a re-run overwrites it.",
+           "//===========================================================================",
+           "-\tscript\tProntVendorsSupplyData\t-1,{",
+           "\tend;",
+           "OnInit:",
+           f"\t$@pvs_party_kills = {SUPPLY_PARTY_KILLS};",
+           "\t// rAthena's drop-rate settings, in the order each yield's class counts them.",
+           "\tdeletearray $@pvs_rateflag$;",
+           "\tsetarray $@pvs_rateflag$[0], " + ", ".join(q("item_rate_" + c) for c in RATE_CLASSES) + ";",
+           "\t// The items the supply limits: id, half-life class (times the setting),",
+           "\t// cap, and the long-run yield per party-hour (millionths, by rate class).",
+           "\tdeletearray $@pvs_gid; deletearray $@pvs_ghl; deletearray $@pvs_gcap; deletearray $@pvs_gk;",
+           "\tdeletearray $@pvs_aitem; deletearray $@pvs_acls; deletearray $@pvs_arate;"]
+    gids = sorted(gated)
+    for k in range(0, len(gids), 16):
+        out.append(f"\tsetarray $@pvs_gid[{k}], " + ", ".join(map(str, gids[k:k + 16])) + ";")
+    hl, caps = [], []
+    for i in gids:
+        e = ITEMS_BY_ID[i]
+        hl.append(SUPPLY_HL_RARE if e.get("Type") == "Card" or i in MVP_ONLY
+                  else SUPPLY_HL_EQUIP if is_equip(e) else 1)
+        caps.append(max(SUPPLY_CAP_MIN, SUPPLY_CAP_TIMES * SELL_PLAIN[i]))
+    for k in range(0, len(gids), 16):
+        out.append(f"\tsetarray $@pvs_ghl[{k}], " + ", ".join(map(str, hl[k:k + 16])) + ";")
+    for k in range(0, len(gids), 16):
+        out.append(f"\tsetarray $@pvs_gcap[{k}], " + ", ".join(map(str, caps[k:k + 16])) + ";")
+    for k in range(0, len(gids), 8):
+        out.append("\t" + " ".join(f"$@pvs_gk[{i}] = {k + j + 1};" for j, i in enumerate(gids[k:k + 8])))
+    flat = [(i, cls, round(v)) for i in gids for cls, v in sorted(avg.get(i, {}).items()) if round(v) > 0]
+    for name, col in (("aitem", 0), ("acls", 1), ("arate", 2)):
+        for k in range(0, len(flat), 16):
+            out.append(f"\tsetarray $@pvs_{name}[{k}], " + ", ".join(str(r[col]) for r in flat[k:k + 16]) + ";")
+    out.append(f"\t$@pvs_gcount = {len(gids)}; $@pvs_acount = {len(flat)};")
+
+    out += ["\t// Maps: name, monster level, kills an hour its spawns allow, weight, and",
+            "\t// where its yields start and how many (item, rate class, millionths of",
+            "\t// one per party-hour at $@pvs_party_kills kills).",
+            "\tdeletearray $@pvs_map$; deletearray $@pvs_mlv; deletearray $@pvs_mcap; deletearray $@pvs_mw;",
+            "\tdeletearray $@pvs_mstart; deletearray $@pvs_mlen; deletearray $@pvs_yitem; deletearray $@pvs_ycls; deletearray $@pvs_yrate;"]
+    flat = []
+    for m_i, (mp, lv, cap, w, yields) in enumerate(maps):
+        out.append(f'\t$@pvs_map$[{m_i}] = "{mp}"; $@pvs_mlv[{m_i}] = {lv}; $@pvs_mcap[{m_i}] = {cap}; '
+                   f"$@pvs_mw[{m_i}] = {w}; $@pvs_mstart[{m_i}] = {len(flat)}; $@pvs_mlen[{m_i}] = {len(yields)};")
+        flat += [(i, cls, v) for (i, cls), v in sorted(yields.items())]
+    for name, col in (("yitem", 0), ("ycls", 1), ("yrate", 2)):
+        for k in range(0, len(flat), 16):
+            out.append(f"\tsetarray $@pvs_{name}[{k}], " + ", ".join(str(r[col]) for r in flat[k:k + 16]) + ";")
+    out.append(f"\t$@pvs_mcount = {len(maps)};")
+
+    out += ["\t// MvPs: monster, level, how many spawn, respawn (s), a map, and their drops",
+            "\t// the supply limits (item, rate class, chance in 10000).",
+            "\tdeletearray $@pvs_mvp; deletearray $@pvs_mvplv; deletearray $@pvs_mvpn; deletearray $@pvs_mvpre;",
+            "\tdeletearray $@pvs_mvpmap$; deletearray $@pvs_mvpstart; deletearray $@pvs_mvplen;",
+            "\tdeletearray $@pvs_vitem; deletearray $@pvs_vcls; deletearray $@pvs_vrate;"]
+    flat = []
+    for v_i, mid in enumerate(sorted(mvps)):
+        m, mv = MOBS[mid], mvps[mid]
+        drops = []
+        for d, reward in [(d, False) for d in m.get("Drops") or []] + [(d, True) for d in m.get("MvpDrops") or []]:
+            e = item(d["Item"])
+            if e and e["Id"] in gated and d.get("Rate", 0) > 0:
+                drops.append((e["Id"], rate_class(e, m, reward), d["Rate"]))
+        out.append(f"\t$@pvs_mvp[{v_i}] = {mid}; $@pvs_mvplv[{v_i}] = {m.get('Level', 1)}; "
+                   f"$@pvs_mvpn[{v_i}] = {mv['copies']}; $@pvs_mvpre[{v_i}] = {max(60, round(mv['respawn']))}; "
+                   f'$@pvs_mvpmap$[{v_i}] = "{sorted(mv["maps"])[0]}"; $@pvs_mvpstart[{v_i}] = {len(flat)}; '
+                   f"$@pvs_mvplen[{v_i}] = {len(drops)}; // {m['Name']}")
+        flat += drops
+    for name, col in (("vitem", 0), ("vcls", 1), ("vrate", 2)):
+        for k in range(0, len(flat), 16):
+            out.append(f"\tsetarray $@pvs_{name}[{k}], " + ", ".join(str(r[col]) for r in flat[k:k + 16]) + ";")
+    out += [f"\t$@pvs_mvpcount = {len(mvps)};", "\tend;", "}"]
+    npc = os.path.join(os.path.dirname(OUT_DB), "npc")
+    os.makedirs(npc, exist_ok=True)
+    open(os.path.join(npc, "prontera-vendors-supply-data.txt"), "w", encoding="utf-8", newline="\n").write(
+        "\n".join(out) + "\n")
+    print(f"  supply: {len(gids)} items limited, {len(maps)} maps, {len(mvps)} MvPs", file=sys.stderr)
+    return maps, avg, gids
+
+
 def write_table():
     import csv
     priced = sorted(popularity(ITEMS_BY_ID[i]) for i, (lo, _, _) in TABLE.items() if lo)
@@ -2260,6 +2536,8 @@ def main():
                 continue
             d = {"Item": e["AegisName"], "Amount": amount_for(e, p, rng)}
             plain = not (spec.get("refine") or spec.get("element") or spec.get("stars") or spec.get("cards"))
+            if plain:
+                SELL_PLAIN[e["Id"]] = max(SELL_PLAIN.get(e["Id"], 0), d["Amount"])
             if plain and TABLE.get(e["Id"], (0, 0, ""))[0] > 0:
                 d["Price"] = list(TABLE[e["Id"]][:2])
             else:
@@ -2294,6 +2572,7 @@ def main():
         print(f"  {t['key']}: {len(lines)} items", file=sys.stderr)
     write_table()
     write_market_script()
+    write_supply_script()
 
     # The market: every sidewalk spot rolls one of the themes whenever a stall
     # is put there, so the street changes as stalls rotate. Its Count is what

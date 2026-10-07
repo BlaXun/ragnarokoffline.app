@@ -601,7 +601,7 @@
     },
     {
       "name": "prontera-vendors",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "author": "BlaXun",
       "description": "A living player market on Prontera's main road. Fake players run real vending stalls on the inner sidewalks (cards, weapons and armor by class, refined gear, potions, gems, pet eggs, loot from every dungeon and more) and real buying stores on the outer sidewalks that buy your loot: ores, quest turn-ins, junk drops and the loot of every dungeon and leveling field. Prices follow a real server's market (kRO), stalls undercut each other and change as their owners come and go, and everything is tunable in Settings. Needs the population engine switched on.",
       "homepage": "",
@@ -625,7 +625,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "429e23ad61b206e88fd4e7bf4bd60346e2d160f6e9066f40f5e93e801cc9a42e"
+          "sha256": "70865faef122d63d29aa322f1c06f0034d06c07e0cfa886836eeb9aeddc2d4f7"
         },
         {
           "path": "db/population_vendor_pop.yml",
@@ -649,7 +649,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "58783ed4c79d1b2ea8af0ef5548e6e7e34aeca139c07ea74e56ac9315c455ff5"
+          "sha256": "ec66bc06f3dd76de7f0bab48354d090091050e2baefeda65ee4cb38d43db08ee"
         },
         {
           "path": "npc/prontera-vendors-customers.txt",
@@ -666,6 +666,14 @@
         {
           "path": "npc/prontera-vendors-newer.txt",
           "sha256": "9d57fc8e30ae8e4930d157fda62dbed4f4ace57878f0f7394985c5e4d12f4b69"
+        },
+        {
+          "path": "npc/prontera-vendors-supply-data.txt",
+          "sha256": "f83968f66da728c815b504ba07e17d839355dac1171b3ca8ebcb7c4e8bad47ae"
+        },
+        {
+          "path": "npc/prontera-vendors-supply.txt",
+          "sha256": "e2b764508a4e8fb577810a6bd7d27ce0a6b46f35b2db73617b2b2e028450fdde"
         },
         {
           "path": "npc/prontera-vendors.txt",
@@ -688,8 +696,12 @@
           "sha256": "22c39f7a983b2eb44483779eac9fb195c9bf0f729af3db989c51062451b6989e"
         },
         {
+          "path": "pre-re/npc/prontera-vendors-supply-data.txt",
+          "sha256": "b712b110b2edc69eaecc4466fcc6100f5e6663cb256a33ad62330e4f277bc82b"
+        },
+        {
           "path": "settings/index.html",
-          "sha256": "d1831b43bce2bc668e839544dbaacc9ac13b1a4cf51bceff6e201605ba0059dc"
+          "sha256": "9ba04d59d3da5648ab8c36d4d0d39f5bb2b167682561282fd67b8ca26557a8e1"
         }
       ]
     },
