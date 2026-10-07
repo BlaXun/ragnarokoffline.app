@@ -959,10 +959,24 @@ Warp names are in `vendor/rathena/npc/warps/`; they are short and stable
 (`prt01`, `prt001`). This is verified — rerouting Prontera's south gate to a
 custom island works, with no duplicate-name complaint.
 
-What genuinely cannot be removed is a **monster spawn definition**. Those come
-from the stock spawn scripts and nothing unloads them, which is why the
-[randomizer](../examples/mods/randomizer) shuffles what each monster *is*
-rather than where it stands.
+A **monster spawn definition** cannot be removed line by line, but a whole
+stock spawn file can be unloaded once the server is up. `@unloadnpcfile` takes
+its spawns and the monsters already out with it, and a script may run it:
+
+```
+OnInit:
+	sleep 1;	// after every OnInit has run once
+	atcommand "@unloadnpcfile npc/re/mobs/fields/prontera.txt";
+	end;
+```
+
+Ship what the file should still spawn as your own script. A mod's scripts
+load before the stock ones, so a script NPC you copy keeps its name, and the
+stock copy is renamed and then unloaded with its file. Monsters a script
+summoned with `monster` are not part of the file and stay behind. The
+[pre-renewal-spawns](../registry/mods/pre-renewal-spawns) mod swaps the spawns
+of 62 renewal files this way. The [randomizer](../examples/mods/randomizer)
+leaves the spawn scripts alone and shuffles what each monster *is* instead.
 
 How *many* monsters a map's stock spawns put out can be changed, though, from a
 script: the fork's `map_mob_count_rate` extension adds
