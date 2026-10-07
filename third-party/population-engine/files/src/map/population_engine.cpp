@@ -7383,8 +7383,9 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 		// A companion's ammunition stays in the bag: the ammo code picks the stack per target,
 		// and equipping each traded stack handed the one before it back to the owner.
 		if (id->equip && !((id->equip & EQP_AMMO) && population_shell_has_own_inventory(shell))) {
-			// Player gear this piece pushes off goes back to the player: the companion's
-			// inventory is not persisted, so an item left there is gone at the next restart.
+			// Player gear this piece pushes off goes back to the player: without Companion
+			// inventory the companion's bag is not saved, so an item left there would be gone at
+			// the next restart; with it, the bag is saved, but the gear is still the player's.
 			std::vector<int16> given_before;
 			for (int16 j = 0; j < MAX_INVENTORY; ++j) {
 				const struct item &w = shell->inventory.u.items_inventory[j];
