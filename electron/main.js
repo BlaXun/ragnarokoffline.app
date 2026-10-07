@@ -1133,6 +1133,10 @@ const SETTINGS_DEFAULTS = {
 	// see electron/packetvers.js. null follows the app's default rather than
 	// pinning today's, so a later app that moves the default moves this too.
 	packetver: null,
+	// The time zone the game servers' clock reads (WoE, OnClock events, daily
+	// resets) -- see stack/src/timezone.rs. null follows this computer, which
+	// stackEnv() hands the supervisor; otherwise an IANA name, 'UTC' included.
+	server_timezone: null,
 };
 
 function getSettings() {
@@ -3607,8 +3611,16 @@ function stackEnv() {
 			NEBULA_BIN: path.join(root, `bin/nebula${EXE}`),
 			RAGNAROKMAC_DOCKER: path.join(root, `bin/docker-slim${EXE}`),
 			RAGNAROKMAC_STATE: stateDir(),
+			// This computer's time zone, for server_timezone: null. Intl names
+			// it the same way on every platform, which the supervisor cannot.
+			RAGNAROK_HOST_TIMEZONE: hostTimeZone(),
 		},
 	};
+}
+
+function hostTimeZone() {
+	try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+	catch { return 'UTC'; }
 }
 
 // Asynchronous, because this runs while the app is still alive and `stack.sh

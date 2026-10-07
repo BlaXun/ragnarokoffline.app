@@ -2216,7 +2216,10 @@ static bool pop_companion_follow_owner(map_session_data *sd, map_session_data *o
 		return false;
 	// A resting companion stays down while its owner stands still; pop_companion_rest decides
 	// when it gets up, and anything below that moves it stands it first.
-	if (pc_issit(sd) && !(sd->pop.resting && !unit_is_walking(owner)))
+	// RAGNAROKMAC (companion strategies): so does one a Sit rule sat down. Standing it here sat
+	// it again on the same tick's strategy turn: it bobbed up and down, and the sitting skills
+	// (Gangster's Paradise, the Taekwon ones) toggled with it.
+	if (pc_issit(sd) && !((sd->pop.resting || population_strategy_keeps_seated(sd)) && !unit_is_walking(owner)))
 		pop_shell_stand(sd);
 	if (sd->pop.companion_formation_active &&
 		(unit_is_walking(owner) || sd->pop.target_id != 0)) {

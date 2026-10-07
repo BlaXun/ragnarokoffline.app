@@ -81,9 +81,9 @@
     },
     {
       "name": "autoloot",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "BlaXun",
-      "description": "An Autoloot window in game: loot every drop at or below a rarity you choose, whole item types such as cards, and a list of exact items -- with a monster check that shows what you would pick up. Works even where @autoloot is kept for GMs, and your item list is kept across logins.",
+      "description": "An Autoloot window in game, in the option menu (Esc) or with Alt+O: loot every drop at or below a rarity you choose, whole item types such as cards, and a list of exact items -- with a monster check that shows what you would pick up. Works even where @autoloot is kept for GMs, and your item list is kept across logins.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/autoloot",
       "tags": [
         "drops",
@@ -99,16 +99,32 @@
       },
       "files": [
         {
+          "path": "CHANGELOG.md",
+          "sha256": "a65a69cd177964dc3dc61f96f7821fe6bc19aebd2ffc3c6f0631375de5d83d61"
+        },
+        {
           "path": "README.md",
-          "sha256": "f64b046033070073fb4d9ef8e12fe8a4e76e7fdb27834518f4f9e413c7d3fffa"
+          "sha256": "2fdfdfb1ba30a9724ce658c5a95e4d731cadbdb73a3ce3d993430211e5b7e89b"
         },
         {
           "path": "client/index.js",
-          "sha256": "0b824bfde3bd66d0472f50f0715e6226b020f025593bb31d13d7e914893fc9b4"
+          "sha256": "20d5d8ac903f13685d60c7ec563424d638d290f2343f775f27b26bfb8fa50f9f"
+        },
+        {
+          "path": "data/texture/ui/esc_autoloot_a.bmp",
+          "sha256": "4b9cd03a1ef8cd33fed21d8c7fe8fc842fb42094229c7a92024e9d329b92b8aa"
+        },
+        {
+          "path": "data/texture/ui/esc_autoloot_b.bmp",
+          "sha256": "3a9eb827cbe2cff4c1e093c8ec5f4be1078559092b7ab9abe30eab28757833f6"
+        },
+        {
+          "path": "data/texture/ui/esc_autoloot_c.bmp",
+          "sha256": "3a9eb827cbe2cff4c1e093c8ec5f4be1078559092b7ab9abe30eab28757833f6"
         },
         {
           "path": "mod.json",
-          "sha256": "99d831b471098d1e110120d4698589960c9be8b2d46d7e0731a056103589cad5"
+          "sha256": "394a870f150e4da7d71674b8e1a71b4f1f76d91643522b296dbc78b4863c10fc"
         },
         {
           "path": "npc/autoloot.txt",
@@ -340,9 +356,9 @@
     },
     {
       "name": "exp-card",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": "BlaXun",
-      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. At 1x, a level 10 card grants roughly 5% of the exp a level-98 character needs for the next level, and each lower level is about half the one above it; card exp scales with the server's Base/Job EXP rates. Streamlines offline levelling without touching per-mob drop tables.",
+      "description": "Every monster kill has a chance to drop a tiered Exp Card, bound to the killer for the standard pickup window. Two families -- Base Exp Cards and Job Exp Cards -- each with ten levels; higher-level mobs drop higher-level cards. At 1x, a card grants about 5% of the next level at the lowest level that may use it (a level 10 card: 30,000 exp, from base level 91); card exp scales with the server's Base/Job EXP rates. Streamlines offline levelling without touching per-mob drop tables.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/exp-card",
       "tags": [
         "drops",
@@ -361,8 +377,12 @@
       },
       "files": [
         {
+          "path": "CHANGELOG.md",
+          "sha256": "056f47f4d8b65a17293851c910dacc290b68ea3852766b7a22209e6cbe93bdd7"
+        },
+        {
           "path": "README.md",
-          "sha256": "8a92b7ab55ec3b76f42385c2ecaa6a6c737f7b1620f0605e7ad56524111e05e9"
+          "sha256": "07ce4b9408a2096a02b2ce1c16cd19f8867692019de18e4727332530acca5c98"
         },
         {
           "path": "System/itemInfo.lua",
@@ -370,7 +390,7 @@
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "fb5d7eb528238a877dac9be5d5c0125efb6478c378cfc6b83cc8e70e44b2026d"
+          "sha256": "b80cc5266e2ca54819254fa03d8c6f874d2a968f915ccb094f0c4b9e415f3a7f"
         },
         {
           "path": "images/exp-card.png",
@@ -382,11 +402,15 @@
         },
         {
           "path": "mod.json",
-          "sha256": "952e56168647401194448832c4ffbdb464ee959d0d87ec88acfc1800bc93cdca"
+          "sha256": "333b33b37c54a9f2ce0031d8e04a4e06b58d349f23e20b3f266541b348e0e0b3"
         },
         {
           "path": "npc/exp_card.txt",
-          "sha256": "e06490d46d57710a922eb67fffdb3f584e98725fb8bebb1a4264d8b0536bd774"
+          "sha256": "865a3c89f754f8281c0a416a38c4bae91e2d24338039e21d9507a21e9d7cedc5"
+        },
+        {
+          "path": "pre-re/db/item_db.yml",
+          "sha256": "0eea2d33ee164ea4a97c4b38f84cc49ad08f2eb02e3fa4bcaf11efdf36e61c42"
         }
       ]
     },
@@ -978,6 +1002,31 @@
           "sha256": "2b08b5d6dfade6a7e658a239431ec08a0cc3efbe89cbf7aa3617455c2bf5794e"
         }
       ]
+    },
+    {
+      "name": "whosell",
+      "version": "",
+      "author": "rhewid",
+      "description": "Search for Vendors: a window (and @whosell / @whobuy) to find who sells or buys an item by name, card and zeny range, with price, amount, seller and shop location. Finds real players' shops and, with the population engine, the fake-player market. Follows the active UI skin.",
+      "homepage": "https://github.com/rhewid/whosell",
+      "tags": [
+        "market",
+        "search",
+        "ui",
+        "vending"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "",
+        "app": ""
+      },
+      "source": {
+        "github": "rhewid/whosell",
+        "asset": "whosell-*.zip"
+      },
+      "files": []
     }
   ]
 }
