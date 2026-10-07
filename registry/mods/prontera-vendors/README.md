@@ -68,7 +68,7 @@ defaults. On an app without settings pages they show in the Mods tab.
 | Dynamic market | off | Prices react to trades and news, then drift back (see below). |
 | Market strength (%) | 100 | How hard a trade moves a price. |
 | Price recovery (hours) | 72 | After this long, half of a move has faded. |
-| Market news | on | About once a week an event moves a group of items for a few days. |
+| Market news | 2 | 0: none. 1: about once a week an event moves a group of items for a few days, shown on the board. 2: the same, and the server announces its start and end. |
 | Hunted supply: parties | 0 | 0: off. Otherwise how many parties hunt on an average hour (see below); 20 is a good start. |
 | How long loot stays (days) | 5 | Half-life of what reached the market; what players use up 0.5x, equipment 3x, cards and MvP loot 5x. |
 
@@ -259,10 +259,16 @@ back to the price list:
   gemstones, Ygg items, boxes and albums, dragon parts...).
 - **Market news** (optional) moves a group for a few days about once a week:
   War of Emperium season, refining fever, a hat-making craze, a card craze, an
-  Alchemist Guild order, gambling night, a pet fair (prices up); an orc
-  rampage, a spore harvest, a Glast Heim purge, a dragon hunt, a merchant
-  clearance, smith overstock (down); a festival (food up, junk down); and
-  monsters migrating between dungeons (one's loot down, another's up).
+  Alchemist Guild order, gambling night, a pet fair, a monster raid on
+  Prontera, a blight on the World Tree, a fashion contest, an arrow shortage,
+  the Sages' elemental research, bounty week (prices up); an orc rampage, a
+  spore harvest, a Glast Heim purge, a dragon hunt, a merchant clearance,
+  smith overstock, a collector selling off his cards, an ore strike in
+  Mjolnir, a herb bloom (down); a festival (food up, junk down); and monsters
+  migrating between dungeons (one's loot down, another's up): 31 in all. At
+  **Market news** 2 (the default) the server announces each one as it starts
+  and again when it ends ("[Prontera Market] Monsters raid Prontera's
+  gates..."); at 1 only the board shows it.
 - **Prices drift back**: after **Price recovery** hours (72 by default) half
   of any move has faded. Time the server is off counts too. Prices stay
   between half and twice the price list.

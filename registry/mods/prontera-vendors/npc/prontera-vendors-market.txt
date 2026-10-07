@@ -9,7 +9,9 @@
 //=   on how much of the item changes hands on a normal day ($@pv_vol, from
 //=   prontera-vendors-market-data.txt).
 //= - A move spills over to the item's group, by the group's share.
-//= - Market news, now and then, moves a group for a few days.
+//= - Market news, now and then, moves a group for a few days. At "Market
+//=   news" 2 (the default) the server also announces when one starts and
+//=   when it ends; at 1 only the board shows it; 0 has no news.
 //= - Every ten minutes each move fades with the recovery half-life; the time
 //=   the server was off is faded in one step at start.
 //= - With the hunted supply on, its scarcity factor ($@pvs_pct, from
@@ -30,7 +32,8 @@ OnInit:
 	.on = callfunc("F_ModSetting", .mod$, "dynamic_market", 0);
 	.strength = callfunc("F_ModSetting", .mod$, "market_strength", 100);
 	.halflife = callfunc("F_ModSetting", .mod$, "market_recovery_hours", 72) * 3600;
-	.news = callfunc("F_ModSetting", .mod$, "market_news", 1);
+	// 0 no news, 1 news on the board, 2 the board and a server announcement.
+	.news = callfunc("F_ModSetting", .mod$, "market_news", 2);
 	.ready = 0;
 	.passes = 0;
 	$@pv_board_on = .on;
@@ -232,7 +235,10 @@ S_StartNews:
 	$pv_nw_end[.@k] = .@now + $@pv_evdays[.@e] * 86400;
 	$pv_nw_c0[.@k] = .@c0;
 	$pv_nw_c1[.@k] = .@c1;
+	$pv_nw_told[.@k] = 0;
 	setd "$pv_nwl_" + $@pv_evkey$[.@e], .@now;
+	if (.news >= 2)
+		announce "[Prontera Market] " + $@pv_evtext$[.@e], bc_all;
 	return 1;
 
 // ---------------------------------------------------------------------------
@@ -260,11 +266,19 @@ S_Publish:
 			$pv_nw_end[.@keep] = $pv_nw_end[.@k];
 			$pv_nw_c0[.@keep] = $pv_nw_c0[.@k];
 			$pv_nw_c1[.@keep] = $pv_nw_c1[.@k];
+			$pv_nw_told[.@keep] = $pv_nw_told[.@k];
 		}
 		.@e = -1;
 		for (.@x = 0; .@x < $@pv_evcount; .@x++)
 			if ($@pv_evkey$[.@x] == $pv_nw_key$[.@keep])
 				.@e = .@x;
+		// Its end, announced once: within the hour it ended, so news that
+		// ran out while the server was off isn't announced late.
+		if (.@now >= $pv_nw_end[.@keep] && !$pv_nw_told[.@keep]) {
+			$pv_nw_told[.@keep] = 1;
+			if (.news >= 2 && .@e >= 0 && .@now - $pv_nw_end[.@keep] < 3600)
+				announce "[Prontera Market] " + $@pv_evend$[.@e], bc_all;
+		}
 		.@n = 0;
 		for (.@f = 0; .@e >= 0 && .@f < $@pv_fxcount; .@f++) {
 			if ($@pv_fxev[.@f] != .@e)
@@ -287,6 +301,7 @@ S_Publish:
 		$pv_nw_end[.@k] = 0;
 		$pv_nw_c0[.@k] = 0;
 		$pv_nw_c1[.@k] = 0;
+		$pv_nw_told[.@k] = 0;
 	}
 	$pv_nw_n = .@keep;
 
@@ -387,8 +402,10 @@ OnAtMarket:
 			$pv_mk_t[.@i] = 0;
 		}
 		$pv_mk_n = 0;
-		for (.@k = 0; .@k < $pv_nw_n; .@k++)
+		for (.@k = 0; .@k < $pv_nw_n; .@k++) {
 			$pv_nw_end[.@k] = 0;
+			$pv_nw_told[.@k] = 1;
+		}
 		$pv_nw_n = 0;
 		callsub S_Publish;
 		dispbottom "Every price is back at the price list, and the news is cleared.";
@@ -433,7 +450,7 @@ OnAtMarket:
 			dispbottom "  last moved " + ((gettimetick(2) - $pv_mk_t[.@s - 1]) / 60) + " min ago; half of any move fades in " + (.halflife / 3600) + " h.";
 		end;
 	}
-	dispbottom "Market: on, strength " + .strength + "%, half-life " + (.halflife / 3600) + " h, news " + (.news ? "on" : "off") + ", " + $pv_mk_n + " item(s) moved, " + $pv_nw_n + " news.";
+	dispbottom "Market: on, strength " + .strength + "%, half-life " + (.halflife / 3600) + " h, news " + (.news >= 2 ? "on, announced" : .news ? "on, board only" : "off") + ", " + $pv_mk_n + " item(s) moved, " + $pv_nw_n + " news.";
 	for (.@i = 0; .@i < getarraysize($@pv_pub) && .@i < 15; .@i++) {
 		.@id = $@pv_pub[.@i];
 		.@pct = $@pop_item_pct[.@id];

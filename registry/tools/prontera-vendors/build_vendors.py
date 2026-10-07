@@ -2003,21 +2003,22 @@ def place_items(key, n=15):
         else:
             return []
     loot = place_loot(counts)
-    return [ITEMS_BY_ID[i]["AegisName"] for i in sorted(loot, key=lambda i: -loot[i])[:n]]
+    return [ITEMS_BY_ID[i]["AegisName"] for i in sorted(loot, key=lambda i: (-loot[i], i))[:n]]
 
 
 def market_events():
-    """(key, text, days, [(change_min, change_max, [aegis...])]) for this era."""
+    """(key, text, days, [(change_min, change_max, [aegis...])]) for this era.
+    Each key has its end text in NEWS_ENDS (a migration's is made below)."""
     rng = random.Random("market-news")
     quest = [e["AegisName"] for e in sorted((ITEMS_BY_ID[i] for i in QUEST_ASKS if i in ITEMS_BY_ID),
-                                            key=lambda e: -QUEST_ASKS[e["Id"]])
+                                            key=lambda e: (-QUEST_ASKS[e["Id"]], e["Id"]))
              if buyable(e) and e.get("Type") == "Etc"][:12]
-    cards = [ITEMS_BY_ID[i]["AegisName"] for i in sorted(COMMON_CARDS | RARE_CARDS, key=lambda i: -popularity(ITEMS_BY_ID[i]))
+    cards = [ITEMS_BY_ID[i]["AegisName"] for i in sorted(COMMON_CARDS | RARE_CARDS, key=lambda i: (-popularity(ITEMS_BY_ID[i]), i))
              if i in ITEMS_BY_ID and tradeable(ITEMS_BY_ID[i])][:40]
     everyday = sorted(e["AegisName"] for e in ITEMS_BY_ID.values()
                       if e.get("Type") in ("Healing", "Usable") and tradeable(e) and 0 < (price(e) or 0) < 5_000)
     junk = [e["AegisName"] for e in sorted((e for e in ITEMS_BY_ID.values() if e.get("Type") == "Etc" and buyable(e)),
-                                          key=lambda e: -DROPPERS.get(e["Id"], 0))][:12]
+                                          key=lambda e: (-DROPPERS.get(e["Id"], 0), e["Id"]))][:12]
     food = ["Apple", "Banana", "Grape", "Carrot", "Meat", "Honey", "Royal_Jelly", "Strawberry", "Orange", "Lemon",
             "Red_Potion", "Orange_Potion", "Yellow_Potion", "White_Potion"]
     pets = [spec if isinstance(spec, str) else spec["item"] for t in THEMES if t["key"] == "pets" for spec in t["items"]]
@@ -2049,14 +2050,64 @@ def market_events():
          [(-30, -15, ["Elunium", "Oridecon", "Elunium_Stone", "Oridecon_Stone", "Iron", "Coal"])]),
         ("festival", "Festival! Food and potions sought, junk loot ignored.", 3,
          [(20, 20, food), (-15, -15, junk)]),
+        ("monster_raid", "Monsters raid Prontera's gates: potions and wings in demand.", 3,
+         [(20, 40, ["Red_Potion", "Orange_Potion", "Yellow_Potion", "White_Potion", "Wing_Of_Fly",
+                    "Wing_Of_Butterfly", "Yggdrasilberry", "Green_Potion"])]),
+        ("ygg_blight", "A blight on the World Tree: Yggdrasil berries and seeds are scarce.", 5,
+         [(25, 45, ["Yggdrasilberry", "Seed_Of_Yggdrasil", "Leaf_Of_Yggdrasil"])]),
+        ("dye_craze", "A fashion contest in Prontera: everyone wants dyestuffs.", 4,
+         [(30, 50, sorted(e["AegisName"] for e in ITEMS_BY_ID.values()
+                          if e.get("Type") == "Etc" and is_dyestuff(e) and tradeable(e)))]),
+        ("arrow_shortage", "The Hunters' Guild runs dry: arrows sought.", 3,
+         [(20, 35, ["Arrow", "Silver_Arrow", "Fire_Arrow", "Steel_Arrow", "Crystal_Arrow", "Arrow_Of_Wind",
+                    "Stone_Arrow", "Immatrial_Arrow"])]),
+        ("elemental_research", "The Sages of Juno study the elements: stones and converters sought.", 4,
+         [(20, 40, ["Flame_Heart", "Mistic_Frozen", "Rough_Wind", "Great_Nature", "Elemental_Fire",
+                    "Elemental_Water", "Elemental_Earth", "Elemental_Wind"])]),
+        ("bounty_week", "Bounty week: the Prontera board pays for monster parts.", 4, [(20, 30, junk)]),
+        ("card_dump", "An old collector sells off his albums: cards are cheap.", 3, [(-30, -15, cards)]),
+        ("ore_strike", "Miners strike it rich in Mjolnir: ores at a discount.", 4,
+         [(-40, -25, ["Iron_Ore", "Iron", "Coal", "Steel", "Elunium_Stone", "Oridecon_Stone"])]),
+        ("herb_bloom", "Herbs bloom across the fields.", 4, [(-40, -25, sorted(HERBS))]),
     ]
     places = dict((k, re.sub(r" (Drops|Loot)$", "", t)) for k, t, _ in AREAS_LOOT)
     for flood, scarce in [("byalan", "payon_cave"), ("glast_heim", "sphinx"), ("clock_tower", "turtle_island"),
-                          ("magma", "abyss_lake"), ("orc_dungeon", "geffenia"), ("pyramids", "toy_factory")]:
-        events.append((f"migration_{flood}_{scarce}",
+                          ("magma", "abyss_lake"), ("orc_dungeon", "geffenia"), ("pyramids", "toy_factory"),
+                          ("sunken_ship", "niflheim"), ("ant_hell", "comodo_caves")]:
+        key = f"migration_{flood}_{scarce}"
+        events.append((key,
                        f"Monsters are on the move: {places[flood]} loot floods in, {places[scarce]} loot grows scarce.", 4,
                        [(-30, -30, place_items(flood)), (30, 30, place_items(scarce))]))
+        NEWS_ENDS[key] = f"The monsters have settled again: {places[flood]} and {places[scarce]} loot back to normal."
     return events
+
+
+# What the market announces when a piece of news is over.
+NEWS_ENDS = {
+    "woe_season": "The War of Emperium season is over; potions and gems are back to normal.",
+    "refining_fever": "The refining fever has passed.",
+    "hat_craze": "The hat craze is over; quest materials are back to normal.",
+    "card_craze": "The collectors have their cards; card prices settle.",
+    "alchemist_order": "The Alchemist Guild's order is filled.",
+    "gambling_night": "The gamblers have left Prontera.",
+    "pet_fair": "The pet fair is over.",
+    "orc_rampage": "The orc fields are quiet again.",
+    "spore_harvest": "The spore season in Payon is over.",
+    "glast_heim_purge": "Glast Heim's loot has been sold off.",
+    "dragon_hunt": "The dragon hunters' haul has been sold.",
+    "merchant_clearance": "The clearance sale is over.",
+    "smith_overstock": "The forges have used up their stock.",
+    "festival": "The festival is over.",
+    "monster_raid": "The raid on Prontera has been repelled.",
+    "ygg_blight": "The World Tree has recovered.",
+    "dye_craze": "The fashion contest is over; dyestuffs are back to normal.",
+    "arrow_shortage": "The Hunters' Guild has arrows again.",
+    "elemental_research": "The Sages have finished their research.",
+    "bounty_week": "Bounty week is over.",
+    "card_dump": "The collector's albums are sold out.",
+    "ore_strike": "The Mjolnir ore glut has been bought up.",
+    "herb_bloom": "The herb bloom is over.",
+}
 
 
 
@@ -2087,6 +2138,8 @@ def write_market_script():
         fx = [(lo, hi, items) for lo, hi, items in fx if items][:2]
         if fx:
             events.append((key, text, days, fx))
+    missing = [key for key, _, _, _ in events if key not in NEWS_ENDS]
+    assert not missing, f"news without an end text in NEWS_ENDS: {missing}"
     ids = set(MARKET_ITEMS)
     for _, _, items in groups:
         ids.update(item(n)["Id"] for n in items)
@@ -2121,11 +2174,12 @@ def write_market_script():
         out.append(f"\tsetarray $@pv_gitem[{k}], " + ", ".join(map(str, flat[k:k + 16])) + ";")
     out.append(f"\t$@pv_gcount = {len(groups)};")
     out += ["\t// News: key, board text, days; up to two effects each (percent range, items).",
-            "\tdeletearray $@pv_evkey$; deletearray $@pv_evtext$; deletearray $@pv_evdays; deletearray $@pv_fxev;",
+            "\tdeletearray $@pv_evkey$; deletearray $@pv_evtext$; deletearray $@pv_evend$; deletearray $@pv_evdays; deletearray $@pv_fxev;",
             "\tdeletearray $@pv_fxmin; deletearray $@pv_fxmax; deletearray $@pv_fxstart; deletearray $@pv_fxlen; deletearray $@pv_fxitem;"]
     flat, f = [], 0
     for e, (key, text, days, fx) in enumerate(events):
         out.append(f'\t$@pv_evkey$[{e}] = "{key}"; $@pv_evtext$[{e}] = {q(text)}; $@pv_evdays[{e}] = {days};')
+        out.append(f'\t$@pv_evend$[{e}] = {q(NEWS_ENDS[key])};')
         for lo, hi, items in fx:
             mine = [item(n)["Id"] for n in items]
             out.append(f"\t$@pv_fxev[{f}] = {e}; $@pv_fxmin[{f}] = {lo}; $@pv_fxmax[{f}] = {hi}; "

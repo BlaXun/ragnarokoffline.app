@@ -10,6 +10,8 @@
 - Settings → Mods → Reset data… now starts the whole market over: the supply and the dynamic market's prices. The first start with the hunted supply on resets the prices once.
 - Fewer sellers while stock is low: about a third of the sell stalls stand on an empty market, all of them once it has filled up.
 - What NPCs sell and what players make (potions, forged, refined and carded gear) stays as before.
+- Market news: 11 new events (a monster raid on Prontera, a blight on the World Tree, a fashion contest, an arrow shortage, the Sages' elemental research, bounty week, a collector's card sale, an ore strike, a herb bloom, two more monster migrations), 31 in all.
+- The server announces market news as it starts and when it ends. **Market news** is now 0 (off), 1 (board only) or 2 (announced, the default); a server that had it switched off gets the default once.
 - Stalls change every 2 hours by default (was 4), so new stock reaches the street sooner.
 - GMs: `@supply` shows the groups out, the last MvP and the stock.
 - Needs app 1.5.2 for the supply, and app 1.5.4 for the stalls to follow it.
