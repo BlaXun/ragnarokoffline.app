@@ -19,6 +19,7 @@ not yet. Adjust names, priorities and numbers to your plan. The
 - [Out of the boss's reach, within the party's](#out-of-the-bosss-reach-within-the-partys)
 - [Low on HP: kite round the healer](#low-on-hp-kite-round-the-healer)
 - [Leave hostile ground](#leave-hostile-ground)
+- [Sit down to regenerate between fights](#sit-down-to-regenerate-between-fights)
 - [Don't make a boss teleport](#dont-make-a-boss-teleport)
 
 **Damage**
@@ -191,6 +192,40 @@ A caster wants a band off the boss instead: `KeepDistance: { Min: 6, Max: 8 }`.
 
 These come before the engine's own flee below 30 % HP, which would run it off
 the screen.
+
+## Sit down to regenerate between fights
+
+Sit below 30 % SP when nothing is on the party, and get up at 80 % or as soon as
+something comes for it. A strategy holds the "until":
+
+```yaml
+- Mob: All
+  Jobs:
+    - Job: All
+      Start: up
+      Strategies:
+        - Name: up
+          Rules:
+            - Name: tired
+              When: self_sp_pct_lt30
+              Absent: { Enemy: attacking, Range: 14 }   # nothing on the party
+              Switch: resting
+        - Name: resting
+          Rules:
+            - Name: rested
+              Priority: 6
+              When: { OR: [self_sp_pct_ge80, self_targeted] }
+              Switch: up
+            - Name: rest
+              Priority: 5
+              Sit: true
+```
+
+A companion never sits while its owner walks, and stands up before any other
+rule acts. Sitting also switches on what a player gets from it: two Rogues with
+**Gangster's Paradise** sitting side by side are left alone by monsters, and a
+Taekwon's **Peaceful Break** and **Happy Break** regenerate faster. This recipe
+loads cleanly but hasn't been played yet.
 
 ## Leave hostile ground
 

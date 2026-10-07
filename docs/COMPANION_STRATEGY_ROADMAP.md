@@ -28,7 +28,9 @@ noted:
 - layered `Rotation`; `Allow` and `Ban`, which also bind the engine's own heals
   and buffs; `Attack: false` and `Exact` (not yet played);
 - `Cast:` lists, which pick a spell by element;
-- kinds of monster (`Mob: { Race, Element }`) and `Disable` (not yet played).
+- kinds of monster (`Mob: { Race, Element }`) and `Disable` (not yet played);
+- `Sit: true`, sitting down while a rule applies and standing up when none does
+  (not yet played).
 
 Engine fixes along the way, active with or without plans:
 - a companion that cannot move takes no turn;
@@ -159,13 +161,25 @@ Each item below has the same headings, so it can be picked up cold.
 ## Inventories: the foundation
 
 **What is missing.** Shells and companions have no inventory of their own that
-anyone manages. A companion's bag holds what the engine hands it (gear, virtual
-ammunition) and what a trade puts there, and only its *worn* gear is saved
-(`cp_companion_persistence`, `gear_detail`). The rest is lost with the shell.
-Nothing restocks it, and the owner cannot see or manage it. On top of that, the
-engine's rAthena patch (`0001`, `skill_get_requirement`) waives every item
-requirement for population characters, so even an item that is there is never
-needed or spent.
+anyone manages:
+- A shell does have rAthena's in-game bag. It holds what the engine hands it:
+  its gear, virtual ammunition, and a supply of potions. Since "carry and drink
+  potions" (`65ca24d`), the engine stocks 300 HP and 100 SP potions of a
+  level-fitting kind, drinks them through rAthena's normal item use
+  (`pc_useitem`), and restocks them after a full rest. A trade also puts items
+  there.
+- But only its *worn* gear is saved (`cp_companion_persistence`, `gear_detail`).
+  The rest is lost with the shell.
+- Nobody but the engine fills the bag, and the owner can't see or manage it.
+- The engine's rAthena patch (`0001`, `skill_get_requirement`) waives every
+  item, weapon and ammunition requirement for population characters, so a
+  catalyst in the bag is never needed or used up. (Patch `0031` is about
+  something else: since then every shell, immortal ones included, pays the
+  **SP** and AP its skills cost.)
+
+The engine's potion drinking is to become a setting (on or off), as agreed with
+the maintainer. The aim is the full range of items, not a couple of healing
+potions.
 
 **Why not now.** Three decisions belong to the inventory itself, not to
 strategies: where the bag is saved, who fills it (the owner by trade, a shopping
@@ -216,18 +230,38 @@ Tables written today need no change.
 
 ### Using items
 
-**What is missing.** Companions use no items: no potions, no Yggdrasil Leaf, no
-Fly Wing, no elemental converters.
+**What is missing.** Beyond the engine's own HP and SP potions (above), shells
+use no items, and a plan can't ask for one. The aim is the whole range of
+usable items:
+- healing and SP potions, chosen by the plan rather than the engine;
+- Berserk and Awakening potions for attack speed, before a boss;
+- Green Herbs and Panacea against poison and other ailments;
+- elemental converters and scrolls that endow a weapon;
+- Yggdrasil Leaf to revive someone else, Yggdrasil Berry to heal fully;
+- Fly Wing and Butterfly Wing.
 
-**Why not now.** No inventory.
+**Why not now.** No managed inventory: nothing stocks these items, and the owner
+can't give or see them. The engine's potion supply is a fixed pair, filled by
+the engine itself.
 
-**How it would work.** A new rule action, `UseItem: <item>` with `Target:`
-(`self`, an ally selector, a dead ally for a Yggdrasil Leaf). It calls rAthena's
-item use (`pc_useitem`); for an item that targets someone, the server completes
-the target step a client would send. Item use waits out its own delay the way
-casts wait out theirs. The conditions exist: HP and SP (`When:`), the bag
-(`item_below`, `Requires: { Items }`). Example: "below 30 % HP with no healer
-alive, drink a White Potion".
+**How it would work.** A new rule action, `UseItem: <item>` (or a list, the first
+one in the bag) with `Target:` (`self`, an ally selector, a dead ally for a
+Yggdrasil Leaf). It calls rAthena's item use, `pc_useitem`, the same path the
+engine's potion drinking already uses successfully. For an item that targets
+someone, the server completes the target step a client would send. Item use
+waits out its own delay, the way casts wait out theirs. The conditions exist:
+HP and SP (`When:`), statuses (`self_poison`, `not_self_aspdpotion`), the bag
+(`item_below`, `Requires: { Items }`).
+
+Examples:
+- below 30 % HP with no healer alive, drink a White Potion;
+- poisoned, eat a Green Herb;
+- entering a boss's plan, drink a Berserk Potion;
+- the boss is undead, endow with Holy Water;
+- a party member lies dead with no Priest near, use a Yggdrasil Leaf.
+
+When the engine's potion drinking becomes a setting, a plan can take it over
+entirely.
 
 **What it adds.** Survival without a healer, revives without a Priest, and
 consumables as part of boss plans (a Yggdrasil Berry at Phreeoni's Power Up).
@@ -394,6 +428,35 @@ something to watch, to race, or to join.
 
 **Where to start.** `population_arena_start` (synthetic parties, spawning by
 script) and the party listing in the strategy module (`party_members`).
+
+## Combining plans across mods: name clashes and Allow
+
+**What is missing.** When two mods give the same plan (monster, job, build),
+their rules merge by `Name`: new names are appended, the same name replaces the
+earlier rule. That is how a later mod extends an earlier one. But a clash is
+silent: two unrelated mods that both call a rule `heal` replace each other with
+nothing in the log. And the plan settings combine unevenly: a later `Ban` adds to
+the earlier list, while a later `Allow` replaces it.
+
+**Why not now.** Merging works as designed for the example mods. Nothing has
+clashed yet, and the right rule for `Allow` (combine, or replace) is a decision
+to make with more mods in hand.
+
+**How it would work.**
+- A load-time notice whenever a rule replaces an earlier one of the same name,
+  naming the plan.
+- A naming convention in the docs: prefix a rule with the mod
+  (`phreeoni_basics.meteor_the_slaves`) unless it is meant to replace a rule.
+- Decide how two `Allow` lists in one plan combine: a union (the later mod
+  allows more), an intersection (only what both allow), or replacement as now.
+  Then make `Allow` and `Ban` consistent.
+
+**What it adds.** Mods that extend each other safely: a generic plan from one
+mod, specific additions from another, with any overlap visible.
+
+**Where to start.** `merge_rules` and `merge_job` in
+`strategy/population_strategy.cpp`; "More than one mod" in
+[the reference](mods/companion-strategies/reference.md#more-than-one-mod).
 
 ## Measuring the cost
 

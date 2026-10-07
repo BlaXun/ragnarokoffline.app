@@ -164,6 +164,7 @@ struct Rule {
 	std::string switch_to;
 	std::string signal;          ///< tell the party's companions (On: signal), lower-case
 	bool hold = false;           ///< stand still and end the turn
+	bool sit = false;            ///< sit down (regenerating faster) while the rule applies
 	int16 keep_distance = 0;     ///< step out to at least this many cells from the monster (0 = off)
 	int16 keep_max = 0;          ///< and back in to at most this many (0 = no limit): stay in range of it
 	// Kite: away from the monster on the companion, within reach of an anchor (the rule's
@@ -888,7 +889,7 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		return nullptr;
 	}
 	this->warn_unknown_keys(node, { "Name", "Priority", "Remove", "Requires", "On", "When", "Charges", "Field",
-		"Enemy", "Count", "Reach", "Absent", "Present", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
+		"Enemy", "Count", "Reach", "Absent", "Present", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "Sit", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown",
 		"OnePerParty" }, "a rule");
 
 	auto rule = std::make_shared<Rule>();
@@ -1166,6 +1167,8 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 	}
 	if (this->nodeExists(node, "Hold"))
 		this->asBool(node, "Hold", rule->hold);
+	if (this->nodeExists(node, "Sit"))
+		this->asBool(node, "Sit", rule->sit);
 	if (this->nodeExists(node, "Leave")) {
 		const ryml::NodeRef l = node["Leave"];
 		if (l.is_map()) {
@@ -1280,14 +1283,14 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 	if (this->nodeExists(node, "OnePerParty"))
 		this->asBool(node, "OnePerParty", rule->one_per_party);
 
-	const int moves = (rule->cast_skill != 0) + (rule->retreat != Retreat::None) + rule->hold + (rule->keep_distance > 0)
-		+ (rule->move != Move::None) + rule->leave + rule->kite;
+	const int moves = (rule->cast_skill != 0) + (rule->retreat != Retreat::None) + rule->hold + rule->sit
+		+ (rule->keep_distance > 0) + (rule->move != Move::None) + rule->leave + rule->kite;
 	if (moves == 0 && rule->say.empty() && rule->switch_to.empty() && rule->signal.empty() && !rule->set_target) {
-		this->invalidWarning(node, "A rule needs Cast, Retreat, KeepDistance, Kite, MoveTo, Leave, Hold, Say, Switch, Signal or SetTarget; the rule is skipped.\n");
+		this->invalidWarning(node, "A rule needs Cast, Retreat, KeepDistance, Kite, MoveTo, Leave, Hold, Sit, Say, Switch, Signal or SetTarget; the rule is skipped.\n");
 		return nullptr;
 	}
 	if (moves > 1) {
-		this->invalidWarning(node, "A rule takes only one of Cast, Retreat, KeepDistance, Kite, MoveTo, Leave and Hold; the rule is skipped.\n");
+		this->invalidWarning(node, "A rule takes only one of Cast, Retreat, KeepDistance, Kite, MoveTo, Leave, Hold and Sit; the rule is skipped.\n");
 		return nullptr;
 	}
 	if (rule->move == Move::EventCell && rule->event != Event::Casts) {
@@ -1774,6 +1777,7 @@ struct ShellState {
 	bool trace = false;
 	uint32 tracer_char = 0;     ///< a regular shell's trace goes to this player (a companion's to its owner)
 	t_tick hold_until = 0;      ///< a rule is positioning the companion: following waits until then
+	bool sat = false;           ///< a Sit rule sat it down: stood up again when none applies
 	int32 forced_target = 0;    ///< SetTarget: this monster, until forced_until
 	t_tick forced_until = 0;
 	std::string last_trace;
@@ -2083,6 +2087,7 @@ struct Turn {
 	t_tick tick;
 	ShellState *st;
 	bool target_set = false;    ///< a higher-priority rule already chose the target this turn
+	bool sitting = false;       ///< a Sit rule applied this turn
 	const std::vector<PlanRef> *plans = nullptr; ///< the plans that apply this turn
 };
 
@@ -3086,6 +3091,47 @@ static bool mode_allows_enemy(const Turn &t, const block_list *mob)
 	return (owner_ud != nullptr && owner_ud->target == md->id) || (md->target_id != 0 && is_party(sd, md->target_id));
 }
 
+/// Sit: true. The checks a player's sit request passes (clif_parse_ActionRequest_sub), and the
+/// calls the engine's own rest makes (pop_shell_rest). Never while its owner walks: a sitting
+/// companion cannot follow. True when it sits now.
+static bool sit_down(Turn &t)
+{
+	map_session_data *sd = t.sd;
+	if (pc_issit(sd)) {
+		// Already sitting, by this rule or by the engine's rest: either way, it stays down.
+		return true;
+	}
+	if (pc_isdead(sd) || (t.owner != nullptr && unit_is_walking(t.owner)) || sd->ud.skilltimer != INVALID_TIMER
+			|| (sd->sc.opt1 && sd->sc.opt1 != OPT1_STONEWAIT && sd->sc.opt1 != OPT1_BURNING)
+			|| sd->sc.getSCE(SC_DANCING)
+			|| (sd->sc.getSCE(SC_GRAVITATION) && sd->sc.getSCE(SC_GRAVITATION)->val3 == BCT_SELF)
+			|| (sd->state.block_action & PCBLOCK_SITSTAND))
+		return false;
+	if (unit_is_walking(sd))
+		unit_stop_walking(sd, USW_FIXPOS);
+	unit_stop_attack(sd);
+	sd->pop.companion_formation_active = false;
+	pc_setsit(sd);
+	skill_sit(sd, true);
+	clif_sitting(*sd);
+	t.st->sat = true;
+	return true;
+}
+
+/// Stand up a companion a Sit rule sat down, the way a player's client does (pop_shell_stand).
+/// One the engine's own rest sat down is left to the rest.
+static void rise(Turn &t)
+{
+	map_session_data *sd = t.sd;
+	if (!t.st->sat)
+		return;
+	t.st->sat = false;
+	if (pc_issit(sd) && pc_setstand(sd, false)) {
+		skill_sit(sd, false);
+		clif_standing(*sd);
+	}
+}
+
 static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &ps, bool do_skills, bool attack_only)
 {
 	map_session_data *sd = t.sd;
@@ -3190,6 +3236,12 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 	char buf[16];
 	const char *name = label(rule, buf, sizeof(buf));
 	bool acted = false;
+	// Every action but Sit needs the companion on its feet: a sitting character can neither
+	// move (unit_can_move) nor act.
+	if (!rule.sit && (rule.cast_skill != 0 || rule.retreat != Retreat::None || rule.hold || rule.keep_distance > 0
+			|| rule.move != Move::None || rule.leave || rule.kite)
+			&& !(rule.cast_skill != 0 && (!do_skills || attack_only)))
+		rise(t);
 	if (rule.cast_skill != 0) {
 		if (!do_skills || attack_only)
 			return Outcome::Skipped;
@@ -3279,6 +3331,15 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		else
 			trace(sd, *t.st, t.tick, "rule %s: keeping %d cells away", name, rule.keep_distance);
 		acted = true;
+	} else if (rule.sit) {
+		if (!sit_down(t)) {
+			trace(sd, *t.st, t.tick, "rule %s: cannot sit now", name);
+			return Outcome::Skipped;
+		}
+		t.sitting = true;
+		trace(sd, *t.st, t.tick, "rule %s: sit (SP %u/%u, HP %u/%u)", name, sd->battle_status.sp,
+			sd->battle_status.max_sp, sd->battle_status.hp, sd->battle_status.max_hp);
+		acted = true;
 	} else if (rule.hold) {
 		// Stand still: no chase, no walk toward the target. A continuous attack command
 		// would chase it too, so that goes as well.
@@ -3291,7 +3352,7 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 	}
 
 	if (acted && rule.cast_skill == 0)
-		hold_position(t); // Retreat, KeepDistance, MoveTo, Leave, Hold
+		hold_position(t); // Retreat, KeepDistance, MoveTo, Leave, Hold, Sit
 	if (rule.set_target && target != nullptr && target->type == BL_MOB && !t.target_set) {
 		t.target_set = true;
 		// Held for a few seconds and renewed while the rule applies; population_strategy_target
@@ -3568,8 +3629,14 @@ bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills,
 
 	block_list *enemy = same_map_bl(sd, sd->pop.target_id);
 	const auto plans = plans_for(sd, enemy);
-	if (plans.empty())
+	if (plans.empty()) {
+		const auto it = g_shells.find(sd->id);
+		if (it != g_shells.end() && it->second.sat) { // no plan, no Sit rule: up again
+			Turn up{ sd, nullptr, enemy, tick, &it->second };
+			rise(up);
+		}
 		return false;
+	}
 
 	Turn t{ sd, population_engine_companion_loot_owner(sd), enemy, tick, &shell_state(sd, tick) };
 	t.plans = &plans;
@@ -3635,9 +3702,14 @@ bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills,
 				break;
 			}
 		}
-		if (!switched)
+		if (!switched) {
+			if (!t.sitting)
+				rise(t); // no Sit rule applies any more
 			return false;
+		}
 	}
+	if (!t.sitting)
+		rise(t);
 	return false;
 }
 

@@ -46,7 +46,7 @@ each one does. New to it? Start with the [guide](guide.md). For party play see
 | `Field` | ground units nearby | `MoveTo` | to an event, a cell, a field, a reachable cell |
 | `Count` | monsters nearby | `Leave` | off hostile ground |
 | `Present` / `Absent` | a selector finds someone / nobody | `Hold` | stand still |
-| `Reach` | the monster could fight back here | | |
+| `Reach` | the monster could fight back here | `Sit` | sit down, regenerating faster |
 | `Enemy` | the monster's element, race, size, boss | **Also, with or without an action:** | |
 | `Cooldown` | not fired for so long | `Say` (+ `Channel`) | speak |
 | `OnePerParty` | no other companion just did it | `Switch` | change strategy |
@@ -262,6 +262,7 @@ And then does one thing:
 | `KeepDistance: { Min, Max }` | A band: closer than `Min`, step out; further than `Max`, come back in (to stay within a spell's range). Within it, the rule passes. Measured from the rule's selector pick when it has one: `Target: { Ally: attacked }` keeps a healer within reach of whoever is hit, `Target: { Enemy: boss }` keeps it out of the boss's. |
 | `KeepDistance: n` | Closer than `n` cells to the monster: walks to the nearest open cell at least `n` away. Already that far: the rule passes, and the next rule (a cast) runs. |
 | `Hold: true` | Stands still, without chasing or walking to the target. Without it, a turn no rule took is an ordinary turn, and an ordinary turn walks up to the target. |
+| `Sit: true` | Sits down while the rule applies, as a player does: faster regeneration, and the effects tied to sitting (Gangster's Paradise, Peaceful and Happy Break). Not while its owner is walking, nor while casting, dancing or under a status that forbids it. It stands up again as soon as no `Sit` rule applies, and before any other rule acts: a sitting character can neither move nor cast. For "sit until 80 %", put the `Sit` rule in a strategy and switch out of it at 80 %. The engine's own rest (below a companion's rest threshold) is separate, and takes the turn while it lasts. |
 | `Say:` text, `Channel: party` / `area` | Speaks. `{name}` `{owner}` `{target}` `{ally}` `{skill}` `{hp}` are filled in. A `Say` rule without an event waits 10 s between lines, and one with an event 2 s, unless it has a `Cooldown`. |
 | `SetTarget: true` | Makes the rule's monster (a selector's, or `source`) the companion's combat target, held for 3 s and renewed while the rule applies. Alone, it does not end the turn. |
 | `Switch:` strategy | Makes another strategy of the same plan active. |
@@ -271,7 +272,7 @@ A companion that cannot move (petrified, frozen, stunned: whatever rAthena's
 `unit_can_move` refuses) skips every movement rule; it does not walk away while
 turned to stone.
 
-`Cast`, `Retreat`, `KeepDistance`, `MoveTo`, `Leave` and `Hold` end the companion's turn; only one
+`Cast`, `Retreat`, `KeepDistance`, `MoveTo`, `Leave`, `Hold` and `Sit` end the companion's turn; only one
 of them is allowed per rule. `Say`, `Switch` and `Signal` do not end it and can
 come with any of them, after it has succeeded. When no rule acts, the companion takes its
 ordinary turn: heals, buffs and the skill rotation (minus anything `Ban` or
@@ -688,7 +689,11 @@ adds to what an earlier one said:
 | with `Reset: true` | starts that monster/job/build over |
 | with `Remove: true` | deletes that monster/job/build |
 
-Give rules a `Name` so another mod can replace or remove them.
+Give rules a `Name` so another mod can replace or remove them. Mind that a
+same-named rule from an unrelated mod replaces yours silently; when you mean to
+add rather than replace, prefix names with your mod's. A later `Allow` replaces
+an earlier one in the same plan, while `Ban` lists add up. Both points are open
+in the [roadmap](../../COMPANION_STRATEGY_ROADMAP.md#combining-plans-across-mods-name-clashes-and-allow).
 
 ## Writing plans that hold up in a fight
 

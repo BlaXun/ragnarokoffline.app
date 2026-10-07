@@ -32,6 +32,7 @@ watch what the companion reports.
 - [Can it use items, potions, or switch gear?](#can-it-use-items-potions-or-switch-gear)
 - [Do regular AI characters use plans too?](#do-regular-ai-characters-use-plans-too)
 - [Does it run out of SP?](#does-it-run-out-of-sp)
+- [Can it sit down to regenerate?](#can-it-sit-down-to-regenerate)
 
 ---
 
@@ -214,6 +215,16 @@ don't apply to them. See [Regular shells](reference.md#regular-shells).
 
 ### Does it run out of SP?
 
-Yes, companions and fighting AI characters have a real SP pool. Casts cost SP,
+Yes, companions and AI characters have a real SP pool, immortal ones included. Casts cost SP,
 and it regenerates as for players. The engine's own casts stop at 15 % SP. The
 trace shows the SP on every cast line.
+
+### Can it sit down to regenerate?
+
+Yes, two ways. The engine rests on its own: below a companion's rest threshold,
+with nothing going on, it sits until recovered. And a rule can say `Sit: true`
+whenever its conditions hold: the companion sits while the rule applies and
+stands up as soon as it doesn't, or before any other rule acts. The
+[cookbook](cookbook.md#sit-down-to-regenerate-between-fights) has a "sit below
+30 %, get up at 80 %" recipe. Sitting also triggers Gangster's Paradise for
+Rogues sitting together, and a Taekwon's Peaceful and Happy Break.

@@ -143,7 +143,8 @@ Movement is an action like any other:
 
 `KeepDistance` with one number is "at least"; with `Min` and `Max` it's a band.
 Inside the band, the rule passes and the next one runs, typically a cast. Other
-movement: `Kite`, `Retreat`, `MoveTo`, `Leave`, and `Hold` (stand still).
+movement: `Kite`, `Retreat`, `MoveTo`, `Leave`, `Hold` (stand still) and `Sit`
+(sit down to regenerate; it stands up again by itself).
 
 A positioning rule also stops the companion following its owner while it holds.
 That's what lets it stand its ground in a fight.
