@@ -157,6 +157,8 @@ function readIndex(body) {
         mods: Array.isArray(requires.mods)
           ? requires.mods.filter(name => NAME.test(name || '')).slice(0, 16) : [],
         era: typeof requires.era === 'string' ? requires.era.slice(0, 20) : '',
+        client: (Array.isArray(requires.client) ? requires.client : [])
+          .filter(c => typeof c === 'string' && /^[A-Za-z0-9]{1,12}$/.test(c)).slice(0, 10),
         app: typeof requires.app === 'string' ? requires.app.slice(0, 20) : '',
       },
       source,

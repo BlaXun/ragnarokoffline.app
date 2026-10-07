@@ -975,6 +975,9 @@ async function linkClientOwned(paths) {
 	const args = ['link-assets', paths.data_grf, paths.rdata_grf || ''];
 	if (paths.official_grf || paths.bgm_dir) args.push(paths.official_grf || '');
 	if (paths.bgm_dir) args.push(paths.bgm_dir);
+	// Which client these GRFs are (kRO, iRO...), before link-assets: mods can
+	// be for one client, and their per-client folders are part of the overlay.
+	try { require('./client-detect').detectAndSave(stateDir(), paths, appLog); } catch (e) { appLog(`client: detection failed: ${e.message}`); }
 	return new Promise((resolve, reject) => {
 		execFile(
 			stackBin(),
@@ -2565,7 +2568,9 @@ const handlers = {
 		// the GRFs were found is most of triage.
 		const c = getClientPaths();
 		add('client', Object.entries(c)
-			.map(([k, v]) => `${k.padEnd(14)}${v === '' ? '(unset)' : v}`).join('\n'));
+			.map(([k, v]) => `${k.padEnd(14)}${v === '' ? '(unset)' : v}`)
+			// Which client the GRFs are: a mod written for kRO's data breaks iRO.
+			.concat(`${'detected'.padEnd(14)}${require('./client-detect').describe(stateDir()).text}`).join('\n'));
 		add('settings', JSON.stringify(getSettings(), null, 2));
 		add('Cloudflare sharing', JSON.stringify({
 			state: sharing?.state || 'stopped',
@@ -3014,6 +3019,16 @@ const handlers = {
 	// this data.grf. Kept out of get_client_paths, whose result the setup screen
 	// hands back to set_client_paths to be saved.
 	client_folders: ({ data_grf }) => require('./client-folders').clientFolders(data_grf),
+	// Which client the GRFs are (kRO, iRO...), for Settings. Detected again
+	// only when the GRFs changed since the last time.
+	client_detected: () => {
+		const detect = require('./client-detect');
+		const c = getClientPaths();
+		if (c.mode !== 'join' && c.data_grf) {
+			try { detect.detectAndSave(stateDir(), c, appLog); } catch (e) { appLog(`client: detection failed: ${e.message}`); }
+		}
+		return detect.describe(stateDir());
+	},
 	packetvers: () => require('./packetvers').list(projectRoot()),
 	set_client_paths: async ({ paths }) => {
 		const next = { ...getClientPaths(), ...paths };
@@ -3706,7 +3721,7 @@ if (!app.requestSingleInstanceLock()) {
 const HEADLESS_PAGE_HANDLERS = new Set([
 	'agent_replace_token', 'agent_set', 'agent_status', 'map_editor_agent_set', 'assets_ready', 'assets_stop', 'check_mod_updates',
 	'client_folders', 'copy_diagnostics', 'data_location', 'db_backup', 'db_backup_full', 'db_inspect',
-	'db_inspect_full', 'db_restore', 'db_restore_full', 'game_status', 'get_client_paths', 'get_mode',
+	'db_inspect_full', 'db_restore', 'db_restore_full', 'game_status', 'get_client_paths', 'client_detected', 'get_mode',
 	'get_settings', 'get_vm_ram_mib', 'host_facts', 'host_ram_mib', 'hosting_check', 'install_mod',
 	'install_registry_mod', 'install_skin', 'list_mods', 'list_registry_mods', 'mod_data_reset', 'mod_host_list', 'mod_host_set',
 	'open_data_folder', 'open_mods_folder', 'packetvers', 'registry_image', 'registry_release', 'remove_mod',
