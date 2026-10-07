@@ -117,7 +117,7 @@ test('tags, pictures and dependencies come through the index', () => {
   const body = JSON.stringify({ version: 1, mods: [{
     name: 'shiny', tags: ['ui', 'Quality-Of-Life', 'ok-tag', 'x'.repeat(30)],
     icon: 'images/icon.png', screenshots: ['a.png', 'b.jpg', 'c.gif', 'd.webp', 'e.png'],
-    requires: { mods: ['base'], era: 'renewal', app: '>=1.2.0' },
+    requires: { mods: ['base'], era: 'renewal', app: '>=1.2.0', client: ['kRO', 'j/RO', 7] },
     files: ['mod.json', 'images/icon.png', 'a.png', 'b.jpg', 'c.gif', 'd.webp', 'e.png']
       .map(p => ({ path: p, sha256: sha(p) })),
   }] });
@@ -127,7 +127,8 @@ test('tags, pictures and dependencies come through the index', () => {
   assert.strictEqual(mod.icon, 'images/icon.png');
   // Capped at four, in the order given.
   assert.deepStrictEqual(mod.screenshots, ['a.png', 'b.jpg', 'c.gif', 'd.webp']);
-  assert.deepStrictEqual(mod.requires, { mods: ['base'], era: 'renewal', app: '>=1.2.0' });
+  // A client that isn't a plain name is dropped, like a bad tag.
+  assert.deepStrictEqual(mod.requires, { mods: ['base'], era: 'renewal', client: ['kRO'], app: '>=1.2.0' });
 });
 
 test('a picture the mod does not ship is not shown', () => {

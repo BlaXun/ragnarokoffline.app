@@ -77,6 +77,11 @@ mod safe to hand to a stranger:
 - **`mods`** — other mods this one cannot work without, by folder name. Each
   must be installed and switched on. (Before 1.2.6 this key was refused as
   unknown, so a mod using it did not load at all.)
+- **`client`** — which game client's files the mod is for: `"kRO"`, or a list
+  like `["kRO", "jRO"]`. On another client the mod isn't applied, and Settings
+  → Mods says why ("is for kRO, and this client is iRO"). See
+  [Mods for one client](#mods-for-one-client). An app from before this key
+  refuses the whole mod, naming the key, so the player knows to update.
 
 `"after": ["other-mod"]`, beside `requires`, is about precedence rather than
 need: when both are on, this mod is applied later and wins where the two
@@ -98,6 +103,52 @@ that runs on the host's computer, and the addresses it may connect to.
 `"maps": { "my_isle": { "sky": [0.4, 0.6, 0.8], "clouds": [1, 1, 1], "bgm": "my_isle.mp3" } }`.
 It is how a custom map gets anything but black behind it and the default track;
 see [Custom maps](mods/CUSTOM_MAPS.md#the-sky-the-weather-and-the-music).
+
+### Mods for one client
+
+Players host with different clients' files: kRO's, iRO's, others. Most mods
+don't care, but some ship data that only matches one client. An `iteminfo.lua`
+made for kRO's item tables, for example, overwrites the descriptions and art
+of iRO's own items, which an iRO player sees as a broken cash shop.
+
+The app reads which client the player has from their `data.grf`, and Settings
+→ General → Client shows it: `iRO (from data.grf)`. (It comes from the
+message table every client ships, `msgstring_kr.lub` in kRO, `msgstring_us.lub`
+in iRO. The GRF's header can't tell them apart.)
+
+- **Only for one client:** `"requires": { "client": "kRO" }`. Anywhere else
+  the mod is not applied, and says why.
+- **Different files per client:** `clientFolders`, laid out and applied like
+  [era folders](#renewalfolder--prerenewalfolder--one-mod-for-both-eras), last,
+  so the client's copy of a file wins over the mod's own and its era's:
+
+  ```json
+  {
+    "name": "item-art",
+    "clientFolders": { "kRO": "kro", "iRO": "iro" }
+  }
+  ```
+
+  ```
+  item-art/
+  ├── mod.json
+  ├── System/itemInfo.lua          every client, unless its folder has its own
+  ├── kro/System/itemInfo.lua      kRO: kRO's item tables, with the mod's items
+  └── iro/System/itemInfo.lua      iRO: iRO's
+  ```
+
+Names are compared without regard to case. The app knows `kRO`, `iRO`, `bRO`,
+`jRO`, `twRO`, `thRO`, `idRO`, `pRO`, `ruRO`, `cRO` and `vRO`. When it can't
+tell which client the files are (no message table, or one it doesn't know),
+nothing is refused: the mod may well be right for it. Diagnostics and the log
+say what was detected.
+
+There is no client version to require: a GRF doesn't record its date. When a
+mod needs data only newer clients have, say so in its description and check
+for the file in a script, rather than assuming a date.
+
+An app from before `clientFolders` ignores it and reads only the mod's own
+folders; `requires.client` makes such an app refuse the mod by name.
 
 ### renewalFolder / prerenewalFolder — one mod for both eras
 
