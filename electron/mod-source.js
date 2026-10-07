@@ -499,6 +499,15 @@ function registryUpdates(installed, listing, { appVersion } = {}) {
 	const out = [];
 	for (const mod of installed) {
 		const entry = listing.find(m => m.name === mod.name);
+		// The list publishes this mod from its own repository, but this copy
+		// didn't come from there (no source record): the author's working copy,
+		// or one dropped in by hand. Nothing here can say whether it's behind,
+		// so it is never offered an update -- and Settings says so, rather than
+		// leaving the player to wonder why releases don't show up.
+		if (entry && entry.source && entry.source.github) {
+			out.push({ name: mod.name, localCopy: true, repo: entry.source.github, installed: mod.version || '', update: false });
+			continue;
+		}
 		if (!entry || entry.source || !entry.version) continue;
 		const needs = appRequirement(entry.requires && entry.requires.app, appVersion);
 		const newer = isNewer(entry.version, mod.version);

@@ -1981,6 +1981,11 @@ function modBadges(m, pendingNames) {
   const kindLabel = { skin: 'UI skin', cursor: 'Cursor pack' }[m.kind];
   if (kindLabel) add(kindLabel, '', 'One at a time');
   if (m.source) add('GitHub', 'gh', `From github.com/${m.source.repo}`);
+  else if (modLocalCopies[m.name] && !m.bundled) {
+    const repo = modLocalCopies[m.name].repo;
+    add('Your own copy', '', `${m.name} is published on GitHub (github.com/${repo}), but this copy didn't come from there, ` +
+      'so it is not checked for updates. To get its releases, install it from Find Mods: that replaces this folder, so keep a copy of your own work first.');
+  }
   const u = modUpdate(m.name);
   if (u) add(`Update ${u.installed} → ${u.latest}`, 'upd');
   if (m.refused) add('Not loaded', 'bad');
@@ -2386,6 +2391,9 @@ function notesBlock(text, title = "What's new") {
 // opens and when asked -- never in the background -- and only ever offered:
 // the player clicks Update, sees the release, and confirms.
 let modUpdates = {};
+// Installed copies of mods the list publishes from GitHub, that didn't come
+// from GitHub: name -> { repo }. Shown, never checked for updates.
+let modLocalCopies = {};
 let checkingUpdates = null;
 let modsCheckedAt = null;
 
@@ -2466,7 +2474,13 @@ async function checkModUpdates(fresh = false) {
     try { results = await invoke('check_mod_updates', { fresh }); }
     finally { checkingUpdates = null; }
     modUpdates = {};
-    for (const u of results) modUpdates[u.name] = u;
+    modLocalCopies = {};
+    // A copy of a GitHub-published mod that didn't come from GitHub isn't an
+    // update result: it was never checked, so it mustn't read as up to date.
+    for (const u of results) {
+      if (u.localCopy) modLocalCopies[u.name] = u;
+      else modUpdates[u.name] = u;
+    }
     modsCheckedAt = new Date();
     // A mod with an update moves to "Needs attention", and Find Mods
     // labels it "Update".
