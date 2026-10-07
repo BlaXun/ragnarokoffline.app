@@ -517,11 +517,15 @@ S_Save:
 // S_Stalls <force>: how many sell stalls stand, by how much of a settled
 // market's variety is in stock: each item counts up to one copy, or what it
 // settles at if that is less, so a pile of Elunium is not a full market.
+// Times the street's share this hour ($@pv_streetpct, prontera-vendors.txt),
+// which leaves the sell count to this script while it runs ($@pvs_stalls).
 // 30 % of "Sell stalls" with nothing in stock, all of them from 75 %: a
 // settled market scores 77-89 %, since a rare item is in stock only now and
 // then.
 S_Stalls:
 	.@full = callfunc("F_ModSetting", .mod$, "sell_shops", 1) ? callfunc("F_ModSetting", .mod$, "vendors", 30) : 0;
+	.@full = .@full * ($@pv_streetpct > 0 ? $@pv_streetpct : 100) / 100;
+	$@pvs_stalls = 1;
 	.@want = 0;
 	.@have = 0;
 	for (.@k = 0; .@k < $@pvs_gcount; .@k++) {

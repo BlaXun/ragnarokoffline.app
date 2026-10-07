@@ -52,9 +52,9 @@ defaults. On an app without settings pages they show in the Mods tab.
 | Setting | Default | What it does |
 |---|---|---|
 | Sell shops | on | Off removes every sell stall. |
-| Sell stalls | 30 | How many sell stalls stand on their lanes (0–100). |
+| Sell stalls | 30 | The most sell stalls that stand on their lanes (0–100), in the evening; fewer at other hours. |
 | Buy shops | on | Off removes every buying store. |
-| Buy stalls | 30 | How many buying stores stand on their lanes (0–100). |
+| Buy stalls | 30 | The most buying stores that stand on their lanes (0–100), in the evening; fewer at other hours. |
 | Minutes before a stall changes | 120 | How long a vendor stays before packing up. Each varies by up to half either way, and stalls are checked once a minute, so short values run long (2 means roughly 1–5 minutes). 0 keeps them until the server restarts. |
 | Price level (%) | 100 | Every price × this / 100, for sell stalls and buyers alike. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count toward it). |
@@ -244,6 +244,18 @@ with each line's market price, price factor and expected customers a day,
 and how long the last pass took; `@vendorinfo customers ff <minutes>`
 fast-forwards them.
 
+## A street that follows the clock
+
+Every hour on the hour the street changes with the time of day, as on a real
+server: **Sell stalls** and **Buy stalls** are the most that stand, from 19:00
+to 22:59. Early evening (17–18) has 95 % of them, late evening (23) 90 %,
+the night a core of AFK merchants (80 %), the afternoon 85 % and the
+morning the fewest (70 %). Stalls past the count pack up; more open as the
+evening comes. Shouts follow too: **Seconds between a stall's shouts** is
+the early-evening pace, a little faster later in the evening, somewhat
+slower in the day (slowest in the morning), a third as often at night. The
+server's own clock decides.
+
 ## A dynamic market
 
 **Dynamic market** (off by default) makes prices follow the market, then drift
@@ -257,6 +269,9 @@ back to the price list:
 - **Related items move together**: about a third of a move spills over to
   their group (Elunium and Oridecon and their rough stones, herbs, potions,
   gemstones, Ygg items, boxes and albums, dragon parts...).
+- **War of Emperium**: when WoE starts, potions, gemstones and bottles (the
+  War of Emperium season's items) go up 10–20 % at once and drift back like
+  any move. At **Market news** 2 the server announces its start and end.
 - **Market news** (optional) moves a group for a few days about once a week:
   War of Emperium season, refining fever, a hat-making craze, a card craze, an
   Alchemist Guild order, gambling night, a pet fair, a monster raid on

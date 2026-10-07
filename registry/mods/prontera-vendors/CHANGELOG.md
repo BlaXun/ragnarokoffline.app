@@ -18,7 +18,10 @@
 - The server announces market news as it starts and when it ends. **Market news** is now 0 (off), 1 (board only) or 2 (announced, the default); a server that had it switched off gets the default once.
 - Settings → Mods → Reset data… starts the whole market over: the supply and the dynamic market's prices. The first start with the hunted supply on resets the prices once.
 
+- War of Emperium moves the market: when WoE starts, potions, gems and bottles go up 10–20 % and drift back afterwards; announced at **Market news** 2.
+
 ### Street
+- The street follows the clock: **Sell stalls** and **Buy stalls** are the most that stand, in the evening; the morning has the fewest, the night a core of AFK merchants. Shouts follow the time of day too, frequent in the evening and seldom at night.
 - Stalls change every 2 hours by default (was 4), so new stock reaches the street sooner.
 
 ### Fixes
