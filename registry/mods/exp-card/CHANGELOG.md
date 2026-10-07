@@ -4,6 +4,8 @@
 - Levels 1 to 4 are unchanged. Amounts still scale with the server's Base/Job EXP rates. Cards already in a bag give the new amount when used.
 - Pre-renewal has its own amounts, also about 5% of a level where each card becomes usable: 5, 20, 95, 450, 2,000, 6,500, 20,000, 80,000, 200,000 and 580,000 for Lv 1 to Lv 10. Until now it used the Renewal ones, which made low cards worth whole levels and high cards almost nothing. Needs app 1.4.3 or later; older apps keep the Renewal amounts.
 
+- Exp Cards are untradeable: no trading, dropping, vending, mail, auction or guild storage. Personal storage and selling to an NPC still work. Cards already in a bag follow the new rule.
+
 ## 1.1.0
 - Card exp scales with the server's Base and Job EXP rates, so a card stays the same share of what kills give at any rate.
 - The message after using a card names the exact amount granted; Quest EXP, Battle Manuals and the guild tax no longer change it.

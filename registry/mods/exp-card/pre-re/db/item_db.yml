@@ -49,6 +49,10 @@
 #   Lv 4 -> 31    Lv 9  -> 81
 #   Lv 5 -> 41    Lv 10 -> 91
 #
+# Untradeable (Trade): a card stays with the character that found it -- no
+# trading, dropping, vending (no cart), mail, auction or guild storage. It may
+# still go to personal storage or be sold to an NPC.
+#
 # Version 3 is the ITEM_DB version this build reads; take it from the
 # header of vendor/rathena/db/import-tmpl/item_db.yml if you retarget.
 Header:
@@ -63,6 +67,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 1
     Script: |
       .@exp = 5 * getbattleflag("base_exp_rate") / 100;
@@ -75,6 +86,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 11
     Script: |
       .@exp = 20 * getbattleflag("base_exp_rate") / 100;
@@ -87,6 +105,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 21
     Script: |
       .@exp = 95 * getbattleflag("base_exp_rate") / 100;
@@ -99,6 +124,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 31
     Script: |
       .@exp = 450 * getbattleflag("base_exp_rate") / 100;
@@ -111,6 +143,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 41
     Script: |
       .@exp = 2000 * getbattleflag("base_exp_rate") / 100;
@@ -123,6 +162,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 51
     Script: |
       .@exp = 6500 * getbattleflag("base_exp_rate") / 100;
@@ -135,6 +181,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 61
     Script: |
       .@exp = 20000 * getbattleflag("base_exp_rate") / 100;
@@ -147,6 +200,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 71
     Script: |
       .@exp = 80000 * getbattleflag("base_exp_rate") / 100;
@@ -159,6 +219,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 81
     Script: |
       .@exp = 200000 * getbattleflag("base_exp_rate") / 100;
@@ -171,6 +238,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 91
     Script: |
       .@exp = 580000 * getbattleflag("base_exp_rate") / 100;
@@ -184,6 +258,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 1
     Script: |
       .@exp = 5 * getbattleflag("job_exp_rate") / 100;
@@ -196,6 +277,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 11
     Script: |
       .@exp = 20 * getbattleflag("job_exp_rate") / 100;
@@ -208,6 +296,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 21
     Script: |
       .@exp = 95 * getbattleflag("job_exp_rate") / 100;
@@ -220,6 +315,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 31
     Script: |
       .@exp = 450 * getbattleflag("job_exp_rate") / 100;
@@ -232,6 +334,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 41
     Script: |
       .@exp = 2000 * getbattleflag("job_exp_rate") / 100;
@@ -244,6 +353,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 51
     Script: |
       .@exp = 6500 * getbattleflag("job_exp_rate") / 100;
@@ -256,6 +372,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 61
     Script: |
       .@exp = 20000 * getbattleflag("job_exp_rate") / 100;
@@ -268,6 +391,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 71
     Script: |
       .@exp = 80000 * getbattleflag("job_exp_rate") / 100;
@@ -280,6 +410,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 81
     Script: |
       .@exp = 200000 * getbattleflag("job_exp_rate") / 100;
@@ -292,6 +429,13 @@ Body:
     Type: Usable
     Buy: 0
     Weight: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
     EquipLevelMin: 91
     Script: |
       .@exp = 580000 * getbattleflag("job_exp_rate") / 100;

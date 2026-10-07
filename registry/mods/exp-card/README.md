@@ -46,6 +46,12 @@ low-level character who happens to pick up a high-tier card just carries
 it in the bag until they reach the level. Prevents a level 20 alt from
 downing a Lv 10 base card for several levels in one click.
 
+**Untradeable.** A card stays with the character who picked it up: it cannot
+be traded, dropped, vended (it cannot go in a cart), mailed, auctioned or put
+in guild storage. Personal storage and selling it to an NPC still work. The
+drop itself lands on the ground as before, so once the killer's pickup window
+is over anyone can pick it up, as with any drop.
+
 If you want a different curve, edit the twenty scripts in `db/item_db.yml`
 (and `pre-re/db/item_db.yml` for pre-renewal)
 — the tooltips name no number, so nothing else needs to change.
