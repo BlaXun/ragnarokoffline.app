@@ -66,6 +66,9 @@
   }
   button.ghost:hover:not(:disabled) { border-color: var(--accent-dim); color: var(--text); }
   button:disabled { opacity: .4; cursor: default; }
+  /* A button that ends a sentence in the status line: the line's own size,
+     level with the words before it, not a form control on a row of its own. */
+  #era-status button { padding: 0 8px; margin-left: 4px; font-size: inherit; line-height: inherit; vertical-align: baseline; }
   .spinner {
     width: 12px; height: 12px; border: 2px solid var(--line);
     border-top-color: var(--accent); border-radius: 50%;
@@ -481,6 +484,7 @@
   <div class="panel">
     <div class="row"><span class="name">Game assets</span><span class="state" id="s-client">—</span></div>
     <div class="row"><span class="name">Client folders</span><span class="state" id="s-client-folders">—</span></div>
+    <div class="row"><span class="name">Client</span><span class="state" id="s-client-kind">—</span></div>
     <div class="row actions" style="padding-top:10px">
       <button id="change-client" class="ghost">Change asset locations…</button>
     </div>
@@ -488,6 +492,8 @@
        Offline only references them, so nothing is duplicated. The System and AI
        folders are not chosen separately: they come from the folder that holds
        data.grf.</p>
+    <p class="note"><b>Client</b> is which game's files these are (kRO, iRO and so on), read from
+       data.grf. A mod made for another client's files is not applied, and says so in the Mods tab.</p>
   </div>
   </div>
 
@@ -1042,6 +1048,27 @@
          From a terminal: <code id="agent-command"></code> <code>state</code>. Point the agent at
          <b>the guide</b> (AGENT.md) before it starts: it says how to play and what not to do.</p>
     </div>
+    <label style="margin-top:10px">
+      <span>Map editor</span>
+      <input type="checkbox" id="map_editor_agent" style="accent-color: var(--accent); flex: none" />
+      <span class="val" style="width:auto; color: var(--dim)">let an AI agent use the map editor</span>
+    </label>
+    <p class="note">The map editor has its own MCP route on the same address, <code>/mcp/map</code>,
+       for an agent that builds maps rather than plays. Its tools are the editor's
+       (<code>map_open</code>, <code>terrain_brush</code>, <code>view_screenshot</code>, &hellip;) and its token is its
+       own. It is separate from the AI agent above: either can be on without the other. It opens
+       when you open the map editor; turning it off here closes it and forgets the token, and
+       opening the editor then leaves it closed.</p>
+    <div id="agent-map" hidden>
+      <pre id="agent-map-claude" style="white-space: pre-wrap; word-break: break-all; font-size: 11px; margin: 4px 0"></pre>
+      <div class="actions" style="margin-top:4px">
+        <button id="agent-copy-map" class="ghost">Copy</button>
+      </div>
+      <p class="note">Other MCP clients: <code id="agent-map-mcp"></code>, with the token in
+         <code id="agent-map-file"></code>. Point the agent at <code>AGENTS.md</code> beside it.</p>
+    </div>
+    <p class="note" id="agent-map-setup" hidden>Open the map editor once (Settings &rarr; Tools &rarr; Map editor)
+       and the command to connect an agent to it appears here.</p>
     <p class="note" id="agent-status"></p>
   </div>
   </div>
@@ -1302,7 +1329,26 @@ async function chooseEra(pre) {
     const s = await invoke('get_settings');
     const out = await invoke('save_settings', { settings: { ...s, prerenewal: pre } });
     clearInterval(ticking);
-    show(`Switched to ${label} in ${elapsed()}s. Log in again — your character list is the ${label} one.`);
+    // The open game keeps the item and sign text it already loaded, so logging
+    // in again is not enough: it has to be reopened to show the new era.
+    const gameOpen = await invoke('game_status').then(g => g.open, () => false);
+    const afterwards = `Log in again — your character list is the ${label} one.`;
+    show(`Switched to ${label} in ${elapsed()}s. ` + (gameOpen
+      ? `The open game still shows the old era's items and signs. ${afterwards}`
+      : afterwards));
+    if (gameOpen) {
+      // Offered here rather than described: nobody should have to know that
+      // the game window can be closed on its own and the setting stays.
+      const reopen = document.createElement('button');
+      reopen.id = 'era-reopen';
+      reopen.textContent = 'Reopen game';
+      reopen.onclick = async () => {
+        reopen.disabled = true; reopen.textContent = 'Opening…';
+        try { await invoke('open_game'); reopen.textContent = 'Reopened'; }
+        catch (e) { reopen.disabled = false; reopen.textContent = 'Reopen game'; log('error: ' + e); }
+      };
+      status.append(reopen);
+    }
     // Internet hosting credentials are per era, so an era that was never
     // prepared for friends starts in Local mode. The supervisor says so; say
     // it here as well, because the player asked for a different era, not for
@@ -1440,6 +1486,8 @@ async function refresh() {
   paint($('s-client-folders'), !!client.data_grf,
         client.data_grf ? found.map(([name, dir]) => (dir ? name : `no ${name}`)).join(' · ') : '—');
   $('s-client-folders').title = found.filter(([, dir]) => dir).map(([, dir]) => dir).join('\n');
+  const kind = client.data_grf ? await invoke('client_detected').catch(() => null) : null;
+  paint($('s-client-kind'), !!(kind && kind.client), kind ? kind.text : '—');
 
   const assets = await invoke('assets_ready');
   paint($('s-assets'), assets, assets ? 'ready' : 'stopped');
@@ -1933,6 +1981,11 @@ function modBadges(m, pendingNames) {
   const kindLabel = { skin: 'UI skin', cursor: 'Cursor pack' }[m.kind];
   if (kindLabel) add(kindLabel, '', 'One at a time');
   if (m.source) add('GitHub', 'gh', `From github.com/${m.source.repo}`);
+  else if (modLocalCopies[m.name] && !m.bundled) {
+    const repo = modLocalCopies[m.name].repo;
+    add('Your own copy', '', `${m.name} is published on GitHub (github.com/${repo}), but this copy didn't come from there, ` +
+      'so it is not checked for updates. To get its releases, install it from Find Mods: that replaces this folder, so keep a copy of your own work first.');
+  }
   const u = modUpdate(m.name);
   if (u) add(`Update ${u.installed} → ${u.latest}`, 'upd');
   if (m.refused) add('Not loaded', 'bad');
@@ -2165,6 +2218,23 @@ function modRow(m, kindBoxes, pendingNames) {
   }
 
   const actions = el('div', 'mactions');
+  // What the mod keeps in the mod store, for every player. Any mod can have
+  // some, bundled or not, so every mod gets the button.
+  const reset = el('button', '', 'Reset data…');
+  reset.type = 'button';
+  reset.onclick = async () => {
+    const sure = await askInWindow({
+      title: `Reset ${m.name}'s data?`,
+      text: 'Everything this mod has saved for itself is deleted: its own records, and what it kept for every account and character. The game stops while it runs, and a backup is saved first. Characters and items are not touched.',
+      buttons: [{ value: 'cancel', label: 'Cancel', focus: true }, { value: 'reset', label: 'Reset data', className: 'danger' }],
+    });
+    if (!sure) return;
+    reset.disabled = true;
+    try { log(await invoke('mod_data_reset', { name: m.name })); }
+    catch (e) { log('error: ' + e); }
+    reset.disabled = false;
+  };
+  actions.append(reset);
   // Only what the player installed: a mod that ships with the app lives in
   // the app itself and can only be switched off.
   if (!m.bundled) {
@@ -2321,6 +2391,9 @@ function notesBlock(text, title = "What's new") {
 // opens and when asked -- never in the background -- and only ever offered:
 // the player clicks Update, sees the release, and confirms.
 let modUpdates = {};
+// Installed copies of mods the list publishes from GitHub, that didn't come
+// from GitHub: name -> { repo }. Shown, never checked for updates.
+let modLocalCopies = {};
 let checkingUpdates = null;
 let modsCheckedAt = null;
 
@@ -2363,7 +2436,8 @@ function paintUpdates() {
     const head = el('div', 'mhead');
     head.append(el('span', 'mname', m.name), el('span', 'pill upd', `${u.installed} → ${u.latest}`));
     text.append(head, el('div', 'mone', m.source ? `from github.com/${m.source.repo}` : 'from the mod list'));
-    // A GitHub release's notes, here rather than in the Update… box.
+    // What the update changed, here rather than in the Update… box: the
+    // GitHub releases since the installed one, or the mod's CHANGELOG.md.
     if (u.notes && u.notes.trim()) text.append(notesBlock(u.notes));
     const acts = el('div', 'acts');
     const button = el('button', '', updateLabel(u));
@@ -2400,7 +2474,13 @@ async function checkModUpdates(fresh = false) {
     try { results = await invoke('check_mod_updates', { fresh }); }
     finally { checkingUpdates = null; }
     modUpdates = {};
-    for (const u of results) modUpdates[u.name] = u;
+    modLocalCopies = {};
+    // A copy of a GitHub-published mod that didn't come from GitHub isn't an
+    // update result: it was never checked, so it mustn't read as up to date.
+    for (const u of results) {
+      if (u.localCopy) modLocalCopies[u.name] = u;
+      else modUpdates[u.name] = u;
+    }
     modsCheckedAt = new Date();
     // A mod with an update moves to "Needs attention", and Find Mods
     // labels it "Update".
@@ -2790,6 +2870,7 @@ function detailFor(mod) {
   const needs = mod.requires.mods.filter(Boolean);
   if (needs.length) facts.append(el('dt', '', 'Needs'), el('dd', '', needs.join(', ') + ', installed and switched on'));
   if (mod.requires.era && mod.requires.era !== 'any') facts.append(el('dt', '', 'Era'), el('dd', '', mod.requires.era));
+  if (mod.requires.client && mod.requires.client.length) facts.append(el('dt', '', 'Client'), el('dd', '', mod.requires.client.join(', ')));
   if (mod.homepage) {
     const dd = el('dd');
     dd.append(GITHUB_PAGE.test(mod.homepage) ? outLink(mod.homepage, {}, mod.homepage) : mod.homepage);
@@ -3396,6 +3477,15 @@ function paintAgent(a) {
     // Quoted: the folder has spaces in it on every platform.
     $('agent-command').textContent = a.command ? `"${a.command}"` : '';
   }
+  const m = a.mapEditor;
+  $('map_editor_agent').checked = !!a.mapEditorEnabled;
+  $('agent-map').hidden = !m;
+  $('agent-map-setup').hidden = !!m || !a.mapEditorEnabled;
+  if (m) {
+    $('agent-map-claude').textContent = m.claudeCommand || '';
+    $('agent-map-mcp').textContent = m.mcp || '';
+    $('agent-map-file').textContent = m.connection || '';
+  }
   const playing = (a.agents || []).filter(x => x.playing).length;
   $('agent-status').textContent = a.enabled
     ? (playing ? `${playing} of ${a.count || 1} playing now.` : 'Waiting for an agent to connect. Its game window opens when it logs in.')
@@ -3414,6 +3504,15 @@ $('agent_count').addEventListener('change', setAgent);
 $('agent-copy-claude').addEventListener('click', async () => {
   const text = $('agent-claude').textContent;
   if (text) { await invoke('copy_text', { text }); $('agent-status').textContent = 'Copied. Paste each line into a terminal.'; }
+});
+$('map_editor_agent').addEventListener('change', async e => {
+  $('agent-status').textContent = 'Saving…';
+  try { paintAgent(await invoke('map_editor_agent_set', { enabled: e.target.checked })); }
+  catch (err) { $('agent-status').textContent = String(err.message || err); }
+});
+$('agent-copy-map').addEventListener('click', async () => {
+  const text = $('agent-map-claude').textContent;
+  if (text) { await invoke('copy_text', { text }); $('agent-status').textContent = 'Copied. Paste it into a terminal.'; }
 });
 $('agent-open-guide').addEventListener('click', () => invoke('agent_open_guide').catch(e => { $('agent-status').textContent = String(e.message || e); }));
 $('agent-replace').addEventListener('click', async () => {

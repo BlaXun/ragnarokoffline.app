@@ -71,6 +71,13 @@ how each of the three was found.
 
 ## Making the geometry
 
+**Settings → Tools → [Map editor](MAP_EDITOR.md)** is the easy way: it makes
+the ground, its textures, walkability, water and light, places models, NPCs,
+warps and monsters, writes everything below into a mod for you, and takes you
+there with Test in game. An official map can be the starting point.
+
+For a script, or with no app at hand:
+
 ```
 scripts/mkmap.py my_isle --out path/to/my-mod/data --cells 40
 ```
@@ -78,8 +85,8 @@ scripts/mkmap.py my_isle --out path/to/my-mod/data --cells 40
 writes a flat, walled, walkable square with a generated ground texture and a
 minimap: `.gat`, `.gnd`, `.rsw`, `data/texture/my_isle/ground.bmp` and
 `data/texture/À¯ÀúÀÎÅÍÆäÀÌ½º/map/my_isle.bmp`. It is a floor to stand on, not a
-landscape — for real terrain, use one of the community map editors and copy its
-`.gat`/`.gnd`/`.rsw` into `data/` exactly the same way.
+landscape — for real terrain use the map editor, or one of the community map
+editors and copy its `.gat`/`.gnd`/`.rsw` into `data/` exactly the same way.
 
 The traps:
 
