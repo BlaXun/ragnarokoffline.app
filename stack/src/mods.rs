@@ -3143,6 +3143,37 @@ mod tests {
         assert!(!header_clears(stub));
     }
 
+    // Companion strategies arrive the same way, and the worked example must stay
+    // a table of the same Type or the merge would refuse it.
+    #[test]
+    fn the_population_strategy_table_still_imports_the_mod_overlay() {
+        let table = include_str!(
+            "../../third-party/population-engine/files/db/population_strategy.yml"
+        );
+        assert_eq!(header_type(table).as_deref(), Some("POPULATION_STRATEGY_DB"));
+        assert!(
+            table.contains("- Path: db/import/population_strategy.yml"),
+            "the engine would read nothing a mod ships"
+        );
+        let stub = include_str!(
+            "../../third-party/population-engine/files/db/import-tmpl/population_strategy.yml"
+        );
+        assert_eq!(header_type(stub).as_deref(), Some("POPULATION_STRATEGY_DB"));
+        assert!(!header_clears(stub));
+        let roles = include_str!(
+            "../../examples/mods/companion-roles/db/population_strategy.yml"
+        );
+        let tactics = include_str!(
+            "../../examples/mods/companion-tactics/db/population_strategy.yml"
+        );
+        assert_eq!(header_type(roles).as_deref(), Some("POPULATION_STRATEGY_DB"));
+        assert_eq!(header_type(tactics).as_deref(), Some("POPULATION_STRATEGY_DB"));
+        // The two example mods, which are meant to be on together, combine into one table.
+        let merged = merge_tables(roles, tactics).expect("same Type merges");
+        assert_eq!(merged.matches("\nBody:").count(), 1, "{merged}");
+        assert!(merged.contains("Mob: Boss") && merged.contains("Mob: PHREEONI"), "{merged}");
+    }
+
     #[test]
     fn with_nothing_declared_the_order_is_alphabetical() {
         assert_eq!(
