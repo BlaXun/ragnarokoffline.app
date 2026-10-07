@@ -661,7 +661,7 @@
         },
         {
           "path": "npc/prontera-vendors-market-data.txt",
-          "sha256": "1f44cc2bede702d422f5f33d958961e296df61ad0f693f45cfd5c0711a73a984"
+          "sha256": "8f09a12931464d914a200574be699655adffb853eefab0dbd81076fbcd19cd1a"
         },
         {
           "path": "npc/prontera-vendors-market.txt",
@@ -697,7 +697,7 @@
         },
         {
           "path": "pre-re/npc/prontera-vendors-market-data.txt",
-          "sha256": "af0f9a20518be427b87d49cb3d216d69c7a113c51564da6109b3cee63428cd74"
+          "sha256": "98d3029519bdd9aef672f620e29741c4ddaa22453eebda6fc863e849ecc712d0"
         },
         {
           "path": "pre-re/npc/prontera-vendors-supply-data.txt",

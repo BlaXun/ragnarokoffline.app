@@ -2015,10 +2015,23 @@ def market_events():
              if buyable(e) and e.get("Type") == "Etc"][:12]
     cards = [ITEMS_BY_ID[i]["AegisName"] for i in sorted(COMMON_CARDS | RARE_CARDS, key=lambda i: (-popularity(ITEMS_BY_ID[i]), i))
              if i in ITEMS_BY_ID and tradeable(ITEMS_BY_ID[i])][:40]
+    # Everyday goods: cheap consumables an NPC sells and the stalls carry, not
+    # WoE-only (Siege, TE) items or boxes that open into something else.
     everyday = sorted(e["AegisName"] for e in ITEMS_BY_ID.values()
-                      if e.get("Type") in ("Healing", "Usable") and tradeable(e) and 0 < (price(e) or 0) < 5_000)
-    junk = [e["AegisName"] for e in sorted((e for e in ITEMS_BY_ID.values() if e.get("Type") == "Etc" and buyable(e)),
-                                          key=lambda e: (-DROPPERS.get(e["Id"], 0), e["Id"]))][:12]
+                      if e.get("Type") in ("Healing", "Usable") and tradeable(e) and e["Id"] in MARKET_ITEMS
+                      and e["Id"] in NPC_SOLD
+                      and 0 < (price(e) or 0) < 5_000
+                      and not e["Name"].startswith(("Siege", "TE ")) and "Box" not in e["Name"]
+                      and "Quiver" not in e["Name"])
+    # Junk: cheap loot nearly every monster drops. Not ores, crafting or
+    # alchemy materials, nor what an NPC sells (gemstones, bottles), which many
+    # monsters drop too but nobody calls junk.
+    junk = [e["AegisName"] for e in sorted((e for e in ITEMS_BY_ID.values()
+                                            if e.get("Type") == "Etc" and buyable(e)
+                                            and e["AegisName"] not in UPGRADE | CRAFTING | ELEMENTAL | ALCHEMY | HERBS
+                                            and e["Id"] not in NPC_SOLD and "Ore" not in e["Name"].split()
+                                            and 0 < (price(e) or 0) <= 2_000),
+                                           key=lambda e: (-DROPPERS.get(e["Id"], 0), e["Id"]))][:12]
     food = ["Apple", "Banana", "Grape", "Carrot", "Meat", "Honey", "Royal_Jelly", "Strawberry", "Orange", "Lemon",
             "Red_Potion", "Orange_Potion", "Yellow_Potion", "White_Potion"]
     pets = [spec if isinstance(spec, str) else spec["item"] for t in THEMES if t["key"] == "pets" for spec in t["items"]]
@@ -2075,9 +2088,12 @@ def market_events():
                           ("magma", "abyss_lake"), ("orc_dungeon", "geffenia"), ("pyramids", "toy_factory"),
                           ("sunken_ship", "niflheim"), ("ant_hell", "comodo_caves")]:
         key = f"migration_{flood}_{scarce}"
+        # Loot both places share would move both ways at once: leave it out.
+        out_, in_ = place_items(flood), place_items(scarce)
+        both = set(out_) & set(in_)
         events.append((key,
                        f"Monsters are on the move: {places[flood]} loot floods in, {places[scarce]} loot grows scarce.", 4,
-                       [(-30, -30, place_items(flood)), (30, 30, place_items(scarce))]))
+                       [(-30, -30, [n for n in out_ if n not in both]), (30, 30, [n for n in in_ if n not in both])]))
         NEWS_ENDS[key] = f"The monsters have settled again: {places[flood]} and {places[scarce]} loot back to normal."
     return events
 
