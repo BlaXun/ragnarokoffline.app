@@ -1862,13 +1862,19 @@ static std::map<std::tuple<int32, uint32, int32>, std::pair<int32, t_tick>> g_cl
 /// Claim: (party, claim name, target) -> (the companion holding it, until).
 static std::map<std::tuple<int32, std::string, int32>, std::pair<int32, t_tick>> g_named_claims;
 
-/// Whether another companion of the party holds `name` on `target` right now.
-static bool claimed_by_other(const map_session_data *sd, const std::string &name, int32 target, t_tick tick)
+/// Whether another companion of the party holds `name` on `target` right now; `holder`, if
+/// given, gets that companion's id (for the trace).
+static bool claimed_by_other(const map_session_data *sd, const std::string &name, int32 target, t_tick tick,
+	int32 *holder = nullptr)
 {
 	if (sd->status.party_id <= 0)
 		return false;
 	const auto it = g_named_claims.find(std::make_tuple(sd->status.party_id, name, target));
-	return it != g_named_claims.end() && it->second.first != sd->id && DIFF_TICK(tick, it->second.second) < 0;
+	if (it == g_named_claims.end() || it->second.first == sd->id || DIFF_TICK(tick, it->second.second) >= 0)
+		return false;
+	if (holder != nullptr)
+		*holder = it->second.first;
+	return true;
 }
 static t_tick g_next_prune = 0;
 
@@ -2152,6 +2158,8 @@ struct Turn {
 	bool target_set = false;    ///< a higher-priority rule already chose the target this turn
 	bool sitting = false;       ///< a Sit rule applied this turn
 	const std::string *claim = nullptr; ///< while a Claim rule picks its target: skip what others hold
+	int32 claim_passed = 0;     ///< the last target a selector passed over for a claim...
+	int32 claim_holder = 0;     ///< ...and who holds it (for the trace)
 	const std::vector<PlanRef> *plans = nullptr; ///< the plans that apply this turn
 };
 
@@ -2552,9 +2560,13 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 					id = ud->target > 0 ? ud->target : (ud->skilltimer != INVALID_TIMER ? ud->skilltarget : 0);
 			}
 			mob_data *md = id != 0 ? map_id2md(id) : nullptr;
-			if (md != nullptr && md->m == sd->m && !status_isdead(*md) && check_distance_bl(sd, md, range)
-					&& (t.claim == nullptr || !claimed_by_other(sd, *t.claim, md->id, t.tick)))
+			if (md != nullptr && md->m == sd->m && !status_isdead(*md) && check_distance_bl(sd, md, range)) {
+				if (t.claim != nullptr && claimed_by_other(sd, *t.claim, md->id, t.tick, &t.claim_holder)) {
+					t.claim_passed = md->id;
+					continue;
+				}
 				return md;
+			}
 		}
 		return nullptr;
 	}
@@ -2568,8 +2580,10 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 		int rank = 0; // lower is better
 		if (!enemy_matches(t, sel, md, rank) || at_cap(sd, t.owner, md))
 			continue;
-		if (t.claim != nullptr && claimed_by_other(sd, *t.claim, md->id, t.tick))
+		if (t.claim != nullptr && claimed_by_other(sd, *t.claim, md->id, t.tick, &t.claim_holder)) {
+			t.claim_passed = md->id;
 			continue;
+		}
 		const auto key = std::make_tuple(rank, distance_bl(sd, md), 0, md->id);
 		if (best == nullptr || key < best_key) {
 			best = md;
@@ -2619,8 +2633,10 @@ static block_list *select_ally(Turn &t, const Selector &sel, int range, uint16 s
 			continue;
 		if (skill != 0 && pop_ally_skill_refused(sd, m, skill))
 			continue;
-		if (t.claim != nullptr && claimed_by_other(sd, *t.claim, m->id, t.tick))
+		if (t.claim != nullptr && claimed_by_other(sd, *t.claim, m->id, t.tick, &t.claim_holder)) {
+			t.claim_passed = m->id;
 			continue;
+		}
 		int rank = 0;
 		if (sel.pick == Selector::Pick::LowestHp) {
 			rank = hp_pct(m);
@@ -3261,11 +3277,25 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		}
 	}
 	t.claim = rule.claim.empty() ? nullptr : &rule.claim;   // selectors pass over claimed targets
+	t.claim_passed = t.claim_holder = 0;
 	block_list *target = resolve_target(t, rule, rs, range);
 	t.claim = nullptr;
 	// A fixed target (the current one, an event's) that another companion has claimed: not this rule.
-	if (!rule.claim.empty() && target != nullptr && target != sd && claimed_by_other(sd, rule.claim, target->id, t.tick))
+	if (!rule.claim.empty() && target != nullptr && target != sd
+			&& claimed_by_other(sd, rule.claim, target->id, t.tick, &t.claim_holder)) {
+		t.claim_passed = target->id;
+		target = nullptr;
+	}
+	if (target == nullptr && t.claim_passed != 0) {
+		// Without this line, a rule that found every target claimed looks like one that never fires.
+		char cbuf[16];
+		block_list *passed = map_id2bl(t.claim_passed);
+		const map_session_data *holder = map_id2sd(t.claim_holder);
+		trace(sd, *t.st, t.tick, "rule %s: %s is claimed (%s) by %s", label(rule, cbuf, sizeof(cbuf)),
+			passed != nullptr ? status_get_name(*passed) : "its target", rule.claim.c_str(),
+			holder != nullptr ? holder->status.name : "another companion");
 		return Outcome::Skipped;
+	}
 	// A monster the rule picked itself: the companion's mode decides, as for the engine's own
 	// choice. (The current target, t.enemy, already went through it.)
 	if (rule.sel.kind == Selector::Kind::Enemy && target != nullptr && !mode_allows_enemy(t, target)) {

@@ -98,7 +98,15 @@ The main ones:
 - `Present` / `Absent`: whether a selector finds someone.
 - `Field`: ground spells nearby.
 - `Requires`: what the companion must have (skills, a role).
-- `Cooldown`, `OnePerParty`.
+- `InStrategy`, `InFight`: how long the current phase, or the fight, has lasted
+  ("after a minute in this phase", "in the first 5 s").
+- `Cooldown` ("every 30 s" is `Cooldown: 30000`), `OnePerParty`.
+- `Claim`: pass over a target another companion has claimed, so two of a kind
+  split their targets (see [team play](team.md#the-tools-for-working-together)).
+
+For a buff, `Target: { Ally: missing, Status: SC_BLESSING, Expiring: 3000 }`
+picks whoever lacks it **or** has under 3 s of it left, so it is renewed before
+it lapses.
 
 `self_sp_ge120` keeps 120 SP back, here for Resurrection. Absolute numbers
 work better than percentages for that.
