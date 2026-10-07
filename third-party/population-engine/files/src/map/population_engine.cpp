@@ -10,6 +10,7 @@
 
 #include "population_engine/runtime/population_engine_combat.hpp"
 #include "population_engine/runtime/population_shell_ammo.hpp"
+#include "population_engine/runtime/population_shell_inventory.hpp" // RAGNAROKMAC
 #include "population_engine/runtime/population_shell_loot.hpp"
 #include "population_engine/runtime/population_shell_selling.hpp"
 #include "population_engine/runtime/population_shell_runtime.hpp"
@@ -2377,6 +2378,9 @@ static t_itemid pop_shell_sp_potion(const map_session_data *sd)
 static void pop_shell_stock_potions(map_session_data *sd)
 {
 	sd->pop.potions_stocked = true;
+	// A companion drinks what its owner gave it (population_shell_inventory).
+	if (population_shell_has_own_inventory(sd))
+		return;
 	const t_itemid hp = pop_shell_hp_potion(sd), sp = pop_shell_sp_potion(sd);
 	for (const t_itemid nameid : POP_POTIONS) {
 		if (nameid == hp || nameid == sp)
@@ -2404,9 +2408,9 @@ static void pop_shell_drink(map_session_data *sd, int hp_pct, int sp_pct, t_tick
 		return;
 	int16 idx = -1;
 	if (hp_pct < POP_POTION_HP_PCT)
-		idx = pc_search_inventory(sd, pop_shell_hp_potion(sd));
+		idx = population_shell_inventory_find_potion(sd, pop_shell_hp_potion(sd), true);
 	if (idx < 0 && sp_pct < POP_POTION_SP_PCT)
-		idx = pc_search_inventory(sd, pop_shell_sp_potion(sd));
+		idx = population_shell_inventory_find_potion(sd, pop_shell_sp_potion(sd), false);
 	if (idx < 0)
 		return;
 	// The player's own path: item delay, the heal script.
@@ -5012,6 +5016,8 @@ TIMER_FUNC(population_engine_global_combat_timer)
 					}
 				}
 			}
+			// RAGNAROKMAC (companion inventory): arrows, potions and catalysts used up since.
+			population_shell_inventory_save(sd, false);
 			const uint64_t h = pop_companion_gear_hash(sd);
 			auto it = g_pop_companion_gear_hash.find(sd->id);
 			if (it == g_pop_companion_gear_hash.end()) {
@@ -7340,8 +7346,8 @@ static bool pop_companion_hand_back(map_session_data *owner, map_session_data *s
 
 // Goal 2 (trade): after traded equipment lands in the companion's inventory,
 // equip every equip-flagged item immediately (the owner gave it to be worn).
-// Items without equip flags (consumables etc) are returned to the owner —
-// companions are gear carriers, not mules.
+// Items without equip flags (consumables etc) stay in a companion's bag, which is
+// saved with it (population_shell_inventory).
 void population_engine_companion_trade_snapshot(map_session_data *shell)
 {
 	if (!shell || !population_engine_is_population_pc(shell->id)) return;
@@ -7377,9 +7383,12 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 		if (!traded(i)) continue;
 		struct item_data *id = itemdb_search(slot.nameid);
 		if (!id) continue;
-		if (id->equip) {
-			// Player gear this piece pushes off goes back to the player: the companion's
-			// inventory is not persisted, so an item left there is gone at the next restart.
+		// A companion's ammunition stays in the bag: the ammo code picks the stack per target,
+		// and equipping each traded stack handed the one before it back to the owner.
+		if (id->equip && !((id->equip & EQP_AMMO) && population_shell_has_own_inventory(shell))) {
+			// Player gear this piece pushes off goes back to the player: without Companion
+			// inventory the companion's bag is not saved, so an item left there would be gone at
+			// the next restart; with it, the bag is saved, but the gear is still the player's.
 			std::vector<int16> given_before;
 			for (int16 j = 0; j < MAX_INVENTORY; ++j) {
 				const struct item &w = shell->inventory.u.items_inventory[j];
@@ -7395,7 +7404,9 @@ void population_engine_companion_equip_traded(map_session_data *owner, map_sessi
 					(void)pop_companion_hand_back(owner, shell, j, LOG_TYPE_TRADE);
 			}
 			shell->pop.companion_given_mask = pop_companion_given_worn(shell);
-		} else {
+		} else if (!population_shell_has_own_inventory(shell)) {
+			// A companion keeps it: potions, catalysts and the like are what it lives on
+			// (population_shell_inventory). Anyone else hands it back.
 			// Non-equipment goes back: into the owner's bag, or at their feet when it is full.
 			// Only what the trade added: a potion of the kind the companion carries stacks
 			// onto its own, and handing back the whole stack gave the player those too.
@@ -7762,6 +7773,8 @@ void population_engine_persist_companion_gear(map_session_data *sd)
 		return;
 	}
 	ShowInfo("population_engine: gear re-snapshotted for companion %u (owner %u)\n", index_, owner);
+	// And the rest of the bag, which the trade, recall and logout paths that call this change too.
+	population_shell_inventory_save(sd, true);
 }
 
 void population_engine_persist_recruited_companion(map_session_data *sd, map_session_data *peer)
@@ -8652,6 +8665,8 @@ static void population_engine_recall_one_companion(map_session_data *owner, int1
 	pop_companion_reequip_own(shell, (EQP_HAND_R | EQP_HAND_L | EQP_ARMOR | EQP_SHOES | EQP_GARMENT
 		| EQP_HEAD_TOP | EQP_HEAD_MID | EQP_HEAD_LOW | EQP_ACC_L | EQP_ACC_R)
 		& ~pop_companion_worn_positions(shell));
+	// RAGNAROKMAC (companion inventory): its own bag, not what the spawn stocked.
+	population_shell_inventory_restore(shell);
 	status_calc_pc(shell, SCO_NONE);
 
 	// Mark as the owner's companion and align membership with the owner.

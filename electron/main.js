@@ -1085,6 +1085,11 @@ const SETTINGS_DEFAULTS = {
 	// a companion whose gear does not fit a skill (a performer's default bow
 	// and its songs) skips it until it is given the right weapon.
 	population_skill_weapon_check: false,
+	// Whether a recruited companion lives on its own bag, as a player does:
+	// nothing refills it, skills cost their items and ammunition, and the bag
+	// is saved with it. Off keeps the historic free supply of potions, arrows
+	// and gemstones.
+	population_companion_inventory: false,
 	// Whether ambient shells pick up the drops of their own kills, the way a
 	// player would, and how (see population-conf.js shellLoot). Off keeps the
 	// historic behaviour: every drop stays on the ground until it expires.

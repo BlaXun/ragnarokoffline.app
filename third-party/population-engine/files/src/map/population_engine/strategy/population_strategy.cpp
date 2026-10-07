@@ -251,12 +251,10 @@ struct Targeting {
 	int32 max_attackers = 0;     ///< 0 = no cap; else the owner and party companions on it, at most
 };
 
-/// Catalysts (`Consume: true`). Shells and companions have no inventory of their own yet:
-/// nothing stocks it, the owner cannot see it, and it is gone with the shell
-/// (docs/COMPANION_STRATEGY_ROADMAP.md, item 4). Until they do, a Consume rule casts as if
-/// its catalyst were paid, which is what the engine does for every shell anyway (patch
-/// 0001, skill_get_requirement). Turn this on together with inventories: every Consume
-/// rule then checks the inventory before casting and pays when the cast starts.
+/// Catalysts (`Consume: true`). A recruited companion now pays its item costs through rAthena,
+/// as a player does (population_shell_inventory, patch 0033): pop_skill_state_ok passes a skill
+/// over when its items are not in the bag, and rAthena takes them when the cast lands. This
+/// switch would pay a second time, so it stays off.
 constexpr bool kPayCatalysts = false;
 
 constexpr uint32 kAllMobs = 0;
