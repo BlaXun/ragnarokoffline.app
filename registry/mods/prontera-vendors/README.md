@@ -69,11 +69,8 @@ defaults. On an app without settings pages they show in the Mods tab.
 | Market strength (%) | 100 | How hard a trade moves a price. |
 | Price recovery (hours) | 72 | After this long, half of a move has faded. |
 | Market news | on | About once a week an event moves a group of items for a few days. |
-| Hunted supply | off | What only monsters drop sells only once simulated parties have found it (see below). |
-| Hunting parties | 20 | How many parties hunt on an average hour. |
+| Hunted supply: parties | 0 | 0: off. Otherwise how many parties hunt on an average hour (see below); 20 is a good start. |
 | How long loot stays (days) | 2 | Half-life of what reached the market; equipment 3x, cards and MvP loot 5x. |
-| Start with a filled market | on | Off: the market starts empty and fills as the parties hunt. |
-| MvP kills (per MvP a day) | 1 | The most times a day each MvP dies; 0 for none. |
 
 Settings take effect when the server starts.
 
@@ -289,12 +286,13 @@ generated into `npc/prontera-vendors-market-data.txt` by the build script
 
 ## A hunted supply
 
-**Hunted supply** (off by default) ties what the sell stalls hold to what the
+**Hunted supply** (off while its parties are 0, the default) ties what the sell stalls hold to what the
 world's hunters find. Without it every stall rolls its stock from its theme
 as if the supply never ran out; with it, an item that only monsters drop is
 on the street only while someone has found one and nobody has bought it yet.
 
-- **Parties hunt the world.** Every hour each party (Hunting parties: fewer
+- **Parties hunt the world.** Every hour each party (**Hunted supply:
+  parties**; fewer
   at night, more in the evening and at weekends) hunts a field or dungeon
   near its level for 1 to 4 hours, then moves on. A map nobody has hunted in
   a while draws them more and more (up to 8x after a week), so none is left
@@ -306,7 +304,7 @@ on the street only while someone has found one and nobody has bought it yet.
   rates (`item_rate_*`), so a 10x server gets a 10x market.
 - **MvPs** die a few times a day at most: when one is up, its chance an hour
   falls with its level (Baphomet 15 %, Thanatos far less), and it never dies
-  more than **MvP kills** a day or faster than it respawns. Its loot and
+  more than once a day or faster than it respawns. Its loot and
   rewards roll like any drop.
 - **Stock leaves again.** Every hour some of each item is bought by "other
   players": after **How long loot stays** days half of it is gone
@@ -331,7 +329,7 @@ on the street only while someone has found one and nobody has bought it yet.
 At the defaults (20 parties, 2 days, 1x rates) about 48 Elunium and 11
 cards a day reach the market; about 140 Elunium and 130 cards in all are on
 it once it has settled. A rare card settles below one copy: it shows up now
-and then, and is gone again. **Start with a filled market** puts the market
+and then, and is gone again. A new market starts
 there at the first start; off, it starts empty and fills over a few days.
 
 **Needs:** app 1.5.2 or later for the mod store (on an older build only this
@@ -342,7 +340,14 @@ part is left out), and the build whose population engine reads
 **For GMs:** `@supply` shows the parties out, the last MvP and what is in
 stock; `@supply <item>` one item's stock, cap and where it settles;
 `@supply hunt <hours>` hunts that many hours now; `@supply reset [empty |
-filled]` starts the supply over.
+filled]` starts the supply over (filled by default).
+
+The app allows a mod 20 settings, so for now a switch of its own, the choice
+to start empty and the MvP cap per day are not in Settings: the parties
+setting at 0 is the switch, a new market starts filled (`@supply reset
+empty` empties it), and each MvP dies at most once a day. The script still
+reads them (`hunted_supply`, `supply_start_filled`, `supply_mvp_per_day`),
+so they come back by declaring them in `mod.json` again.
 
 How it works: `npc/prontera-vendors-supply.txt` runs it once a minute and
 once an hour, keeps the ledger in the mod store (`docs/MOD_STORE.md`) and

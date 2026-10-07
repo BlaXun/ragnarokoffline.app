@@ -24,15 +24,18 @@
 //= store. Its data (maps, yields, MvPs) is prontera-vendors-supply-data.txt.
 //=
 //= Its own file: an app build without the mod store rejects this file, and
-//= only this file. Off unless "Hunted supply" is on in the mod's settings.
+//= only this file. Off while "Hunted supply: parties" is 0 (the default).
+//= The mod declares only the parties and the half-life for now (the app
+//= allows 20 settings); the switch, "start filled" and the MvP cap are read
+//= with these defaults, so declaring them again is all it takes.
 //===========================================================================
 -	script	ProntVendorsSupply	-1,{
 	end;
 
 OnInit:
 	.mod$ = "prontera-vendors";
-	.on = callfunc("F_ModSetting", .mod$, "hunted_supply", 0);
-	.parties = callfunc("F_ModSetting", .mod$, "supply_parties", 20);
+	.parties = callfunc("F_ModSetting", .mod$, "supply_parties", 0);
+	.on = callfunc("F_ModSetting", .mod$, "hunted_supply", 1) && .parties > 0;
 	.hl_hours = callfunc("F_ModSetting", .mod$, "supply_halflife_days", 2) * 24;
 	.filled = callfunc("F_ModSetting", .mod$, "supply_start_filled", 1);
 	.mvp_cap = callfunc("F_ModSetting", .mod$, "supply_mvp_per_day", 1);
@@ -463,7 +466,7 @@ S_PublishAll:
 // @supply [<item> | hunt <hours> | reset [empty|filled]]  (GMs)
 OnAtSupply:
 	if (!.on) {
-		dispbottom "The hunted supply is off: Settings > Mods > prontera-vendors > Hunted supply.";
+		dispbottom "The hunted supply is off: Settings > Mods > prontera-vendors > Hunted supply: parties.";
 		end;
 	}
 	if (!.ready)
