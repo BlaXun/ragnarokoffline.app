@@ -10,5 +10,6 @@
 - Settings → Mods → Reset data… now starts the whole market over: the supply and the dynamic market's prices. The first start with the hunted supply on resets the prices once.
 - Fewer sellers while stock is low: about a third of the sell stalls stand on an empty market, all of them once it has filled up.
 - What NPCs sell and what players make (potions, forged, refined and carded gear) stays as before.
+- Stalls change every 2 hours by default (was 4), so new stock reaches the street sooner.
 - GMs: `@supply` shows the groups out, the last MvP and the stock.
 - Needs app 1.5.2 for the supply, and app 1.5.4 for the stalls to follow it.

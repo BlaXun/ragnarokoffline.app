@@ -55,7 +55,7 @@ defaults. On an app without settings pages they show in the Mods tab.
 | Sell stalls | 30 | How many sell stalls stand on their lanes (0–100). |
 | Buy shops | on | Off removes every buying store. |
 | Buy stalls | 30 | How many buying stores stand on their lanes (0–100). |
-| Minutes before a stall changes | 240 | How long a vendor stays before packing up. Each varies by up to half either way, and stalls are checked once a minute, so short values run long (2 means roughly 1–5 minutes). 0 keeps them until the server restarts. |
+| Minutes before a stall changes | 120 | How long a vendor stays before packing up. Each varies by up to half either way, and stalls are checked once a minute, so short values run long (2 means roughly 1–5 minutes). 0 keeps them until the server restarts. |
 | Price level (%) | 100 | Every price × this / 100, for sell stalls and buyers alike. Nothing goes below what an NPC pays. |
 | Vendors respect the population limit | on | Off: stalls spawn even when the fake-player limit is reached (they still count toward it). |
 | Vendors shout their wares | on | Stalls call out a real item and price now and then ("S> Elunium 13K", "B> Oridecon 9500"). |
