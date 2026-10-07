@@ -350,6 +350,13 @@ stock; `@supply <item>` one item's stock, cap and where it settles;
 `@supply hunt <hours>` hunts that many hours now; `@supply reset [empty |
 filled]` starts the supply over (empty by default).
 
+**Starting the whole market over:** Settings → Mods → prontera-vendors →
+**Reset data…** wipes the supply, and at the next start the dynamic market's
+prices and news go back to the price list with it (`@market reset` does that
+part alone). The game restarts, so every stall opens fresh. The first start
+with the hunted supply on does the same once, since it can't tell a reset
+from a first time.
+
 The app allows a mod 20 settings, so for now a switch of its own, the choice
 to start empty and the MvP cap per day are not in Settings: the parties
 setting at 0 is the switch, a new market starts empty (`@supply reset

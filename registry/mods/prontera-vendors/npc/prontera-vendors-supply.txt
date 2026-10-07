@@ -120,6 +120,10 @@ S_Start:
 		if ($@pvs_mlv[.@m] > .lv_hi) .lv_hi = $@pvs_mlv[.@m];
 	}
 	if (!modstore_exists("clock")) {
+		// No ledger: the mod's data was reset (Settings > Mods > Reset data)
+		// or the supply is new here. The dynamic market starts over with it,
+		// so that one button resets the whole market.
+		callsub S_ResetMarket;
 		callsub S_New;
 	} else {
 		callsub S_Load;
@@ -158,6 +162,22 @@ S_New:
 	query_logsql("SELECT COALESCE(MAX(id), 0) FROM picklog", .@max);
 	.log = .@max;
 	modstore_set "log", .log;
+	return;
+
+// S_ResetMarket: the dynamic market's prices and news back to the price
+// list, as @market reset does (prontera-vendors-market.txt keeps them in its
+// own $pv_* variables; it publishes the change on its next pass).
+S_ResetMarket:
+	for (.@i = 0; .@i < $pv_mk_n; .@i++) {
+		$@pv_slot[$pv_mk_id[.@i]] = 0;
+		$pv_mk_id[.@i] = 0;
+		$pv_mk_v[.@i] = 0;
+		$pv_mk_t[.@i] = 0;
+	}
+	$pv_mk_n = 0;
+	for (.@k = 0; .@k < $pv_nw_n; .@k++)
+		$pv_nw_end[.@k] = 0;
+	$pv_nw_n = 0;
 	return;
 
 // S_Load: the ledger, parties, map visits and MvP timers from the store.

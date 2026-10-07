@@ -6,6 +6,7 @@
 - Buying from a stall takes from the supply, and selling into a buying store puts it back.
 - The time the server was off is hunted too.
 - The market starts empty and fills up as the parties hunt; GMs can fill it at once with `@supply reset filled`.
+- Settings → Mods → Reset data… now starts the whole market over: the supply and the dynamic market's prices. The first start with the hunted supply on resets the prices once.
 - Fewer sellers while stock is low: about a third of the sell stalls stand on an empty market, all of them once it has filled up.
 - What NPCs sell and what players make (potions, forged, refined and carded gear) stays as before.
 - GMs: `@supply` shows the parties, the last MvP and the stock.
