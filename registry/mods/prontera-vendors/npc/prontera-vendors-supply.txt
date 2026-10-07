@@ -12,7 +12,12 @@
 //=   (item_rate_*). MvPs die a few times a day at most, by their respawn,
 //=   their level and the "MvP kills" setting.
 //= - Stock leaves the market with a half-life (other players bought it):
-//=   loot at the setting, equipment 3x, cards and MvP loot 5x.
+//=   loot at the setting, what players use up (ores, stones, herbs,
+//=   potions) half as long, equipment 3x, cards and MvP loot 5x.
+//= - Scarcity sets prices: an item that settles at 2 or more copies costs up
+//=   to 25 % more as it runs out and up to 15 % less at twice its settled
+//=   stock ($@pvs_pct, which the dynamic market multiplies into its own;
+//=   with the market off this sets $@pop_item_pct itself).
 //= - Buying from a stall takes from the supply; selling into a buying store
 //=   adds to it (picklog, as the dynamic market reads it).
 //= - The time the server was off is hunted too: its last 48 hours an hour
@@ -74,6 +79,7 @@ OnTimer6000:
 		callsub S_Start;
 	freeloop(1);
 	callsub S_Stalls, 1;
+	callsub S_Prices;
 	freeloop(0);
 	end;
 
@@ -101,7 +107,8 @@ S_Start:
 	.@a = 0;
 	for (.@k = 0; .@k < $@pvs_gcount; .@k++) {
 		.@id = $@pvs_gid[.@k];
-		.@h = .hl_hours * $@pvs_ghl[.@k];
+		.@h = .hl_hours * $@pvs_ghl[.@k] / 100;
+		if (.@h < 1) .@h = 1;
 		.hlh[.@k] = .@h;
 		.pdec[.@k] = 693147 / .@h;
 		.@in = 0;
@@ -131,6 +138,7 @@ S_Start:
 	.ready = 1;
 	callsub S_PublishAll;
 	callsub S_Stalls, 1;
+	callsub S_Prices;
 	freeloop(0);
 	.busy = 0;
 	// The time the server was off.
@@ -243,6 +251,7 @@ S_CatchUp:
 	}
 	callsub S_Save;
 	callsub S_Stalls, 0;
+	callsub S_Prices;
 	if (.@done > 1)
 		debugmes "prontera-vendors: hunted supply caught up " + .@done + " hour(s).";
 	freeloop(0);
@@ -510,6 +519,38 @@ S_Stalls:
 	}
 	return;
 
+// S_Prices: each item's price by how its stock compares with where it
+// settles. Only items that settle at 2 or more copies: a rarer one is simply
+// there or not. Up to +25 % with none left, -15 % from twice its stock.
+S_Prices:
+	for (.@i = 0; .@i < getarraysize($@pvs_plist); .@i++) {
+		.@id = $@pvs_plist[.@i];
+		$@pvs_pct[.@id] = 0;
+		if (!$@pv_board_on)
+			$@pop_item_pct[.@id] = 0;
+	}
+	deletearray $@pvs_plist;
+	.@n = 0;
+	for (.@k = 0; .@k < $@pvs_gcount; .@k++) {
+		if (.steadym[.@k] < 2000000)
+			continue;
+		.@r = .sup[.@k] * 100000000 / .steadym[.@k]; // stock, % of settled
+		if (.@r < 100)
+			.@pct = 100 + 25 * (100 - .@r) / 100;
+		else
+			.@pct = 100 - 15 * (.@r - 100 > 100 ? 100 : .@r - 100) / 100;
+		if (.@pct == 100)
+			continue;
+		.@id = $@pvs_gid[.@k];
+		$@pvs_pct[.@id] = .@pct;
+		$@pvs_plist[.@n] = .@id;
+		.@n++;
+		// Without the dynamic market nobody else publishes prices.
+		if (!$@pv_board_on)
+			$@pop_item_pct[.@id] = .@pct;
+	}
+	return;
+
 // S_PublishAll: every item the supply limits, to the engine.
 S_PublishAll:
 	for (.@k = 0; .@k < $@pvs_gcount; .@k++) {
@@ -549,6 +590,7 @@ OnAtSupply:
 		callsub S_New;
 		callsub S_PublishAll;
 		callsub S_Stalls, 0;
+		callsub S_Prices;
 		freeloop(0);
 		.busy = 0;
 		dispbottom "The supply starts over, " + (.filled ? "at its steady state." : "empty: it fills as the parties hunt.");
@@ -573,6 +615,7 @@ OnAtSupply:
 		}
 		callsub S_Save;
 		callsub S_Stalls, 0;
+		callsub S_Prices;
 		freeloop(0);
 		.busy = 0;
 		dispbottom "Hunted " + .@h + " hour(s): " + .@kills + " kills.";

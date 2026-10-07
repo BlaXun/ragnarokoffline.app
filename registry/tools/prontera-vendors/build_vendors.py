@@ -2165,10 +2165,14 @@ SUPPLY_KNOWN_SPOT = 3
 # lists, and at least SUPPLY_CAP_MIN: drops nobody lists don't pile up.
 SUPPLY_CAP_TIMES = 4
 SUPPLY_CAP_MIN = 5
-# Half-life class: the "How long loot stays" setting times this. Cards and
+# Half-life class, in percent of the "How long loot stays" setting. What
+# players use up (ores, stones, herbs, potions...) leaves fastest; cards and
 # MvP loot are held longest, equipment longer than loot.
-SUPPLY_HL_EQUIP = 3
-SUPPLY_HL_RARE = 5
+SUPPLY_HL_USED = 50
+SUPPLY_HL_LOOT = 100
+SUPPLY_HL_EQUIP = 300
+SUPPLY_HL_RARE = 500
+SUPPLY_USED_TYPES = ("healing", "usable", "delayconsume", "cash")
 # rAthena's drop-rate classes (mob.cpp, the item_rate_* battle flags), in the
 # order the supply script reads them with getbattleflag.
 RATE_CLASSES = ["common", "common_boss", "common_mvp", "heal", "heal_boss", "heal_mvp",
@@ -2348,7 +2352,7 @@ def write_supply_script():
            "\t// rAthena's drop-rate settings, in the order each yield's class counts them.",
            "\tdeletearray $@pvs_rateflag$;",
            "\tsetarray $@pvs_rateflag$[0], " + ", ".join(q("item_rate_" + c) for c in RATE_CLASSES) + ";",
-           "\t// The items the supply limits: id, half-life class (times the setting),",
+           "\t// The items the supply limits: id, half-life class (% of the setting),",
            "\t// cap, and the long-run yield per party-hour (millionths, by rate class).",
            "\tdeletearray $@pvs_gid; deletearray $@pvs_ghl; deletearray $@pvs_gcap; deletearray $@pvs_gk;",
            "\tdeletearray $@pvs_aitem; deletearray $@pvs_acls; deletearray $@pvs_arate;"]
@@ -2358,8 +2362,11 @@ def write_supply_script():
     hl, caps = [], []
     for i in gids:
         e = ITEMS_BY_ID[i]
+        used = ((e.get("Type") or "").lower() in SUPPLY_USED_TYPES
+                or e["AegisName"] in UPGRADE | CRAFTING | ELEMENTAL | HERBS | ALCHEMY)
         hl.append(SUPPLY_HL_RARE if e.get("Type") == "Card" or i in MVP_ONLY
-                  else SUPPLY_HL_EQUIP if is_equip(e) else 1)
+                  else SUPPLY_HL_EQUIP if is_equip(e)
+                  else SUPPLY_HL_USED if used else SUPPLY_HL_LOOT)
         caps.append(max(SUPPLY_CAP_MIN, SUPPLY_CAP_TIMES * SELL_PLAIN[i]))
     for k in range(0, len(gids), 16):
         out.append(f"\tsetarray $@pvs_ghl[{k}], " + ", ".join(map(str, hl[k:k + 16])) + ";")

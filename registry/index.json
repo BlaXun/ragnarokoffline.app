@@ -625,11 +625,11 @@
       "files": [
         {
           "path": "CHANGELOG.md",
-          "sha256": "f46ead7b6a9f5d1c6ccf91c813919030c62781f3c0cdfef3c4e62b7ae24e1956"
+          "sha256": "b059a833664c8519f020edf12c84b896675baf8789bac18f2d6e6eae6d0d76c1"
         },
         {
           "path": "README.md",
-          "sha256": "cded4c9af2d979e20c28490e8a0ca9594a0f6604665b916a39753bdf189c6594"
+          "sha256": "0bbb7407fd308e06ffcba289a53d50cc31b8fe8b7b8510a0ee0a2eab7934ac86"
         },
         {
           "path": "db/population_vendor_pop.yml",
@@ -653,7 +653,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "5f258576802dbd1fc337773ac613274a1929d6d3c52dc3322740557c2620bb3f"
+          "sha256": "adde068fedffa5c30cd6c190723744810d5aea91c94407693c814ab368398db8"
         },
         {
           "path": "npc/prontera-vendors-customers.txt",
@@ -665,7 +665,7 @@
         },
         {
           "path": "npc/prontera-vendors-market.txt",
-          "sha256": "21f2781a0ba9ac0e2814a272184b0502839c9b87debfc22397291ce038053c0a"
+          "sha256": "c3cfa407df76efb6e9cff2383d776fea6e3cb54d08e2652b4f084c085946c245"
         },
         {
           "path": "npc/prontera-vendors-newer.txt",
@@ -673,11 +673,11 @@
         },
         {
           "path": "npc/prontera-vendors-supply-data.txt",
-          "sha256": "54362eb8c9142ed3079bcb0bd8ffc95ccfae962f66145f8fac45e31681662e9c"
+          "sha256": "44233289657cb68cdd21a5ccea210cbca1805ceb505803817cf64f3e52d578c2"
         },
         {
           "path": "npc/prontera-vendors-supply.txt",
-          "sha256": "67a1aebd20a769f940c404373735e33c6beb598d2359fc0d91bea446555f4023"
+          "sha256": "0b2d1acff724c55944687c9d57854e80fdffc1e28946d8efa0d6dd54680dda4c"
         },
         {
           "path": "npc/prontera-vendors.txt",
@@ -701,7 +701,7 @@
         },
         {
           "path": "pre-re/npc/prontera-vendors-supply-data.txt",
-          "sha256": "1e510693bc8641e8921ef3149bdbc6136106030b8f4adc23f5b16342eb7181c3"
+          "sha256": "19d5ab8320c19678947041cdc80ec97f2a45fd41e42a1d0c044bc8dec0fa182f"
         },
         {
           "path": "settings/index.html",

@@ -12,6 +12,8 @@
 //= - Market news, now and then, moves a group for a few days.
 //= - Every ten minutes each move fades with the recovery half-life; the time
 //=   the server was off is faded in one step at start.
+//= - With the hunted supply on, its scarcity factor ($@pvs_pct, from
+//=   prontera-vendors-supply.txt) is multiplied in as well.
 //=
 //= The index lives in this script's own permanent variables ($pv_*). What it
 //= publishes is $@pop_item_pct[<item id>]: the population engine prices this
@@ -306,6 +308,22 @@ S_Publish:
 			.@np++;
 		}
 	}
+	// The hunted supply's scarcity (prontera-vendors-supply.txt sets
+	// $@pvs_pct), on top of trades and news.
+	if (getarraysize($@pvs_plist) > 0) {
+		for (.@i = 0; .@i < .@np; .@i++)
+			.@pos[.@pid[.@i]] = .@i + 1;
+		for (.@j = 0; .@j < getarraysize($@pvs_plist); .@j++) {
+			.@item = $@pvs_plist[.@j];
+			if (.@pos[.@item] > 0) {
+				.@pv[.@pos[.@item] - 1] = .@pv[.@pos[.@item] - 1] * $@pvs_pct[.@item] / 100;
+			} else {
+				.@pid[.@np] = .@item;
+				.@pv[.@np] = $@pvs_pct[.@item] * 10000;
+				.@np++;
+			}
+		}
+	}
 	for (.@i = 0; .@i < .@np; .@i++) {
 		.@pct = (.@pv[.@i] + 5000) / 10000;
 		if (.@pct < 50) .@pct = 50;
@@ -410,7 +428,7 @@ OnAtMarket:
 		.@pct = $@pop_item_pct[.@item] > 0 ? $@pop_item_pct[.@item] : 100;
 		.@s = $@pv_slot[.@item];
 		.@trade = .@s > 0 ? ($pv_mk_v[.@s - 1] - 1000000) / 10000 : 0;
-		dispbottom getitemname(.@item) + ": " + .@pct + "% of the price list (trades " + (.@trade >= 0 ? "+" : "") + .@trade + "%, the rest news), a normal day " + ($@pv_vol[.@item] > 0 ? $@pv_vol[.@item] : 8) + " traded.";
+		dispbottom getitemname(.@item) + ": " + .@pct + "% of the price list (trades " + (.@trade >= 0 ? "+" : "") + .@trade + "%, the rest news and supply), a normal day " + ($@pv_vol[.@item] > 0 ? $@pv_vol[.@item] : 8) + " traded.";
 		if (.@s > 0)
 			dispbottom "  last moved " + ((gettimetick(2) - $pv_mk_t[.@s - 1]) / 60) + " min ago; half of any move fades in " + (.halflife / 3600) + " h.";
 		end;

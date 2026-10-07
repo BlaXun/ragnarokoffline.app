@@ -307,10 +307,18 @@ on the street only while someone has found one and nobody has bought it yet.
   more than once a day or faster than it respawns. Its loot and
   rewards roll like any drop.
 - **Stock leaves again.** Every hour some of each item is bought by "other
-  players": after **How long loot stays** days half of it is gone
-  (equipment three times as long, cards and MvP loot five times). Stock
+  players": after **How long loot stays** days half of it is gone. What
+  players use up (ores, elemental stones, herbs, alchemy materials,
+  potions) goes in half that time; equipment lasts three times as long,
+  cards and MvP loot five times. Stock
   settles where what comes in matches what leaves; each item also has a cap
   (four times the most a stall lists, at least 5), so junk doesn't pile up.
+- **Scarcity sets prices.** Every hour each item that settles at two or
+  more copies is priced by its stock: up to 25 % dearer as it runs out, up
+  to 15 % cheaper at twice its settled stock, for stalls and buyers alike.
+  With the dynamic market on this multiplies into its prices, so the board
+  shows it; without it, it is the only move. A rarer item (most cards and
+  gear) is simply there or not, and keeps its price.
 - **Your trades count.** Buying from a stall takes from the supply; selling
   into a buying store puts it back on the market, where it decays like
   anything else. A buyer still pays less than a stall asks, so selling and
@@ -333,7 +341,7 @@ on the street only while someone has found one and nobody has bought it yet.
   Stalls past the count pack up; buying stores are not affected.
 
 At the defaults (20 parties, 2 days, 1x rates) about 48 Elunium and 11
-cards a day reach the market; about 140 Elunium and 130 cards in all are on
+cards a day reach the market; about 70 Elunium and 130 cards in all are on
 it once it has settled. A rare card settles below one copy: it shows up now
 and then, and is gone again. A new market starts empty and fills as the
 parties hunt: loot reaches about half its settled level in one half-life
