@@ -329,8 +329,10 @@ on the street only while someone has found one and nobody has bought it yet.
 At the defaults (20 parties, 2 days, 1x rates) about 48 Elunium and 11
 cards a day reach the market; about 140 Elunium and 130 cards in all are on
 it once it has settled. A rare card settles below one copy: it shows up now
-and then, and is gone again. A new market starts
-there at the first start; off, it starts empty and fills over a few days.
+and then, and is gone again. A new market starts empty and fills as the
+parties hunt: loot reaches about half its settled level in one half-life
+(2 days by default), cards and equipment take five and three times as long.
+`@supply reset filled` puts it at the settled level at once.
 
 **Needs:** app 1.5.2 or later for the mod store (on an older build only this
 part is left out), and the build whose population engine reads
@@ -340,12 +342,12 @@ part is left out), and the build whose population engine reads
 **For GMs:** `@supply` shows the parties out, the last MvP and what is in
 stock; `@supply <item>` one item's stock, cap and where it settles;
 `@supply hunt <hours>` hunts that many hours now; `@supply reset [empty |
-filled]` starts the supply over (filled by default).
+filled]` starts the supply over (empty by default).
 
 The app allows a mod 20 settings, so for now a switch of its own, the choice
 to start empty and the MvP cap per day are not in Settings: the parties
-setting at 0 is the switch, a new market starts filled (`@supply reset
-empty` empties it), and each MvP dies at most once a day. The script still
+setting at 0 is the switch, a new market starts empty (`@supply reset
+filled` fills it), and each MvP dies at most once a day. The script still
 reads them (`hunted_supply`, `supply_start_filled`, `supply_mvp_per_day`),
 so they come back by declaring them in `mod.json` again.
 

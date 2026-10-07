@@ -5,7 +5,7 @@
 - Each MvP dies at most once a day, never faster than it respawns.
 - Buying from a stall takes from the supply, and selling into a buying store puts it back.
 - The time the server was off is hunted too.
-- The market starts filled; GMs can start it empty with `@supply reset empty` and watch it fill up.
+- The market starts empty and fills up as the parties hunt; GMs can fill it at once with `@supply reset filled`.
 - What NPCs sell and what players make (potions, forged, refined and carded gear) stays as before.
 - GMs: `@supply` shows the parties, the last MvP and the stock.
 - Needs app 1.5.2 for the supply, and app 1.5.4 for the stalls to follow it.
