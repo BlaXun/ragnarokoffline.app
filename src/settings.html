@@ -443,6 +443,17 @@
        has played it through. Changing this rebuilds the assets and restarts the server.</p>
   </div>
 
+  <h2>Server clock</h2>
+  <div class="panel">
+    <label><span>Time zone</span><select id="server_timezone"></select></label>
+    <p class="note" id="server-timezone-now" style="margin:8px 0 0"></p>
+    <p class="note" id="server-timezone-status" hidden style="margin:8px 0 0; color: var(--text)"></p>
+    <p class="note">The clock the game server keeps. War of Emperium, events that happen at a
+       set time, daily resets and mods that follow the time of day all go by it. It follows
+       this computer unless you choose a zone &mdash; for a server you share with friends
+       elsewhere, pick the one most of you live in. Changing this restarts the server.</p>
+  </div>
+
   <h2>Startup</h2>
   <div class="panel">
     <label>
@@ -1460,6 +1471,68 @@ $('packetver').onchange = async () => {
     log(String(e));
   } finally {
     $('packetver').disabled = false;
+    refresh();
+  }
+};
+
+// The game server's time zone. '' in the list follows this computer and is
+// saved as null; see stack/src/timezone.rs.
+let serverTimezone = null;
+const hostZone = (() => {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
+})();
+
+function loadTimezones(saved) {
+  let zones = [];
+  try { zones = Intl.supportedValuesOf('timeZone'); } catch {}
+  const option = (value, text) => {
+    const o = document.createElement('option');
+    o.value = value;
+    o.textContent = text;
+    return o;
+  };
+  const list = zones.filter(z => z !== 'UTC');
+  // A zone saved by hand (Etc/GMT+5) that this list lacks still shows.
+  if (saved && saved !== 'UTC' && !list.includes(saved)) list.unshift(saved);
+  $('server_timezone').replaceChildren(option('', `This computer (${hostZone.replace(/_/g, ' ')})`),
+    option('UTC', 'UTC'), ...list.map(z => option(z, z.replace(/_/g, ' '))));
+}
+
+function showServerTime() {
+  const zone = $('server_timezone').value || hostZone;
+  let now = '?';
+  try {
+    now = new Intl.DateTimeFormat(undefined, { timeZone: zone, weekday: 'short', hour: '2-digit', minute: '2-digit' })
+      .format(new Date());
+  } catch {}
+  $('server-timezone-now').textContent = `Server time: ${now} (${zone.replace(/_/g, ' ')})`;
+}
+setInterval(showServerTime, 30000);
+
+$('server_timezone').onchange = async () => {
+  const chosen = $('server_timezone').value || null;
+  showServerTime();
+  if (chosen === serverTimezone) return;
+  const status = $('server-timezone-status');
+  $('server_timezone').disabled = true;
+  status.hidden = false;
+  status.innerHTML = '<span class="spinner"></span>Restarting the server on the new clock\u2026';
+  try {
+    const s = await invoke('get_settings');
+    await invoke('save_settings', { settings: { ...s, server_timezone: chosen } });
+    serverTimezone = chosen;
+    status.textContent = `The server now keeps ${(chosen || hostZone).replace(/_/g, ' ')} time.`;
+    log('server clock: ' + (chosen || 'this computer'));
+  } catch (e) {
+    // As with the client version: show what is saved, not an invented rollback.
+    const saved = await invoke('get_settings').catch(() => ({ server_timezone: serverTimezone }));
+    serverTimezone = saved.server_timezone || null;
+    $('server_timezone').value = serverTimezone || '';
+    showServerTime();
+    status.textContent = `Could not change the clock: ${String(e)}`;
+    log(String(e));
+  } finally {
+    $('server_timezone').disabled = false;
     refresh();
   }
 };
@@ -3375,6 +3448,10 @@ invoke('get_settings').then(s => {
     packetver = s.packetver ? String(s.packetver) : null;
     $('packetver').value = packetverValue(packetver);
   });
+  serverTimezone = s.server_timezone || null;
+  loadTimezones(serverTimezone);
+  $('server_timezone').value = serverTimezone || '';
+  showServerTime();
   $('zeny_from_mobs').checked = !!s.zeny_from_mobs;
   $('unlimited_arrows').checked = !!s.unlimited_arrows;
   $('open_settings_first').checked = !!s.open_settings_first;
