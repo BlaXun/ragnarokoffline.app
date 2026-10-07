@@ -252,6 +252,10 @@ struct s_population {
 	/// RAGNAROKMAC (rest): the shell sat down to recover between fights (pop_shell_rest),
 	/// so a companion's follow leaves it sitting while the owner stands still.
 	bool     resting = false;
+	/// RAGNAROKMAC (potions): the shell has its potion stock (pop_shell_stock_potions), given
+	/// on its first combat tick and topped up after each full rest.
+	bool     potions_stocked = false;
+	t_tick   next_potion_tick = 0; ///< no potion before this tick: one a second, not one a tick
 	/// RAGNAROKMAC (growth): last base level pushed to the party window. The stock
 	/// party_send_levelup() routes through intif_party_changemap() to the CHAR
 	/// server, which has no row for a shell and therefore discards it - so a
