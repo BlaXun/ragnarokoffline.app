@@ -2343,6 +2343,7 @@ def write_supply_script():
            "-\tscript\tProntVendorsSupplyData\t-1,{",
            "\tend;",
            "OnInit:",
+           "\t$@pvs_ready = 0;",
            f"\t$@pvs_party_kills = {SUPPLY_PARTY_KILLS};",
            "\t// rAthena's drop-rate settings, in the order each yield's class counts them.",
            "\tdeletearray $@pvs_rateflag$;",
@@ -2408,7 +2409,12 @@ def write_supply_script():
     for name, col in (("vitem", 0), ("vcls", 1), ("vrate", 2)):
         for k in range(0, len(flat), 16):
             out.append(f"\tsetarray $@pvs_{name}[{k}], " + ", ".join(str(r[col]) for r in flat[k:k + 16]) + ";")
-    out += [f"\t$@pvs_mvpcount = {len(mvps)};", "\tend;", "}"]
+    out += [f"\t$@pvs_mvpcount = {len(mvps)};",
+            "\t// Filled: the supply script can start (before the first stalls open).",
+            "\t$@pvs_ready = 1;",
+            '\tif (getnpcid(0, "ProntVendorsSupply"))',
+            '\t\tdonpcevent "ProntVendorsSupply::OnDataReady";',
+            "\tend;", "}"]
     npc = os.path.join(os.path.dirname(OUT_DB), "npc")
     os.makedirs(npc, exist_ok=True)
     open(os.path.join(npc, "prontera-vendors-supply-data.txt"), "w", encoding="utf-8", newline="\n").write(

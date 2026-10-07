@@ -6,6 +6,7 @@
 -	script	ProntVendorsSupplyData	-1,{
 	end;
 OnInit:
+	$@pvs_ready = 0;
 	$@pvs_party_kills = 300;
 	// rAthena's drop-rate settings, in the order each yield's class counts them.
 	deletearray $@pvs_rateflag$;
@@ -2002,5 +2003,9 @@ OnInit:
 	setarray $@pvs_vrate[208], 2000, 5500, 3500, 2000, 4000, 100, 5000, 5500, 5000, 5000, 5000, 5000, 5500, 5000, 5000, 5000;
 	setarray $@pvs_vrate[224], 100, 500, 1000, 1000, 100, 5500, 5000, 2000;
 	$@pvs_mvpcount = 37;
+	// Filled: the supply script can start (before the first stalls open).
+	$@pvs_ready = 1;
+	if (getnpcid(0, "ProntVendorsSupply"))
+		donpcevent "ProntVendorsSupply::OnDataReady";
 	end;
 }

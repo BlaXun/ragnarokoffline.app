@@ -45,11 +45,23 @@ OnInit:
 	// day of the week (Saturday and Sunday busier; a week averages 100).
 	setarray .hourpct[0], 64, 52, 41, 35, 35, 41, 52, 70, 81, 87, 93, 99, 104, 104, 110, 116, 128, 139, 157, 174, 186, 180, 151, 104;
 	setarray .daypct[0], 115, 94, 94, 94, 94, 94, 115;
-	if (.on)
+	if (.on) {
 		initnpctimer;
+		// Start while the scripts load, before the first shells open their
+		// stalls: now if the data script has run, else when it says so.
+		if ($@pvs_ready)
+			callsub S_Start;
+	}
+	.inited = 1;
 	end;
 
-// A few seconds after start, so the data script has filled $@pvs_* first.
+// From the data script once $@pvs_* are filled.
+OnDataReady:
+	if (.inited && .on && !.ready)
+		callsub S_Start;
+	end;
+
+// If neither start happened (no data script), a few seconds in.
 OnTimer6000:
 	if (!.ready)
 		callsub S_Start;
