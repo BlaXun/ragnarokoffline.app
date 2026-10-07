@@ -378,6 +378,14 @@ engine's vendors spawn exactly as upstream's do.
   it, on top of the mod's price level, wherever it prices mod stalls and mod
   buyers and in the customers' market price. prontera-vendors' dynamic market
   sets it from its own NPC script.
+- **Per-item supply limit**: a mod may set `$@pop_item_supply[<item id>]`
+  to cap how many of an item its stalls list between them: unset or 0 = no
+  limit, 1 = none, n = n - 1. Only plain Pool lines count (no refine, forge
+  or cards), and what every shell stall already lists counts against it; a
+  line with none left is passed over for the next one in the shuffle. A
+  Pool its supply leaves empty opens no stall (it never falls back to the
+  built-in potions), and the rotation pass releases the shell so the mod
+  pass rolls the spot again. prontera-vendors' hunted supply sets it.
 - `Spawns:` on a vendor entry makes it a mod vendor. Each block names a `Map`
   and either fixed `Positions` (one shell per seat; a taken seat stays empty
   until it is free) or `Count` shells in `Areas` (with optional `MinSpacing`).

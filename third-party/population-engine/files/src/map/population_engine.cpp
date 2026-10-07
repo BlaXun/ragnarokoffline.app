@@ -2833,6 +2833,22 @@ static int pop_item_price_pct(t_itemid id) {
 	return v > 0 ? static_cast<int>(std::min<int64>(v, 1000)) : 100;
 }
 
+/// RAGNAROKMAC: how many of an item a mod's stalls may list between them, as
+/// a mod sets it in $@pop_item_supply[<item id>]: unset or 0 = no limit, 1 =
+/// none, n = n - 1 (0 reads as unset, hence the offset). Only plain lines
+/// count (no refine, forge or cards), so a mod can tie them to a supply it
+/// keeps (what its world's hunters found) and leave crafted goods alone.
+/// Returns -1 for no limit.
+static int64 pop_item_supply_cap(t_itemid id) {
+	static int32 key = 0;
+	if (key == 0)
+		key = add_str("$@pop_item_supply");
+	if (id == 0)
+		return -1;
+	const int64 v = mapreg_readreg(reference_uid(key, id));
+	return v > 0 ? v - 1 : -1;
+}
+
 /// The price level a mod vendor's mod set, in percent (100 = as listed).
 static int pop_mod_vendor_price_pct(const PopulationVendorEntry* mod_entry) {
 	if (mod_entry == nullptr)
@@ -5293,6 +5309,19 @@ void population_engine_on_shell_kills_player(map_session_data *killer_sd, map_se
 // through a hundred teardowns.
 static constexpr size_t POP_VENDOR_ROTATION_MAX_PER_TICK = 8;
 
+/// RAGNAROKMAC: a mod vendor with nothing left to do: a stall sold out, a
+/// buyer that bought all it wanted (or ran out of zeny), or a stall that never
+/// opened because its mod's supply left its pool empty (pop_item_supply_cap).
+static bool pop_mod_vendor_done(const map_session_data* sd) {
+	if (sd->pop.vendor_spawn_id.empty())
+		return false;
+	if (sd->pop.vendor_buying)
+		return !sd->state.buyingstore;
+	if (sd->state.vending)
+		return sd->vend_num <= 0;
+	return battle_config.population_engine_vending_enable != 0;
+}
+
 TIMER_FUNC(population_engine_vendor_rotation_timer)
 {
 	const t_tick now = gettick();
@@ -5307,15 +5336,12 @@ TIMER_FUNC(population_engine_vendor_rotation_timer)
 	// Checked first and outside the per-tick cap, so a busy rotation can't keep
 	// an empty stall standing. Base vendors keep upstream's behaviour.
 	for (map_session_data *sd : g_population_engine_pcs)
-		if (sd && !sd->pop.vendor_spawn_id.empty() &&
-		    ((sd->state.vending && sd->vend_num <= 0) ||
-		     (sd->pop.vendor_buying && !sd->state.buyingstore))) // bought all it wanted, or out of zeny
+		if (sd && pop_mod_vendor_done(sd))
 			due.push_back(sd);
 	const size_t cap = due.size() + POP_VENDOR_ROTATION_MAX_PER_TICK;
 	for (map_session_data *sd : g_population_engine_pcs) {
 		if (!sd) continue;
-		if (!sd->pop.vendor_spawn_id.empty() &&
-		    ((sd->state.vending && sd->vend_num <= 0) || (sd->pop.vendor_buying && !sd->state.buyingstore)))
+		if (pop_mod_vendor_done(sd))
 			continue; // already taken above
 		if (sd->pop.vendor_rotation_at == 0) continue; // not a rotating vendor
 		if (now < sd->pop.vendor_rotation_at) continue;
@@ -6686,6 +6712,7 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 			struct TmpStock { t_itemid nameid; int16 amount; uint32_t price_override; const PopulationVendorStock* src = nullptr; };
 			std::vector<TmpStock> stock;
 			const int max_slots = vendor_cfg ? vendor_cfg->max_slots : 12;
+			bool supply_short = false; // RAGNAROKMAC: a mod's supply kept a Pool line out
 
 			if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Static && !vendor_cfg->stock.empty()) {
 				// Static vending: use exactly the YAML-defined stock.
@@ -6800,14 +6827,51 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 					if (p > MAX_ZENY) p = MAX_ZENY;
 					return static_cast<uint32_t>(p);
 				};
-				for (int i = 0; i < want; ++i) {
+				// RAGNAROKMAC: a mod's supply limit (pop_item_supply_cap). What
+				// every shell stall already lists counts against it, so the stalls
+				// share one supply; a line with none left is passed over and the
+				// next one in the shuffle taken. Without a limit this takes the
+				// first `want` lines, as it always has.
+				std::unordered_map<t_itemid, int64> listed;
+				bool listed_built = false;
+				for (int i = 0; i < pool_n && static_cast<int>(stock.size()) < want; ++i) {
 					const auto &vs = vendor_cfg->pool[idx[i]];
-					stock.push_back({ vs.nameid, vs.amount, roll_price(vs), &vs });
+					int16 amount = vs.amount;
+					const bool plain = vs.refine_max == 0 && vs.element == 0 && vs.stars == 0 && vs.cards.empty();
+					const int64 cap = mod_entry != nullptr && plain ? pop_item_supply_cap(vs.nameid) : -1;
+					if (cap >= 0) {
+						if (!listed_built) {
+							for (map_session_data* osd : g_population_engine_pcs) {
+								if (!osd || osd == sd || !osd->state.vending) continue;
+								for (int vi = 0; vi < osd->vend_num; ++vi) {
+									const int16 ci = osd->vending[vi].index;
+									if (ci < 0 || ci >= MAX_CART) continue;
+									const struct item& ct = osd->cart.u.items_cart[ci];
+									if (ct.nameid != 0 && ct.refine == 0 && ct.card[0] == 0)
+										listed[ct.nameid] += osd->vending[vi].amount;
+								}
+							}
+							listed_built = true;
+						}
+						int64& used = listed[vs.nameid];
+						if (used >= cap) {
+							supply_short = true;
+							continue;
+						}
+						if (amount > cap - used)
+							amount = static_cast<int16>(cap - used);
+						std::shared_ptr<item_data> sid = item_db.find(vs.nameid);
+						used += sid && sid->equip != 0 ? 1 : amount; // equipment lists one a slot
+					}
+					stock.push_back({ vs.nameid, amount, roll_price(vs), &vs });
 				}
 
 				// Fallthrough to built-in defaults is undesirable for Pool: an
 				// empty pool is a config error, not a reason to serve potions.
-				if (stock.empty())
+				// RAGNAROKMAC: and a pool its mod's supply has emptied opens no
+				// stall at all; the rotation pass releases the shell and the mod
+				// pass rolls the spot again.
+				if (stock.empty() && !supply_short)
 					vendor_cfg = nullptr;
 
 			} else if (vendor_cfg && vendor_cfg->type == PopulationVendorType::Dynamic) {
@@ -6970,7 +7034,7 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 
 			}
 
-			if (!vendor_cfg || stock.empty()) {
+			if ((!vendor_cfg || stock.empty()) && !supply_short) {
 				// Built-in default consumable stock.
 				static const TmpStock kDefaultStock[] = {
 					{ 501, 100, 0 },  // Red Potion
