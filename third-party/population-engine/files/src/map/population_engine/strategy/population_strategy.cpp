@@ -3202,11 +3202,14 @@ static bool mode_allows_enemy(const Turn &t, const block_list *mob)
 static bool sit_down(Turn &t)
 {
 	map_session_data *sd = t.sd;
+	// Never while its owner walks, sitting or not: the follow code stands it up to follow.
+	if (t.owner != nullptr && unit_is_walking(t.owner))
+		return false;
 	if (pc_issit(sd)) {
 		// Already sitting, by this rule or by the engine's rest: either way, it stays down.
 		return true;
 	}
-	if (pc_isdead(sd) || (t.owner != nullptr && unit_is_walking(t.owner)) || sd->ud.skilltimer != INVALID_TIMER
+	if (pc_isdead(sd) || sd->ud.skilltimer != INVALID_TIMER
 			|| (sd->sc.opt1 && sd->sc.opt1 != OPT1_STONEWAIT && sd->sc.opt1 != OPT1_BURNING)
 			|| sd->sc.getSCE(SC_DANCING)
 			|| (sd->sc.getSCE(SC_GRAVITATION) && sd->sc.getSCE(SC_GRAVITATION)->val3 == BCT_SELF)
@@ -3892,6 +3895,14 @@ bool population_strategy_handles_resurrection(map_session_data *sd)
 			return true;
 	}
 	return false;
+}
+
+bool population_strategy_keeps_seated(const map_session_data *sd)
+{
+	if (g_db.rule_count == 0 || sd == nullptr || !pc_issit(sd))
+		return false;
+	const auto it = g_shells.find(sd->id);
+	return it != g_shells.end() && it->second.char_id == sd->status.char_id && it->second.sat;
 }
 
 bool population_strategy_holds_position(const map_session_data *sd, t_tick tick)
