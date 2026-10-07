@@ -249,6 +249,9 @@ struct s_population {
 	/// that replaced a per-tick re-warp loop (a shell teleported every 400 ms
 	/// cannot walk, which reads as "the companion stands still").
 	uint16_t placement_fail_streak = 0;
+	/// RAGNAROKMAC (rest): the shell sat down to recover between fights (pop_shell_rest),
+	/// so a companion's follow leaves it sitting while the owner stands still.
+	bool     resting = false;
 	/// RAGNAROKMAC (growth): last base level pushed to the party window. The stock
 	/// party_send_levelup() routes through intif_party_changemap() to the CHAR
 	/// server, which has no row for a shell and therefore discards it - so a
@@ -260,6 +263,11 @@ struct s_population {
 	/// then on are paid, and reset down when a rebirth starts the level over.
 	int16_t  points_granted_level = 0;
 	int16_t  companion_emergency_at = 35; ///< emergency/big-heal below this HP%
+	/// RAGNAROKMAC (rest): the companion sits down between fights below this SP% or HP%
+	/// (0 = never) and stands once both are back to companion_rest_until. Set from the
+	/// Companions window (@companion rest) and persisted with the row (v12).
+	int16_t  companion_rest_below   = 30;
+	int16_t  companion_rest_until   = 95;
 	/// RAGNAROKMAC (gear custody): equip positions (EQP_* bits) worn by items the OWNER gave this
 	/// companion, as opposed to the gear it was generated with. Only these come back through
 	/// @companion gear, and only these are kept or handed back across a job advance. Persisted
