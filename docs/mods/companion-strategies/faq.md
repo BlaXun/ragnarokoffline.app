@@ -16,6 +16,7 @@ watch what the companion reports.
 
 **When something doesn't work**
 - [My rule never fires](#my-rule-never-fires)
+- [I unticked a skill for my companion. Can a plan still make it cast it?](#i-unticked-a-skill-for-my-companion-can-a-plan-still-make-it-cast-it)
 - [It casts skills my plan doesn't name](#it-casts-skills-my-plan-doesnt-name)
 - [It walks up and hits with its staff or rod](#it-walks-up-and-hits-with-its-staff-or-rod)
 - [It stays behind when the fight moves](#it-stays-behind-when-the-fight-moves)
@@ -114,6 +115,14 @@ Check, in this order:
    SP)", "(out of range)", "(refused)".
 5. **Is the server reporting the rule at start?** A misspelled key, skill or
    status skips the rule (see below).
+
+### I unticked a skill for my companion. Can a plan still make it cast it?
+
+No. The companion's skill selection is your deliberate choice, and a plan's
+rules respect it: a rule for an unticked skill does not exist for that
+companion, and a `Cast:` list skips it. The engine's own party Resurrection is
+the one exception: it revives whatever the selection says, because whether the
+party can recover from a death is left to the class.
 
 ### It casts skills my plan doesn't name
 

@@ -2697,7 +2697,7 @@ static uint16 best_against(const map_session_data *sd, const Rule &rule, block_l
 	int best_mult = 0;
 	for (const uint16 id : rule.cast_options) {
 		uint16 lv = pc_checkskill(const_cast<map_session_data *>(sd), id);
-		if (lv == 0 || (plans != nullptr && !plans_allow(sd, *plans, id, true)))
+		if (lv == 0 || !population_shell_skill_selected(sd, id) || (plans != nullptr && !plans_allow(sd, *plans, id, true)))
 			continue;
 		if (rule.cast_lv > 0)
 			lv = std::min<uint16>(lv, rule.cast_lv);
@@ -3097,14 +3097,22 @@ static bool requires_ok(const map_session_data *sd, const Requirements &req)
 	return true;
 }
 
+/// Whether a rule may cast this skill at all: the companion has it, and its owner has not
+/// unticked it in the companion's skill selection (population_shell_skill_selected, the combat
+/// file). That selection is a deliberate choice; a plan does not override it.
+static bool may_cast(const map_session_data *sd, uint16 id)
+{
+	return pc_checkskill(const_cast<map_session_data *>(sd), id) > 0 && population_shell_skill_selected(sd, id);
+}
+
 static bool requires_ok(const map_session_data *sd, const Rule &rule)
 {
-	// Unlike the skill rotation, a rule never casts a skill the companion has not learned.
+	// Unlike the skill rotation, a rule never casts a skill the companion has not learned, nor
+	// one its owner deselected.
 	if (!rule.cast_options.empty()) {
-		if (std::none_of(rule.cast_options.begin(), rule.cast_options.end(),
-				[&](uint16 id) { return pc_checkskill(const_cast<map_session_data *>(sd), id) > 0; }))
+		if (std::none_of(rule.cast_options.begin(), rule.cast_options.end(), [&](uint16 id) { return may_cast(sd, id); }))
 			return false;
-	} else if (rule.cast_skill != 0 && pc_checkskill(sd, rule.cast_skill) == 0) {
+	} else if (rule.cast_skill != 0 && !may_cast(sd, rule.cast_skill)) {
 		return false;
 	}
 	return requires_ok(sd, rule.req);
@@ -3773,8 +3781,9 @@ bool population_strategy_handles_resurrection(map_session_data *sd)
 	for (const PlanRef &p : plans_for(sd, same_map_bl(sd, sd->pop.target_id))) {
 		auto revives = [&](const std::vector<RulePtr> &rules) {
 			return std::any_of(rules.begin(), rules.end(), [&](const RulePtr &r) {
-				return (r->cast_skill == ALL_RESURRECTION || r->cast_skill == WM_DEADHILLHERE)
-					&& pc_checkskill(sd, r->cast_skill) > 0 && requires_ok(sd, r->req);
+				// requires_ok(sd, *r): the skill known and not deselected by the owner, or the
+				// engine's own Resurrection must not stand aside for a rule that cannot cast.
+				return (r->cast_skill == ALL_RESURRECTION || r->cast_skill == WM_DEADHILLHERE) && requires_ok(sd, *r);
 			});
 		};
 		if (revives(p.plan->rules))

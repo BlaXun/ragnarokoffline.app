@@ -234,7 +234,7 @@ A rule applies when all of the following hold:
 
 | Key | The rule applies only... |
 |---|---|
-| `Requires: { Skills, Lacks, Items, BaseLevel, Role }` | to a companion that has (and lacks) these. `Role` is the party role set in chat (`tank`, `support`, `attacker`, `none`), or a list of them for any of those. A `Cast` rule also requires the skill itself, so a rule for a skill the companion never learned does not exist for it. |
+| `Requires: { Skills, Lacks, Items, BaseLevel, Role }` | to a companion that has (and lacks) these. `Role` is the party role set in chat (`tank`, `support`, `attacker`, `none`), or a list of them for any of those. A `Cast` rule also requires the skill itself, so a rule for a skill the companion doesn't have does not exist for it. Neither does one for a skill its owner unticked in the companion's skill selection: that choice stands over any plan. (Shells get their job's whole skill tree at spawn, so "has the skill" mostly means "the class has it".) |
 | `On:` | within `Within` ms (default 3000) of an event, and once per event. See [Events](#events). |
 | `When:` | while a condition holds: `enemy_hp_pct_lt30`, `self_spheres_ge1`, `not_enemy_aeterna`, `[a, b]` for AND, `{ OR: [a, b] }`. See [`When:` conditions](#when-conditions). |
 | `Charges: { Status, Below \| AtLeast, Value }` | while a status's counter is in range. Cicada Skin Shed keeps its blocks left in its second value (the default), so `{ Status: SC_UTSUSEMI, Below: 2 }` is "1 or 0 left". No status counts as 0. |
@@ -692,8 +692,10 @@ adds to what an earlier one said:
 | with `Remove: true` | deletes that monster/job/build |
 
 Give rules a `Name` so another mod can replace or remove them. Mind that a
-same-named rule from an unrelated mod replaces yours silently; when you mean to
-add rather than replace, prefix names with your mod's. A later `Allow` replaces
+same-named rule from an unrelated mod replaces yours silently. **Prefix the
+names** of rules, strategies, signals and claims with your mod's
+(`golem_tactics.dodge_stun`, `Signal: golem_tactics.kyrie_me`) unless you mean
+to replace or answer another mod's. A later `Allow` replaces
 an earlier one in the same plan, while `Ban` lists add up. Both points are open
 in the [roadmap](../../COMPANION_STRATEGY_ROADMAP.md#combining-plans-across-mods-name-clashes-and-allow).
 

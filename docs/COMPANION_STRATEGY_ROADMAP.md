@@ -322,6 +322,31 @@ strategy.
 once-per-fight openers, sequences longer than one state, and bosses with timed
 patterns.
 
+**Risks, and what to test for each.**
+1. **Stale memory.** A flag from the last boss must not carry into the next
+   fight. Flags reset when the plan starts over (a new boss). A `Mob: All` plan
+   never starts over, so its flags also reset after a stretch with no fight.
+   *Test:* set a flag at one boss, then check it's clear at the next boss, and
+   after leaving and coming back.
+2. **Time measured in turns.** A companion that takes no turns (resting, unable
+   to move, not watched) would not see time pass. Measure from timestamps, not
+   turn counts. *Test:* a timed rule fires on time after the companion rested
+   or was frozen in between.
+3. **Statuses with no timer** (they last until removed) have no "time left".
+   Treat them as never lapsing, and document it. *Test:* a status with a timer
+   and one without.
+4. **Invisible state.** Counters and flags make a plan harder to follow. Every
+   `Set`, `Inc` and `Clear` must show in the trace, and so must the timers a
+   rule waits on. *Test:* the trace of a plan that switches on a counter
+   explains the switch.
+5. **Name clashes.** Two mods using one flag name in a plan would share it.
+   Prefix flags with the mod's name, the same convention as rule names (see
+   the [reference](mods/companion-strategies/reference.md#more-than-one-mod)).
+   *Test:* two mods with differently prefixed flags stay apart.
+6. **Engine:** none. All of it lives in the strategy module, and nothing changes
+   for a plan that doesn't use it. *Test:* the example mods behave as before
+   (load counts, a Phreeoni run).
+
 **Where to start.** `PlanState` in `strategy/population_strategy.cpp` (where the
 active strategy lives); the condition parser for the new tokens.
 
