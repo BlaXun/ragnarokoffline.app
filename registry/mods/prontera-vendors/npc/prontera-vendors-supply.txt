@@ -3,10 +3,14 @@
 //= at a time, and what only monsters drop goes into a supply the sell
 //= stalls list from:
 //=
-//= - Every hour each party hunts a map near its level for 1-4 hours, then
-//=   moves on. A map nobody has hunted in a while draws parties more and
-//=   more, so none is left out. How many parties are out follows the time of
-//=   day and the weekend.
+//= - Hunters come in groups, as on a real server: solo players (60 %, 100
+//=   kills an hour), duos and trios (25 %, 225) and full parties (15 %,
+//=   400). The setting counts full parties' worth of hunting (300 kills an
+//=   hour each), so 20 means about 34 groups. Each hunts a map near its level
+//=   for 1-4 hours, then moves on: solo players anywhere, parties mostly at
+//=   the known spots. A map nobody has hunted in a while draws them more and
+//=   more, so none is left out. How many are out follows the time of day and
+//=   the weekend.
 //= - Kills follow the map's spawns: a monster can't be killed faster than it
 //=   respawns. Drops follow its drop table and the server's drop rates
 //=   (item_rate_*). MvPs die a few times a day at most, by their respawn,
@@ -56,6 +60,13 @@ OnInit:
 	// day of the week (Saturday and Sunday busier; a week averages 100).
 	setarray .hourpct[0], 64, 52, 41, 35, 35, 41, 52, 70, 81, 87, 93, 99, 104, 104, 110, 116, 128, 139, 157, 174, 186, 180, 151, 104;
 	setarray .daypct[0], 115, 94, 94, 94, 94, 94, 115;
+	// Groups: kills an hour by size (1 solo, 2 duo or trio, 3 full party),
+	// and how many groups make a party's worth (300 / their average 176).
+	setarray .gkills[1], 100, 225, 400;
+	setarray .gname$[1], "a solo level ", "a level ", "a full level ";
+	setarray .gwhat$[1], " hunter", " duo/trio", " party";
+	.gper = 170; // groups per 100 parties' worth
+	.maxg = 600;
 	if (.on) {
 		initnpctimer;
 		// Start while the scripts load, before the first shells open their
@@ -160,7 +171,8 @@ S_New:
 	deletearray .mlast;
 	deletearray .plv;
 	deletearray .pleft;
-	for (.@i = 0; .@i < 200; .@i++)
+	deletearray .psize;
+	for (.@i = 0; .@i < .maxg; .@i++)
 		.pmap[.@i] = -1;
 	deletearray .vnext;
 	deletearray .vday;
@@ -192,17 +204,18 @@ S_ResetMarket:
 S_Load:
 	for (.@k = 0; .@k < $@pvs_gcount; .@k++)
 		.sup[.@k] = modstore_get("s." + $@pvs_gid[.@k], 0);
-	for (.@m = 0; .@m < $@pvs_mcount; .@m++)
+	for (.@m = 0; .@m < $@pvs_mcount; .@m++) {
 		.mlast[.@m] = modstore_get("m." + $@pvs_map$[.@m], 0);
-	for (.@i = 0; .@i < 200; .@i++) {
+		setd ".@mi_" + $@pvs_map$[.@m], .@m + 1;
+	}
+	for (.@i = 0; .@i < .maxg; .@i++) {
 		.pmap[.@i] = -1;
 		if (!modstore_exists("p." + .@i))
 			continue;
 		.@name$ = modstore_get("p." + .@i + ".m");
-		for (.@m = 0; .@m < $@pvs_mcount; .@m++)
-			if ($@pvs_map$[.@m] == .@name$)
-				.pmap[.@i] = .@m;
+		.pmap[.@i] = getd(".@mi_" + .@name$) - 1;
 		.plv[.@i] = modstore_get("p." + .@i + ".lv", 1);
+		.psize[.@i] = modstore_get("p." + .@i + ".size", 3); // saved before sizes: a party
 		.pleft[.@i] = .pmap[.@i] < 0 ? 0 : modstore_get("p." + .@i + ".left", 0);
 	}
 	for (.@v = 0; .@v < $@pvs_mvpcount; .@v++) {
@@ -333,15 +346,17 @@ S_Hour:
 		}
 	}
 
-	// The parties out this hour.
+	// The groups out this hour: parties' worth, by the hour and the day.
 	.@hour = (.@ts / 3600 + .tzh) % 24;
 	.@dow = ((.@ts + .tzh * 3600) / 86400 + 4) % 7; // 1970-01-01 was a Thursday
-	.@out = .parties * .hourpct[.@hour] * .daypct[.@dow] / 10000;
-	if (.@out > 200) .@out = 200;
+	.@worth = .parties * .hourpct[.@hour] * .daypct[.@dow] / 10000;
+	.@out = .@worth * .gper / 100;
+	if (.@out > .maxg) .@out = .maxg;
 	.out = .@out;
-	deletearray .@onmap;
+	deletearray .outn;
+	deletearray .@mkills;
 	deletearray .@maps;
-	for (.@i = 0; .@i < 200; .@i++) {
+	for (.@i = 0; .@i < .maxg; .@i++) {
 		if (.@i >= .@out) {
 			// Gone offline.
 			if (.pleft[.@i] > 0 || .pmap[.@i] >= 0) {
@@ -352,35 +367,38 @@ S_Hour:
 			continue;
 		}
 		if (.pleft[.@i] <= 0 || .pmap[.@i] < 0) {
-			// A new party: a level, a map near it, 1-4 hours there.
+			// A new group: a size, a level, a map near it, 1-4 hours there.
+			.@r = rand(100);
+			.@size = .@r < 60 ? 1 : .@r < 85 ? 2 : 3;
 			.@lv = (rand(.lv_lo, .lv_hi) + rand(.lv_lo, .lv_hi)) / 2;
-			.@m = callsub(S_PickMap, .@lv, .@ts);
+			.@m = callsub(S_PickMap, .@lv, .@ts, .@size);
 			if (.@m < 0)
 				continue;
 			.pmap[.@i] = .@m;
 			.plv[.@i] = .@lv;
+			.psize[.@i] = .@size;
 			.pleft[.@i] = rand(1, 4);
 			.mlast[.@m] = .@ts;
 			modstore_set "m." + $@pvs_map$[.@m], .@ts;
 			modstore_set "p." + .@i + ".m", $@pvs_map$[.@m];
 			modstore_set "p." + .@i + ".lv", .@lv;
+			modstore_set "p." + .@i + ".size", .@size;
 		}
 		.@m = .pmap[.@i];
-		if (!.@onmap[.@m])
+		if (!.@mkills[.@m])
 			.@maps[getarraysize(.@maps)] = .@m;
-		.@onmap[.@m]++;
+		.@mkills[.@m] += .gkills[.psize[.@i]] * rand(70, 130) / 100;
+		.outn[.psize[.@i]]++;
 		.pleft[.@i]--;
 		modstore_set "p." + .@i + ".left", .pleft[.@i];
 	}
 
-	// Each hunted map: its parties' kills, no more than its spawns allow,
+	// Each hunted map: its groups' kills, no more than its spawns allow,
 	// and the drops of those kills.
 	.kills = 0;
 	for (.@j = 0; .@j < getarraysize(.@maps); .@j++) {
 		.@m = .@maps[.@j];
-		.@kills = 0;
-		for (.@p = 0; .@p < .@onmap[.@m]; .@p++)
-			.@kills += $@pvs_party_kills * rand(70, 130) / 100;
+		.@kills = .@mkills[.@m];
 		if (.@kills > $@pvs_mcap[.@m])
 			.@kills = $@pvs_mcap[.@m];
 		.kills += .@kills;
@@ -411,7 +429,7 @@ S_Hour:
 			continue;
 		.@lv = $@pvs_mvplv[.@v];
 		.@pm = .@lv <= 60 ? 350 : .@lv <= 80 ? 250 : .@lv <= 99 ? 150 : .@lv <= 130 ? 80 : 40;
-		.@crowd = .parties > 0 ? .@out * 100 / .parties : 0; // how busy the hour is
+		.@crowd = .parties > 0 ? .@worth * 100 / .parties : 0; // how busy the hour is
 		if (.@crowd > 200) .@crowd = 200;
 		.@pm = .@pm * $@pvs_mvpn[.@v] * .@crowd / 100;
 		if (.@pm > 900) .@pm = 900;
@@ -433,11 +451,12 @@ S_Hour:
 	}
 	return;
 
-// S_PickMap <level>, <time>: a map for a party of that level, by its weight
+// S_PickMap <level>, <time>, <size>: a map for a group of that level, by its weight
 // and how long since anyone hunted it (up to 8x after a week); -1 if none.
 S_PickMap:
 	.@lv = getarg(0);
 	.@ts = getarg(1);
+	.@size = getarg(2);
 	for (.@pass = 0; .@pass < 3; .@pass++) {
 		.@lo = .@pass == 0 ? .@lv - 15 : .@pass == 1 ? .@lv - 40 : 0;
 		.@hi = .@pass == 0 ? .@lv + 5 : .@pass == 1 ? .@lv + 10 : 999;
@@ -450,7 +469,10 @@ S_PickMap:
 			if (.@bonus > 700) .@bonus = 700;
 			if (.@bonus < 0) .@bonus = 0;
 			.@cm[.@n] = .@m;
-			.@cw[.@n] = $@pvs_mw[.@m] * (100 + .@bonus);
+			// Solo players go anywhere; duos lean to the known spots, full
+			// parties more so.
+			.@w = .@size == 1 ? 1 : .@size == 2 ? $@pvs_mw[.@m] : $@pvs_mw[.@m] * $@pvs_mw[.@m];
+			.@cw[.@n] = .@w * (100 + .@bonus);
 			.@sum += .@cw[.@n];
 			.@n++;
 		}
@@ -646,13 +668,13 @@ OnAtSupply:
 		if (.sup[.@k] > 0)
 			.@have++;
 	}
-	dispbottom "Hunted supply: " + .parties + " parties (" + .out + " out last hour, " + .kills + " kills), loot half-life " + .hl_hours + " h, MvP kills " + .mvp_cap + "/day.";
+	dispbottom "Hunted supply: " + .parties + " parties' worth; last hour " + .out + " groups out (" + .outn[1] + " solo, " + .outn[2] + " duos/trios, " + .outn[3] + " parties), " + .kills + " kills. Loot half-life " + .hl_hours + " h, MvP kills " + .mvp_cap + "/day.";
 	dispbottom "  " + .@have + " of " + $@pvs_gcount + " limited items in stock, " + .@total + " in all; the market is " + .stock_pct + "% settled, so " + .stalls + " of " + .stalls_full + " sell stalls stand.";
 	.@shown = 0;
-	for (.@i = 0; .@i < 200 && .@shown < 8; .@i++) {
+	for (.@i = 0; .@i < .maxg && .@shown < 8; .@i++) {
 		if (.pmap[.@i] < 0 || .pleft[.@i] < 0)
 			continue;
-		dispbottom "  a level " + .plv[.@i] + " party on " + $@pvs_map$[.pmap[.@i]] + " (lv " + $@pvs_mlv[.pmap[.@i]] + "), " + .pleft[.@i] + " more hour(s)";
+		dispbottom "  " + .gname$[.psize[.@i]] + .plv[.@i] + .gwhat$[.psize[.@i]] + " on " + $@pvs_map$[.pmap[.@i]] + " (lv " + $@pvs_mlv[.pmap[.@i]] + "), " + .pleft[.@i] + " more hour(s)";
 		.@shown++;
 	}
 	if (.lastmvp > 0)

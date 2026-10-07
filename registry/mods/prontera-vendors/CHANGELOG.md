@@ -2,7 +2,7 @@
 - New: **Hunted supply** (off by default; set **Hunted supply: parties** above 0, 20 is a good start). Parties of fake players hunt the world's fields and dungeons around the clock, by each map's spawns, respawn timers and the server's drop rates, and what only monsters drop reaches the sell stalls only once they have found it.
 - Loot leaves the market again over time: **How long loot stays** sets the half-life (what players use up, like ores and potions, half as long; equipment three times as long, cards and MvP loot five times).
 - Scarcity sets prices: an item costs up to 25 % more as it runs out and up to 15 % less when there is plenty.
-- The parties setting is how many hunt on an average hour, fewer at night and more in the evening and at weekends. Every map gets its turn.
+- Hunters come in groups as on a real server: mostly solo players spread over every map, some duos and trios, and full parties farming the known spots. The parties setting is how much they hunt (in full parties' worth), fewer at night and more in the evening and at weekends. Every map gets its turn.
 - Each MvP dies at most once a day, never faster than it respawns.
 - Buying from a stall takes from the supply, and selling into a buying store puts it back.
 - The time the server was off is hunted too.
@@ -10,5 +10,5 @@
 - Settings → Mods → Reset data… now starts the whole market over: the supply and the dynamic market's prices. The first start with the hunted supply on resets the prices once.
 - Fewer sellers while stock is low: about a third of the sell stalls stand on an empty market, all of them once it has filled up.
 - What NPCs sell and what players make (potions, forged, refined and carded gear) stays as before.
-- GMs: `@supply` shows the parties, the last MvP and the stock.
+- GMs: `@supply` shows the groups out, the last MvP and the stock.
 - Needs app 1.5.2 for the supply, and app 1.5.4 for the stalls to follow it.

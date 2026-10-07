@@ -291,14 +291,19 @@ world's hunters find. Without it every stall rolls its stock from its theme
 as if the supply never ran out; with it, an item that only monsters drop is
 on the street only while someone has found one and nobody has bought it yet.
 
-- **Parties hunt the world.** Every hour each party (**Hunted supply:
-  parties**; fewer
-  at night, more in the evening and at weekends) hunts a field or dungeon
-  near its level for 1 to 4 hours, then moves on. A map nobody has hunted in
-  a while draws them more and more (up to 8x after a week), so none is left
-  out. About 370 maps in renewal, 300 in pre-renewal.
-- **By the spawns and the drop rates.** A party kills about 300 monsters an
-  hour, shared out by how many of each spawn, and never faster than a
+- **Hunters roam the world, in groups as on a real server.** Solo players
+  (60 %, about 100 kills an hour), duos and trios (25 %, about 225) and full
+  parties (15 %, about 400). **Hunted supply: parties** counts full parties'
+  worth of hunting (300 kills an hour each), so 20 means about 34 groups on
+  an average hour: fewer at night, more in the evening and at weekends.
+  Each group hunts a field or dungeon near its level for 1 to 4 hours, then
+  moves on: solo players spread over every map, full parties go mostly to
+  the known spots. A map nobody has hunted in a while draws them more and
+  more (up to 8x after a week), so none is left out. About 370 maps in
+  renewal, 300 in pre-renewal. Loot comes as a steady trickle from all
+  over, with a burst now and then where a party farms.
+- **By the spawns and the drop rates.** A group's kills are shared out by
+  how many of each monster spawn, and never faster than a
   monster respawns: a mini-boss with a one-hour timer drops at most once an
   hour. Drops follow each monster's drop table times the server's own drop
   rates (`item_rate_*`), so a 10x server gets a 10x market.
@@ -353,7 +358,7 @@ part is left out), and the build whose population engine reads
 `$@pop_item_supply` (app 1.5.4) for the stalls to follow it; on 1.5.2 and
 1.5.3 the parties hunt but the stalls stock as before.
 
-**For GMs:** `@supply` shows the parties out, the last MvP and what is in
+**For GMs:** `@supply` shows the groups out, the last MvP and what is in
 stock; `@supply <item>` one item's stock, cap and where it settles;
 `@supply hunt <hours>` hunts that many hours now; `@supply reset [empty |
 filled]` starts the supply over (empty by default).
