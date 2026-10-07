@@ -19,6 +19,7 @@
 #include "../../path.hpp"
 #include "../../pc.hpp"
 #include "../../population_engine.hpp"
+#include "../population_shell_control.hpp" // RAGNAROKMAC
 #include "../core/population_engine_core.hpp"
 #include "population_engine_combat.hpp"
 #include "population_shell_loot.hpp"
@@ -200,6 +201,10 @@ TIMER_FUNC(population_engine_wander_timer)
 			continue;
 		}
 		if (map_id2bl(sd->id) != sd) {
+			continue;
+		}
+		// RAGNAROKMAC (shell control API): a held shell goes where its script sends it.
+		if (population_engine_shell_is_held(sd)) {
 			continue;
 		}
 		// Stay put while a player has a live one-shot invitation permission.

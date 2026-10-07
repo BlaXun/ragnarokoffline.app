@@ -96,23 +96,39 @@ its Population Engine profile, or `None` when no profile role exists.
 Combat modes and roles are independent: the mode decides *when* the group
 engages, while each role decides *how* that companion behaves once involved.
 
-## Strategies from mods
+## SP and resting
 
-A mod can give companions a plan for a particular monster, job and build: which
-skills to open with, when to step back, what to say. The table is
-`db/population_strategy.yml`, and
-[docs/mods/companion-strategies/](mods/companion-strategies/README.md) describes it.
-Without such a mod, companions fight as described above.
+Companions pay the SP their skills cost, as players do, and regenerate it the
+same way. Between fights, a companion low on SP or HP sits down to rest, which
+recovers it twice as fast, and stands once both are back. It gets up at once
+when it is needed: a monster to fight, a threat to the party, a hit on itself,
+or its owner moving on. A companion that can heal also stays on its feet while
+its owner is hurt.
 
-To see what a companion's plan makes it do, type its name and `trace` in party
-chat. Only its owner can do this:
+When it rests is set on the Companions window's **Battle** tab, under
+**Resting**, or with `@companion rest <below%> <until%>`: it sits below the
+first percentage of its SP or HP and stands once both reach the second. Every
+companion starts at 30% and 95%; 0 as the first means it never rests. Like the
+healer thresholds, the choice applies to all of your companions and is saved
+with each of them.
 
-```text
-Seraphina trace
-```
+Other fake players rest the same way, at a fixed 30% and 95%.
 
-It then tells you each rule it acts on and why a cast failed. Type the same line
-again to stop.
+Every companion carries a few potions of the kind a player of its level buys
+from a Tool Dealer: 10 for HP and 5 for SP.
+
+| Base level | HP | SP |
+|---|---|---|
+| 1-29 | Red Potion | Grape Juice |
+| 30-54 | Orange Potion | Grape Juice |
+| 55-79 | Yellow Potion | Blue Potion |
+| 80 and up | White Potion | Blue Potion |
+
+It drinks one, at most one a second, while it is needed and below 40% HP or
+20% SP; out of a fight it rests instead. A rest that ends with both back to the
+second percentage refills the potions, to the new kind if it has levelled since.
+They are not saved: a companion has a full stock again at each login. Other fake
+players carry and drink potions the same way.
 
 ## Death and resurrection
 
@@ -144,7 +160,7 @@ window with four tabs.
 | --- | --- |
 | Party | The saved companion list, with each one's job, level and state. Set duty, summon, bench, favorite, or refresh. |
 | Summon | Draft a brand-new companion of any job, grouped 1st / 2nd / Trans / 3rd / 4th, as Male, Female or Random. When companions are hired (below), only your own tier's jobs, with the fee. |
-| Battle | Stance (Free / Standard / Hold), Taunt and Recall, and the healer thresholds. |
+| Battle | Stance (Free / Standard / Hold), Taunt and Recall, the healer thresholds, and when companions rest. |
 | Gear | Take back equipment you gave the companion, per slot (`weapon`, `shield`, `armor`, …) or all of it. What it was generated or drafted with is its own and stays on it; when you take a piece back, it puts its own gear back on in that slot. Gear you gave that a new job cannot wear is handed back when it advances. |
 
 Each companion on the Party tab has a **Skills** button, which lists the skills
