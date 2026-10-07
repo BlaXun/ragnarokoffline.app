@@ -5460,7 +5460,9 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 		// player hunting a field is usually a little above what lives there.
 		// Past the band's top if they say so, never past the class's own cap.
 		if (battle_config.population_engine_level_from_map) {
-			const int mobs = pop_map_mob_level(sd->m);
+			// map_id, not sd->m: the shell is only put on its map further down (pc_setpos), so
+			// sd->m is still 0 here, a map without monsters, and every shell got the uniform roll.
+			const int mobs = pop_map_mob_level(map_id);
 			if (mobs > 0)
 				rolled = static_cast<int16_t>(cap_value(mobs + 8,
 					static_cast<int>(pop_cfg->base_level_min),

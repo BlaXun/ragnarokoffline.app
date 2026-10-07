@@ -49,3 +49,9 @@ test("a map's level comes from its spawn lines, weighted by count", () => {
 	assert.match(fn, /if \(from_spawns \|\| out > 0\)\n\t\tg_pop_map_mob_level\[m\] = out;/, 'an empty live sample is not cached');
 	assert.doesNotMatch(src, /out->size\(\) >= 64/, 'no 64-monster cap');
 });
+
+// The roll read sd->m, which is still 0 there: pc_setpos puts the shell on its map further down. Map 0
+// has no monsters, so every shell took the uniform roll across its band.
+test("the level is read from the map the shell is spawning on, not sd->m", () => {
+	assert.match(fromMap(), /const int mobs = pop_map_mob_level\(map_id\);/);
+});
