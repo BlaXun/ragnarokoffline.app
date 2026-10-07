@@ -92,6 +92,7 @@ struct Selector {
 	int8 role = -1;              ///< Ally: only members with this role
 	std::vector<int32> jobs;     ///< Ally: only these jobs (each with its family and base class)
 	int16 status = -1;           ///< Ally missing: lacking this status
+	int32 expiring_ms = 0;       ///< Ally missing: or having it with less than this left (0: only lacking)
 	int16 range = 0;             ///< 0 = the cast's range, or AREA_SIZE without a cast
 	int8 race = -1;              ///< Enemy: only monsters of this race (RC_*)
 	int8 element = -1;           ///< Enemy: only monsters of this element (ELE_*), as they are now
@@ -187,6 +188,10 @@ struct Rule {
 
 	uint32 cooldown_ms = 0;
 	bool one_per_party = false;
+	// InStrategy / InFight: ms in the plan's active strategy, and in the companion's current
+	// fight, measured from timestamps (a companion that took no turns still sees time pass).
+	int32 instrategy_below = -1, instrategy_atleast = -1;
+	int32 infight_below = -1, infight_atleast = -1;
 	/// Claim: a party-wide claim on the target under this name while the rule acts, so other
 	/// companions' rules with the same claim take another target (one Lex per boss, crowd
 	/// control spread). Held claim_ms after the last action.
@@ -774,7 +779,7 @@ bool StrategyDatabase::parse_requires(const ryml::NodeRef &node, Requirements &r
 bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 {
 	this->warn_unknown_keys(node, { "Enemy", "Ally", "Who", "NotSelf", "Prefer", "Role", "Job", "Status", "Range", "Boss",
-		"Race", "Element" }, "Target");
+		"Race", "Element", "Expiring" }, "Target");
 	std::string pick;
 	if (this->nodeExists(node, "Enemy")) {
 		static const std::map<std::string, Selector::Pick> picks = {
@@ -879,6 +884,14 @@ bool StrategyDatabase::parse_selector(const ryml::NodeRef &node, Selector &sel)
 		this->invalidWarning(node, "Ally: missing and Ally: having need a Status; the rule is skipped.\n");
 		return false;
 	}
+	if (this->nodeExists(node, "Expiring")) {
+		// Expiring: ms -- Ally: missing also picks a member whose status has less than that left.
+		if (sel.kind != Selector::Kind::Ally || sel.pick != Selector::Pick::Missing) {
+			this->invalidWarning(node["Expiring"], "Expiring belongs to Ally: missing; the rule is skipped.\n");
+			return false;
+		}
+		this->asInt32(node, "Expiring", sel.expiring_ms);
+	}
 	if (this->nodeExists(node, "Range")) {
 		this->asInt16(node, "Range", sel.range);
 		sel.range = static_cast<int16>(cap_value(static_cast<int>(sel.range), 0, AREA_SIZE));
@@ -894,7 +907,7 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		return nullptr;
 	}
 	this->warn_unknown_keys(node, { "Name", "Priority", "Remove", "Requires", "On", "When", "Charges", "Field",
-		"Enemy", "Count", "Reach", "Absent", "Present", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "Sit", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown", "Claim",
+		"Enemy", "Count", "Reach", "Absent", "Present", "Cast", "Level", "Target", "Consume", "Say", "Channel", "Retreat", "Distance", "Hold", "Sit", "KeepDistance", "Kite", "MoveTo", "Leave", "Switch", "Signal", "SetTarget", "Cooldown", "Claim", "InStrategy", "InFight",
 		"OnePerParty" }, "a rule");
 
 	auto rule = std::make_shared<Rule>();
@@ -931,6 +944,16 @@ RulePtr StrategyDatabase::parse_rule(const ryml::NodeRef &node, bool &remove)
 		}
 		return true;
 	};
+	for (const char *key : { "InStrategy", "InFight" }) {
+		if (!this->nodeExists(node, key))
+			continue;
+		const ryml::NodeRef n = node[c4::to_csubstr(key)];
+		this->warn_unknown_keys(n, { "Below", "AtLeast" }, key);
+		const bool strategy = key[2] == 'S';
+		if (!threshold(n, strategy ? rule->instrategy_below : rule->infight_below,
+				strategy ? rule->instrategy_atleast : rule->infight_atleast))
+			return nullptr;
+	}
 	if (this->nodeExists(node, "Charges")) {
 		const ryml::NodeRef c = node["Charges"];
 		this->warn_unknown_keys(c, { "Status", "Value", "Below", "AtLeast" }, "Charges");
@@ -1775,6 +1798,7 @@ struct PlanState {
 	bool started = false;
 	std::string active;
 	int32 fight = 0;            ///< the monster a monster-specific plan's strategy belongs to
+	t_tick entered = 0;         ///< when the active strategy became active (InStrategy)
 };
 
 /// Something that happened to the companion's fight: an encounter ended, its target was lost.
@@ -1800,6 +1824,8 @@ struct ShellState {
 	bool trace = false;
 	uint32 tracer_char = 0;     ///< a regular shell's trace goes to this player (a companion's to its owner)
 	t_tick hold_until = 0;      ///< a rule is positioning the companion: following waits until then
+	t_tick fight_since = 0;     ///< InFight: when the current fight began
+	t_tick last_engaged = 0;    ///< the last turn it had a target or a monster's plan
 	bool sat = false;           ///< a Sit rule sat it down: stood up again when none applies
 	int32 forced_target = 0;    ///< SetTarget: this monster, until forced_until
 	t_tick forced_until = 0;
@@ -2553,6 +2579,15 @@ static block_list *select_enemy(Turn &t, const Selector &sel, int range)
 	return best;
 }
 
+/// How long a status has left, in ms. One without a timer (it lasts until removed) never lapses.
+static int64 status_left_ms(const status_change_entry *sce, t_tick now)
+{
+	if (sce == nullptr)
+		return 0;
+	const TimerData *td = sce->timer != INVALID_TIMER ? get_timer(sce->timer) : nullptr;
+	return td != nullptr ? std::max<int64>(0, DIFF_TICK(td->tick, now)) : INT64_MAX;
+}
+
 /// Target: { Ally: ... }: the companion itself counts unless NotSelf.
 /// `skill`: the rule's Cast, if any. A member it cannot help is passed over (pop_ally_skill_refused
 /// in the combat file: an undead-armoured ally for Heal, Resurrection, Sanctuary ...), so the rule
@@ -2591,8 +2626,11 @@ static block_list *select_ally(Turn &t, const Selector &sel, int range, uint16 s
 			rank = hp_pct(m);
 			if (rank >= 100)
 				continue;
-		} else if (sel.pick == Selector::Pick::Missing && m->sc.getSCE(static_cast<sc_type>(sel.status)) != nullptr) {
-			continue;
+		} else if (sel.pick == Selector::Pick::Missing) {
+			// Missing, or (Expiring) about to lapse: renewed before the gap, not after it.
+			const status_change_entry *sce = m->sc.getSCE(static_cast<sc_type>(sel.status));
+			if (sce != nullptr && !(sel.expiring_ms > 0 && status_left_ms(sce, t.tick) < sel.expiring_ms))
+				continue;
 		} else if (sel.pick == Selector::Pick::Having && m->sc.getSCE(static_cast<sc_type>(sel.status)) == nullptr) {
 			continue;
 		} else if (sel.pick == Selector::Pick::Attacked) {
@@ -3191,6 +3229,17 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		return Outcome::Skipped;
 	if (rule.event != Event::None && DIFF_TICK(t.tick, rs.pending_until) >= 0)
 		return Outcome::Skipped;
+	if ((rule.instrategy_below >= 0 || rule.instrategy_atleast >= 0)
+			&& !threshold_ok(static_cast<int32>(std::min<int64>(DIFF_TICK(t.tick, ps.entered), INT32_MAX)),
+				rule.instrategy_below, rule.instrategy_atleast))
+		return Outcome::Skipped;
+	if (rule.infight_below >= 0 || rule.infight_atleast >= 0) {
+		const ShellState &st = *t.st;
+		const bool fighting = st.fight_since != 0 && DIFF_TICK(t.tick, st.last_engaged) <= 5000;
+		const int32 in_fight = fighting ? static_cast<int32>(std::min<int64>(DIFF_TICK(t.tick, st.fight_since), INT32_MAX)) : 0;
+		if (!threshold_ok(in_fight, rule.infight_below, rule.infight_atleast))
+			return Outcome::Skipped;
+	}
 	if (rule.charge_sc >= 0 && !threshold_ok(status_charges(sd, rule.charge_sc, rule.charge_val), rule.charge_below, rule.charge_atleast))
 		return Outcome::Skipped;
 	if (rule.field_skill != 0 && !rule.field_at_target
@@ -3435,6 +3484,7 @@ static Outcome run_rule(Turn &t, const Rule &rule, const Plan &plan, PlanState &
 		trace(sd, *t.st, t.tick, "rule %s: strategy %s -> %s", name, ps.active.empty() ? "(none)" : ps.active.c_str(),
 			rule.switch_to.c_str());
 		ps.active = rule.switch_to;
+		ps.entered = t.tick;
 		switched = true;
 	}
 
@@ -3700,6 +3750,14 @@ bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills,
 	Turn t{ sd, population_engine_companion_loot_owner(sd), enemy, tick, &shell_state(sd, tick) };
 	t.plans = &plans;
 	track_fight(t, plans);
+	// InFight: a fight begins when the companion has a target, or a plan about a monster applies,
+	// after at least 5 s without either; it ends 5 s after the last.
+	if (sd->pop.target_id != 0
+			|| std::any_of(plans.begin(), plans.end(), [](const PlanRef &p) { return std::get<0>(p.key) != kAllMobs; })) {
+		if (t.st->fight_since == 0 || DIFF_TICK(tick, t.st->last_engaged) > 5000)
+			t.st->fight_since = tick;
+		t.st->last_engaged = tick;
+	}
 
 	// Every plan keeps its own active strategy. A monster's plan starts over with each
 	// new monster of that kind (an encounter plan: with each new boss, not each new target);
@@ -3711,6 +3769,7 @@ bool population_strategy_turn(map_session_data *sd, t_tick tick, bool do_skills,
 			ps.started = true;
 			ps.active = p.plan->start;
 			ps.fight = p.instance;
+			ps.entered = tick;
 		}
 		states.emplace_back(p.plan, &ps);
 	}

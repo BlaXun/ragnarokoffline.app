@@ -15,7 +15,7 @@ how it would work, what it would add, and where to start.
 | 2 | Leaving hostile ground (`Leave:`) | built, not yet played |
 | 3 | Choosing who to help or fight (selectors, `SetTarget`) | built, played (Phreeoni) |
 | 4 | Items and gear | **not done**: needs [inventories](#inventories-the-foundation) |
-| 5 | [Time and memory](#5-time-and-memory) | **not done** |
+| 5 | [Time and memory](#5-time-and-memory) | step 1 (time in strategy and fight, renewing before a status lapses) built, not yet played; step 2 (flags and counters) **not done** |
 | 6 | Companions coordinating | signals and claims built, not yet played; role plans built and played; [roles that change in a fight](#6-coordination-roles-that-change-in-a-fight-and-claims) **not done** |
 | 7 | Boss mechanics (MVP survey, A to F) | built; phases, reacting to a summon and revealing a hidden boss played |
 | 8 | [AI raid parties](#8-ai-raid-parties) | **not done** |
@@ -347,8 +347,21 @@ patterns.
    for a plan that doesn't use it. *Test:* the example mods behave as before
    (load counts, a Phreeoni run).
 
-**Where to start.** `PlanState` in `strategy/population_strategy.cpp` (where the
-active strategy lives); the condition parser for the new tokens.
+**Step 1, built.** Time in the strategy and the fight are rule conditions,
+`InStrategy` and `InFight` (ms). They are not `When:` tokens, which would have
+meant changing the engine's shared condition parser. Time left on a status is a
+selector option, `{ Ally: missing, Status, Expiring: ms }`. companion-roles uses
+it: the healer renews Blessing, Increase AGI and Impositio with 10 s left.
+Risks 2, 3 and 6 are covered by `tests/companion-strategy-time.test.cjs`
+(timestamps, statuses without a timer, the parser knowing the keys) and by the
+load test. A playtest still has to confirm them in a fight.
+
+**Step 2, open:** flags and counters, with their reset rules and trace output
+(risks 1, 4 and 5). To be done when a boss needs them.
+
+**Where to start (step 2).** `PlanState` in `strategy/population_strategy.cpp`
+(where the active strategy lives), beside the `InStrategy` and `InFight`
+bookkeeping.
 
 ## 6. Coordination: roles that change in a fight, and claims
 

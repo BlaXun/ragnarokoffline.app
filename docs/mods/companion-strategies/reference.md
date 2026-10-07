@@ -51,6 +51,7 @@ each one does. New to it? Start with the [guide](guide.md). For party play see
 | `Cooldown` | not fired for so long | `Say` (+ `Channel`) | speak |
 | `OnePerParty` | no other companion just did it | `Switch` | change strategy |
 | `Claim` | pass over targets another companion claimed | | |
+| `InStrategy`, `InFight` | how long in this strategy, in this fight | | |
 | | | `Signal` | tell the other companions |
 | | | `SetTarget` | make the rule's monster the target |
 
@@ -244,7 +245,9 @@ A rule applies when all of the following hold:
 | `Absent: { Ally \| Enemy: ..., ... }` | while a [selector](#choosing-who-selectors) finds **nobody**: `Absent: { Ally: nearest, Job: Priest }` is "no living Priest within sight", the moment to fall back. |
 | `Reach: false` / `true` | while the monster the rule is about could not (or could) fight back against the companion where it stands. rAthena teleports a boss hit by someone it can neither hit back from where it stands nor walk to within its chase range; a monster held in place (Ankle Snare, Spider Web) cannot walk at all. `Reach` asks the same question. |
 | `Enemy: { Element, Race, Size, Boss }` | while the monster the rule is about (its selector's, or the current target) is one of those: `Element: [Holy, Ghost]`, `Race: Demon`, `Size: Large`, `Boss: true`. Names as rAthena writes them without `ELE_` / `RC_`. For a boss that changes element. |
-| `Cooldown:` | when it has not fired in that many ms. |
+| `Cooldown:` | when it has not fired in that many ms. "Every 30 s" is `Cooldown: 30000`. |
+| `InStrategy: { Below \| AtLeast }` | while the plan's active strategy has been active for that long (ms): `InStrategy: { AtLeast: 60000 }` is "this phase has dragged on for a minute". |
+| `InFight: { Below \| AtLeast }` | while the companion's current fight has lasted that long (ms): `InFight: { Below: 5000 }` is "the first 5 s". A fight begins when it has a target or a plan about a monster applies, after 5 s without either, and ends 5 s after the last. Out of a fight it counts as 0. Both are measured from timestamps, so a companion that took no turns in between (resting, frozen) still sees the time pass. |
 | `OnePerParty: true` | when no other companion of the party has just fired it at the same target. |
 | `Claim: name`, or `Claim: { Name, For }` | on a target no other companion of the party has claimed under that name. Acting puts the claim on the rule's target for `For` ms (default 5000), renewed each time it acts again. A selector passes claimed targets over and picks the next, so `Claim: frozen` on a Frost Diver rule spreads two Wizards over two monsters, and `Claim: { Name: lex, For: 10000 }` keeps a second Priest from a second Lex Aeterna on the boss. Unlike `OnePerParty`, it works across different rules: any rule with the same claim name respects it. |
 
@@ -432,7 +435,7 @@ whose selector finds nobody does not apply.
 | `{ Enemy: target_of, Who, Job }` | the monster `Who` is fighting (`owner` by default): assisting. |
 | `{ Enemy: nearest \| lowest_hp \| boss \| slaves \| casting \| hidden }` | the nearest, the most hurt, a boss, a summoned slave, one that is casting, one that is hidden (Hiding, Cloaking, a Hode's burrow). `Boss: true` on any Enemy selector or `Count` keeps to bosses; `Race` and `Element` to that race or element (the element it has now). |
 | `{ Ally: dead }` | the nearest fallen party member. |
-| `{ Ally: lowest_hp \| nearest \| missing \| having \| attacked, Role, Job, Status, NotSelf }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, the nearest with it (Status Recovery on the petrified), or the one the monsters in sight are on (a boss counts three times); only those with that `Role` or `Job` (a [family](#jobs-and-families), or a list). |
+| `{ Ally: lowest_hp \| nearest \| missing \| having \| attacked, Role, Job, Status, NotSelf, Expiring }` | a party member (the companion included unless `NotSelf`): the most hurt below 100 %, the nearest, the nearest lacking `Status`, the nearest with it (Status Recovery on the petrified), or the one the monsters in sight are on (a boss counts three times); only those with that `Role` or `Job` (a [family](#jobs-and-families), or a list). `Expiring: ms` widens `missing` to members whose status has less than that left, so a buff is renewed before it lapses; a status without a timer never expires. |
 
 With an `Enemy` selector, `When`'s `enemy_*` tokens ask about the chosen monster,
 so `not_enemy_provoke` means "that one is not provoked yet". With an `Ally`

@@ -31,6 +31,7 @@ not yet. Adjust names, priorities and numbers to your plan. The
 
 **Boss mechanics**
 - [Phases on the boss's HP](#phases-on-the-bosss-hp)
+- [Change tactic when a phase drags on](#change-tactic-when-a-phase-drags-on)
 - [React to a cast](#react-to-a-cast)
 - [Fall back when the healer is down](#fall-back-when-the-healer-is-down)
 
@@ -70,12 +71,13 @@ help (undead armor) is passed over automatically.
 - Name: blessing
   Priority: 50
   Cast: AL_BLESSING
-  Target: { Ally: missing, Status: SC_BLESSING }     # the nearest without it
+  Target: { Ally: missing, Status: SC_BLESSING, Expiring: 10000 }  # without it, or under 10 s left
   When: self_sp_ge120
 ```
 
-Needed whenever the plan ends in `Hold`: `Hold` ends the turn before the
-engine's own buffing would come round.
+`Expiring` renews the buff before it lapses rather than after. Needed whenever
+the plan ends in `Hold`: `Hold` ends the turn before the engine's own buffing
+would come round.
 
 ## Wall a member before a stun lands
 
@@ -367,6 +369,22 @@ stand in it and be healed.
         - Name: last
           Rules: [...]
 ```
+
+## Change tactic when a phase drags on
+
+```yaml
+- Name: drags_on
+  InStrategy: { AtLeast: 60000 }       # a minute in this phase
+  Switch: plan_b
+  Say: "This takes too long, changing tactic."
+- Name: opening_burst
+  Priority: 50
+  InFight: { Below: 5000 }             # only in the first 5 s of a fight
+  Cast: WZ_METEOR
+  Target: { Enemy: boss }
+```
+
+Loads cleanly; not played yet.
 
 ## React to a cast
 
