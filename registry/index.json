@@ -629,7 +629,7 @@
         },
         {
           "path": "README.md",
-          "sha256": "68d21b6793838735e9d1b510314c5ad654a321d3c97f8b399e829c6648236ed9"
+          "sha256": "bee23df1d55c7d97b0bc0bb2ef1ce7f1a166ce70aa45efe0f29b9e1bad0ecd41"
         },
         {
           "path": "db/population_vendor_pop.yml",
@@ -653,7 +653,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "c7eb6cf567d104723403c1e03e5c38eb3356cd41bda02d90c9aec4c5f065c1bd"
+          "sha256": "24a80751913eac952e181b97151aecf6dff4f7092a402a61e7d57afc825653d9"
         },
         {
           "path": "npc/prontera-vendors-customers.txt",
@@ -677,7 +677,7 @@
         },
         {
           "path": "npc/prontera-vendors-supply.txt",
-          "sha256": "c85d0b5c5e80b27e0d1a7bc287cd9f484cfa14cc1ef379c59cd0a03e939e6379"
+          "sha256": "8961490f7d2be80e584f61294ede089207aa888f2f7f046682dbc56400a9e9e0"
         },
         {
           "path": "npc/prontera-vendors.txt",

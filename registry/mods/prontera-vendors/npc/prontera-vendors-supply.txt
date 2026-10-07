@@ -48,7 +48,7 @@ OnInit:
 	.mod$ = "prontera-vendors";
 	.parties = callfunc("F_ModSetting", .mod$, "supply_parties", 0);
 	.on = callfunc("F_ModSetting", .mod$, "hunted_supply", 1) && .parties > 0;
-	.hl_hours = callfunc("F_ModSetting", .mod$, "supply_halflife_days", 2) * 24;
+	.hl_hours = callfunc("F_ModSetting", .mod$, "supply_halflife_days", 5) * 24;
 	.filled = callfunc("F_ModSetting", .mod$, "supply_start_filled", 0);
 	.mvp_cap = callfunc("F_ModSetting", .mod$, "supply_mvp_per_day", 1);
 	if (.hl_hours < 1) .hl_hours = 1;

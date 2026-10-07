@@ -70,7 +70,7 @@ defaults. On an app without settings pages they show in the Mods tab.
 | Price recovery (hours) | 72 | After this long, half of a move has faded. |
 | Market news | on | About once a week an event moves a group of items for a few days. |
 | Hunted supply: parties | 0 | 0: off. Otherwise how many parties hunt on an average hour (see below); 20 is a good start. |
-| How long loot stays (days) | 2 | Half-life of what reached the market; equipment 3x, cards and MvP loot 5x. |
+| How long loot stays (days) | 5 | Half-life of what reached the market; what players use up 0.5x, equipment 3x, cards and MvP loot 5x. |
 
 Settings take effect when the server starts.
 
@@ -345,12 +345,12 @@ on the street only while someone has found one and nobody has bought it yet.
   has settled.
   Stalls past the count pack up; buying stores are not affected.
 
-At the defaults (20 parties, 2 days, 1x rates) about 48 Elunium and 11
-cards a day reach the market; about 70 Elunium and 130 cards in all are on
+At the defaults (20 parties, 5 days, 1x rates) about 48 Elunium and 11
+cards a day reach the market; about 170 Elunium and 270 cards in all are on
 it once it has settled. A rare card settles below one copy: it shows up now
 and then, and is gone again. A new market starts empty and fills as the
 parties hunt: loot reaches about half its settled level in one half-life
-(2 days by default), cards and equipment take five and three times as long.
+(5 days by default), cards and equipment take five and three times as long.
 `@supply reset filled` puts it at the settled level at once.
 
 **Needs:** app 1.5.2 or later for the mod store (on an older build only this
