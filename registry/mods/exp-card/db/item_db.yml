@@ -9,18 +9,16 @@
 #   50051..50060  Base_Exp_Card_1  .. Base_Exp_Card_10   -- grant BASE exp
 #   50061..50070  Job_Exp_Card_1   .. Job_Exp_Card_10    -- grant JOB exp
 #
-# Exp per card at a 1x rate is a roughly geometric curve, anchored at
-# Lv 10 = 60,000 (~5% of the Renewal level-98 base-exp requirement,
-# ~1.25M in db/re/job_exp.yml). Each level down halves-or-so, matching
-# the shape of rAthena's own NextBaseExp curve -- so a Lv 1 card at
-# player level 5 is roughly the same 3-5% chunk of the next level that a
-# Lv 10 card is at player level 98:
+# Exp per card at a 1x rate: about 5% of the next level at the lowest base
+# level that may use it (its EquipLevelMin), and about 3% nine levels
+# later, from Renewal's NextBaseExp for a second job (db/re/job_exp.yml).
+# Until 1.2.0 tiers 5-10 were 2,000-60,000, up to 14% of a level a card.
 #
-#   Lv 1  ->     100      Lv 6  ->  4,000
-#   Lv 2  ->     250      Lv 7  ->  7,500
-#   Lv 3  ->     500      Lv 8  -> 15,000
-#   Lv 4  ->   1,000      Lv 9  -> 30,000
-#   Lv 5  ->   2,000      Lv 10 -> 60,000
+#   Lv 1  ->     100      Lv 6  ->  2,250
+#   Lv 2  ->     250      Lv 7  ->  3,000
+#   Lv 3  ->     500      Lv 8  ->  5,500
+#   Lv 4  ->   1,000      Lv 9  -> 11,000
+#   Lv 5  ->   1,500      Lv 10 -> 30,000
 #
 # Job cards use the same numbers on the job axis. If you want a different
 # curve, edit the twenty scripts below.
@@ -110,7 +108,7 @@ Body:
     Weight: 1
     EquipLevelMin: 41
     Script: |
-      .@exp = 2000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 1500 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv5: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -122,7 +120,7 @@ Body:
     Weight: 1
     EquipLevelMin: 51
     Script: |
-      .@exp = 4000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 2250 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv6: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -134,7 +132,7 @@ Body:
     Weight: 1
     EquipLevelMin: 61
     Script: |
-      .@exp = 7500 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 3000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv7: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -146,7 +144,7 @@ Body:
     Weight: 1
     EquipLevelMin: 71
     Script: |
-      .@exp = 15000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 5500 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv8: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -158,7 +156,7 @@ Body:
     Weight: 1
     EquipLevelMin: 81
     Script: |
-      .@exp = 30000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 11000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv9: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -170,7 +168,7 @@ Body:
     Weight: 1
     EquipLevelMin: 91
     Script: |
-      .@exp = 60000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 30000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv10: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -231,7 +229,7 @@ Body:
     Weight: 1
     EquipLevelMin: 41
     Script: |
-      .@exp = 2000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 1500 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv5: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -243,7 +241,7 @@ Body:
     Weight: 1
     EquipLevelMin: 51
     Script: |
-      .@exp = 4000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 2250 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv6: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -255,7 +253,7 @@ Body:
     Weight: 1
     EquipLevelMin: 61
     Script: |
-      .@exp = 7500 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 3000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv7: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -267,7 +265,7 @@ Body:
     Weight: 1
     EquipLevelMin: 71
     Script: |
-      .@exp = 15000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 5500 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv8: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -279,7 +277,7 @@ Body:
     Weight: 1
     EquipLevelMin: 81
     Script: |
-      .@exp = 30000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 11000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv9: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -291,6 +289,6 @@ Body:
     Weight: 1
     EquipLevelMin: 91
     Script: |
-      .@exp = 60000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 30000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv10: +" + callfunc("F_InsertComma", .@exp) + " job experience.";

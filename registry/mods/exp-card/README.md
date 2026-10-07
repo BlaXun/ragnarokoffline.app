@@ -11,11 +11,12 @@ content the player is fighting.
 
 ## The cards
 
-Exp per card (at a 1x rate — see [Exp rates](#exp-rates)) follows a roughly
-geometric curve (~2× per level), anchored so a
-Lv 10 card is about 5% of a level-98 Renewal character's next-level bar and
-each lower level is roughly the same 3–5% at the player level *that band of
-mobs suits* — matching the shape of rAthena's own NextBaseExp curve.
+Exp per card (at a 1x rate — see [Exp rates](#exp-rates)) is about **5% of
+the next level at the lowest base level that may use it**, and about 3% nine
+levels later, measured against Renewal's exp table for a second job. Tiers 1
+to 4 grow about 2× a level; from tier 5 the curve is flatter, because a card
+that kept doubling outran the levels it is meant for (before 1.2.0 tiers 6–9
+were 9–14% of a level each).
 
 | Level | Exp at 1x | Required base level | Item ids (base / job) |
 |---|---|---|---|
@@ -23,15 +24,15 @@ mobs suits* — matching the shape of rAthena's own NextBaseExp curve.
 | 2  | 250    | 11 | 50052 / 50062 |
 | 3  | 500    | 21 | 50053 / 50063 |
 | 4  | 1,000  | 31 | 50054 / 50064 |
-| 5  | 2,000  | 41 | 50055 / 50065 |
-| 6  | 4,000  | 51 | 50056 / 50066 |
-| 7  | 7,500  | 61 | 50057 / 50067 |
-| 8  | 15,000 | 71 | 50058 / 50068 |
-| 9  | 30,000 | 81 | 50059 / 50069 |
-| 10 | 60,000 | 91 | 50060 / 50070 |
+| 5  | 1,500  | 41 | 50055 / 50065 |
+| 6  | 2,250  | 51 | 50056 / 50066 |
+| 7  | 3,000  | 61 | 50057 / 50067 |
+| 8  | 5,500  | 71 | 50058 / 50068 |
+| 9  | 11,000 | 81 | 50059 / 50069 |
+| 10 | 30,000 | 91 | 50060 / 50070 |
 
 Base cards grant only base exp; Job cards grant only job exp. The two are
-symmetric — a Base Lv 10 gives 60,000 base exp, a Job Lv 10 gives 60,000
+symmetric — a Base Lv 10 gives 30,000 base exp, a Job Lv 10 gives 30,000
 job exp.
 
 **Level gate.** Each card has an `EquipLevelMin` matching its tier — a Lv 10
@@ -39,7 +40,7 @@ card needs base level 91 to use, a Lv 5 needs 41, and so on. rAthena's
 `pc_isUseitem` refuses to consume the item below the threshold, so a
 low-level character who happens to pick up a high-tier card just carries
 it in the bag until they reach the level. Prevents a level 20 alt from
-downing a Lv 10 base card for two-thirds of a level in one click.
+downing a Lv 10 base card for several levels in one click.
 
 If you want a different curve, edit the twenty scripts in `db/item_db.yml`
 — the tooltips name no number, so nothing else needs to change.
@@ -88,13 +89,13 @@ per card). Change them there if you want a different curve.
 Card exp follows the server's kill-exp rates: Base cards scale with
 **Base EXP**, Job cards with **Job EXP** (the app's server settings,
 `base_exp_rate` / `job_exp_rate`). At 1x a Lv 10 Base card gives exactly
-60,000; at 10x it gives 600,000. So a card stays the same share of what
+30,000; at 10x it gives 300,000. So a card stays the same share of what
 kills pay at any rate. The rate is read when the card is used, so a rate
 change applies to cards already in the bag.
 
 The amount is granted with `getexp2`, which applies nothing further: the
 **Quest EXP** rate, Battle Manuals and the guild exp tax do not touch it.
-That is what lets the message after use (`Base Exp Card Lv10: +600,000
+That is what lets the message after use (`Base Exp Card Lv10: +300,000
 base experience.`) print the exact amount granted.
 
 The tooltip names no amount — it is a static client file and cannot know
@@ -127,7 +128,7 @@ Or copy this folder into your mods directory and restart the app:
 - The map-server log's NPC count goes up by one (`exp_card_ctrl`). A
   parse error names the file and line.
 - In game: `@item Base_Exp_Card_10` gives you one, and using it grants
-  60,000 base exp at 1x; that isolates the item side from the on-kill roll.
+  30,000 base exp at 1x; that isolates the item side from the on-kill roll.
 
 ## What to look at first
 
