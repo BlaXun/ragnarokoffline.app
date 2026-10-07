@@ -15,8 +15,8 @@ how it would work, what it would add, and where to start.
 | 2 | Leaving hostile ground (`Leave:`) | built, not yet played |
 | 3 | Choosing who to help or fight (selectors, `SetTarget`) | built, played (Phreeoni) |
 | 4 | Items and gear | **not done**: needs [inventories](#inventories-the-foundation) |
-| 5 | [Time and memory](#5-time-and-memory) | **not done** |
-| 6 | Companions coordinating | signals built, not yet played; role plans built and played; [roles that change in a fight and claims](#6-coordination-roles-that-change-in-a-fight-and-claims) **not done** |
+| 5 | [Time and memory](#5-time-and-memory) | step 1 (time in strategy and fight, renewing before a status lapses) built, not yet played; step 2 (flags and counters) **not done** |
+| 6 | Companions coordinating | signals and claims built, not yet played; role plans built and played; [roles that change in a fight](#6-coordination-roles-that-change-in-a-fight-and-claims) **not done** |
 | 7 | Boss mechanics (MVP survey, A to F) | built; phases, reacting to a summon and revealing a hidden boss played |
 | 8 | [AI raid parties](#8-ai-raid-parties) | **not done** |
 
@@ -28,7 +28,9 @@ noted:
 - layered `Rotation`; `Allow` and `Ban`, which also bind the engine's own heals
   and buffs; `Attack: false` and `Exact` (not yet played);
 - `Cast:` lists, which pick a spell by element;
-- kinds of monster (`Mob: { Race, Element }`) and `Disable` (not yet played).
+- kinds of monster (`Mob: { Race, Element }`) and `Disable` (not yet played);
+- `Sit: true`, sitting down while a rule applies and standing up when none does
+  (not yet played).
 
 Engine fixes along the way, active with or without plans:
 - a companion that cannot move takes no turn;
@@ -159,13 +161,25 @@ Each item below has the same headings, so it can be picked up cold.
 ## Inventories: the foundation
 
 **What is missing.** Shells and companions have no inventory of their own that
-anyone manages. A companion's bag holds what the engine hands it (gear, virtual
-ammunition) and what a trade puts there, and only its *worn* gear is saved
-(`cp_companion_persistence`, `gear_detail`). The rest is lost with the shell.
-Nothing restocks it, and the owner cannot see or manage it. On top of that, the
-engine's rAthena patch (`0001`, `skill_get_requirement`) waives every item
-requirement for population characters, so even an item that is there is never
-needed or spent.
+anyone manages:
+- A shell does have rAthena's in-game bag. It holds what the engine hands it:
+  its gear, virtual ammunition, and a supply of potions. Since "carry and drink
+  potions" (`65ca24d`), the engine stocks 300 HP and 100 SP potions of a
+  level-fitting kind, drinks them through rAthena's normal item use
+  (`pc_useitem`), and restocks them after a full rest. A trade also puts items
+  there.
+- But only its *worn* gear is saved (`cp_companion_persistence`, `gear_detail`).
+  The rest is lost with the shell.
+- Nobody but the engine fills the bag, and the owner can't see or manage it.
+- The engine's rAthena patch (`0001`, `skill_get_requirement`) waives every
+  item, weapon and ammunition requirement for population characters, so a
+  catalyst in the bag is never needed or used up. (Patch `0031` is about
+  something else: since then every shell, immortal ones included, pays the
+  **SP** and AP its skills cost.)
+
+The engine's potion drinking is to become a setting (on or off), as agreed with
+the maintainer. The aim is the full range of items, not a couple of healing
+potions.
 
 **Why not now.** Three decisions belong to the inventory itself, not to
 strategies: where the bag is saved, who fills it (the owner by trade, a shopping
@@ -216,24 +230,127 @@ Tables written today need no change.
 
 ### Using items
 
-**What is missing.** Companions use no items: no potions, no Yggdrasil Leaf, no
-Fly Wing, no elemental converters.
+**What is missing.** Beyond the engine's own HP and SP potions (above), shells
+use no items, and a plan can't ask for one. The aim is the whole range of
+usable items:
+- healing and SP potions, chosen by the plan rather than the engine;
+- Berserk and Awakening potions for attack speed, before a boss;
+- Green Herbs and Panacea against poison and other ailments;
+- elemental converters and scrolls that endow a weapon;
+- Yggdrasil Leaf to revive someone else, Yggdrasil Berry to heal fully;
+- Fly Wing and Butterfly Wing.
 
-**Why not now.** No inventory.
+**Why not now.** No managed inventory: nothing stocks these items, and the owner
+can't give or see them. The engine's potion supply is a fixed pair, filled by
+the engine itself.
 
-**How it would work.** A new rule action, `UseItem: <item>` with `Target:`
-(`self`, an ally selector, a dead ally for a Yggdrasil Leaf). It calls rAthena's
-item use (`pc_useitem`); for an item that targets someone, the server completes
-the target step a client would send. Item use waits out its own delay the way
-casts wait out theirs. The conditions exist: HP and SP (`When:`), the bag
-(`item_below`, `Requires: { Items }`). Example: "below 30 % HP with no healer
-alive, drink a White Potion".
+**How it would work.** A new rule action, `UseItem: <item>` (or a list, the first
+one in the bag) with `Target:` (`self`, an ally selector, a dead ally for a
+Yggdrasil Leaf). It calls rAthena's item use, `pc_useitem`, the same path the
+engine's potion drinking already uses successfully. For an item that targets
+someone, the server completes the target step a client would send. Item use
+waits out its own delay, the way casts wait out theirs. The conditions exist:
+HP and SP (`When:`), statuses (`self_poison`, `not_self_aspdpotion`), the bag
+(`item_below`, `Requires: { Items }`).
+
+Examples:
+- below 30 % HP with no healer alive, drink a White Potion;
+- poisoned, eat a Green Herb;
+- entering a boss's plan, drink a Berserk Potion;
+- the boss is undead, endow with Holy Water;
+- a party member lies dead with no Priest near, use a Yggdrasil Leaf.
+
+When the engine's potion drinking becomes a setting, a plan can take it over
+entirely.
 
 **What it adds.** Survival without a healer, revives without a Priest, and
 consumables as part of boss plans (a Yggdrasil Berry at Phreeoni's Power Up).
 
 **Where to start.** A new action in `parse_rule` and `run_rule`
 (`strategy/population_strategy.cpp`), modelled on `Cast`.
+
+### Choosing ammunition: Archers, Gunslingers, Ninjas
+
+**What is wanted.** An Archer fighting an earth monster checks whether it carries
+Fire Arrows. If so, it equips them, and afterwards goes back to its default
+ammunition. The same goes for a Gunslinger's bullets and spheres, and a Ninja's
+shuriken and its elemental kunai.
+
+**What exists already.** The engine does the element part on its own
+(`runtime/population_shell_ammo.cpp`):
+- every shell is stocked with each kind of ammunition its weapon uses (arrows,
+  bullets, spheres, shuriken, kunai), 500 of each, refilled below 100;
+- before each attack, it equips the kind that is strongest against the target's
+  element (`pe_shell_elemstrong`) and avoids one the target resists
+  (`pe_shell_elemallowed`), so an Archer already shoots Fire Arrows at an earth
+  monster;
+- skills that need a particular ammunition get it
+  (`population_shell_equip_ammo_for_skill`).
+
+This is a virtual supply, like the engine's potions. Nothing limits it, and a
+companion's owner never provides it.
+
+**What is missing.**
+1. **Plan control.** A plan can't say which ammunition to prefer or avoid.
+   Examples: "Silver Arrows against the undead even though Fire would do more",
+   "never Poison Arrows here", "save the rare ones for the boss". A plan also
+   can't name a default to return to: today, the next target's element simply
+   decides again.
+2. **Real ammunition.** With inventories, the choice should come from what the
+   companion actually carries ("if it has Fire Arrows"). It should stop when a
+   kind runs out, and the virtual stock becomes a setting.
+
+3. **Running out.** `item_below` reacts to one particular item. Nothing reacts to
+   "low on *any* ammunition my weapon can use", and with a real inventory that is
+   what matters: a Hunter with no arrows left should say so and fall back.
+
+**Why not now.** It waits for the real inventory, which is being built as its
+own PR; that one is to be accepted first. With today's virtual stock nothing
+ever runs out (it refills below 100), and the automatic choice by element
+already covers the common case.
+
+**How it would work** (agreed shape):
+- **`Ammo: { Prefer: [...], Avoid: [...] }`** on a plan or a strategy, layered
+  like `Allow`: the most specific plan that says something decides. The
+  engine's ammunition choice asks the strategy module for each kind it scores:
+  one more marked call in `pe_shell_ammochange`, the size of the `Allow` hook.
+  `Prefer` adds a bonus that outranks the element bonus; `Avoid` drops a kind.
+  Examples: "Silver Arrows against the undead", "never Poison Arrows here",
+  "save the rare ones for the boss".
+- **An "out of ammunition" event and condition:** `On: { Event: ammo_below,
+  Value: 50 }` fires once when the total of ammunition the current weapon can
+  use drops below `Value`. `Ammo: { Below: 50 }` as a rule condition holds while
+  it is that low, so a rule can keep acting on it: "out of arrows: stay by the
+  owner and plain-attack", "say so once".
+- **With the real inventory:** the engine chooses only from what is in the bag,
+  and the virtual stock becomes a setting.
+
+**Effort.** About the size of `Claim`: a plan key, one engine call, the event
+and condition, and a source-pin test.
+
+**Risks, and the guard for each.**
+1. **An `Avoid` that removes every usable kind** would leave a ranged class
+   unable to shoot. Guard: if nothing is left, ignore `Avoid` for that attack
+   and say so in the trace.
+2. **A preferred kind the target absorbs or resists** (Fire Arrows at a fire
+   monster) would heal it or do nothing. Guard: a preference never overrides the
+   engine's "avoid what the target resists" check (`pe_shell_elemallowed`); it
+   only reorders the allowed kinds.
+3. **Skills that need a particular ammunition** have their own path
+   (`population_shell_equip_ammo_for_skill`). Guard: leave it alone; the
+   preference applies only to the normal choice.
+4. **More swapping** when a preference disagrees with the element choice. Low
+   risk: swapping is cheap, and rAthena's swap delay (after Desperado, Arrow
+   Vulcan) is already respected (`canequip_tick`).
+5. **Regular AI characters** are only affected through plans marked
+   `For: shells` or `For: all`, as with everything else.
+
+**What it adds.** Ammunition as part of a boss plan, as a resource the owner
+provides, and a sensible reaction when it runs out.
+
+**Where to start.** `pe_shell_ammochange` in `runtime/population_shell_ammo.cpp`
+(the choice); the strategy module for `Ammo:` and `ammo_below`; the inventory PR
+for what is in the bag.
 
 ### Switching gear to the situation
 
@@ -288,8 +405,46 @@ strategy.
 once-per-fight openers, sequences longer than one state, and bosses with timed
 patterns.
 
-**Where to start.** `PlanState` in `strategy/population_strategy.cpp` (where the
-active strategy lives); the condition parser for the new tokens.
+**Risks, and what to test for each.**
+1. **Stale memory.** A flag from the last boss must not carry into the next
+   fight. Flags reset when the plan starts over (a new boss). A `Mob: All` plan
+   never starts over, so its flags also reset after a stretch with no fight.
+   *Test:* set a flag at one boss, then check it's clear at the next boss, and
+   after leaving and coming back.
+2. **Time measured in turns.** A companion that takes no turns (resting, unable
+   to move, not watched) would not see time pass. Measure from timestamps, not
+   turn counts. *Test:* a timed rule fires on time after the companion rested
+   or was frozen in between.
+3. **Statuses with no timer** (they last until removed) have no "time left".
+   Treat them as never lapsing, and document it. *Test:* a status with a timer
+   and one without.
+4. **Invisible state.** Counters and flags make a plan harder to follow. Every
+   `Set`, `Inc` and `Clear` must show in the trace, and so must the timers a
+   rule waits on. *Test:* the trace of a plan that switches on a counter
+   explains the switch.
+5. **Name clashes.** Two mods using one flag name in a plan would share it.
+   Prefix flags with the mod's name, the same convention as rule names (see
+   the [reference](mods/companion-strategies/reference.md#more-than-one-mod)).
+   *Test:* two mods with differently prefixed flags stay apart.
+6. **Engine:** none. All of it lives in the strategy module, and nothing changes
+   for a plan that doesn't use it. *Test:* the example mods behave as before
+   (load counts, a Phreeoni run).
+
+**Step 1, built.** Time in the strategy and the fight are rule conditions,
+`InStrategy` and `InFight` (ms). They are not `When:` tokens, which would have
+meant changing the engine's shared condition parser. Time left on a status is a
+selector option, `{ Ally: missing, Status, Expiring: ms }`. companion-roles uses
+it: the healer renews Blessing, Increase AGI and Impositio with 3 s left.
+Risks 2, 3 and 6 are covered by `tests/companion-strategy-time.test.cjs`
+(timestamps, statuses without a timer, the parser knowing the keys) and by the
+load test. A playtest still has to confirm them in a fight.
+
+**Step 2, open:** flags and counters, with their reset rules and trace output
+(risks 1, 4 and 5). To be done when a boss needs them.
+
+**Where to start (step 2).** `PlanState` in `strategy/population_strategy.cpp`
+(where the active strategy lives), beside the `InStrategy` and `InFight`
+bookkeeping.
 
 ## 6. Coordination: roles that change in a fight, and claims
 
@@ -335,26 +490,15 @@ family-default lists. Regular shells get roles, and with them role plans.
 **Where to start.** `plans_for` and `requires_ok` in
 `strategy/population_strategy.cpp`; `member_is` for `Who:`.
 
-### Claims
+### Claims (built)
 
-**What is missing.** `OnePerParty` stops two companions firing the same rule at
-the same target at the same moment. Nothing stops two companions using
-*different* rules for the same job: two Lex Aeternas on one boss, both
-crowd-controllers on one monster while another runs free.
-
-**Why not now.** The Phreeoni party had one of each role, so nothing doubled up.
-
-**How it would work.** A rule takes `Claim: <name>` (for example `Claim: lex`). Acting
-on a target puts a party-wide claim on (name, target) for the rule's duration or
-until the target changes. Other companions' rules with the same claim skip a
-claimed target and pick another. The module already keeps party-wide state for
-`OnePerParty` and signals, and claims extend it.
-
-**What it adds.** Parties with two of a role: crowd control spread over
-different monsters, one Lex Aeterna per boss, two tanks holding two monsters.
-
-**Where to start.** The `OnePerParty` bookkeeping in
-`strategy/population_strategy.cpp`.
+`Claim: lex`, or `Claim: { Name: lex, For: 10000 }`, on a rule. Acting puts a
+party-wide claim on the rule's target under that name, for `For` ms (default 5
+s), renewed while the companion keeps acting on it. Any other companion's rule
+with the same claim name passes a claimed target over, and its selector picks
+the next one. This spreads crowd control over different monsters and keeps Lex
+Aeterna to one per boss. Built and loaded; not yet played. See the
+[reference](mods/companion-strategies/reference.md#rules).
 
 ## 8. AI raid parties
 
@@ -394,6 +538,35 @@ something to watch, to race, or to join.
 
 **Where to start.** `population_arena_start` (synthetic parties, spawning by
 script) and the party listing in the strategy module (`party_members`).
+
+## Combining plans across mods: name clashes and Allow
+
+**What is missing.** When two mods give the same plan (monster, job, build),
+their rules merge by `Name`: new names are appended, the same name replaces the
+earlier rule. That is how a later mod extends an earlier one. But a clash is
+silent: two unrelated mods that both call a rule `heal` replace each other with
+nothing in the log. And the plan settings combine unevenly: a later `Ban` adds to
+the earlier list, while a later `Allow` replaces it.
+
+**Why not now.** Merging works as designed for the example mods. Nothing has
+clashed yet, and the right rule for `Allow` (combine, or replace) is a decision
+to make with more mods in hand.
+
+**How it would work.**
+- A load-time notice whenever a rule replaces an earlier one of the same name,
+  naming the plan.
+- A naming convention in the docs: prefix a rule with the mod
+  (`phreeoni_basics.meteor_the_slaves`) unless it is meant to replace a rule.
+- Decide how two `Allow` lists in one plan combine: a union (the later mod
+  allows more), an intersection (only what both allow), or replacement as now.
+  Then make `Allow` and `Ban` consistent.
+
+**What it adds.** Mods that extend each other safely: a generic plan from one
+mod, specific additions from another, with any overlap visible.
+
+**Where to start.** `merge_rules` and `merge_job` in
+`strategy/population_strategy.cpp`; "More than one mod" in
+[the reference](mods/companion-strategies/reference.md#more-than-one-mod).
 
 ## Measuring the cost
 
