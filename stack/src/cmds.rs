@@ -1643,6 +1643,11 @@ fn mod_reader_grant_sql(tables: &str) -> Vec<String> {
 /// log_query_db_id): SELECT on every table but the hidden ones, and nothing
 /// else -- no writes, no DDL, no FILE. Redone on every start, so tables added
 /// since the last one are readable and the grants never drift.
+///
+/// It only counts once the database confirms the grants. A reader with none
+/// can log in but not open the database, and rathena stops the map server when
+/// script SQL can't connect -- so a run that can't confirm them falls back to
+/// the map server's own login instead (the caller drops the reader).
 fn grant_mod_reader(dk: &Docker, password: &str, legacy_root: bool) -> Result<(), String> {
     dk.root_sql(&mod_reader_setup_sql(password), legacy_root)
         .map_err(|_| "could not create the read-only login")?;
@@ -1650,10 +1655,39 @@ fn grant_mod_reader(dk: &Docker, password: &str, legacy_root: bool) -> Result<()
         "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE';",
         legacy_root,
     )?;
+    let expected = mod_reader_grant_count(&tables)?;
     for batch in mod_reader_grant_sql(&tables) {
         dk.root_sql(&batch, legacy_root).map_err(|_| "could not grant it read access")?;
     }
-    Ok(())
+    let granted = dk.root_sql(MOD_READER_GRANTS_SQL, legacy_root)
+        .map_err(|_| "could not confirm its read access")?;
+    mod_reader_grants_confirmed(expected, &granted)
+}
+
+/// How many SELECT grants the reader holds on the game's database.
+const MOD_READER_GRANTS_SQL: &str = "SELECT COUNT(*) FROM information_schema.table_privileges \
+     WHERE grantee = CONCAT(QUOTE('ragnarok_mods'), '@', QUOTE('%')) \
+     AND table_schema = 'ragnarok' AND privilege_type = 'SELECT';";
+
+/// The number of tables the reader is about to be granted. None is an error,
+/// never "nothing to do": the schema always has tables, so an empty list means
+/// the answer was lost on the way back, and granting nothing leaves a
+/// login the map server can't use.
+fn mod_reader_grant_count(tables: &str) -> Result<usize, String> {
+    let n: usize = mod_reader_grant_sql(tables).iter().map(|b| b.matches("GRANT SELECT").count()).sum();
+    if n == 0 { return Err("could not list the tables to grant it".into()); }
+    Ok(n)
+}
+
+/// Whether the database's count of the reader's grants (`answer`) covers every
+/// table granted. Anything else -- fewer, nothing, an unreadable answer -- is
+/// not a confirmation.
+fn mod_reader_grants_confirmed(expected: usize, answer: &str) -> Result<(), String> {
+    match answer.trim().parse::<usize>() {
+        Ok(n) if n >= expected => Ok(()),
+        Ok(n) => Err(format!("only {n} of its {expected} grants took effect")),
+        Err(_) => Err("could not confirm its read access".into()),
+    }
 }
 
 fn migrate_service_credentials(dk: &Docker, credentials: &crate::service_credentials::Credentials) -> Result<(), String> {
@@ -3274,6 +3308,26 @@ mod tests {
         assert_eq!(sql.matches("ALTER TABLE").count(), 1, "one ALTER, not one call per column");
         assert_eq!(sql.matches("ADD COLUMN IF NOT EXISTS").count(), COMPANION_COLUMNS.len());
         assert!(!sql.contains("REPLACE") && !sql.contains("DROP"), "only new objects, nothing one-way");
+    }
+
+    #[test]
+    fn a_mod_reader_is_only_used_once_its_grants_are_confirmed() {
+        // An empty table list (an answer lost on the way back) grants nothing:
+        // that must fail, not succeed with a login the map server can't use.
+        assert!(mod_reader_grant_count("").is_err());
+        assert!(mod_reader_grant_count("\n\n").is_err());
+        assert!(mod_reader_grant_count("login\nmod_store\n").is_err(), "only hidden tables is nothing to grant");
+        assert_eq!(mod_reader_grant_count("char\ninventory\nlogin\n").unwrap(), 2);
+        let many: String = (0..250).map(|i| format!("t{i}\n")).collect();
+        assert_eq!(mod_reader_grant_count(&many).unwrap(), 250, "counted across batches");
+
+        assert!(mod_reader_grants_confirmed(2, "2\n").is_ok());
+        assert!(mod_reader_grants_confirmed(2, "3").is_ok(), "a table added meanwhile is still confirmed");
+        assert!(mod_reader_grants_confirmed(2, "1").is_err());
+        assert!(mod_reader_grants_confirmed(2, "0").is_err());
+        assert!(mod_reader_grants_confirmed(2, "").is_err(), "no answer is not a confirmation");
+        assert!(mod_reader_grants_confirmed(2, "Error").is_err());
+        assert!(MOD_READER_GRANTS_SQL.contains(crate::service_credentials::MOD_READER));
     }
 
     #[test]
