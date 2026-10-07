@@ -9,16 +9,21 @@
 #   50051..50060  Base_Exp_Card_1  .. Base_Exp_Card_10   -- grant BASE exp
 #   50061..50070  Job_Exp_Card_1   .. Job_Exp_Card_10    -- grant JOB exp
 #
-# Exp per card at a 1x rate: about 5% of the next level at the lowest base
-# level that may use it (its EquipLevelMin), and about 3% nine levels
-# later, from Renewal's NextBaseExp for a second job (db/re/job_exp.yml).
-# Until 1.2.0 tiers 5-10 were 2,000-60,000, up to 14% of a level a card.
+# PRE-RENEWAL copy: mod.json's prerenewalFolder lays pre-re/ over the mod on a
+# pre-renewal server, so this file replaces db/item_db.yml there. Same items,
+# same gates; only the amounts differ, because pre-renewal levels cost far
+# less early and far more late (db/pre-re/job_exp.yml).
 #
-#   Lv 1  ->     100      Lv 6  ->  2,250
-#   Lv 2  ->     250      Lv 7  ->  3,000
-#   Lv 3  ->     500      Lv 8  ->  5,500
-#   Lv 4  ->   1,000      Lv 9  -> 11,000
-#   Lv 5  ->   1,500      Lv 10 -> 30,000
+# Exp per card at a 1x rate: about 5% of the next level at the lowest base
+# level that may use it (its EquipLevelMin), from pre-renewal's NextBaseExp
+# for a second job. Before 1.2.0 pre-renewal used the renewal amounts: tiers
+# 1-3 were whole levels' worth and tiers 6-10 under 3% of one.
+#
+#   Lv 1  ->       5      Lv 6  ->   6,500
+#   Lv 2  ->      20      Lv 7  ->  20,000
+#   Lv 3  ->      95      Lv 8  ->  80,000
+#   Lv 4  ->     450      Lv 9  -> 200,000
+#   Lv 5  ->   2,000      Lv 10 -> 580,000
 #
 # Job cards use the same numbers on the job axis. If you want a different
 # curve, edit the twenty scripts below.
@@ -75,7 +80,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 1
     Script: |
-      .@exp = 100 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 5 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv1: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -94,7 +99,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 11
     Script: |
-      .@exp = 250 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 20 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv2: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -113,7 +118,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 21
     Script: |
-      .@exp = 500 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 95 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv3: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -132,7 +137,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 31
     Script: |
-      .@exp = 1000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 450 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv4: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -151,7 +156,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 41
     Script: |
-      .@exp = 1500 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 2000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv5: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -170,7 +175,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 51
     Script: |
-      .@exp = 2250 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 6500 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv6: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -189,7 +194,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 61
     Script: |
-      .@exp = 3000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 20000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv7: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -208,7 +213,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 71
     Script: |
-      .@exp = 5500 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 80000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv8: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -227,7 +232,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 81
     Script: |
-      .@exp = 11000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 200000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv9: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -246,7 +251,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 91
     Script: |
-      .@exp = 30000 * getbattleflag("base_exp_rate") / 100;
+      .@exp = 580000 * getbattleflag("base_exp_rate") / 100;
       if (.@exp > 0) getexp2 .@exp, 0;
       dispbottom "Base Exp Card Lv10: +" + callfunc("F_InsertComma", .@exp) + " base experience.";
 
@@ -266,7 +271,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 1
     Script: |
-      .@exp = 100 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 5 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv1: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -285,7 +290,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 11
     Script: |
-      .@exp = 250 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 20 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv2: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -304,7 +309,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 21
     Script: |
-      .@exp = 500 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 95 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv3: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -323,7 +328,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 31
     Script: |
-      .@exp = 1000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 450 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv4: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -342,7 +347,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 41
     Script: |
-      .@exp = 1500 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 2000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv5: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -361,7 +366,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 51
     Script: |
-      .@exp = 2250 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 6500 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv6: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -380,7 +385,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 61
     Script: |
-      .@exp = 3000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 20000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv7: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -399,7 +404,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 71
     Script: |
-      .@exp = 5500 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 80000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv8: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -418,7 +423,7 @@ Body:
       NoAuction: true
     EquipLevelMin: 81
     Script: |
-      .@exp = 11000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 200000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv9: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
 
@@ -437,6 +442,6 @@ Body:
       NoAuction: true
     EquipLevelMin: 91
     Script: |
-      .@exp = 30000 * getbattleflag("job_exp_rate") / 100;
+      .@exp = 580000 * getbattleflag("job_exp_rate") / 100;
       if (.@exp > 0) getexp2 0, .@exp;
       dispbottom "Job Exp Card Lv10: +" + callfunc("F_InsertComma", .@exp) + " job experience.";
