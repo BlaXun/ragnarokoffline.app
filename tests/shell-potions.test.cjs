@@ -28,6 +28,9 @@ test("the stock is the level's Tool Dealer potions, and other tiers make way", (
 test('a shell drinks through pc_useitem, one a second, HP before SP', () => {
 	const drink = body('static void pop_shell_drink(');
 	assert.match(drink, /pc_useitem\(sd, idx\)/);
+	// clif_useitemack returns for a character without a session, so nobody saw a shell drink.
+	assert.match(drink, /if \(!session_isActive\(sd->fd\)\) \{/);
+	assert.match(drink, /clif_send\(&p, sizeof\(p\), sd, AREA_WOS\);/, 'the use animation for everyone around');
 	assert.match(drink, /next_potion_tick = now \+ 1000/);
 	assert.ok(drink.indexOf('POP_POTION_HP_PCT') < drink.indexOf('POP_POTION_SP_PCT'));
 	assert.match(drink, /if \(idx < 0 && sp_pct < POP_POTION_SP_PCT\)/, 'out of HP potions, it still drinks for SP');

@@ -2353,9 +2353,27 @@ static void pop_shell_drink(map_session_data *sd, int hp_pct, int sp_pct, t_tick
 		idx = pc_search_inventory(sd, pop_shell_sp_potion(sd));
 	if (idx < 0)
 		return;
-	// The player's own path: item delay, the use animation for everyone around, the heal script.
-	if (pc_useitem(sd, idx))
-		sd->pop.next_potion_tick = now + 1000;
+	// The player's own path: item delay, the heal script.
+	const t_itemid nameid = sd->inventory.u.items_inventory[idx].nameid;
+	const int32 had = sd->inventory.u.items_inventory[idx].amount;
+	if (!pc_useitem(sd, idx))
+		return;
+	sd->pop.next_potion_tick = now + 1000;
+	// And the use animation for everyone around, which clif_useitemack sends only for a
+	// character with a session: a shell's potion healed it with nothing to show for it.
+	if (!session_isActive(sd->fd)) {
+		PACKET_ZC_USE_ITEM_ACK p = {};
+		p.packetType = useItemAckType;
+		p.index = idx + 2;
+#if PACKETVER >= 3
+		const t_itemid view = itemdb_viewid(nameid); // clif.cpp's client_nameid, which is static there
+		p.itemId = static_cast<decltype(p.itemId)>(view > 0 ? view : nameid);
+		p.AID = sd->id;
+#endif
+		p.amount = had - 1;
+		p.result = true;
+		clif_send(&p, sizeof(p), sd, AREA_WOS);
+	}
 }
 
 static bool pop_shell_rest(map_session_data *sd, map_session_data *owner, uint32 target, t_tick now)

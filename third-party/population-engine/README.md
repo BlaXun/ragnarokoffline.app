@@ -446,8 +446,9 @@ Shells also carry potions (`pop_shell_stock_potions`): 10 HP and 5 SP potions of
 their level's Tool Dealer kind, from Red Potion and Grape Juice up to White and
 Blue Potions. While needed (the test that stands a resting shell up) and below
 40% HP or 20% SP, `pop_shell_drink` uses one through `pc_useitem`, at most one a
-second, so the item delay, the heal script and the use animation are the
-player's own. The stock is given on the first combat tick, so vendors never get
+second, so the item delay and the heal script are the player's own. The use
+animation is sent by the engine (`ZC_USE_ITEM_ACK` to the area), because
+`clif_useitemack` sends nothing for a character without a session. The stock is given on the first combat tick, so vendors never get
 one and a recalled companion gets its restored level's kind, and it is topped
 up when a rest ends at the upper mark. A shell back from a selling trip is
 spawned anew, so it has a fresh stock too.
