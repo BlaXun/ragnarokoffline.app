@@ -808,9 +808,8 @@ The rest still loads.
   pay no catalysts (`Consume` is accepted and waits for that).
   `Requires: { Items }`, `item_below` and `weight_above` load and work, but only
   see what the engine hands a companion.
-[docs/COMPANION_STRATEGY_ROADMAP.md](../../COMPANION_STRATEGY_ROADMAP.md) lists what
-comes next for coordinated boss fights, and the Phreeoni playtest that decides
-the order.
+[Not done yet](../../COMPANION_STRATEGY_ROADMAP.md#not-done-yet) in the roadmap
+describes each of these: why it waits, how it would work, what it would add.
 
 - **Read a status's strength:** only whether it is there, and its counter.
 - **Fight players.** Rules match monsters, and the arena's player-versus-AI

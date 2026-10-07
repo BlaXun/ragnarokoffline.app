@@ -345,7 +345,7 @@ idempotent application, and a clean Population Engine data validation.
   companion holds is what the engine hands it (gear, virtual ammunition).
   Inventories will be added later. Until then companions use no items, switch no
   gear, and pay no catalysts (see
-  [COMPANION_STRATEGY_ROADMAP.md](COMPANION_STRATEGY_ROADMAP.md#4-items-and-gear-postponed)).
+  [COMPANION_STRATEGY_ROADMAP.md](COMPANION_STRATEGY_ROADMAP.md#inventories-the-foundation)).
 
 ## Planned fixes and features
 

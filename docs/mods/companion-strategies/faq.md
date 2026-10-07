@@ -203,7 +203,9 @@ made it.
 ### Can it use items, potions, or switch gear?
 
 Not yet. Companions have no inventory of their own; it will come later.
-Catalysts (`Consume: true`) are accepted but not paid until then.
+Catalysts (`Consume: true`) are accepted but not paid until then. The roadmap's
+[Not done yet](../../COMPANION_STRATEGY_ROADMAP.md#not-done-yet) describes how
+inventories, catalysts, item use and gear switching would work.
 
 ### Do regular AI characters use plans too?
 

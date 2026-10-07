@@ -1,26 +1,45 @@
 # Companion strategies: roadmap
 
 What companion strategies (`db/population_strategy.yml`,
-[docs/mods/companion-strategies/](mods/companion-strategies/README.md)) still need
-before companions can beat a boss **together** rather than each fighting well
-on its own. Written down before building, so each step is judged against the
-whole.
+[docs/mods/companion-strategies/](mods/companion-strategies/README.md)) have, and
+what they still need. The first part is the state of things. The second,
+[Not done yet](#not-done-yet), is written so that each open item can be picked
+up later without this conversation: what is missing, why it was not done now,
+how it would work, what it would add, and where to start.
 
-The order is deliberate. Items 1 and 2 come first, then a played boss fight
-(below), and only then 3, 5 and 6, shaped by what that fight shows. Item 4 is
-postponed: it needs companions to have an inventory, which they do not yet
-(see [Before item 4: inventories](#before-item-4-inventories)).
+## Status
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Holding position wins over following | built, not yet played |
+| 1 | Holding position wins over following | built, played (Phreeoni) |
 | 2 | Leaving hostile ground (`Leave:`) | built, not yet played |
-| 3 | Choosing who to help or fight | built, not yet played |
-| 4 | Items and gear | **postponed** until shells and companions have an inventory |
-| 5 | Time and memory | open |
-| 6 | Companions coordinating | signals built, not yet played; roles and claims open |
-| 7 | Boss mechanics (MVP survey) | A to F built, not yet played |
-| 8 | AI raid parties: shells fighting an MVP on their own | open, after the playtest |
+| 3 | Choosing who to help or fight (selectors, `SetTarget`) | built, played (Phreeoni) |
+| 4 | Items and gear | **not done**: needs [inventories](#inventories-the-foundation) |
+| 5 | [Time and memory](#5-time-and-memory) | **not done** |
+| 6 | Companions coordinating | signals built, not yet played; role plans built and played; [roles that change in a fight and claims](#6-coordination-roles-that-change-in-a-fight-and-claims) **not done** |
+| 7 | Boss mechanics (MVP survey, A to F) | built; phases, reacting to a summon and revealing a hidden boss played |
+| 8 | [AI raid parties](#8-ai-raid-parties) | **not done** |
+
+Built since the list was first written, and played against Phreeoni unless
+noted:
+- role plans for any boss (`Mob: Boss`, `examples/mods/companion-roles`), with
+  the role taken from the class family and overridden by the party-chat Duty;
+- `Job:` lists and class families;
+- layered `Rotation`; `Allow` and `Ban`, which also bind the engine's own heals
+  and buffs; `Attack: false` and `Exact` (not yet played);
+- `Cast:` lists, which pick a spell by element;
+- kinds of monster (`Mob: { Race, Element }`) and `Disable` (not yet played).
+
+Engine fixes along the way, active with or without plans:
+- a companion that cannot move takes no turn;
+- Sanctuary is never placed where it would heal a monster;
+- healers pass over allies their heals cannot help (undead armour).
+
+**Phreeoni has been beaten** by a Priest, a Wizard and an Assassin Cross beside
+their owner, with companion-roles and companion-tactics. See
+[Playtest: Phreeoni](#playtest-phreeoni).
+
+# Built
 
 ## 1. Holding position wins over following
 
@@ -54,7 +73,7 @@ included), it walks to the nearest free cell with none. `Field` narrows it to
 one skill (Storm Gust, Meteor Storm, a trap); without it, any such unit counts.
 Not standing on one: the rule passes.
 
-## 3. Choosing who to help or fight (built)
+## 3. Choosing who to help or fight
 
 The case that drives it: **a tank that provokes whatever is hitting someone
 else.** Today a rule's `Target` is fixed (`enemy`, `owner`, `event`...), so a
@@ -103,15 +122,6 @@ Range: a monster out of the skill's range is not chosen for a `Cast`, so a tank
 provokes what it can reach. If the playtest shows it should walk to one first,
 that is an `Approach:` option on the rule.
 
-## 4. Items and gear (postponed)
-
-- `UseItem:` on self or an ally: potions, Yggdrasil Leaf, Fly Wing; with a target
-  (a corpse) the server completes the target step a client would send.
-- Gear sets per monster: an elemental weapon or armour.
-
-Both wait for inventories (below). Without one, item use either costs nothing,
-and so means nothing, or never happens because the bag is always empty.
-
 ## 7. Boss mechanics: what the MVPs do that rules could not answer
 
 A survey of every MVP's `mob_skill_db` rows (renewal: 90 MVPs with skills, about
@@ -142,7 +152,212 @@ of Vermilion 26, Meteor 22, Storm Gust 21, the Wide statuses ~60 together) with
 `On: casts`; summons with a cast time (151); reactions to our own skills
 (`skillused`, `groundattacked`, `casttargeted`) with a plan's `Ban`.
 
-## 8. AI raid parties (open)
+# Not done yet
+
+Each item below has the same headings, so it can be picked up cold.
+
+## Inventories: the foundation
+
+**What is missing.** Shells and companions have no inventory of their own that
+anyone manages. A companion's bag holds what the engine hands it (gear, virtual
+ammunition) and what a trade puts there, and only its *worn* gear is saved
+(`cp_companion_persistence`, `gear_detail`). The rest is lost with the shell.
+Nothing restocks it, and the owner cannot see or manage it. On top of that, the
+engine's rAthena patch (`0001`, `skill_get_requirement`) waives every item
+requirement for population characters, so even an item that is there is never
+needed or spent.
+
+**Why not now.** Three decisions belong to the inventory itself, not to
+strategies: where the bag is saved, who fills it (the owner by trade, a shopping
+trip, a virtual supply), and how the owner sees and manages it (the companion
+panel). Making items matter before that would only make companions weaker:
+every catalyst skill would fail on an empty bag.
+
+**How it would work.**
+- Save the bag with the companion, beside its worn gear, so it survives a relog
+  and a recall.
+- Stock it by trade, which already lands items in the companion's bag
+  (patch `0025` snapshots it).
+- Show and manage it in the companion panel.
+- Then stop waiving item requirements for companions in patch `0001`, behind a
+  setting, so ambient shells can keep the waiver.
+
+**What it adds.** The three items below, and real economy: a companion's gems,
+potions and spare gear come from its owner.
+
+**Where to start.** `cp_companion_persistence.sql` and the save and recall code
+in `population_engine.cpp`; `patches/0025-companion-trade-snapshot.patch`;
+`patches/0001-population-engine-hooks.patch` (`skill_get_requirement`);
+`patches/CompanionPanel.*` for the UI.
+
+### Catalysts for skills
+
+**What is missing.** Skills that cost an item (Blue Gemstone for Resurrection,
+Sanctuary and Magnus, Holy Water for Aspersio, Flame Stone for Blaze Shield)
+are cast for free.
+
+**Why not now.** No inventory: with an empty bag every such skill would fail.
+
+**How it would work.** It is prepared already. Rules mark such casts
+`Consume: true`, and the server checks at load that the skill has an item cost.
+The strategy module has the paying code (`item_cost`, `can_pay`, `pay`) behind
+one switch, `kPayCatalysts`, which is off. With inventories: turn the switch on,
+and stop the patch-`0001` waiver for companions. A `Consume` rule then checks
+the bag before casting and pays when the cast starts. The engine's own rotation
+pays through rAthena as a player does. Rules can react to running low with
+`item_below` (already an event) and, for example, say "out of gems".
+
+**What it adds.** Catalysts become a resource the owner provides, so a
+companion's strongest skills cost something, as they do for players.
+
+**Where to start.** `kPayCatalysts` in `strategy/population_strategy.cpp`;
+`Consume` in [the reference](mods/companion-strategies/reference.md#rules).
+Tables written today need no change.
+
+### Using items
+
+**What is missing.** Companions use no items: no potions, no Yggdrasil Leaf, no
+Fly Wing, no elemental converters.
+
+**Why not now.** No inventory.
+
+**How it would work.** A new rule action, `UseItem: <item>` with `Target:`
+(`self`, an ally selector, a dead ally for a Yggdrasil Leaf). It calls rAthena's
+item use (`pc_useitem`); for an item that targets someone, the server completes
+the target step a client would send. Item use waits out its own delay the way
+casts wait out theirs. The conditions exist: HP and SP (`When:`), the bag
+(`item_below`, `Requires: { Items }`). Example: "below 30 % HP with no healer
+alive, drink a White Potion".
+
+**What it adds.** Survival without a healer, revives without a Priest, and
+consumables as part of boss plans (a Yggdrasil Berry at Phreeoni's Power Up).
+
+**Where to start.** A new action in `parse_rule` and `run_rule`
+(`strategy/population_strategy.cpp`), modelled on `Cast`.
+
+### Switching gear to the situation
+
+**What is missing.** A companion wears one set of gear whatever it fights.
+
+**Why not now.** No inventory to hold the other sets.
+
+**How it would work.** Named gear sets on a plan (`Gear: { ghost: [...] }`) and a
+rule action `Equip: <set>`, which equips the set's pieces from the bag. The
+plan layers already describe *when*:
+- an elemental weapon in a kind plan (`Mob: { Element: Ghost }`);
+- an armour against a boss's element in that boss's plan;
+- the normal set back under `Mob: All`.
+
+Swapping costs a moment, so a set is switched once per fight, not per target. A
+strategy is the natural place: entering it equips its set.
+
+**What it adds.** The second half of fighting by element, after spells: the
+right weapon against Ghosts or the undead, the right armour against a boss's
+element. Also the answer to Strip and to broken gear (`equip_broken` is already
+an event).
+
+**Where to start.** The worn-gear code in `population_engine.cpp`
+(`gear_detail`, the gear-return patches `0007` and `0025`); a new action in the
+strategy module.
+
+## 5. Time and memory
+
+**What is missing.** A plan knows the present (HP, statuses, who is where) and
+which strategy it is in. It does not know how long it has been in that
+strategy, how long a status has left, or what it already did this fight.
+
+**Why not now.** Phreeoni did not need it: its phases follow its HP, which the
+plan can read. A boss whose pattern runs on a clock or on counts (every 30 s; at
+the third summon) would.
+
+**How it would work.** Kept per plan and per fight, reset when the plan starts
+over:
+- **Time** as conditions: time in the current strategy (`in_strategy_gt10s`),
+  time since the fight began.
+- **Time left on a status**, from rAthena's status timer:
+  `ally_blessing_left_lt10s`, so a buff is renewed before it lapses rather than
+  after.
+- **Flags and counters**, as rule actions (`Set: lex_done`, `Inc: summons`,
+  `Clear: ...`) and as conditions (`flag_lex_done`, `count_summons_ge3`). They
+  turn "once per fight" and "after the third summon" into plain rules.
+
+All of it lives in the strategy module's per-companion state, beside the active
+strategy.
+
+**What it adds.** Periodic actions ("every 30 s"), buffs without gaps,
+once-per-fight openers, sequences longer than one state, and bosses with timed
+patterns.
+
+**Where to start.** `PlanState` in `strategy/population_strategy.cpp` (where the
+active strategy lives); the condition parser for the new tokens.
+
+## 6. Coordination: roles that change in a fight, and claims
+
+### Roles that change in a fight
+
+**What is missing.** A role is the party-chat Duty, or the class family through
+a `Requires: { Role: [..., none] }` on a role plan. It does not change during a
+fight. Selectors like `Who: support` only see a typed Duty. Regular shells have
+no roles at all.
+
+**Why not now.** It was designed after the Phreeoni playtests and deliberately
+left for after the PR, so a test result is never mixed with a new feature.
+
+**How it would work** (agreed design):
+- A `Roles:` list in the same table, scoped like plans (a monster, a kind,
+  `Boss`, `All`). Each entry names a role, a `Job`, and optional `When:` and
+  `Stats: { Flee: ">=180", Def: ">=60", MaxHp: ... }`.
+- Worked out for every party member, the owner included, before the plans are
+  chosen: role, then plans, then rules. Re-checked every turn, with a minimum
+  hold of about 3 s so a flickering condition does not flap.
+- The first match wins, most specific scope first.
+- A typed Duty replaces the defaults (entries without `When`). An entry marked
+  `OverridesDuty: true` can still override it while its condition holds.
+- Everything that reads roles (`Requires: { Role }`, `Who:`, `Role:` in
+  selectors) reads this result.
+- All of it in the strategy module, with `Stats:` read there too, so no engine
+  change. The engine's own role behaviour keeps reading the Duty.
+
+```yaml
+- Mob: Boss
+  Roles:
+    - { Role: tank, Job: Monk, When: self_steelbody, OverridesDuty: true }
+    - { Role: tank, Job: Assassin, Stats: { Flee: ">=180" } }
+    - { Role: support, Job: Priest }
+    - { Role: attacker, Job: All }
+```
+
+**What it adds.** Roles that follow the fight: a Monk under Steel Body becomes
+the tank and the healer's tank rules follow it; an Assassin with enough Flee
+tanks. The role plans can say plain `Role: support` instead of the
+family-default lists. Regular shells get roles, and with them role plans.
+
+**Where to start.** `plans_for` and `requires_ok` in
+`strategy/population_strategy.cpp`; `member_is` for `Who:`.
+
+### Claims
+
+**What is missing.** `OnePerParty` stops two companions firing the same rule at
+the same target at the same moment. Nothing stops two companions using
+*different* rules for the same job: two Lex Aeternas on one boss, both
+crowd-controllers on one monster while another runs free.
+
+**Why not now.** The Phreeoni party had one of each role, so nothing doubled up.
+
+**How it would work.** A rule takes `Claim: <name>` (for example `Claim: lex`). Acting
+on a target puts a party-wide claim on (name, target) for the rule's duration or
+until the target changes. Other companions' rules with the same claim skip a
+claimed target and pick another. The module already keeps party-wide state for
+`OnePerParty` and signals, and claims extend it.
+
+**What it adds.** Parties with two of a role: crowd control spread over
+different monsters, one Lex Aeterna per boss, two tanks holding two monsters.
+
+**Where to start.** The `OnePerParty` bookkeeping in
+`strategy/population_strategy.cpp`.
+
+## 8. AI raid parties
+
 
 Shells fighting an MVP on their own, as a party, with nobody's character in it.
 
@@ -170,66 +385,32 @@ by side, but as "everyone on this map": no leader, no goal, no plan.
 5. **A decision on rewards**: an AI party that kills an MVP takes it from players,
    and its MVP item and drops need an inventory (item 4) to go anywhere.
 
-Decide after the Phreeoni playtest, once the strategies are seen holding up with
-a real player in the party.
+**Why not now.** It is mostly engine work: groups, a leader and a goal. It also
+raises a game-design question, rewards, that the strategies do not answer. The
+strategies themselves carry over unchanged.
 
-## Before item 4: inventories
+**What it adds.** MVPs contested and killed by the world's AI characters:
+something to watch, to race, or to join.
 
-Shells and companions have **no inventory of their own** yet. Nothing stocks
-one, the owner cannot see or manage it, and it is lost with the shell. What a
-companion holds is what the engine hands it: its gear and virtual ammunition.
-Inventories will be added later, as their own piece of work, together with an
-answer to who stocks them: the owner by trade, a shopping trip, or a virtual
-supply like the Blue Gemstones for Resurrection.
+**Where to start.** `population_arena_start` (synthetic parties, spawning by
+script) and the party listing in the strategy module (`party_members`).
 
-Until then:
+## Measuring the cost
 
-- **Item use and gear switching** (item 4) are postponed.
-- **Catalysts are ignored.** The format already has `Consume: true` and it is
-  checked when the table loads, but one switch in the strategy module,
-  `kPayCatalysts`, is off. A `Consume` rule therefore casts as if its catalyst
-  were paid, which is what the engine does for every shell anyway. Turning the
-  switch on with inventories makes every `Consume` rule check the inventory
-  before casting and pay when the cast starts. Nothing else changes: tables
-  written today keep working.
-- **Item-based conditions are inert.** `Requires: { Items }`, `item_below` and
-  `weight_above` read the companion's runtime inventory, which holds only what
-  the engine gave it. They load and work, but they become useful only with
-  inventories.
+**What is missing.** How much a strategy turn costs on a busy map has not been
+measured. Companions take turns all the time. Ambient shells only do so with a
+`For: shells` or `For: all` plan, and only while a player watches them.
 
-## 5. Time and memory (open)
+**Why not now.** The load tests run without a player online, so shells never
+take turns there.
 
-- Time in the current strategy and in the fight: `in_strategy_gt10s`, for "every
-  30 s it casts X" and phase timers.
-- Time left on a status: rebuff before Assumptio or Blessing lapses, not after.
-- A few counters or flags per plan (`Set:` / `Inc:` and a condition on them),
-  for "Lex was cast on this boss" or "phase 2 started".
+**How it would work.** A live session with traces off, timing
+`population_strategy_turn` per shell on a crowded map, with and without a
+`For: all` plan.
 
-## 6. Companions coordinating (open)
+**What it adds.** A number to put beside "keep their plans short".
 
-- **Built:** `Signal: name`, `On: { Event: signal, Name }` and `MoveTo: event`,
-  between companions of one party: "on me", "the tank has it", "I'm out of SP".
-  Moved ahead of the playtest because gathering is what boss fights turn on.
-- **Built:** role plans for any boss (`Mob: Boss`), in
-  `examples/mods/companion-roles`. The class family picks the role and a Duty
-  overrides it (`Requires: { Role: [support, none] }`). Boss plans now hold only
-  each boss's own mechanics. Rotation is layered: a plan saying `false` wins,
-  then one saying `true`, then the default. Taken from the Phreeoni plan; not
-  yet played against a second boss.
-- **Agreed, not built:** a `Roles:` step that works each party member's role out
-  every turn from job, status and stats (`Stats: { Flee: ">=180" }`): a Monk
-  under Steel Body tanks, a high-Flee Assassin tanks. First match wins, most
-  specific scope first; a typed Duty replaces the defaults, and an entry marked
-  `OverridesDuty` can still override it while its condition holds; a short
-  minimum hold stops flapping. All in the strategy module. Regular shells get
-  roles this way too.
-- **Built:** kinds of monster, `Mob: { Race, Element }`, between a particular
-  monster and `Boss`, with `Race`/`Element` on Enemy selectors and `Count`. A
-  specific plan can `Disable` a broader plan's rule by name. Examples: Undead
-  and Ghost in companion-roles. The layers are, in order: monster, encounter,
-  kind, Boss, All, and on every layer, job, family, 1st class, All.
-- Beyond `OnePerParty`: claims on targets, so crowd control goes to different
-  monsters and the party's Lex Aeterna is not wasted twice.
+# Played
 
 ## Playtest: Phreeoni
 
@@ -254,6 +435,10 @@ a petrify around the boss, not a ground spell, and its Heaven's Drive is instant
 so nothing sees it coming. Signals still matter there: gathering for heals or a
 Sanctuary when it powers up, or "it is hiding" when it vanishes.
 
-What to record: each rule that fired and its outcome (the trace), where it broke,
-and which open item would have fixed it. That list decides the order of 3, 5
-and 6.
+**Result.** Over seven playtests, each fix came from something that went wrong;
+they are in
+[Writing plans that hold up](mods/companion-strategies/reference.md#writing-plans-that-hold-up-in-a-fight).
+The party of a Priest, a Wizard and an Assassin Cross beside their owner then
+beat Phreeoni. Nothing in the fight needed items 4, 5, 6 or 8. The next
+test is a second boss with a different kit, to show whether the role plans
+generalise.
