@@ -748,7 +748,7 @@ change. If the pinned `vendor/rathena` lacks the pinned commit, pass
   directory (`CSV_DIR`). A monster may drop items of one class only. A
   single config builds exactly as before.
 - **The changers' places.** The stock transcendent changers stand in two
-  rows in the Valkyrie's hall (`npc/jobs/2-1/`, `2-2/` headers give the
+  rows in the Valkyrie's hall (`npc/jobs/2-1a/`, `2-2a/` give the
   cells). Put each third class's changer at the end of its transcendent
   class's row (Assassin Cross 44,58 → Guillotine Cross 44,61; Stalker
   53,58 → Shadow Chaser 53,61).
