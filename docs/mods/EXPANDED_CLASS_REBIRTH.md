@@ -780,8 +780,7 @@ so wherever the old text no longer adds up (a decision of the human).
 `ITEM_DESCRIPTIONS` copies the translation's whole entry for the item and
 adds lines before its type block; the client takes each item from the
 first table that names it, and a mod's comes first. Done for the rune
-stones whose reuse delays and durations changed, and for Storm Blast,
-which deals no damage on this server.
+stones whose reuse delays and durations changed.
 
 ### Skill entries
 
@@ -822,15 +821,20 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
 - **Consumables: check the item too.** Pre-renewal's rune stones have no
   reuse delay; renewal's do. Renewal buffs measured in minutes can be
   absurd here (Giant Growth: x3.5 auto-attacks for 15 minutes became a
-  30-second burst every 3 minutes).
+  30-second burst every 3 minutes), and so can a consumable nuke with a
+  short delay (Storm Blast: one Wyrd rune every 10 seconds, not every
+  second).
 - **Items that cast through `itemskill`** (spellbooks) only open the skill:
   the client then sends the skill request, as for a scroll. `unitskilluseid`
   (rune stones) casts directly.
 - **Damage under another id**: Chain Lightning hits as
   WL_CHAINLIGHTNING_ATK, Tetra Vortex as its four element skills, Duple
   Light as its melee/magic skills. Count those, and scale those in Lua.
-- **Some skills do not work in pre-renewal** (Storm Blast hits nothing).
-  Note it, say so in the item's description, and leave it.
+- **Before calling a skill broken, read the target's HP** (`mobhp#0`).
+  `dump-damage` prints only what arrives while it streams, so a hit that
+  lands during a `wait` is never shown. Storm Blast was wrongly reported
+  as dealing no damage this way, and a rune's description said so; it
+  hits for about 4400 and needed a longer rune delay, not a note.
 - **Party-only skills** (Banding, Hesperus Lit, Ray of Genesis without
   Inspiration) cannot be measured alone; they stay as in renewal.
 - **Openers are not rotations** (Back Stab from behind turns the target).
