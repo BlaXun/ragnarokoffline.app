@@ -81,7 +81,21 @@ def config(build_file, **kw):
         # {item aegis: {field: value}}: fields this mod sets on a stock item.
         # A value is "renewal" (copy the field, with everything under it,
         # from renewal's entry for the item) or a scalar or a dict of scalars.
-        ITEM_FIELDS={})
+        ITEM_FIELDS={},
+        # Skills pre-renewal's skill_db lacks, copied whole from renewal's.
+        NEW_SKILLS_FROM_RENEWAL=[],
+        # {mod table: (renewal table, header type, version)}: renewal's rows
+        # of a table pre-renewal has no rows in, e.g. the spellbook_db.
+        COPY_TABLES={},
+        # {stock item aegis: [lines]}: lines added to a stock item's
+        # description (before its Type/Weight block), for an item whose
+        # behaviour this mod changes. The client takes each item from the
+        # first table that names it, and a mod's comes first, so the entry
+        # is the translation's whole, with these lines added.
+        ITEM_DESCRIPTIONS={},
+        # Skills whose pre-renewal item cost stays although renewal's has
+        # fewer: an import entry cannot remove an ItemCost (see nested_resets).
+        ITEMCOST_KEPT=[])
     c.__dict__.update(kw)
     c.MOD = root / "registry" / "mods" / c.MOD_NAME
     c.KINDS = {**c.WEAPON_KINDS, **ARMOR_KINDS}
@@ -173,7 +187,7 @@ def lua_items(path):
         cls = re.search(r"\t\tClassNum = (\d+)", body)
         items[int(m.group(1))] = dict(
             unres=f("unidentifiedResourceName"), res=f("identifiedResourceName"),
-            classnum=int(cls.group(1)) if cls else 0)
+            classnum=int(cls.group(1)) if cls else 0, entry=m.group(0).strip("\n"))
     if not items:
         fail(f"read no items from {path}")
     return items
@@ -293,7 +307,7 @@ def build_skill_tree(src):
     return about, "\n".join(out) + "\n"
 
 
-SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "SplashArea": "0", "HitCount": "0", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
+SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "SplashArea": "0", "HitCount": "0", "Type": "None", "TargetType": "Passive", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
                   "Duration2": "0", "CastTime": "0", "Cooldown": "0", "FixedCastTime": "0"}
 
 
@@ -304,6 +318,7 @@ SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "SplashA
 FLAG_MAPS = ("DamageFlags", "Flags")
 REQUIRE_MAPS = {"Ammo": "None", "Weapon": "All"}   # the key that clears the whole map
 REQUIRE_UNCLEARABLE = ("Equipment", "State", "Status")
+REQUIRE_COSTS = {"SpCost", "HpCost", "HpRateCost", "SpRateCost", "Zeny", "SpiritSphereCost"}
 
 
 def true_keys(block, indent):
@@ -325,6 +340,16 @@ def nested_resets(name, pre_e, entry):
         entry = entry[:rm.end(1)] + add + entry[rm.end(1):] if rm else entry + f"    {key}:\n" + add
     preq = map_block(pre_e + "\n", "Requires", 4)
     if preq:
+        # ItemCost entries overwrite pre-renewal's by position, and an entry
+        # always needs its item: pre-renewal costs beyond renewal's stay.
+        rreq = map_block(entry, "Requires", 4)
+        pm_ = map_block(preq.group(1), "ItemCost", 6)
+        rm_ = map_block(rreq.group(1), "ItemCost", 6) if rreq else None
+        n_pre = len(re.findall(r"- Item:", pm_.group(1))) if pm_ else 0
+        n_ren = len(re.findall(r"- Item:", rm_.group(1))) if rm_ else 0
+        if n_pre > n_ren and name not in C.ITEMCOST_KEPT:
+            fail(f"{name}: pre-renewal's ItemCost has more items than renewal's, and they cannot be cleared; "
+                 f"list it in ITEMCOST_KEPT if the cost may stay")
         for key in REQUIRE_UNCLEARABLE:
             pm = map_block(preq.group(1), key, 6)
             rreq = map_block(entry, "Requires", 4)
@@ -470,6 +495,15 @@ def build_skill_db(src):
                 continue
             if k in FLAG_MAPS:
                 continue                # nested_resets clears it key by key
+            if k == "Requires":
+                # Renewal's entry requires nothing: zero what pre-renewal's costs.
+                block = map_block(pre[n] + "\n", "Requires", 4).group(1)
+                subs = re.findall(r"^      (\w+):", block, re.M)
+                if set(subs) - REQUIRE_COSTS:
+                    fail(f"{n}: pre-renewal's Requires has {sorted(set(subs) - REQUIRE_COSTS)}, which cannot be reset")
+                entry += "\n    Requires:    # pre-renewal's entry has costs; renewal's has none"
+                entry += "".join(f"\n      {s}: 0" for s in subs)
+                continue
             if k == "Hit":
                 # Renewal's default is DMG_NORMAL, which has no YAML name; Hit
                 # only changes how the hit is shown, so pre-renewal's stays.
@@ -485,6 +519,14 @@ def build_skill_db(src):
             entry = override_field(n, entry, k, v)
         out.append(entry)
         changed.append(n)
+    for n in C.NEW_SKILLS_FROM_RENEWAL:
+        if n in pre:
+            fail(f"{n} is in pre-renewal's skill_db: drop it from NEW_SKILLS_FROM_RENEWAL")
+        entry = ren.get(n) or fail(f"{n} is not in renewal's skill_db")
+        if C.FIXED_CAST_TO_DELAY is not None:
+            entry = fold_fixed_cast(n, entry)
+        out.append(entry)
+        changed.append(n + " (new)")
     added = []
     for flag, skills in C.SKILL_FLAGS_ADD.items():
         for n in skills:
@@ -593,7 +635,7 @@ def build_items(src, iteminfo):
 
     # 3. The mod's own equipment.
     rows = read_csv("equipment.csv")
-    new, info = [], []
+    new, info, extra_info = [], [], []
     for r in rows:
         kind = C.KINDS.get(r["kind"]) or fail(f"{r['aegis']}: unknown kind {r['kind']}")
         if r["aegis"] in stock:
@@ -647,6 +689,22 @@ def build_items(src, iteminfo):
         lines += [RULE, "^0000CCRequirement:^000000", f"Base Level {r['level']}", C.EQUIP_LABEL or " and ".join(C.JOBS)]
         info.append((r, kind, art, lines))
 
+    # Stock items whose behaviour this mod changes: the translation's entry,
+    # with this mod's lines in the description.
+    for aegis, add in C.ITEM_DESCRIPTIONS.items():
+        it, _ = stock.get(aegis) or fail(f"ITEM_DESCRIPTIONS: {aegis} is not a pre-renewal item")
+        base = iteminfo.get(it["id"]) or fail(f"ITEM_DESCRIPTIONS: the translation has no item {it['id']}")
+        if "\ufffd" in base["entry"]:
+            fail(f"ITEM_DESCRIPTIONS: item {it['id']}'s entry did not decode")
+        lines = base["entry"].split("\n")
+        start = next(i for i, l in enumerate(lines) if "identifiedDescriptionName = {" in l and "unidentified" not in l)
+        at = next(i for i in range(start, len(lines)) if RULE in lines[i] or lines[i].strip() == "},")
+        q = lambda s: '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+        lines[at:at] = ["\t\t\t" + q(l) + "," for l in add]
+        if not lines[-1].endswith(","):
+            lines[-1] += ","
+        extra_info.append(lines)
+
     combos = read_csv("combos.csv")
     by_aegis = {r["aegis"]: r for r in rows}
     combo_desc = {}
@@ -666,7 +724,7 @@ def build_items(src, iteminfo):
              ("2. Renewal's " + ", ".join(C.NEW_FROM_RENEWAL) + ", which the skills need."
               if C.NEW_FROM_RENEWAL else "2. No renewal-only items: the skills need none."),
              "3. " + (C.ITEMS_ABOUT or "The mod's equipment, from equipment.csv: four tiers, levels 50-95.")]
-    lua = build_iteminfo(info, combo_desc)
+    lua = build_iteminfo(info, combo_desc) + [l for e in extra_info for l in e]
     return about, "\n".join(flags + new) + "\n", lua, rows, combos
 
 
@@ -769,7 +827,17 @@ def build_class(src, iteminfo, lua):
     lua += entries
     out["db/item_combos.yml"] = build_combos(combos)
     out["db/mob_db.yml"] = build_drops(src, rows)
+    for rel, (source, _, _) in C.COPY_TABLES.items():
+        rows_ = body_entries(src[source], source_key(src[source]))
+        out[rel] = ([f"Renewal's {source}, which pre-renewal has no rows in."],
+                    "\n".join(rows_) + "\n")
     return out
+
+
+def source_key(text):
+    """The key every Body entry of a table starts with."""
+    m = re.search(r"\nBody:\n  - (\w+):", text)
+    return m.group(1) if m else fail("table without entries")
 
 
 def run(cfg):
@@ -792,6 +860,7 @@ def run(cfg):
              "db/re/job_stats.yml", "db/re/skill_tree.yml", "db/pre-re/skill_db.yml", "db/re/skill_db.yml",
              "db/pre-re/item_db_equip.yml", "db/pre-re/item_db_usable.yml", "db/pre-re/item_db_etc.yml",
              "db/pre-re/mob_db.yml", "db/pre-re/job_aspd.yml", "db/re/item_db_etc.yml", "db/re/item_db_usable.yml"]
+    paths += [s for c in cfgs for s, _, _ in c.COPY_TABLES.values() if s not in paths]
     src = {p: git_show(args.rathena, commit, p) for p in paths}
     source = f"rathena {commit}"
     iteminfo = lua_items(C.ITEMINFO)
@@ -801,23 +870,26 @@ def run(cfg):
     for cfg in cfgs:
         C = cfg
         for rel, (about, body) in build_class(src, iteminfo, lua).items():
-            parts.setdefault(rel, []).append((about, body))
-        for mob in re.findall(r"^  - Id: (\d+)", parts["db/mob_db.yml"][-1][1], re.M):
+            parts.setdefault(rel, []).append((cfg, about, body))
+        for mob in re.findall(r"^  - Id: (\d+)", parts["db/mob_db.yml"][-1][2], re.M):
             if mob in mobs:
                 fail(f"monster {mob} drops items of two classes: give each class its own monsters")
             mobs[mob] = cfg.JOBS
     kinds = {"db/job_stats.yml": ("JOB_STATS", 4), "db/skill_tree.yml": ("SKILL_TREE_DB", 1),
              "db/skill_db.yml": ("SKILL_DB", 4), "db/item_db.yml": ("ITEM_DB", 3),
              "db/item_combos.yml": ("COMBO_DB", 1), "db/mob_db.yml": ("MOB_DB", 5)}
+    for c in cfgs:
+        for rel, (_, kind, version) in c.COPY_TABLES.items():
+            kinds.setdefault(rel, (kind, version))
     outputs = {}
     for rel, (kind, version) in kinds.items():
         if len(cfgs) == 1:
-            about = parts[rel][0][0]
+            about = parts[rel][0][1]
         else:
             about = []
-            for cfg, (a, _) in zip(cfgs, parts[rel]):
+            for cfg, a, _ in parts[rel]:
                 about += (["", RULE] if about else []) + [", ".join(cfg.JOBS) + ":"] + a
-        text = header(kind, version, source, about) + "".join(b for _, b in parts[rel])
+        text = header(kind, version, source, about) + "".join(b for _, _, b in parts[rel])
         outputs[rel] = text
         if rel == "db/item_db.yml":
             outputs["System/itemInfo.lua"] = wrap_iteminfo(lua)
