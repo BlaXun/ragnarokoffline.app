@@ -1,0 +1,56 @@
+map,region,note
+bif_fild01,bifrost,Splendide Bifrost; portal from splendide
+bif_fild02,bifrost,Mora field; Log Tunnel gate from bif_fild01 replaces the Hazy Forest instance
+mora,bifrost,town; Small Hole gates from bif_fild02
+dali,bifrost,Dimensional Gap hub; Transport Devices from mid_camp / moc_fild22b / bif_fild01 / dic_fild02
+dic_fild01,dicastes,Kamidal Mountain
+dic_fild02,dicastes,Kamidal Tunnel; Transport Device to dali
+dicastes01,dicastes,town; Capital City Guard gate from dic_fild01
+dicastes02,dicastes,town upper level
+dic_in01,dicastes,interiors; some rooms are reached by quest elevators and stay closed
+dic_dun01,dicastes,Scaraba Hole; portal from dic_fild01 and Entrance Manager gate from manuk
+dic_dun02,dicastes,Scaraba Hole 2; Vigilante gate
+dic_dun03,dicastes,Scaraba Hole 3; Dirty Vigilante gate
+ecl_fild01,eclage,Eclage field; portal from bif_fild02
+eclage,eclage,town; Entrance gate from ecl_fild01
+ecl_hub01,eclage,interior hub
+ecl_in01,eclage,interior
+ecl_in02,eclage,interior
+ecl_in03,eclage,interior
+ecl_tdun01,eclage,Eclage tree dungeon 1
+ecl_tdun02,eclage,Eclage tree dungeon 2
+ecl_tdun03,eclage,Eclage tree dungeon 3
+ecl_tdun04,eclage,Eclage tree dungeon 4
+ver_eju,verus,Juperos side entrance; portal from juperos_01
+ver_tunn,verus,tunnel
+verus01,verus,Verus city
+verus02,verus,Verus city
+verus03,verus,Verus city
+verus04,verus,Verus city
+dewata,dewata,town; ship from alberta
+dew_fild01,dewata,Dewata field
+dew_in01,dewata,interior
+dew_dun01,dewata,Krakatau volcano; Gatekeeper gate
+dew_dun02,dewata,Istana cave
+malaya,malaya,town; ship from alberta
+ma_fild01,malaya,Malaya field
+ma_fild02,malaya,Malaya field
+ma_in01,malaya,interiors
+ma_dun01,malaya,Bangungot hospital; Hospital Door gate
+malangdo,malangdo,town; ship from alberta
+mal_in01,malangdo,interiors
+mal_in02,malangdo,interiors
+mal_dun01,malangdo,Octopus dungeon; portal from malangdo
+harboro1,rockridge,Rockridge harbour; ship from alberta
+har_in01,rockridge,interiors
+harboro2,rockridge,Underground Passage gate
+rockrdg1,rockridge,Rockridge field
+rockrdg2,rockridge,Rockridge field
+rockmi1,rockridge,mine; portal from rockrdg2
+rockmi2,rockridge,mine; Shawn McCurdy gate
+nif_dun01,dungeons,Niflheim dungeon 1; gate from niflheim
+nif_dun02,dungeons,Niflheim dungeon 2
+iz_dun05,dungeons,Izlude undersea 6; Gatekeeper gate from iz_dun04
+abyss_04,dungeons,Abyss Lakes 4; Sign gate from abyss_03
+ein_dun03,dungeons,Einbroch mine 3; gate from ein_dun02
+mag_dun03,dungeons,Magma dungeon 3; gate from mag_dun02

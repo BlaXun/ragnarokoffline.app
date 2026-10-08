@@ -1,0 +1,42 @@
+id,map,x,y,dir,sprite,name,kind,to_map,to_x,to_y,text
+dali1,mid_camp,210,292,4,10007,Transport Device,talk,dali,141,82,Do you wish to enter the Dimensional Gap?
+dali2,moc_fild22b,222,200,4,10007,Transport Device,talk,dali,119,56,Do you wish to enter the Dimensional Gap?
+dali3,bif_fild01,318,159,4,10007,Transport Device,talk,dali,43,92,Do you wish to enter the Dimensional Gap?
+dali4,dic_fild02,241,31,4,10007,Transport Device,talk,dali,41,134,Do you wish to enter the Dimensional Gap?
+mist1,bif_fild01,161,355,0,844,Log Tunnel,talk,bif_fild02,160,230,A hollow log leads through the Hazy Forest. Crawl through to the other side?
+mist2,bif_fild02,160,226,0,844,Log Tunnel,talk,bif_fild01,161,351,A hollow log leads back through the Hazy Forest. Crawl through to the other side?
+mora1,bif_fild02,285,332,0,844,Small Hole,talk,mora,179,74,At the end of the path is an entrance to something that looks like a small hill. Go inside?
+mora2,bif_fild02,95,310,0,844,Small Hole,talk,mora,22,157,At the end of the path is an entrance to something that looks like a small hill. Go inside?
+mora3,bif_fild02,174,162,0,844,Small Hole,talk,mora,58,27,At the end of the path is an entrance to something that looks like a small hill. Go inside?
+ecl1,ecl_fild01,97,322,0,WARPNPC,Eclage Entrance,touch,eclage,100,28,
+dic1,dic_fild01,146,281,5,492,Capital City Guard,talk,dicastes01,199,41,This road leads to El Dicastes. Enter the capital?
+dicd1,manuk,321,182,5,450,Entrance Manager,talk,dic_dun01,33,212,This tunnel leads down to the Scaraba Hole. Go down?
+dicd2,dic_dun01,30,216,5,492,Vigilante,talk,manuk,326,180,This tunnel leads back up to Manuk. Go up?
+dicd3,dic_dun01,286,104,5,450,Vigilante,talk,dic_dun02,101,142,The passage behind me leads deeper into the Scaraba Hole. Go on?
+dicd4,dic_dun01,284,102,5,450,Dirty Vigilante,talk,dic_dun03,101,142,There is another way down here. Go on?
+dew1,alberta,247,51,4,536,Dewata Sailor,talk,dewata,232,53,This ship sails to Dewata. Come aboard?
+dew2,dewata,229,49,6,536,Alberta Sailor,talk,alberta,245,49,This ship sails to Alberta. Come aboard?
+dewd1,dewata,235,56,4,534,Gatekeeper of Krakatau,talk,dew_dun01,289,160,The path to Mount Krakatau starts here. Go up the volcano?
+dewd2,dew_dun01,292,164,4,541,Gatekeeper of Krakatau,talk,dewata,232,53,Go back down to Dewata?
+mal1,alberta,246,73,3,100,Optamara Crew,talk,malaya,271,55,This ship sails to Port Malaya. Come aboard?
+mal2,malaya,276,55,4,100,Optamara Crew,talk,alberta,245,73,This ship sails to Alberta. Come aboard?
+mald1,malaya,48,76,4,844,Hospital Door,talk,ma_dun01,33,110,The door of the old hospital is ajar. Go inside?
+mald2,ma_dun01,152,23,4,858,Suspicious Wooden Stick,talk,malaya,58,76,A draught comes through a gap here. Squeeze out to Port Malaya?
+mdo1,alberta,241,90,4,554,Odgnalam,talk,malangdo,217,85,This boat goes to Malangdo Island. Come aboard?
+mdo2,malangdo,219,86,4,545,Kong,talk,alberta,238,90,This boat goes to Alberta. Come aboard?
+rock1,alberta,235,27,5,4_M_SEAMAN,Karam Pucci,talk,harboro1,70,215,This ship sails to Rockridge. Come aboard?
+rock2,harboro1,60,215,5,4_M_SEAMAN,Karam Pucci,talk,alberta,232,27,This ship sails to Alberta. Come aboard?
+rockd1,harboro1,332,144,6,PORTAL,Underground Passage,talk,harboro2,329,187,An underground passage leads down from here. Go down?
+rockd2,harboro2,333,187,6,PORTAL,Underground Passage,talk,harboro1,336,144,Go back up to the harbour?
+rockm1,rockrdg2,347,216,5,4_M_SEANMCCURDY,Shawn McCurdy,talk,rockmi2,14,86,The old mine is open. Go in?
+rockm2,rockmi2,10,86,5,4_M_SEANMCCURDY,Shawn McCurdy,talk,rockrdg2,348,214,Head back out of the mine?
+nif1,niflheim,149,124,0,WARPNPC,Niflheim Dungeon,touch,nif_dun01,145,85,
+nif2,nif_dun01,146,36,0,WARPNPC,Niflheim Dungeon,touch,nif_dun02,149,23,
+iz1,iz_dun04,130,234,5,413,Gatekeeper,talk,iz_dun05,141,187,The way further down is open. Go deeper?
+iz2,iz_dun05,142,190,5,413,Guard,talk,iz_dun04,129,232,Go back up?
+aby1,abyss_03,91,110,5,2_BULLETIN_BOARD,Sign,touch,abyss_04,169,161,
+aby2,abyss_04,168,166,3,1_SHADOW_NPC,Abyss Exit,touch,abyss_03,87,107,
+ein1,ein_dun02,16,250,0,WARPNPC,Mine Shaft,touch,ein_dun03,268,279,
+mag1,mag_dun02,247,68,0,WARPNPC,Magma Passage,touch,mag_dun03,120,120,
+ver1,verus03,52,254,0,WARPNPC,Verus Gate,touch,verus01,243,62,
+ver2,verus03,169,259,0,WARPNPC,Verus Gate,touch,verus02,72,19,
