@@ -279,6 +279,63 @@ SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "AfterCastActDelay": "0", 
                   "Duration2": "0", "CastTime": "0", "Cooldown": "0", "FixedCastTime": "0"}
 
 
+# Maps that an import entry merges key by key: a key the entry leaves out keeps
+# pre-renewal's value. RL_D_TAIL kept pre-renewal's NoDamage this way, which
+# made rAthena cast it as a no-damage skill: it spent its missile and hit
+# nothing. Each leftover key is cleared explicitly.
+FLAG_MAPS = ("DamageFlags", "Flags")
+REQUIRE_MAPS = {"Ammo": "None", "Weapon": "All"}   # the key that clears the whole map
+REQUIRE_UNCLEARABLE = ("Equipment", "State", "Status")
+
+
+def true_keys(block, indent):
+    return {k for k, v in re.findall(r"^" + " " * indent + r"(\w+): (\w+)", block, re.M) if v == "true"}
+
+
+def map_block(text, key, indent):
+    return re.search(r"^" + " " * indent + key + r":[^\n]*\n((?:" + " " * (indent + 2) + r".*\n?)*)", text, re.M)
+
+
+def nested_resets(name, pre_e, entry):
+    entry += "\n"
+    for key in FLAG_MAPS:
+        pm, rm = map_block(pre_e + "\n", key, 4), map_block(entry, key, 4)
+        left = (true_keys(pm.group(1), 6) - (true_keys(rm.group(1), 6) if rm else set())) if pm else set()
+        if not left:
+            continue
+        add = "".join(f"      {k}: false    # set in pre-renewal's entry; renewal's leaves it out\n" for k in sorted(left))
+        entry = entry[:rm.end(1)] + add + entry[rm.end(1):] if rm else entry + f"    {key}:\n" + add
+    preq = map_block(pre_e + "\n", "Requires", 4)
+    if preq:
+        for key in REQUIRE_UNCLEARABLE:
+            pm = map_block(preq.group(1), key, 6)
+            rreq = map_block(entry, "Requires", 4)
+            rm = map_block(rreq.group(1), key, 6) if rreq else None
+            if pm and true_keys(pm.group(1), 8) - (true_keys(rm.group(1), 8) if rm else set()):
+                fail(f"{name}: pre-renewal's Requires.{key} has entries renewal's lacks, and there is no way to clear them")
+        for key, clear in REQUIRE_MAPS.items():
+            pm = map_block(preq.group(1), key, 6)
+            if not pm:
+                continue
+            rreq = map_block(entry, "Requires", 4)
+            rm = map_block(rreq.group(1), key, 6) if rreq else None
+            left = true_keys(pm.group(1), 8) - (true_keys(rm.group(1), 8) if rm else set())
+            if not left:
+                continue
+            if rm:
+                add = "".join(f"        {k}: false    # required by pre-renewal's entry, not renewal's\n" for k in sorted(left))
+                pos = rreq.start(1) + rm.end(1)
+            else:
+                add = (f"      {key}:    # pre-renewal's entry requires {', '.join(sorted(left))}; renewal's does not\n"
+                       f"        {clear}: true\n")
+                pos = rreq.end(1) if rreq else None
+            if pos is None:
+                entry += "    Requires:\n" + add
+            else:
+                entry = entry[:pos] + add + entry[pos:]
+    return entry.rstrip("\n")
+
+
 def build_skill_db(src):
     pre = by_field(body_entries(src["db/pre-re/skill_db.yml"], "Id"), "Name")
     ren = by_field(body_entries(src["db/re/skill_db.yml"], "Id"), "Name")
@@ -296,6 +353,7 @@ def build_skill_db(src):
             if k not in SKILL_DEFAULTS:
                 fail(f"{n}: pre-renewal sets {k}, renewal does not, and there is no reset value for it")
             entry += f"\n    {k}: {SKILL_DEFAULTS[k]}    # pre-renewal's entry sets this; renewal's does not"
+        entry = nested_resets(n, pre[n], entry)
         for k, v in SKILL_OVERRIDES.get(n, {}).items():
             line = re.compile(r"^    " + k + r":.*$", re.M)
             if not line.search(entry):
@@ -307,7 +365,9 @@ def build_skill_db(src):
              "differs. Pre-renewal's are an older revision: no Status: (so the buffs",
              "start nothing) and other fields the skill classes no longer match.",
              "A field pre-renewal sets and renewal does not is reset explicitly,",
-             "since an import entry only replaces the fields it names.",
+             "since an import entry only replaces the fields it names. The same goes",
+             "for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those",
+             "merge key by key, so a key pre-renewal sets is cleared explicitly.",
              "Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.",
              "", "Skills: " + ", ".join(changed)]
     return about, "\n".join(out) + "\n"

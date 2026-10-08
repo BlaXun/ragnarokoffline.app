@@ -50,17 +50,13 @@ A little below the transcendent classes:
   |---|---|---|
   | Rifle (Mass Spiral + Anti-Material Blast) | 2085 dmg/s | Double Strafe 2454 |
   | Shotgun (Banishing Buster + Slug Shot + Shatter Storm) | 2209 | Double Strafe 2454 |
+  | Grenade launcher (Howling Mine + Dragon Tail, marked target) | 1994 | Double Strafe 2454 |
   | Fire Dance, Round Trip, Fire Rain, Shatter Storm (area) | 1003-1036 | Sharp Shooting 814 |
 
   The area skills are set at 0.85 of an Assassin Cross's Meteor Assault, the
   strongest transcendent area skill measured, so they come out above the
   Sniper's own. Buffs (Heat Barrel, Platinum Alter, Improve Concentration)
   and gear bonuses are not counted.
-
-**Known issue:** Dragon Tail spends its missile and deals no damage on the
-pinned rAthena build, with or without a Crimson Marker on the target. The
-fault is in the server, which a mod cannot fix. The skill stays in the tree
-as renewal has it.
 
 ## Equipment
 
@@ -98,7 +94,7 @@ Tail Missile, Slug Bullet and Special Alloy Trap. Bullets and Silver Bullets
 | `lua/rebellion.lua` | the skill damage scaling, with the measured table |
 | `db/job_stats.yml` | the class's HP, SP, EXP, bonuses, ASPD, weight |
 | `db/skill_tree.yml` | renewal's Rebellion tree |
-| `db/skill_db.yml` | renewal's RL skill entries, where pre-renewal's are an older revision without `Status:` |
+| `db/skill_db.yml` | renewal's RL skill entries, where pre-renewal's are an older revision without `Status:`, with every field and flag pre-renewal sets and renewal does not cleared |
 | `db/item_db.yml` | `Rebellion` on the Gunslinger's items, renewal's ammunition the skills need, and the equipment |
 | `db/item_combos.yml` | the set bonuses |
 | `db/mob_db.yml` | the equipment's drops |

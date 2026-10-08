@@ -15,6 +15,7 @@
 --   Single target, skills of one gun used together      Rebellion   Sniper
 --     Rifle: Mass Spiral + Anti-Material Blast              2085    2454 Double Strafe
 --     Shotgun: Banishing Buster + Slug Shot + Shatter Storm 2209
+--     Grenade: Howling Mine + Dragon Tail, target marked    1994
 --   Area
 --     Fire Dance (revolver)                                 1036     814 Sharp Shooting
 --     Round Trip, Fire Rain (gatling)                       1003
@@ -27,10 +28,9 @@
 -- Mass Spiral alone at 90% already matched the target, and with Anti-Material
 -- Blast between its casts the pair did 1.8 times it.
 --
--- Left as they are: Howling Mine (910), Hammer of God (a finisher that spends
--- every coin), Quick Draw Shot (a Chain Action proc), and the buffs and traps.
--- Dragon Tail spends its missile and deals no damage on the pinned rAthena,
--- with or without a Crimson Marker: that is in the server, not in this file.
+-- Dragon Tail is scaled alone in its pair: Howling Mine on its own does 910
+-- and is left as it is, as are Hammer of God (a finisher that spends every
+-- coin), Quick Draw Shot (a Chain Action proc), and the buffs and traps.
 
 local FACTOR = {
   RL_MASS_SPIRAL      = 45,
@@ -41,6 +41,7 @@ local FACTOR = {
   RL_R_TRIP           = 31,
   RL_FIRE_RAIN        = 40,
   RL_S_STORM          = 28,
+  RL_D_TAIL           = 28,
 }
 
 for name, percent in pairs(FACTOR) do
