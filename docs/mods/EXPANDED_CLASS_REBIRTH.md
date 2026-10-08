@@ -488,6 +488,53 @@ cannot do the following, so stop and ask:
 
 ---
 
+## 11. Third classes: Star Emperor, Soul Reaper
+
+Renewal's Star Emperor and Soul Reaper are not expanded second classes like
+Kagerou and Rebellion: rAthena makes them **third** classes (`JOBL_THIRD`) on
+top of Star Gladiator and Soul Linker. That changes the recipe, mostly for
+the better. The worked example is `registry/mods/star-emperor` (branch
+`mods/star-emperor`).
+
+- **The path is a true rebirth.** Pre-renewal never gave Star Gladiators or
+  Soul Linkers one, so the third class becomes their transcendent form:
+  SG/SL 99/50 → reborn Novice → Taekwon (+52 status points) → SE/SR from
+  Taekwon job 40, to job 70. That is `9 + 49 + 69 = 127` skill points at
+  Taekwon 50, exactly a transcendent class, and the 69 buy SG/SL skills and
+  SE/SR skills alike (the tree inherits the second class's).
+- **Change through the second class, at once.** A direct Taekwon → Star
+  Emperor `jobchange` records the Taekwon job level as `change_level_3rd`,
+  and `pc_calc_skilltree_normalize_job` then holds every Star Emperor skill
+  back until that many points sit in Star Gladiator skills. The NPC does
+  `jobchange Job_Star_Gladiator; jobchange Job_Star_Emperor;`: the second
+  change happens at Star Gladiator job 1, so nothing is held back. Verified
+  both ways on the test server. Stock commands only; no variable hacking.
+- **No item flags.** `pc_job_can_use_item` reads only the first class and
+  the 2-1/2-2 branch, so a Star Emperor already counts as a Star Gladiator;
+  and `pc_isItemClass` (`#ifndef RENEWAL`) lets third classes wear
+  transcendent-only items. Give the mod's own gear the second class's job key
+  plus `Classes: Third: true`, so the second class cannot wear it.
+- **The Union form** (`Star_Emperor2`, from SG_FUSION with a Soul Linker's
+  Star spirit) needs its own job_stats entry and tree, as in renewal; it is
+  reached only through the skill, not `jobchange`.
+- **Skills the test map cannot reach.** Several SE/SR skills work only on
+  PvP/GvG maps (`map_flag_vs` in `skill_check_condition_castbegin`: Nova
+  Explosion, Star Emperor Advent, Gravity Control, the Books, Soul Division,
+  Soul Explosion). Leave them unscaled or measure them on a PvP map.
+- **Stances, combos and procs.** Kicks need their stance (Universe Stance
+  holds all three); Full Moon Kick needs New Moon Kick's status; Solar Burst
+  follows Prominence Kick in a very short combo window; Falling Star adds two
+  extra hit skills to normal attacks on Flash-Kicked targets. Measure these
+  as rotations (the measuring script takes `id:lv:self` setup casts and an
+  `attack` pseudo-skill), and scale the extra hits too: Falling Star's took
+  plain attacks to 1.8 times Sonic Blow.
+- **Shared generator.** `registry/tools/expanded_class/expanded_class.py` is
+  the generator as a module; a class's `build.py` is a config. It trims job
+  bonuses down to `BONUS_TOTAL` when renewal's exceed it, and skips item flags
+  when `ITEM_JOB` is unset.
+
+---
+
 ## Appendix: Kagerou's file list
 
 ```
