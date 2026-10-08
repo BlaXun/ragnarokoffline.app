@@ -32,6 +32,27 @@ The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
 on the wall side.
 
+### Area damage
+
+Renewal gave almost every third class area attacks it could spam, and
+levelling became gathering a crowd and pressing one button. In
+pre-renewal area damage belongs to a few classes. So here a **fighting
+third class deals at most about half its best single-target damage to
+each target of an area**: an area attack pays from about three targets,
+and against one or two its single-target skills stay better. The casters
+whose job area damage is (the Warlock, like the High Wizard) are exempt.
+
+### More skills to choose from
+
+A third class keeps its second class's skills and adds its own, so it
+chooses from more skills than its transcendent class (a Guillotine
+Cross: the Assassin's and 19 of its own; an Assassin Cross: the
+Assassin's and 5). It does not learn more: both have the same 69 skill
+points from job levels, and its own skills need second-class skills
+first (Cross Impact needs Sonic Blow 10). The wider choice is a real
+advantage in flexibility, which the damage figures below do not
+measure.
+
 ## Guillotine Cross
 
 ### The path
@@ -63,16 +84,16 @@ The same as an Assassin Cross, by construction or by measurement:
 
   | | Guillotine Cross | Assassin Cross |
   |---|---|---|
-  | One target | Cross Impact 937 dmg/s; Rolling Cutter and Cross Ripper Slasher in turn 964 | Sonic Blow 1023 |
-  | Area, per target | Rolling Cutter 704, in 7x7 | Meteor Assault 1176, in 5x5 |
+  | One target | Cross Impact 925 dmg/s; Rolling Cutter and Cross Ripper Slasher in turn 950 | Sonic Blow 1010 |
+  | Area, per target | Rolling Cutter 468, in 7x7 | Meteor Assault 1176, in 5x5 |
   | Auto-attack, katar | 470 | 614 (Advanced Katar Mastery) |
 
   The Assassin Cross keeps the single-target crown, by about a tenth. The
-  Guillotine Cross trades it for a wider area, and for tools the Assassin
-  Cross lacks:
+  Guillotine Cross trades it for a wide (but, as an area attack, half as
+  strong) Rolling Cutter, and for tools the Assassin Cross lacks:
 
   - **Rolling Cutter** builds up to ten counters; **Cross Ripper Slasher**,
-    from up to 13 cells away, hits harder with each. The 964 above needs
+    from up to 13 cells away, hits harder with each. The 950 above needs
     the two alternated as fast as the server takes them (about every
     0.35 s); at a relaxed pace it is nearer 690.
   - **Cross Impact** is the heavy hit. Renewal lets it fire twice a second;
@@ -233,9 +254,11 @@ In a party of five, buffs kept up and Magnificat doubling SP recovery:
 | HP healed per SP | Heal 82 | Highness Heal 88, Coluceo Heal on five 100, Heal 55 |
 | Healing it can keep up, against a High Priest | | 0.89 on one person, 1.02 on the party |
 
-Its Holy magic is scaled to about 0.7 of a High Wizard's Cold Bolt (847
-dmg/s): Adoramus 636 (it also costs a Blue Gemstone), Judex 564. Duple
-Light's magic strikes on a staff come to about 490 a second with
+Its Holy magic hits an area (Adoramus 7x7, Judex 3x3) for about half of
+what a High Wizard's amplified Meteor Storm deals to each target (1255
+to 1588 dmg/s, measured two ways): Adoramus 614 (it also costs a Blue
+Gemstone), Judex 722.
+Duple Light's magic strikes on a staff come to about 490 a second with
 auto-attacks, below casting; its melee strike, for a STR battle priest,
 is as in renewal.
 
@@ -298,11 +321,11 @@ Lance's weight, since in pre-renewal its damage comes from the weight.
 | | Rune Knight | Lord Knight |
 |---|---|---|
 | One target | Sonic Wave 1415 dmg/s, Hundred Spear 1450 | Spiral Pierce 1562, Bowling Bash 1359 (both have it), Frenzy auto-attacks 1087 |
-| Area, per target | Wind Cutter 1222, Ignition Break 1198, Dragon Breath 991 | Bowling Bash's splash, Brandish Spear 417 |
+| Area, per target | Wind Cutter 817, Ignition Break 711, Dragon Breath 743 | Bowling Bash's splash, Brandish Spear 417 |
 
 - **Dragon Breath** is (current HP / 50 + max SP / 4) x level: it grows
   with HP, so a VIT Rune Knight with 20,000 HP breathes about a quarter
-  harder than the figure above. It is scaled to 85%.
+  harder than the figure above. It is scaled to 64%.
 - **Giant Growth** (Thurisaz rune) gives STR +30, +250% on a Rune
   Knight's attacks and 2.5x damage on 30% of hits; renewal lets it run for
   15 minutes from one rune. Here it lasts **30 seconds and the rune can be
@@ -369,10 +392,10 @@ Press grow with it), on the same target, without consumables:
 | | Royal Guard | Paladin |
 |---|---|---|
 | One target | Banishing Point 1747 dmg/s, Shield Press 1224 | Rapid Smiting 1903, Holy Cross 1690 (both have it) |
-| Area, per target | Overbrand 1013, Earth Drive 943, Cannon Spear 935, Moon Slasher 802 | Grand Cross 667 (both have it) |
+| Area, per target | Overbrand 826, Earth Drive 864, Cannon Spear 871, Moon Slasher 803 | Grand Cross 667 (both have it) |
 
 Renewal's Banishing Point did 6759 a second here and Overbrand 8928;
-they are scaled to 25% and 11%. Its defensive skills are as in renewal.
+they are scaled to 25% and 9%. Its defensive skills are as in renewal.
 
 ### Equipment
 
