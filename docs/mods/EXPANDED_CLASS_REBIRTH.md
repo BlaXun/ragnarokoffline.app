@@ -596,273 +596,299 @@ the better. The worked example is `registry/mods/star-emperor` (branch
 
 ---
 
-## 12. Third classes as sidegrades: Guillotine Cross
+## 12. Third classes as sidegrades of the transcendent classes
 
-Renewal's other third classes (Guillotine Cross, Rune Knight, Arch Bishop,
-...) sit on top of second classes that pre-renewal already finishes with a
-transcendent class. They do not become a rebirth; they become **the other
-way to finish one**: after the Valkyrie, a High Thief picks Assassin Cross
-*or* Guillotine Cross. All of them go into one mod,
-`registry/mods/transcendent-third-classes` (branch
-`mods/transcendent-third-classes`), which grows a class at a time; the
-Guillotine Cross was the pilot.
+Renewal's other third classes sit on top of second classes that
+pre-renewal already finishes with a transcendent class. They do not
+become a rebirth; they become **the other way to finish one**: after the
+Valkyrie, a High Thief picks Assassin Cross *or* Guillotine Cross. All of
+them go into one mod, `registry/mods/transcendent-third-classes` (branch
+`mods/transcendent-third-classes`), which grows a class at a time. So far:
+
+| Third class | Instead of | Changer |
+|---|---|---|
+| Guillotine Cross | Assassin Cross | `valkyrie 42 58` |
+| Shadow Chaser | Stalker | `valkyrie 55 58` |
+| Arch Bishop | High Priest | `valkyrie 42 42` |
+| Rune Knight | Lord Knight | `valkyrie 42 39` |
+| Royal Guard | Paladin | `valkyrie 55 39` |
+| Warlock | High Wizard | `valkyrie 42 47` |
 
 ### Decided with the human (do not re-ask)
 
 - **Sidegrade, at parity.** Not "a bit below" as in §1: the transcendent
   class is the yardstick, and the third class trades its strengths, not
   its total.
-- **Its own skills only.** The third class keeps its first and second
-  class's skills and gets its own, and never learns the transcendent ones
-  (no EDP for a Guillotine Cross). Sharing the transcendent skills would
-  make it an upgrade.
+- **Its own skills, never the transcendent ones.** The third class keeps
+  its first and second class's skills and gets its own; it never learns
+  the transcendent class's (no EDP for a Guillotine Cross). Sharing them
+  would make it an upgrade.
+- **The inherited skill trees stay whole for now** (see the next section):
+  balancing the numbers comes first.
+- **Area damage is capped** for fighting classes (see below); casters
+  whose job it is are exempt.
 - **Permanent choice.** No NPC to swap back.
-- **A few weapons, no full set**, and the transcendent class may use them
-  too (see Gear).
-- **Split by sex** where renewal splits (Minstrel/Wanderer), as two
-  classes.
+- **A few weapons per class, no full set**, usable by both paths.
+- **Every stock item the mod changes says so in its description**, where
+  the old text no longer adds up.
+- **Split by sex** where renewal splits (Minstrel/Wanderer), as two classes.
 - **Fourth classes are out**: their trait stats (P.ATK, S.MATK, RES, ...)
   only work under `#ifdef RENEWAL` in `battle.cpp`/`status.cpp`.
+- **The Job Master is left alone.** The app's `common-npcs` mod loads
+  rAthena's `npc/custom/jobmaster.txt` with `.ThirdClass = true`, which
+  offers any second class at 99/50 its third class at job 1, skipping the
+  rebirth. A report of "the NPC made my Assassin Cross a Guillotine Cross"
+  is that NPC. The human decided not to touch other mods from this one.
+
+### A bigger skill set than the transcendent class
+
+A third class keeps its second class's skills and adds its own, so it
+**chooses from many more skills** than its transcendent class:
+
+| | Picks from | Skill levels on offer |
+|---|---|---|
+| Assassin Cross | Assassin (12 skills) + Assassin Cross (5) | about 118 |
+| Guillotine Cross | Assassin (12) + Guillotine Cross (19) | about 185 |
+
+It does **not learn more**: both have the same skill points (9 Novice,
+49 from the first class, 69 from job 70), and neither comes near learning
+everything. Its own skills also need second-class skills first (Cross
+Impact and Rolling Cutter need Sonic Blow 10, Weapon Blocking needs
+Left-Hand Mastery 5, Cloaking Exceed needs Cloaking 3), so it pays a tax
+of twenty points or so before it reaches them.
+
+The wider choice is still a real advantage, in flexibility rather than
+damage, and the damage measurements below do not capture it. Say so in
+the README. Trimming each third class's inherited tree to what its own
+skills require was looked at and set aside for now: a mechanical rule
+("keep only prerequisites") would take Magnificat and Gloria from the
+Arch Bishop, Bowling Bash and Two-Hand Quicken from the Rune Knight and
+Devotion from the Royal Guard. If it comes back, it needs a hand-made
+list per class, agreed with the human.
+
+### Area damage: renewal's problem, and the counter
+
+Renewal gave almost every third class an area attack it could spam, and
+levelling became gathering a crowd and pressing one button; players
+dislike it. In pre-renewal area damage belongs to a few classes. So:
+
+- **A fighting third class deals at most about half its best
+  single-target damage to each target of an area.** An area attack then
+  pays from about three targets, and against one or two its single-target
+  skills stay better. The ratio to watch is *area damage per target ÷ the
+  same class's best single target*; renewal's numbers put the Rune Knight
+  at 0.8 before the cap.
+- **Casters whose job area damage is are exempt** (the Warlock, like the
+  High Wizard, about 0.6). A support caster's area spells sit lower (the
+  Arch Bishop at about half a High Wizard's).
+- If a skill still trivialises play at half damage, the next tools are a
+  longer after-cast delay or cooldown (`SKILL_OVERRIDES`), a higher SP
+  cost and a smaller `SplashArea`. A hard cap on targets hit is not
+  possible from a mod: rAthena has none per skill, and the Lua hooks do
+  not see how many targets a skill hit.
+
+Where it landed: Rolling Cutter 0.45, Fatal Menace 0.48, Ignition Break
+0.47, Dragon Breath 0.50, Wind Cutter 0.55, Overbrand 0.48, Earth Drive
+0.50, Cannon Spear 0.50.
 
 ### Agree the identity before measuring
 
 Write down with the human what each of the two classes is *for* before
-choosing any factor; "parity" alone does not say what to scale. For the
-Assassin's pair:
+choosing any factor; "parity" alone does not say what to scale. Then set
+the targets from it, and report where a result misses the identity.
 
-- **Assassin Cross**: single-target burst (Sonic Blow, EDP windows). It
-  keeps the single-target crown.
-- **Guillotine Cross**: about 0.9 times that on one target, in return for
-  a wider area (Rolling Cutter), a debuff (Dark Crow), poisons with
-  effects, parry and counter (Weapon Blocking → Counter Slash) and
-  mobility (Hallucination Walk, Cloaking Exceed, Dark Illusion).
+| Transcendent | Third class | Targets |
+|---|---|---|
+| Assassin Cross: single-target burst | Guillotine Cross: area, debuffs, poisons, counters, mobility | one target 0.9x |
+| Stalker: one copied skill kept for good, Full Strip | Shadow Chaser: two copy slots, curses, decoys, traps | its bow attack 1.0x Double Strafe |
+| High Priest: guardian (Assumptio), SP-efficient | Arch Bishop: party buffs and heals, battle priest | healing 0.9x on one, 1.0x on a party; offence half a High Wizard's area |
+| Lord Knight: the duellist (Spiral Pierce, Frenzy) | Rune Knight: dragon rider, runes | one target 0.9x |
+| Paladin: holy striker, martyr | Royal Guard: shield wall, protection | one target 0.9x |
+| High Wizard: storm-caller (Mystical Amplification, Soul Drain) | Warlock: elementalist, stored spells | one target 0.9x of amplified, area 1.0x of amplified |
 
-Then set the targets from it: which rotation is compared with which, and
-at what ratio. Report where the result misses the identity: the
-Guillotine Cross's Rolling Cutter came out at 704 per target against
-Meteor Assault's 1176, so it beats the Assassin Cross on groups only
-through its larger area.
+Ask what the transcendent class gives up before deciding what the third
+class must not have (Preserve, Assumptio, Soul Drain): the loss is often
+the real balance problem, and usually it is SP.
 
 ### The class
 
 - **Use the `_T` job** (`Job_Guillotine_Cross_T`, 4065). It carries
   `JOBL_UPPER`, so it gets the transcendent HP factor and transcendent-only
   gear like any reborn class.
-- **Ship the non-`_T` tree under the `_T` name.** Renewal's
-  `Guillotine_Cross_T` tree inherits Assassin Cross and its skills; the
-  plain `Guillotine_Cross` tree inherits only Assassin. The generator's
-  `TREE_FROM={"Guillotine_Cross_T": "Guillotine_Cross"}` does this. Check
-  on the server that a transcendent skill stays at 0 (`skillup 378` for
-  EDP).
+- **Ship the non-`_T` tree under the `_T` name** (`TREE_FROM`): renewal's
+  `_T` trees inherit the transcendent class and its skills. Check on the
+  server that a transcendent skill stays at 0.
 - **Copy the transcendent class's tables**: `HP_FROM`, `SP_FROM`,
   `EXP_FROM` = the transcendent class, scale 1.0, its 69 job levels
-  (`MAX_JOB_LEVEL=70`). Renewal's third-class job bonuses fall short of
-  45; top them up with `EXTRA_BONUS` to `BONUS_TOTAL=45`.
+  (`MAX_JOB_LEVEL=70`). Renewal's third-class job bonuses come to +43;
+  `EXTRA_BONUS` tops them up to `BONUS_TOTAL=45`.
+- Job ids: Rune Knight T 4060, Warlock T 4061, Arch Bishop T 4063,
+  Guillotine Cross T 4065, Royal Guard T 4073, Shadow Chaser T 4079. High
+  Mage is 4003 and High Archer 4004 (an easy test mistake).
 
 ### The changer
 
-- An NPC beside the Valkyrie (`valkyrie 52 58`), next to where the stock
-  route goes on. The stock changer is left as it was; test that its route
-  still makes the transcendent class without third-class skills.
-- Conditions: `ADVJOB` is the transcendent class (so the player came
-  through the Valkyrie for this branch), `Class` is the High first class,
-  job 40 or more, and **no unspent skill points**, since they would be
-  carried into a tree they were not earned for.
+- **Beside its transcendent class's changer, on the wall side.** The stock
+  changers stand in two rows in the Valkyrie's hall (`npc/jobs/2-1a/`,
+  `2-2a/` give the cells), with two walkable cells between each and the
+  wall: x 42 for the west row, 55 for the east. Check a cell with
+  `checkcell(map, x, y, cell_chkpass)`.
+- Conditions: `ADVJOB` is the transcendent class, `Class` is the High
+  first class, job 40 or more, and **no unspent skill points**.
 - Ask twice, say "permanent", then `jobchange <transcendent>;
   jobchange <third>_T; set ADVJOB, 0;`. Going through the transcendent
   class is the §11 trick: the third-class change happens at its job 1, so
   `change_level_3rd` holds nothing back.
+- Test the stock changer's route too: it must still make the
+  transcendent class, without third-class skills.
+
+### Other NPCs a class may need
+
+Pre-renewal lacks renewal's service NPCs; the mod ships what the class
+cannot work without, as plainly as it can:
+- **Dragon Breeder** (Rune Knight): only `setdragon` gives a dragon, and
+  needs Dragon Training. Beside the Knights' Peco Peco Breeder in
+  Prontera. The Royal Guard's gryphon is the Crusader's Peco Peco riding:
+  nothing needed.
+- **Spellbook Seller** (Warlock): renewal's books, sold where renewal's
+  Lea stands (`geffen_in 175 112`) at renewal's deposits, one copy each.
 
 ### Gear
 
 - `Classes: Upper` with the second class's job key lets **both**
-  transcendent paths wear it: pre-renewal's `pc_isItemClass` lets a
-  `JOBL_THIRD` class wear Upper items. A non-reborn second class cannot.
-  `Classes: Third` would lock the transcendent class out; the human chose
-  against that.
-- Give each weapon bonuses for both paths (two skills of each), so
-  neither class gets dead weight.
-- Assassin-branch third classes dual-wield daggers through the upper
-  mask, with no flag. Test it as the client does: `wear <idx> 2`, then
-  `wear <idx> 32` (left hand).
-- **Raise base level before an equip test.** A level-70 item on a level-1
-  test character fails silently and looks like a class-flag bug.
-- Check the other class mods' `drops.csv` for the same monsters; rAthena
-  keeps only ten drops each.
+  transcendent paths wear it (pre-renewal's `pc_isItemClass` lets a
+  `JOBL_THIRD` class wear Upper items); a non-reborn second class cannot.
+- Each weapon: one bonus for both paths, the same again for the
+  transcendent class (or its own skill), and the third class's own skill
+  at about twice that, through `if (Class == Job_...)` in the script. The
+  generated description lists all three.
+- **Benchmarks that depend on gear**: give test gear realistic values.
+  Pre-renewal Spiral Pierce scales with weapon weight (a Lance's, 2500),
+  Rapid Smiting and Shield Press with shield weight (a Stone Buckler's,
+  1500); staves give MATK through `bMatkRate` (+15% is standard).
+- **Shields need a `View`** (`view=True` on the kind copies the look's);
+  pre-renewal's mace subtype is `Mace`, not `1hMace`.
+- **Raise base level before an equip test**; dual wielding is tested with
+  `wear <idx> 2` then `wear <idx> 32`.
+- Check every class mod's `drops.csv` for the same monsters; rAthena keeps
+  only ten drops each, and a monster may drop items of one class only.
+
+### Stock items the mod changes
+
+When the mod changes how a stock item behaves, its description must say
+so wherever the old text no longer adds up (a decision of the human).
+`ITEM_DESCRIPTIONS` copies the translation's whole entry for the item and
+adds lines before its type block; the client takes each item from the
+first table that names it, and a mod's comes first. Done for the rune
+stones whose reuse delays and durations changed, and for Storm Blast,
+which deals no damage on this server.
 
 ### Skill entries
 
-- Renewal entries can leave a `Knockback:` that pre-renewal sets and
-  renewal does not; the generator now resets it to 0.
-- `SKILL_OVERRIDES` replaces a whole field, a per-level list included.
-  Before this it replaced only the first line and left the list behind.
-- **Read `Requires: Status:` before calling a skill broken.** Counter Slash
-  fails with cause 31 (`USESKILL_FAIL_GC_WEAPONBLOCKING`) until Weapon
-  Blocking has parried a hit; Venom Pressure needs a poison on the blade;
-  Cross Ripper Slasher needs Rolling Cutter's status. Fail causes are the
-  `USESKILL_FAIL_*` enum in `src/map/clif.hpp`.
-- **Read `TargetType`.** Cross Ripper Slasher cast on yourself does
-  nothing and reports nothing; it needs the target.
+The generator imports renewal's entry for each of the class's skills and
+resets every field pre-renewal sets and renewal leaves out. What came up:
+
+- Reset values for `Knockback`, `SplashArea`, `HitCount`, `Type` (None),
+  `TargetType` (Passive) and a dropped `Requires` (costs to 0).
+  `DamageFlags`/`Flags` are cleared key by key.
+- **`Hit` cannot be reset**: renewal's default, DMG_NORMAL, has no YAML
+  name. Pre-renewal's stays; it only changes how the hit is shown.
+- **CopyFlags: write both copy types false.** rAthena clears one with
+  `option &= FLAG` instead of `&= ~FLAG` (fix: rathena branch
+  `fix/skill-copyflags-false`).
+- **An item cost cannot be removed**: `ItemCost` entries overwrite by
+  position and always need their item. The generator fails unless the
+  skill is listed in `ITEMCOST_KEPT` (Comet keeps 2 Red Gemstones).
+- **Renewal can drop or rework a skill.** Skills only pre-renewal has
+  (LG_OVERBRAND_BRANDISH) keep pre-renewal's entry. Skills only renewal
+  has come in whole (`NEW_SKILLS_FROM_RENEWAL`), and so can a table
+  pre-renewal has no rows in (`COPY_TABLES`, the spellbook_db) and
+  renewal-only items (`NEW_FROM_RENEWAL`).
+- **Check that the C++ still runs pre-renewal's version.** Pre-renewal's
+  active Reading Spellbook has no code behind it; only renewal's passive
+  one with its books works.
+- `SKILL_OVERRIDES` replace a whole field, nested (`"Requires.SpCost"`) or
+  per level; `SKILL_FLAGS_ADD` sets one flag on another class's skill;
+  `ITEM_FIELDS` sets a stock item's field (a value, or `"renewal"`).
+
+### Mechanics to check before calling a skill broken
+
+- `Requires: Status:` (Counter Slash needs a Weapon Blocking parry),
+  `Requires: State:` (Dragon Breath needs a dragon), `TargetType`
+  (Cross Ripper Slasher on yourself does nothing), item costs (Feint
+  Bomb, Adoramus, Comet), and preparation (Tetra Vortex needs four
+  summoned spheres). Fail causes are the `USESKILL_FAIL_*` enum in
+  `src/map/clif.hpp`.
+- **Consumables: check the item too.** Pre-renewal's rune stones have no
+  reuse delay; renewal's do. Renewal buffs measured in minutes can be
+  absurd here (Giant Growth: x3.5 auto-attacks for 15 minutes became a
+  30-second burst every 3 minutes).
+- **Items that cast through `itemskill`** (spellbooks) only open the skill:
+  the client then sends the skill request, as for a scroll. `unitskilluseid`
+  (rune stones) casts directly.
+- **Damage under another id**: Chain Lightning hits as
+  WL_CHAINLIGHTNING_ATK, Tetra Vortex as its four element skills, Duple
+  Light as its melee/magic skills. Count those, and scale those in Lua.
+- **Some skills do not work in pre-renewal** (Storm Blast hits nothing).
+  Note it, say so in the item's description, and leave it.
+- **Party-only skills** (Banding, Hesperus Lit, Ray of Genesis without
+  Inspiration) cannot be measured alone; they stay as in renewal.
+- **Openers are not rotations** (Back Stab from behind turns the target).
 
 ### Measuring
 
-- **Renewal cadence can be absurd here.** Cross Impact has 0.5 s delay and
-  a 0.35 s cooldown at level 5, which renewal pays for with its stats; in
-  pre-renewal that was nine times Sonic Blow. A factor alone would have
-  made it a pile of small hits; overriding its delay to 1.5 s and then
-  scaling (29%) kept it the heavy hit. Prefer that when a skill's role is
-  a big hit.
-- **Stack and payoff skills.** Cross Ripper Slasher gains 200% per Rolling
-  Cutter counter, up to ten, and does not consume them, so the best
-  rotation is to alternate the two. Measure at the fastest cadence the
-  server accepts: here 0.35 s (`... mob - 0.35 seq`); at 0.3 s every Cross
-  Ripper Slasher arrives inside Rolling Cutter's delay and is dropped
-  without a failure packet. Report the perfect number and a relaxed one
-  (0.5 s): 964 and 688.
-- **Amplifying debuffs.** Dark Crow adds 30% per level to *short-range*
-  damage on its target for 20 s a minute (half on bosses). Weapon skills
-  with range 5 or more are long range and do not gain from it. Measure
-  without it and describe it as the burst window.
-- **Passives explain gaps.** The Guillotine Cross auto-attacks for 470
-  against the Assassin Cross's 614: Advanced Katar Mastery is an Assassin
-  Cross skill. That is the trade, not a bug.
-- Crit skills (Cross Impact) vary by about 10% run to run; measure 60 s,
-  twice.
-- A skill that needs a consumable through a client menu (Venom Pressure)
-  can be scaled from its ratio relative to a measured skill. Say so in the
-  README.
+- **The harness can lie.** A new skill request restarts a cast in
+  progress; a test dummy that hits back interrupts cast-time skills; a
+  knockback skill pushes a dummy that never walks back out of reach. Use
+  the anchored dummy (`dummy#4`: `Ai: 06`, `KnockBackImmune`). For
+  instant skills spam at a fixed pace (`... 0.1`); for cast-time skills
+  cast one at a time (`... 1 paced`, the client's `cast` command resends
+  only when nothing answered); measure both ways and keep the higher.
+- **Renewal cadence can be absurd** (Cross Impact twice a second). When a
+  skill's role is a big hit, lengthen its delay and then scale it, rather
+  than scaling it into a pile of small hits.
+- **Stack and payoff skills** (Rolling Cutter → Cross Ripper Slasher):
+  measure the rotation at the fastest pace the server takes, and a
+  relaxed one.
+- **Amplifiers and procs**: measure the transcendent class with its own
+  (Mystical Amplification, at its real max level), report debuffs like
+  Dark Crow as burst windows, and measure auto-attacks with every proc
+  buff on (Duple Light's magic strike beat casting until scaled).
+- **SP is part of the balance.** Measure the net drain directly
+  (`NOHEAL=1`: SP before and after, regeneration included) and compare
+  **damage per full SP bar** with the transcendent class's best rotation.
+  Renewal prices skills for renewal's SP pools; without its SP skills
+  (Meditatio, Mana Recharge, Soul Drain) a third class ran dry two to
+  three times faster. Lower its costs (`"Requires.SpCost"`) before
+  touching damage. Soul Drain also returns SP for single-target kills;
+  that free sustain stays the High Wizard's.
+- Crit skills vary about 10% run to run; measure twice. Run one
+  measurement at a time: two on the same map kill each other's dummies.
 
 ### Generator
 
-The four class mods' branches carry the same
-`registry/tools/expanded_class/expanded_class.py`; this branch added
-`TREE_FROM`, the Knockback reset and the whole-field override. Sync it to
-every branch and confirm with `--check` that each mod's output does not
-change. If the pinned `vendor/rathena` lacks the pinned commit, pass
-`--rathena ../rathena`.
-
-### Added with the Shadow Chaser
-
-- **Several classes, one mod.** `run()` takes a list of configs, one per
-  class, and joins their tables; each class keeps its CSVs in its own
-  directory (`CSV_DIR`). A monster may drop items of one class only. A
-  single config builds exactly as before.
-- **The changers' places.** The stock transcendent changers stand in two
-  rows in the Valkyrie's hall (`npc/jobs/2-1a/`, `2-2a/` give the cells),
-  with two walkable cells between each and the wall. Each third class's
-  changer stands right beside its transcendent class's, on the wall side
-  (x 42 for the west row, 55 for the east): Guillotine Cross 42,58,
-  Shadow Chaser 55,58, Arch Bishop 42,42. Check a cell with
-  `checkcell(map, x, y, cell_chkpass)`.
-- **The Job Master is a back door.** The app's `common-npcs` mod loads
-  rAthena's `npc/custom/jobmaster.txt` with `.ThirdClass = true`: it
-  offers any second class at 99/50 its third class at job 1, skipping
-  the rebirth (and its expanded-class option skips Kagerou's and
-  Rebellion's paths). A report of "the NPC made my Assassin Cross a
-  Guillotine Cross" is this NPC, not the mod's. Not fixed yet.
-- **Ask what the transcendent class gives up before deciding what the
-  third class must not have.** Renewal's non-transcendent Shadow Chaser
-  tree has no Preserve: Reproduce, a second slot written only during its
-  five-minute window, is its kept copy. It copies first and second class
-  skills (163 in all), not only third class ones.
-- **Flags on other classes' skills.** `SKILL_FLAGS_ADD` writes an import
-  entry with only that flag (Flags merge key by key). Check the C++ before
-  adding one: Auto Shadow Spell skips Holy Light and Magnus Exorcismus by
-  name, casts a self skill as a support skill on the enemy, and pays item
-  costs it may not have.
-- **Openers are not rotations.** In pre-renewal Back Stab works only from
-  behind, and turns the target to face you; compare against what a class
-  can repeat (the Stalker's Double Strafe).
-- **Skills with item costs** (Feint Bomb: Paint Brush, Surface Paint) need
-  the items on the test character, or they fail with nothing logged.
-- **Testing copied skills**: a test monster with a `mob_skill_db.txt`
-  entry casting the spell at you, Reproduce first, then Auto Shadow Spell's
-  selection packet (`0x442`, answered with `0x443`). The list it sends
-  shows which flags took effect.
-
-### Added with the Arch Bishop
-
-- **Measure SP, not just output, for a support class.** Renewal prices
-  third-class skills for renewal's SP pools and SP gear; on a transcendent
-  class's pool, without its SP skills (Meditatio, Mana Recharge), the Arch
-  Bishop sustained half a High Priest's healing. Model a minute of party
-  play: buff upkeep (durations and costs from the tables), heal per SP,
-  SP recovered (`sp#0`, wait, read), with Magnificat for both. Balance
-  heals by SP cost, buffs by "what five single buffs cost the other
-  class".
-- **`SKILL_OVERRIDES` reach nested fields** (`"Requires.SpCost"`) and take
-  a list per level. A skill whose pre-renewal entry already matches
-  renewal's is written anyway when it has an override.
-- **Heals don't show as damage.** Drop HP to 1 (`hp#1`), cast, read HP;
-  SP the same way. Subtract the SP regained between casts.
-- **Passive procs can beat casting.** Duple Light's magic strike added
-  645 dmg/s to staff auto-attacks on an INT build, more than Adoramus,
-  for no SP. Measure auto-attacks with every proc buff on.
-- **A support's damage benchmark is another class's.** The High Priest's
-  own offence is weak, so the Arch Bishop's Holy magic was set against a
-  High Wizard (0.7x), not against Holy Light.
-- **`mod.json` takes at most 8 tags**; a growing mod should not tag each
-  class.
-- Pre-renewal's mace subtype is `Mace`, renewal's `1hMace`.
-
-### Added with the Rune Knight
-
-- **Mounts the class needs.** Dragon Breath needs a dragon; only
-  `setdragon` gives one (Dragon Training required), and renewal's Dragon
-  Breeder (`npc/re/merchants/renters.txt`) is not loaded in pre-renewal.
-  The mod ships its own beside the Peco Peco Breeder. Check every
-  `Requires: State:` (Ridingdragon, Madogear, ...) for what provides it.
-- **Consumable skills: check the item, not just the skill.** Pre-renewal's
-  rune stones have no reuse delay; renewal's do. `ITEM_FIELDS` copies a
-  field from renewal's item (`"renewal"`) or sets this mod's value. Look
-  for renewal durations measured in minutes on strong buffs: Giant Growth
-  was x3.5 auto-attack damage for 15 minutes; it became a 30-second burst
-  every 3 minutes (skill `Duration1` plus the rune's `Delay`).
-- **Benchmarks that depend on gear.** Pre-renewal Spiral Pierce scales
-  with weapon weight; a test weapon of weight 1 made it look useless. Use
-  a realistic weight (a Lance's, 2500).
-- **HP-scaled skills.** Dragon Breath uses current HP and max SP, so a VIT
-  build hits harder than the measuring template; say by how much.
-- **Some skills simply do not work in pre-renewal** (Storm Blast hits
-  nothing even when learned and cast directly). Note it and leave it; a
-  fix belongs in rAthena.
-- **Buffs that block whispers** (Frenzy: NoChat) stall the test helper,
-  which is driven by whispers; set the dummy up first (`dummy#9`).
-- `SKILL_DEFAULTS` gained `SplashArea: 0` (Fighting Spirit).
-
-### Added with the Royal Guard
-
-- **Renewal can drop or strip a skill.** Pre-renewal still has
-  LG_OVERBRAND_BRANDISH and LG_OVERBRAND_PLUSATK, renewal does not: the
-  generator keeps pre-renewal's entry and lists it. Renewal's Shield
-  Spell left out DamageFlags, Hit, HitCount, Element, Knockback and
-  CopyFlags; each needs a reset. `Hit` cannot be reset (renewal's default,
-  DMG_NORMAL, has no YAML name; only Single and Multi_Hit do), so
-  pre-renewal's stays, which only changes how the hit is shown.
-- **CopyFlags: write both copy types false.** rAthena's parser clears one
-  with `option &= FLAG` instead of `&= ~FLAG`
-  (fix: rathena branch `fix/skill-copyflags-false`).
-- **Shields need a `View`**, like headgear, or rAthena warns and shows a
-  Guard. A kind with `view=True` copies its look item's.
-- **Gear-weighted benchmarks again**: Rapid Smiting and Shield Press grow
-  with shield weight and refine; measure with a shield of a real one's
-  weight (a Stone Buckler's, 1500).
-- **Party-only skills** (Banding, Hesperus Lit, Ray of Genesis without
-  Inspiration) cannot be measured alone; they stay as in renewal.
-- The Royal Guard's gryphon is the Crusader's Peco Peco riding: no
-  breeder needed, unlike the Rune Knight's dragon.
+All class mods' branches carry the same
+`registry/tools/expanded_class/expanded_class.py`. After any change, copy
+it to every branch and confirm with `--check` that each mod's output does
+not change. If the pinned `vendor/rathena` lacks the pinned commit, pass
+`--rathena ../rathena`. Several classes go into one mod as a list of
+configs, each with its CSVs in its own directory (`CSV_DIR`).
 
 ### Per new third class, in short
 
-1. Agree identity and targets with the human.
-2. Add the class to `JOBS`, `TREE_FROM`, the table sources, `EXTRA_BONUS`,
-   `SKILL_PREFIX` and `EQUIP_JOBS` in the mod's `build.py`, and its
-   weapons and drops to the CSVs.
-3. Write its changer beside the Valkyrie.
+1. Agree the identities and targets with the human, including what the
+   transcendent class's lost skills mean (often SP).
+2. Add the class's config to the mod's `build.py`, and its weapons and
+   drops to the CSVs; fix what the generator refuses.
+3. Write its changer beside the transcendent changer, and any NPC the
+   class cannot work without.
 4. Test the path both ways, the transcendent skills blocked, the gear on
-   both paths, and the drops.
-5. Measure against the transcendent class, set factors and overrides,
-   remeasure, and add a section to the README and a line to `mod.json`.
+   both paths, the drops, and the class's own mechanics end to end.
+5. Measure against the transcendent class on the anchored dummy, set
+   factors, overrides and SP costs, keep fighting classes' area damage at
+   half their single target, and remeasure.
+6. Update the README (identity, numbers, changed stock items), `mod.json`
+   and the Lua comments; reindex; sync the generator.
 
 ---
 
