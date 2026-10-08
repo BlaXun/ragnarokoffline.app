@@ -437,17 +437,29 @@ mod tests {
         }
     }
 
-    /// The tables above are generated from the pinned rAthena. When that
-    /// checkout is present, prove they still describe it; CI's supervisor job
-    /// does not fetch it, so there this has nothing to compare against.
+    /// The tables above are generated from the pinned rAthena. When
+    /// vendor/rathena is at the pin, prove they still describe it. Any other
+    /// checkout would fail for differences the release never ships, so it is
+    /// skipped, except in CI's server-language job, which fetches the pin and
+    /// sets REQUIRE_PINNED_RATHENA so a stale table cannot pass by skipping.
     #[test]
     fn stock_tables_match_the_pinned_server() {
-        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../vendor/rathena/conf");
-        let (Ok(groups), Ok(atcommands)) = (
-            std::fs::read_to_string(root.join("groups.yml")),
-            std::fs::read_to_string(root.join("atcommands.yml")),
+        let app = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let rathena = app.join("vendor/rathena");
+        let pins = std::fs::read_to_string(app.join("config/VENDOR_PINS")).unwrap_or_default();
+        let pin = pins.lines().find_map(|l| {
+            let cols: Vec<_> = l.split_whitespace().collect();
+            (cols.first() == Some(&"rathena")).then(|| cols.get(2).map(|s| s.to_string())).flatten()
+        });
+        let head = std::process::Command::new("git").arg("-C").arg(&rathena).args(["rev-parse", "HEAD"]).output().ok()
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string());
+        let (Ok(groups), Ok(atcommands), true) = (
+            std::fs::read_to_string(rathena.join("conf/groups.yml")),
+            std::fs::read_to_string(rathena.join("conf/atcommands.yml")),
+            pin.is_some() && head == pin,
         ) else {
-            eprintln!("vendor/rathena not checked out; skipping");
+            assert!(std::env::var_os("REQUIRE_PINNED_RATHENA").is_none(), "vendor/rathena is not at the pin");
+            eprintln!("no rAthena at the pin in vendor/rathena; skipping");
             return;
         };
         // Every stock grant, read back through the same dedupe: an exact
