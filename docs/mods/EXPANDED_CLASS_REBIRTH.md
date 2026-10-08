@@ -116,6 +116,14 @@ Things the Kagerou mod found this way, and you should expect again:
   entries, then search pre-re's NPCs and mob drops for each item. Renewal
   sells Kagerou's charms through a barter shop pre-re lacks, so the mod sells
   them.
+- **Items that don't exist in pre-re at all.** Rebellion's skills consume
+  four renewal-only items (Full Metal Jacket, mines, Dragon Tail Missile, Slug
+  Bullet) and Platinum Alter *requires* two renewal-only bullets as equipment.
+  Copy those entries from renewal's item tables under their own ids, which
+  the client already knows, with the new class's job flag. **One missing
+  item named in a skill's `Requires:` makes rAthena reject the whole skill
+  entry** (`Requires Equipment … does not exist`), so the generator checks
+  every item a shipped skill entry names.
 - **The job-change quest** lives under `npc/re/jobs/2e/` and is loaded only in
   renewal. Don't port it. The rebirth NPC replaces it.
 
@@ -139,8 +147,18 @@ silently.
   sets a field that renewal's entry leaves out, pre-re's value survives. For
   Kagerou that was Cross Slash's `AfterCastActDelay: 500` and Rapid Throw's
   `Duration1`. The generator diffs the top-level keys and writes an explicit
-  reset (`0`) for each one. It also fails on a key it has no reset value for,
+  reset for each one: `0`, `Range: 0`, `Element: Neutral` (rAthena's defaults
+  when the key is absent). It also fails on a key it has no reset value for,
   rather than guessing.
+- **Maps inside an entry merge key by key, too.** `DamageFlags`, `Flags` and
+  the `Requires` maps `Ammo` and `Weapon` only set or clear the keys an import
+  names. Rebellion's Dragon Tail kept pre-re's `DamageFlags: NoDamage: true`
+  this way: `skill_get_casttype` then returned `CAST_NODAMAGE`, and the skill
+  spent its missile and hit nothing, with no error anywhere. It also kept
+  pre-re's grenade-ammo requirement. The generator writes `Key: false` for
+  each leftover flag, `Ammo: None: true` or `Weapon: All: true` to clear a
+  leftover requirement, and fails on leftovers in `Equipment`, `State` or
+  `Status`, which have no clearing key.
 - **An item import entry's `Jobs:` replaces the whole list.** To add the new
   class to an item, restate every job already on it plus the new flag
   (`KagerouOboro: true`, `Rebellion: true`; the names come from rAthena's
@@ -153,7 +171,9 @@ silently.
   generator counts the stock drops and fails if a monster would go over ten.
   Pre-re monsters usually have eight, so two new drops fit. **MVPs count
   too**: their `Drops:` list has eight entries as well, so check them the
-  same way.
+  same way. **Two class mods must not share a monster**: each adds two drops,
+  and together they pass ten. Rebellion's monsters were chosen to avoid
+  Kagerou's.
 - **Item ids** for mods: 50000-99999. Pick a block in the middle.
 - **`System/itemInfo.lua` is additive.** Ship only your items. The app lists
   it ahead of the client's own table.

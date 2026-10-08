@@ -7,7 +7,9 @@
 # differs. Pre-renewal's are an older revision: no Status: (so the buffs
 # start nothing) and target types the skill classes no longer handle.
 # A field pre-renewal sets and renewal does not is reset explicitly,
-# since an import entry only replaces the fields it names.
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
 # Kunai Splash's after-cast delay is this mod's own: see SKILL_OVERRIDES.
 #
 # Skills: KG_KAGEHUMI, KG_KAGEMUSYA, KG_KYOMU, KO_BAKURETSU, KO_HAPPOKUNAI, KO_HUUMARANKA, KO_IZAYOI, KO_JYUMONJIKIRI, KO_JYUSATSU, KO_KYOUGAKU, KO_MAKIBISHI, KO_MEIKYOUSISUI, KO_MUCHANAGE, KO_YAMIKUMO, KO_ZENKAI, OB_AKAITSUKI, OB_OBOROGENSOU, OB_ZANGETSU
