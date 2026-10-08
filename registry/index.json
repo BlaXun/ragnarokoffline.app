@@ -1023,7 +1023,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "4e10e214ad38089bd0305e01fa39824884dacda72f54ccbcc1480e0edd63aa70"
+          "sha256": "428cddeb4040de925cfe834ac6f7831878819dd4a5c1cbcad2f2a0ab88b6e8bd"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1047,7 +1047,7 @@
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "82d15fac8918c5493949b239ce81fc91be6edd96cb3058d597b8a81ff98cfc5b"
+          "sha256": "f38133e27d0f253ed9e72c734f816b32cefe7e1f5e7e3a3e49558de8031e8166"
         },
         {
           "path": "db/skill_tree.yml",
@@ -1055,7 +1055,7 @@
         },
         {
           "path": "lua/star_emperor.lua",
-          "sha256": "9b379ed8c43d0b79cf7b1d94f0e4bb7134f73f99c45d5fc962a0a41fd2570f6c"
+          "sha256": "daffaadebd147911997b556021d26826afecb1735bcaea2181c95070b847cb0a"
         },
         {
           "path": "mod.json",
