@@ -578,7 +578,7 @@
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "9d0a7f66aa03799752bdb8ce7898ed484573e3ad6f413bfe698dc906b72df673"
+          "sha256": "ef6a906914822e5e296fad34b4be9b6b047e0d5981c6f47eb07f48e77b4c03e2"
         },
         {
           "path": "db/skill_tree.yml",
