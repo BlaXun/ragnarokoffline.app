@@ -411,7 +411,8 @@ def build_skill_db(src):
             entry = line.sub(f"    {k}: {v}    # this mod's balance; renewal's is different", entry)
         out.append(entry)
         changed.append(n)
-    about = [f"Renewal's entries for the {C.SKILL_PREFIX} skills whose pre-renewal entry",
+    prefixes = "/".join(C.SKILL_PREFIX) if isinstance(C.SKILL_PREFIX, tuple) else C.SKILL_PREFIX
+    about = [f"Renewal's entries for the {prefixes} skills whose pre-renewal entry",
              "differs. Pre-renewal's are an older revision: no Status: (so the buffs",
              "start nothing) and other fields the skill classes no longer match.",
              "A field pre-renewal sets and renewal does not is reset explicitly,",
