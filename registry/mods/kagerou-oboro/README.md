@@ -28,7 +28,7 @@ change:
 |---|---|
 | 50 | 9 + 49 + 59 = **117** |
 | 60 | 9 + 59 + 59 = **127**, a transcendent class's total |
-| 70 | 9 + 69 + 59 = **137**, renewal's Kagerou |
+| 70 | 9 + 69 + 59 = **137**, ten below renewal's 147 (renewal's Kagerou goes to job 70) |
 
 ## How strong
 

@@ -7,8 +7,8 @@
 //= reborn Ninja may become a Kagerou (male) or an Oboro (female).
 //= Every Ninja job level past 50 is one more skill point, which
 //= rAthena makes the player spend on Ninja skills before any
-//= Kagerou skill: a change at Ninja job 70 gives the 137 a renewal
-//= Kagerou has (69 Ninja, 59 Kagerou, 9 Novice).
+//= Kagerou skill: a change at Ninja job 70 gives 137 (69 Ninja,
+//= 59 Kagerou, 9 Novice), ten below renewal's 147.
 //=
 //= The character variable kagerou_oboro_reborn marks the path:
 //=   1  reborn as a Novice
