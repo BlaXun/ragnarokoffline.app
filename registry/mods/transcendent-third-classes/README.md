@@ -24,6 +24,7 @@ The mod grows class by class. So far:
 | Guillotine Cross | Assassin Cross | `valkyrie 42 58` |
 | Shadow Chaser | Stalker | `valkyrie 55 58` |
 | Arch Bishop | High Priest | `valkyrie 42 42` |
+| Rune Knight | Lord Knight | `valkyrie 42 39` |
 
 The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
@@ -252,6 +253,83 @@ classes only.
 | Grand Censer | 90 | Dark Priest |
 | Staff of Absolution | 90 | Necromancer |
 
+## Rune Knight
+
+### The path
+
+1. Knight, base 99 / job 50 → the Valkyrie's rebirth → High Novice → High
+   Swordman. The rebirth remembers Lord Knight as the target, as usual.
+2. **High Swordman, job 40 or later**, no unspent skill points: talk to the
+   **Rune Knight** beside the Lord Knight changer instead of the Lord Knight
+   changer, which stays as it was. You are asked to confirm twice.
+
+The class's skill tree is renewal's Rune Knight tree: Novice, Swordman,
+Knight and the Rune Knight's own skills, with a Lord Knight's 69 job
+levels and skill points. It never learns Spiral Pierce, Frenzy, Aura
+Blade, Concentration, Parrying, Tension Relax, Head Crush or Joint Beat.
+
+**The dragon.** Dragon Breath is cast from a dragon. Renewal's Dragon
+Breeder is not on a pre-renewal server, and the Peco Peco Breeder gives a
+Rune Knight a Peco Peco, so this mod adds a **Dragon Breeder** beside the
+Knights' Peco Peco Breeder in Prontera (`prontera 55 353`). It is free,
+and takes the dragon back when you talk to it again.
+
+**Rune stones.** Rune Mastery cuts them from the materials pre-renewal
+already has recipes for. Pre-renewal's rune items have no reuse delay;
+the Raido (Crush Strike), Berkana (Millennium Shield), Nauthiz (Refresh)
+and Wyrd (Storm Blast) runes get renewal's back.
+
+### Lord Knight or Rune Knight
+
+- **Lord Knight**, the duellist: Spiral Pierce, Frenzy, Aura Blade,
+  Concentration, Parrying. The best single target.
+- **Rune Knight**, the dragon rider and front-line fighter: Dragon Breath,
+  Ignition Break and Wind Cutter for crowds, Sonic Wave and Hundred Spear
+  for one target, Death Bound, Dragon Howling, and the runes.
+
+### How strong
+
+Measured against a Lord Knight of the same level and stats, on the same
+target, without consumables. Spiral Pierce is measured with a spear of a
+Lance's weight, since in pre-renewal its damage comes from the weight.
+
+| | Rune Knight | Lord Knight |
+|---|---|---|
+| One target | Sonic Wave 1415 dmg/s, Hundred Spear 1450 | Spiral Pierce 1562, Bowling Bash 1359 (both have it), Frenzy auto-attacks 1087 |
+| Area, per target | Wind Cutter 1222, Ignition Break 1198, Dragon Breath 991 | Bowling Bash's splash, Brandish Spear 417 |
+
+- **Dragon Breath** is (current HP / 50 + max SP / 4) x level: it grows
+  with HP, so a VIT Rune Knight with 20,000 HP breathes about a quarter
+  harder than the figure above. It is scaled to 85%.
+- **Giant Growth** (Thurisaz rune) gives STR +30, +250% on a Rune
+  Knight's attacks and 2.5x damage on 30% of hits; renewal lets it run for
+  15 minutes from one rune. Here it lasts **30 seconds and the rune can be
+  used again after 3 minutes**: about 1900 dmg/s from auto-attacks while
+  it lasts, a burst like Enchant Deadly Poison, not a state.
+- **Crush Strike** makes the next hit one heavy blow (about 4600 here),
+  once every 30 seconds.
+- **Storm Blast** hits nothing on this rAthena build in pre-renewal, with
+  either era's skill entry. It is left as it is.
+- The other runes (Millennium Shield, Stone Hard Skin, Fighting Spirit,
+  Vitality Activation, Abundance, Refresh) are as in renewal.
+
+### Equipment
+
+Two tiers, a two-handed sword and a two-handed spear each, for both of
+the Knight's transcendent paths. Each sword raises Bowling Bash for
+everyone, again for a Lord Knight, and Sonic Wave for a Rune Knight; each
+spear raises Brandish Spear for everyone, Spiral Pierce for a Lord Knight
+and Hundred Spear for a Rune Knight. The spears are as heavy as a Lance,
+for Spiral Pierce. The second tier cannot break, which Giant Growth would
+otherwise risk. Transcendent classes only.
+
+| Item | Level | Drops from |
+|---|---|---|
+| Runeblade | 70 | Raydric |
+| Dragonfang Pike | 70 | Skeleton General |
+| Rune Greatsword | 90 | Abysmal Knight |
+| Wyrmguard Lance | 90 | Bloody Knight |
+
 ## Files
 
 | | |
@@ -259,11 +337,13 @@ classes only.
 | `npc/guillotine_cross.txt` | the Guillotine Cross changer |
 | `npc/shadow_chaser.txt` | the Shadow Chaser changer |
 | `npc/arch_bishop.txt` | the Arch Bishop changer |
+| `npc/rune_knight.txt` | the Rune Knight changer |
+| `npc/dragon_breeder.txt` | the Dragon Breeder in Prontera |
 | `lua/third_classes.lua` | the skill damage scaling |
 | `db/job_stats.yml` | HP, SP, EXP, bonuses, ASPD, weight |
 | `db/skill_tree.yml` | renewal's trees, under the third classes |
 | `db/skill_db.yml` | renewal's entries for the third-class skills, with the fixed cast times turned into delay, the Arch Bishop's lower SP costs, and the Auto Shadow Spell flag on four more spells |
-| `db/item_db.yml` | the equipment |
+| `db/item_db.yml` | the equipment, and the rune stones' reuse delays |
 | `db/item_combos.yml` | the set bonuses (none yet) |
 | `db/mob_db.yml` | the equipment's drops |
 | `System/itemInfo.lua` | the equipment's names and descriptions |
@@ -272,7 +352,7 @@ Everything under `db/` and `System/` is generated by
 `registry/tools/transcendent-third-classes/build.py`, run by the shared
 `registry/tools/expanded_class/expanded_class.py`, from the pinned rAthena
 and each class's three CSV files, in its own directory beside it
-(`guillotine_cross/`, `shadow_chaser/`, `arch_bishop/`):
+(`guillotine_cross/`, `shadow_chaser/`, `arch_bishop/`, `rune_knight/`):
 
 ```
 python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena

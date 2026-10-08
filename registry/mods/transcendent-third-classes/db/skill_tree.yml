@@ -16,6 +16,11 @@
 # Arch_Bishop_T:
 # Renewal's trees for Arch_Bishop_T, taken from Arch_Bishop for Arch_Bishop_T:
 # the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Rune_Knight_T:
+# Renewal's trees for Rune_Knight_T, taken from Rune_Knight for Rune_Knight_T:
+# the class gets that job's skills and what it inherits, nothing more.
 Header:
   Type: SKILL_TREE_DB
   Version: 1
@@ -386,3 +391,74 @@ Body:
             Level: 1
           - Name: AB_ORATIO
             Level: 5
+  - Job: Rune_Knight_T    # renewal's Rune_Knight tree
+    Inherit:
+      Novice: true
+      Swordman: true
+      Knight: true
+    Tree:
+      - Name: RK_ENCHANTBLADE
+        MaxLevel: 10
+        Requires:
+          - Name: RK_RUNEMASTERY
+            Level: 2
+      - Name: RK_SONICWAVE
+        MaxLevel: 10
+        Requires:
+          - Name: RK_ENCHANTBLADE
+            Level: 3
+      - Name: RK_DEATHBOUND
+        MaxLevel: 10
+        Requires:
+          - Name: KN_AUTOCOUNTER
+            Level: 1
+          - Name: RK_ENCHANTBLADE
+            Level: 2
+      - Name: RK_HUNDREDSPEAR
+        MaxLevel: 10
+        Requires:
+          - Name: RK_PHANTOMTHRUST
+            Level: 3
+      - Name: RK_WINDCUTTER
+        MaxLevel: 5
+        Requires:
+          - Name: RK_ENCHANTBLADE
+            Level: 5
+      - Name: RK_IGNITIONBREAK
+        MaxLevel: 5
+        Requires:
+          - Name: RK_SONICWAVE
+            Level: 2
+          - Name: RK_DEATHBOUND
+            Level: 5
+          - Name: RK_WINDCUTTER
+            Level: 3
+      - Name: RK_DRAGONTRAINING
+        MaxLevel: 5
+        Requires:
+          - Name: KN_CAVALIERMASTERY
+            Level: 1
+      - Name: RK_DRAGONBREATH
+        MaxLevel: 10
+        Requires:
+          - Name: RK_DRAGONTRAINING
+            Level: 2
+      - Name: RK_DRAGONHOWLING
+        MaxLevel: 5
+        Requires:
+          - Name: RK_DRAGONTRAINING
+            Level: 2
+      - Name: RK_RUNEMASTERY
+        MaxLevel: 10
+      - Name: RK_PHANTOMTHRUST
+        MaxLevel: 5
+        Requires:
+          - Name: KN_BRANDISHSPEAR
+            Level: 2
+      - Name: RK_DRAGONBREATH_WATER
+        MaxLevel: 10
+        Requires:
+          - Name: RK_DRAGONTRAINING
+            Level: 2
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5

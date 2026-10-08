@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Rune Knight ===========
+//= The Knight's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Swordman of job 40 or more
+//= whose rebirth target is Lord Knight (ADVJOB) may become a
+//= Rune Knight here instead, beside the stock Lord Knight
+//= changer, which is untouched. The choice is permanent.
+//=
+//= Rune Knight is a third class in rAthena. The change goes
+//= through Lord Knight and at once on to Rune Knight, so
+//= rAthena's third-class skill lock records Lord Knight job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Rune Knight tree (Novice, Swordman,
+//= Knight and its own skills), with the same 69 job levels a
+//= Lord Knight has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,42,39,5	script	Rune Knight#Valkyrie	56,{
+	.@n$ = "[Rune Knight]";
+	if (Class == Job_Rune_Knight_T) {
+		mes .@n$;
+		mes "You chose the dragon. The Dragon Breeder beside the Peco Peco Breeder in Prontera will lend you one. Rune-cut blades and lances are carried by the fallen knights of Glast Heim and their generals.";
+		close;
+	}
+	if (ADVJOB != Job_Lord_Knight || Class != Job_Swordman_High) {
+		mes .@n$;
+		mes "A Knight who has been reborn chooses here: the Lord Knight's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Lord Knight perfects the duel: Spiral Pierce, Frenzy, Aura Blade. A ^0000FFRune Knight^000000 leaves them behind for a dragon's breath, sweeping blows, and runes it cuts with its own hands.";
+	next;
+	mes .@n$;
+	mes "You keep every Knight skill. You will never learn a Lord Knight skill: no Spiral Pierce, no Frenzy, no Aura Blade, no Parrying.";
+	mes "Your job levels, your body and your gear are the same as a Lord Knight's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the dragon.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Lord Knight, at job 1: see the header.
+	jobchange Job_Lord_Knight;
+	jobchange Job_Rune_Knight_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Rune Knight.";
+	close;
+}

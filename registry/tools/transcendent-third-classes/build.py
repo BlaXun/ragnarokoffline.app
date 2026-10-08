@@ -16,7 +16,7 @@ transcendent class's skills. Tables are the transcendent class's own, so
 the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
-(instead of Stalker), Arch Bishop (instead of High Priest). Each class keeps its CSV files in its own directory.
+(instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight). Each class keeps its CSV files in its own directory.
 """
 import sys
 from pathlib import Path
@@ -30,6 +30,8 @@ WEAPONS = {
     "bow":    dict(type="Weapon", sub="Bow",    loc=["Both_Hand"],  label="Bow",    unid="Bow"),
     "mace":   dict(type="Weapon", sub="Mace",   loc=["Right_Hand"], label="Mace",   unid="Mace"),
     "staff":  dict(type="Weapon", sub="Staff",  loc=["Right_Hand"], label="Staff",  unid="Rod"),
+    "sword2": dict(type="Weapon", sub="2hSword", loc=["Both_Hand"], label="Two-Handed Sword", unid="Sword"),
+    "spear2": dict(type="Weapon", sub="2hSpear", loc=["Both_Hand"], label="Two-Handed Spear", unid="Spear"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -120,4 +122,37 @@ arch_bishop = ec.config(
     CSV_DIR="arch_bishop",
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop])
+rune_knight = ec.config(
+    __file__, **COMMON,
+    JOBS=("Rune_Knight_T",),
+    # Renewal's Rune Knight tree: Novice, Swordman, Knight and the RK skills;
+    # renewal's transcendent one also inherits Lord Knight (Aura Blade,
+    # Berserk, Spiral Pierce, ...).
+    TREE_FROM={"Rune_Knight_T": "Rune_Knight"},
+    BASE="Lord_Knight",
+    SKILL_PREFIX="RK_",
+    HP_FROM="Lord_Knight", HP_SCALE=1.0,
+    SP_FROM="Lord_Knight", SP_SCALE=1.0,
+    EXP_FROM="Lord_Knight",
+    # Renewal's Rune Knight bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Str"), (70, "Vit")],
+    EQUIP_JOBS=["Knight"],
+    EQUIP_LABEL="Lord Knight or Rune Knight",
+    ITEMS_ABOUT="The Rune Knight's weapons, from rune_knight/equipment.csv.",
+    CSV_DIR="rune_knight",
+    # Rune stones. Pre-renewal's rune items have no reuse delay; renewal's
+    # Crush Strike, Millennium Shield, Refresh and Storm Blast runes have
+    # one, and get it back. Giant Growth (STR +30, +250% on a Rune Knight's
+    # attacks, 30% of hits 2.5x) lasts 15 minutes in renewal: here it is a
+    # burst, 30 seconds once every 3 minutes, like Enchant Deadly Poison.
+    ITEM_FIELDS={
+        "Runstone_Rhydo": {"Delay": "renewal"},
+        "Runstone_Verkana": {"Delay": "renewal"},
+        "Runstone_Nosiege": {"Delay": "renewal"},
+        "Runstone_Pertz": {"Delay": "renewal"},
+        "Runstone_Turisus": {"Delay": {"Duration": 180000}},
+    },
+    SKILL_OVERRIDES={"RK_GIANTGROWTH": {"Duration1": 30000}},
+)
+
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight])

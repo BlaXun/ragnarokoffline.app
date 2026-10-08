@@ -1,0 +1,41 @@
+//===== transcendent-third-classes: Dragon Breeder ============
+//= Lends a Rune Knight its dragon, which Dragon Breath needs.
+//=
+//= Renewal's Dragon Breeder (npc/re/merchants/renters.txt) is not
+//= loaded on a pre-renewal server, and the Peco Peco Breeder gives a
+//= Rune Knight a Peco Peco, not a dragon. This one stands beside the
+//= Knights' Peco Peco Breeder. Like renewal's, it is free.
+//==============================================================
+
+prontera,55,353,5	script	Dragon Breeder#tc	105,{
+	mes "[Dragon Breeder]";
+	if ((eaclass()&EAJ_THIRDMASK) != EAJ_RUNE_KNIGHT) {
+		mes "Only Rune Knights ride my dragons. The Peco Peco Breeder is right beside me.";
+		close;
+	}
+	if (checkdragon()) {
+		mes "Back already? Shall I take your dragon to the stable?";
+		next;
+		if (select("Yes, take it.:No, I'll keep it.") == 1)
+			setdragon;
+		close;
+	}
+	if (!getskilllv("RK_DRAGONTRAINING")) {
+		mes "Learn Dragon Training first, or no dragon will carry you.";
+		close;
+	}
+	if (checkriding()) {
+		mes "Leave your Peco Peco with my neighbour first.";
+		close;
+	}
+	if (ismounting()) {
+		mes "Please remove your cash mount first.";
+		close;
+	}
+	mes "Would you like to ride a dragon?";
+	next;
+	if (select("Yes:No") == 2)
+		close;
+	setdragon;
+	close;
+}

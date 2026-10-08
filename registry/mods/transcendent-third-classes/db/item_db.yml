@@ -19,6 +19,12 @@
 # 1. No job flags: rAthena already lets the class wear a High_Priest's items.
 # 2. No renewal-only items: the skills need none.
 # 3. The Arch Bishop's weapons, from arch_bishop/equipment.csv.
+#
+# _______________________
+# Rune_Knight_T:
+# 1. No job flags: rAthena already lets the class wear a Lord_Knight's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Rune Knight's weapons, from rune_knight/equipment.csv.
 Header:
   Type: ITEM_DB
   Version: 3
@@ -276,3 +282,106 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,3; bonus bDex,2; bonus bMatkRate,8; bonus bHealPower,8; if (Class == Job_High_Priest) bonus bHealPower,8; else bonus2 bSkillAtk,"AB_ADORAMUS",30; bonus bUnbreakableWeapon;
+  - Id: 12726    # Raido Rune: this mod's fields only
+    Delay:    # renewal's
+      Duration: 30000
+      Status: Reuse_Crushstrike
+  - Id: 12727    # Berkana Rune: this mod's fields only
+    Delay:    # renewal's
+      Duration: 60000
+      Status: Reuse_Millenniumshield
+  - Id: 12725    # Nauthiz Rune: this mod's fields only
+    Delay:    # renewal's
+      Duration: 120000
+      Status: Reuse_Refresh
+  - Id: 12732    # Wyrd Rune: this mod's fields only
+    Delay:    # renewal's
+      Duration: 1000
+      Status: Reuse_Stormblast
+  - Id: 12731    # Thurisaz Rune: this mod's fields only
+    Delay:    # this mod's balance
+      Duration: 180000
+  - Id: 63561
+    AegisName: Runeblade
+    Name: Runeblade
+    Type: Weapon
+    SubType: 2hSword
+    Buy: 20
+    Weight: 2200
+    Attack: 190
+    Range: 1
+    Slots: 1
+    Jobs:
+      Knight: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"KN_BOWLINGBASH",10; if (Class == Job_Lord_Knight) bonus2 bSkillAtk,"KN_BOWLINGBASH",10; else bonus2 bSkillAtk,"RK_SONICWAVE",20;
+  - Id: 63562
+    AegisName: Dragonfang_Pike
+    Name: Dragonfang Pike
+    Type: Weapon
+    SubType: 2hSpear
+    Buy: 20
+    Weight: 2500
+    Attack: 190
+    Range: 3
+    Slots: 1
+    Jobs:
+      Knight: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"KN_BRANDISHSPEAR",10; if (Class == Job_Lord_Knight) bonus2 bSkillAtk,"LK_SPIRALPIERCE",10; else bonus2 bSkillAtk,"RK_HUNDREDSPEAR",20;
+  - Id: 63571
+    AegisName: Rune_Greatsword
+    Name: Rune Greatsword
+    Type: Weapon
+    SubType: 2hSword
+    Buy: 20
+    Weight: 2500
+    Attack: 215
+    Range: 1
+    Slots: 1
+    Jobs:
+      Knight: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"KN_BOWLINGBASH",15; if (Class == Job_Lord_Knight) bonus2 bSkillAtk,"KN_BOWLINGBASH",15; else bonus2 bSkillAtk,"RK_SONICWAVE",30; bonus bUnbreakableWeapon;
+  - Id: 63572
+    AegisName: Wyrmguard_Lance
+    Name: Wyrmguard Lance
+    Type: Weapon
+    SubType: 2hSpear
+    Buy: 20
+    Weight: 3000
+    Attack: 215
+    Range: 3
+    Slots: 1
+    Jobs:
+      Knight: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"KN_BRANDISHSPEAR",15; if (Class == Job_Lord_Knight) bonus2 bSkillAtk,"LK_SPIRALPIERCE",15; else bonus2 bSkillAtk,"RK_HUNDREDSPEAR",30; bonus bUnbreakableWeapon;

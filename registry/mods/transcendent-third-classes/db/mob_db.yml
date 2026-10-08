@@ -16,6 +16,11 @@
 # Arch_Bishop_T:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Rune_Knight_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
 Header:
   Type: MOB_DB
   Version: 5
@@ -68,4 +73,20 @@ Body:
   - Id: 1870    # Necromancer (NECROMANCER), 8 stock drops
     Drops:
       - Item: Staff_Of_Absolution
+        Rate: 5
+  - Id: 1163    # Raydric (RAYDRIC), 8 stock drops
+    Drops:
+      - Item: Runeblade
+        Rate: 10
+  - Id: 1290    # Skeleton General (SKELETON_GENERAL), 8 stock drops
+    Drops:
+      - Item: Dragonfang_Pike
+        Rate: 10
+  - Id: 1219    # Abysmal Knight (KNIGHT_OF_ABYSS), 8 stock drops
+    Drops:
+      - Item: Rune_Greatsword
+        Rate: 5
+  - Id: 1268    # Bloody Knight (BLOODY_KNIGHT), 8 stock drops
+    Drops:
+      - Item: Wyrmguard_Lance
         Rate: 5
