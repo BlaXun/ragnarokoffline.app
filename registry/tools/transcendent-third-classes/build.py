@@ -145,15 +145,18 @@ rune_knight = ec.config(
     ITEMS_ABOUT="The Rune Knight's weapons, from rune_knight/equipment.csv.",
     CSV_DIR="rune_knight",
     # Rune stones. Pre-renewal's rune items have no reuse delay; renewal's
-    # Crush Strike, Millennium Shield, Refresh and Storm Blast runes have
-    # one, and get it back. Giant Growth (STR +30, +250% on a Rune Knight's
-    # attacks, 30% of hits 2.5x) lasts 15 minutes in renewal: here it is a
-    # burst, 30 seconds once every 3 minutes, like Enchant Deadly Poison.
+    # Crush Strike, Millennium Shield and Refresh runes have one, and get it
+    # back. Giant Growth (STR +30, +250% on a Rune Knight's attacks, 30% of
+    # hits 2.5x) lasts 15 minutes in renewal: here it is a burst, 30 seconds
+    # once every 3 minutes, like Enchant Deadly Poison. Storm Blast hits
+    # everything around for about 4400 a target; renewal lets a rune go
+    # every second, about 2200 dmg/s a target from a stack of runes: here
+    # one every 10 seconds, a burst well inside the area cap.
     ITEM_FIELDS={
         "Runstone_Rhydo": {"Delay": "renewal"},
         "Runstone_Verkana": {"Delay": "renewal"},
         "Runstone_Nosiege": {"Delay": "renewal"},
-        "Runstone_Pertz": {"Delay": "renewal"},
+        "Runstone_Pertz": {"Delay": {"Duration": 10000, "Status": "Reuse_Stormblast"}},
         "Runstone_Turisus": {"Delay": {"Duration": 180000}},
     },
     SKILL_OVERRIDES={"RK_GIANTGROWTH": {"Duration1": 30000}},
@@ -164,7 +167,7 @@ rune_knight = ec.config(
         "Runstone_Rhydo": ["^FF0000The rune can be used again after 30 seconds.^000000"],
         "Runstone_Verkana": ["^FF0000The rune can be used again after 60 seconds.^000000"],
         "Runstone_Nosiege": ["^FF0000The rune can be used again after 2 minutes.^000000"],
-        "Runstone_Pertz": ["^FF0000On this pre-renewal server Storm Blast deals no damage.^000000"],
+        "Runstone_Pertz": ["^FF0000The rune can be used again after 10 seconds.^000000"],
     },
 )
 

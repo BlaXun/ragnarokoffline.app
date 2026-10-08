@@ -307,8 +307,8 @@ Body:
       Duration: 120000
       Status: Reuse_Refresh
   - Id: 12732    # Wyrd Rune: this mod's fields only
-    Delay:    # renewal's
-      Duration: 1000
+    Delay:    # this mod's balance
+      Duration: 10000
       Status: Reuse_Stormblast
   - Id: 12731    # Thurisaz Rune: this mod's fields only
     Delay:    # this mod's balance

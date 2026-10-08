@@ -301,8 +301,8 @@ and takes the dragon back when you talk to it again.
 
 **Rune stones.** Rune Mastery cuts them from the materials pre-renewal
 already has recipes for. Pre-renewal's rune items have no reuse delay;
-the Raido (Crush Strike), Berkana (Millennium Shield), Nauthiz (Refresh)
-and Wyrd (Storm Blast) runes get renewal's back.
+the Raido (Crush Strike), Berkana (Millennium Shield) and Nauthiz
+(Refresh) runes get renewal's back.
 
 ### Lord Knight or Rune Knight
 
@@ -333,8 +333,10 @@ Lance's weight, since in pre-renewal its damage comes from the weight.
   it lasts, a burst like Enchant Deadly Poison, not a state.
 - **Crush Strike** makes the next hit one heavy blow (about 4600 here),
   once every 30 seconds.
-- **Storm Blast** hits nothing on this rAthena build in pre-renewal, with
-  either era's skill entry. It is left as it is.
+- **Storm Blast** (Wyrd rune) hits everything around the Rune Knight for
+  about 4400 each. Renewal lets a rune go every second, about 2200 dmg/s
+  on each target from a stack of runes; here **one rune every 10
+  seconds**, a burst of about 440 dmg/s a target on average.
 - The other runes (Millennium Shield, Stone Hard Skin, Fighting Spirit,
   Vitality Activation, Abundance, Refresh) are as in renewal.
 

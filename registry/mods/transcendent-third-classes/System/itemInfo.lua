@@ -537,7 +537,7 @@ tbl = {
 			"and the ^CC6600STR^000000 and ^CC6600Base Level^000000 and can also deal ^CC6600critical damage^000000",
 			"according to the caster's ^CC6600Critical^000000 chance.",
 			"Also, this spell does not stop casting due to damage during casting.",
-			"^FF0000On this pre-renewal server Storm Blast deals no damage.^000000",
+			"^FF0000The rune can be used again after 10 seconds.^000000",
 			"_______________________",
 			"^0000CCType:^000000 Runestone",
 			"^0000CCWeight:^000000 1"
