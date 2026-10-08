@@ -1,0 +1,61 @@
+//===== transcendent-third-classes: Shadow Chaser ===========
+//= The Rogue's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Thief of job 40 or more
+//= whose rebirth target is Stalker (ADVJOB) may become a
+//= Shadow Chaser here instead, at the end of the row of stock
+//= changers that holds the Stalker's, which is untouched. The
+//= choice is permanent.
+//=
+//= Shadow Chaser is a third class in rAthena. The change goes
+//= through Stalker and at once on to Shadow Chaser, so
+//= rAthena's third-class skill lock records Stalker job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Shadow Chaser tree (Novice, Thief,
+//= Rogue and its own skills), with the same 69 job levels a
+//= Stalker has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,53,61,3	script	Shadow Chaser#Valkyrie	747,{
+	.@n$ = "[Shadow Chaser]";
+	if (Class == Job_Shadow_Chaser_T) {
+		mes .@n$;
+		mes "You chose the shadows. Blades and bows made for our kind turn up where thieves hide their loot: ask the mimics, the archers of Glast Heim, and the things that haunt the night.";
+		close;
+	}
+	if (ADVJOB != Job_Stalker || Class != Job_Thief_High) {
+		mes .@n$;
+		mes "A Rogue who has been reborn chooses here: the Stalker's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Stalker perfects the Rogue's arts: one stolen skill kept for good, and a full strip. A ^0000FFShadow Chaser^000000 leaves them behind for new ones: curses, decoys, traps, Triangle Shot and Fatal Menace, and Reproduce, a second stolen skill that it keeps until it chooses to steal again.";
+	next;
+	mes .@n$;
+	mes "You keep every Rogue skill. You will never learn a Stalker skill: no Preserve, no Full Strip, no Reject Sword, no Chase Walk.";
+	mes "Your job levels, your body and your gear are the same as a Stalker's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the shadows.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Stalker, at job 1: see the header.
+	jobchange Job_Stalker;
+	jobchange Job_Shadow_Chaser_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Shadow Chaser.";
+	close;
+}

@@ -24,7 +24,7 @@ tbl = {
 			"_______________________",
 			"^0000CCRequirement:^000000",
 			"Base Level 70",
-			"Guillotine_Cross_T"
+			"Assassin Cross or Guillotine Cross"
 		},
 		slotCount = 1,
 		ClassNum = 16
@@ -51,7 +51,7 @@ tbl = {
 			"_______________________",
 			"^0000CCRequirement:^000000",
 			"Base Level 70",
-			"Guillotine_Cross_T"
+			"Assassin Cross or Guillotine Cross"
 		},
 		slotCount = 1,
 		ClassNum = 1
@@ -80,7 +80,7 @@ tbl = {
 			"_______________________",
 			"^0000CCRequirement:^000000",
 			"Base Level 90",
-			"Guillotine_Cross_T"
+			"Assassin Cross or Guillotine Cross"
 		},
 		slotCount = 1,
 		ClassNum = 16
@@ -109,9 +109,117 @@ tbl = {
 			"_______________________",
 			"^0000CCRequirement:^000000",
 			"Base Level 90",
-			"Guillotine_Cross_T"
+			"Assassin Cross or Guillotine Cross"
 		},
 		slotCount = 1,
 		ClassNum = 1
+	},
+	[63521] = {
+		unidentifiedDisplayName = "Unidentified Dagger",
+		unidentifiedResourceName = "나이프",
+		unidentifiedDescriptionName = { "Can be identified by using a ^990099Magnifier^000000." },
+		identifiedDisplayName = "Cutpurse's Stiletto",
+		identifiedResourceName = "크리그",
+		identifiedDescriptionName = {
+			"A thin blade for cutting purse strings, and what holds them.",
+			"_______________________",
+			"AGI +2",
+			"Increases damage of ^0000FFBack Stab^000000 by 10%.",
+			"^0000FFStalker:^000000 Increases damage of ^0000FFBack Stab^000000 by a further 10%.",
+			"^0000FFShadow Chaser:^000000 Increases damage of ^0000FFFatal Menace^000000 by 20%.",
+			"_______________________",
+			"^0000CCType:^000000 Dagger",
+			"^0000CCAttack:^000000 130",
+			"^0000CCWeight:^000000 60",
+			"^0000CCWeapon Level:^000000 4",
+			"_______________________",
+			"^0000CCRequirement:^000000",
+			"Base Level 70",
+			"Stalker or Shadow Chaser"
+		},
+		slotCount = 1,
+		ClassNum = 1
+	},
+	[63522] = {
+		unidentifiedDisplayName = "Unidentified Bow",
+		unidentifiedResourceName = "보우",
+		unidentifiedDescriptionName = { "Can be identified by using a ^990099Magnifier^000000." },
+		identifiedDisplayName = "Trickster's Bow",
+		identifiedResourceName = "드래곤윙",
+		identifiedDescriptionName = {
+			"A short bow strung for shooting from cover.",
+			"_______________________",
+			"DEX +2",
+			"Increases damage of ^0000FFDouble Strafe^000000 by 10%.",
+			"^0000FFStalker:^000000 Increases damage of ^0000FFDouble Strafe^000000 by a further 10%.",
+			"^0000FFShadow Chaser:^000000 Increases damage of ^0000FFTriangle Shot^000000 by 20%.",
+			"_______________________",
+			"^0000CCType:^000000 Bow",
+			"^0000CCAttack:^000000 130",
+			"^0000CCWeight:^000000 100",
+			"^0000CCWeapon Level:^000000 4",
+			"_______________________",
+			"^0000CCRequirement:^000000",
+			"Base Level 70",
+			"Stalker or Shadow Chaser"
+		},
+		slotCount = 1,
+		ClassNum = 73
+	},
+	[63531] = {
+		unidentifiedDisplayName = "Unidentified Dagger",
+		unidentifiedResourceName = "나이프",
+		unidentifiedDescriptionName = { "Can be identified by using a ^990099Magnifier^000000." },
+		identifiedDisplayName = "Nightshade Dirk",
+		identifiedResourceName = "바이나",
+		identifiedDescriptionName = {
+			"A dirk as dark as the shadow it was drawn from.",
+			"_______________________",
+			"AGI +3",
+			"STR +2",
+			"Increases damage of ^0000FFBack Stab^000000 by 15%.",
+			"^0000FFStalker:^000000 Increases damage of ^0000FFBack Stab^000000 by a further 15%.",
+			"^0000FFShadow Chaser:^000000 Increases damage of ^0000FFFatal Menace^000000 by 30%.",
+			"Indestructible.",
+			"_______________________",
+			"^0000CCType:^000000 Dagger",
+			"^0000CCAttack:^000000 145",
+			"^0000CCWeight:^000000 70",
+			"^0000CCWeapon Level:^000000 4",
+			"_______________________",
+			"^0000CCRequirement:^000000",
+			"Base Level 90",
+			"Stalker or Shadow Chaser"
+		},
+		slotCount = 1,
+		ClassNum = 1
+	},
+	[63532] = {
+		unidentifiedDisplayName = "Unidentified Bow",
+		unidentifiedResourceName = "도둑의활",
+		unidentifiedDescriptionName = { "Can be identified by using a ^990099Magnifier^000000." },
+		identifiedDisplayName = "Phantom Longbow",
+		identifiedResourceName = "도둑의활",
+		identifiedDescriptionName = {
+			"A longbow whose arrows are never seen in flight.",
+			"_______________________",
+			"DEX +3",
+			"AGI +2",
+			"Increases damage of ^0000FFDouble Strafe^000000 by 15%.",
+			"^0000FFStalker:^000000 Increases damage of ^0000FFDouble Strafe^000000 by a further 15%.",
+			"^0000FFShadow Chaser:^000000 Increases damage of ^0000FFTriangle Shot^000000 by 30%.",
+			"Indestructible.",
+			"_______________________",
+			"^0000CCType:^000000 Bow",
+			"^0000CCAttack:^000000 155",
+			"^0000CCWeight:^000000 110",
+			"^0000CCWeapon Level:^000000 4",
+			"_______________________",
+			"^0000CCRequirement:^000000",
+			"Base Level 90",
+			"Stalker or Shadow Chaser"
+		},
+		slotCount = 1,
+		ClassNum = 73
 	}
 }

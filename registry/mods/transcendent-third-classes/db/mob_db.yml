@@ -3,6 +3,12 @@
 # CSV beside it changes.
 # Source: rathena 5209ce07ec58dc7f1875da47d8e6b0e0bae2a9a1
 #
+# Guillotine_Cross_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Shadow_Chaser_T:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
 Header:
@@ -26,3 +32,19 @@ Body:
     Drops:
       - Item: Guillotine_Kris
         Rate: 300
+  - Id: 1699    # Ancient Mimic (ANCIENT_MIMIC), 8 stock drops
+    Drops:
+      - Item: Cutpurse_Stiletto
+        Rate: 10
+  - Id: 1276    # Raydric Archer (RAYDRIC_ARCHER), 7 stock drops
+    Drops:
+      - Item: Trickster_Bow
+        Rate: 10
+  - Id: 1379    # Nightmare Terror (NIGHTMARE_TERROR), 8 stock drops
+    Drops:
+      - Item: Nightshade_Dirk
+        Rate: 5
+  - Id: 1974    # Banshee Master (BANSHEE_MASTER), 8 stock drops
+    Drops:
+      - Item: Phantom_Longbow
+        Rate: 5

@@ -3,7 +3,13 @@
 # CSV beside it changes.
 # Source: rathena 5209ce07ec58dc7f1875da47d8e6b0e0bae2a9a1
 #
+# Guillotine_Cross_T:
 # Renewal's trees for Guillotine_Cross_T, taken from Guillotine_Cross for Guillotine_Cross_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Shadow_Chaser_T:
+# Renewal's trees for Shadow_Chaser_T, taken from Shadow_Chaser for Shadow_Chaser_T:
 # the class gets that job's skills and what it inherits, nothing more.
 Header:
   Type: SKILL_TREE_DB
@@ -106,5 +112,138 @@ Body:
         Requires:
           - Name: GC_DARKILLUSION
             Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Shadow_Chaser_T    # renewal's Shadow_Chaser tree
+    Inherit:
+      Novice: true
+      Thief: true
+      Rogue: true
+    Tree:
+      - Name: SC_FATALMENACE
+        MaxLevel: 10
+        Requires:
+          - Name: RG_INTIMIDATE
+            Level: 5
+      - Name: SC_REPRODUCE
+        MaxLevel: 10
+        Requires:
+          - Name: RG_PLAGIARISM
+            Level: 5
+      - Name: SC_AUTOSHADOWSPELL
+        MaxLevel: 10
+        Requires:
+          - Name: SC_REPRODUCE
+            Level: 5
+      - Name: SC_SHADOWFORM
+        MaxLevel: 5
+        Requires:
+          - Name: RG_TUNNELDRIVE
+            Level: 3
+      - Name: SC_TRIANGLESHOT
+        MaxLevel: 10
+        Requires:
+          - Name: AC_DOUBLE
+            Level: 7
+      - Name: SC_BODYPAINT
+        MaxLevel: 5
+      - Name: SC_INVISIBILITY
+        MaxLevel: 5
+        Requires:
+          - Name: SC_AUTOSHADOWSPELL
+            Level: 7
+          - Name: SC_DEADLYINFECT
+            Level: 5
+          - Name: SC_UNLUCKY
+            Level: 3
+      - Name: SC_DEADLYINFECT
+        MaxLevel: 5
+        Requires:
+          - Name: SC_AUTOSHADOWSPELL
+            Level: 5
+          - Name: SC_SHADOWFORM
+            Level: 3
+      - Name: SC_ENERVATION
+        MaxLevel: 3
+        Requires:
+          - Name: SC_BODYPAINT
+            Level: 1
+      - Name: SC_GROOMY
+        MaxLevel: 3
+        Requires:
+          - Name: SC_BODYPAINT
+            Level: 1
+      - Name: SC_IGNORANCE
+        MaxLevel: 3
+        Requires:
+          - Name: SC_BODYPAINT
+            Level: 1
+      - Name: SC_LAZINESS
+        MaxLevel: 3
+        Requires:
+          - Name: SC_ENERVATION
+            Level: 1
+          - Name: SC_GROOMY
+            Level: 1
+          - Name: SC_IGNORANCE
+            Level: 1
+      - Name: SC_UNLUCKY
+        MaxLevel: 3
+        Requires:
+          - Name: SC_LAZINESS
+            Level: 1
+          - Name: SC_WEAKNESS
+            Level: 1
+      - Name: SC_WEAKNESS
+        MaxLevel: 3
+        Requires:
+          - Name: SC_ENERVATION
+            Level: 1
+          - Name: SC_GROOMY
+            Level: 1
+          - Name: SC_IGNORANCE
+            Level: 1
+      - Name: SC_STRIPACCESSARY
+        MaxLevel: 5
+        Requires:
+          - Name: RG_STRIPWEAPON
+            Level: 1
+      - Name: SC_MANHOLE
+        MaxLevel: 3
+        Requires:
+          - Name: RG_FLAGGRAFFITI
+            Level: 1
+      - Name: SC_DIMENSIONDOOR
+        MaxLevel: 3
+        Requires:
+          - Name: SC_MANHOLE
+            Level: 1
+      - Name: SC_CHAOSPANIC
+        MaxLevel: 3
+        Requires:
+          - Name: SC_MANHOLE
+            Level: 1
+      - Name: SC_MAELSTROM
+        MaxLevel: 3
+        Requires:
+          - Name: SC_UNLUCKY
+            Level: 3
+          - Name: SC_CHAOSPANIC
+            Level: 3
+      - Name: SC_BLOODYLUST
+        MaxLevel: 3
+        Requires:
+          - Name: SC_DIMENSIONDOOR
+            Level: 3
+      - Name: SC_FEINTBOMB
+        MaxLevel: 10
+        Requires:
+          - Name: SC_DIMENSIONDOOR
+            Level: 3
+      - Name: SC_ESCAPE
+        MaxLevel: 5
+        Requires:
+          - Name: SC_TRIANGLESHOT
+            Level: 2
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5

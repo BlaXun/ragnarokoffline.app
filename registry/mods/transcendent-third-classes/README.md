@@ -21,7 +21,11 @@ The mod grows class by class. So far:
 
 | Third class | Instead of | Changer |
 |---|---|---|
-| Guillotine Cross | Assassin Cross | beside the Valkyrie (`valkyrie 52 58`) |
+| Guillotine Cross | Assassin Cross | end of the Assassin Cross changer's row (`valkyrie 44 61`) |
+| Shadow Chaser | Stalker | end of the Stalker changer's row (`valkyrie 53 61`) |
+
+The stock changers in the Valkyrie's hall stand in two rows; each third
+class's changer stands at the end of its transcendent class's row.
 
 ## Guillotine Cross
 
@@ -30,8 +34,8 @@ The mod grows class by class. So far:
 1. Assassin, base 99 / job 50 → the Valkyrie's rebirth, choosing Assassin
    Cross as usual → High Novice → High Thief.
 2. **High Thief, job 40 or later**, no unspent skill points: talk to the
-   **Guillotine Cross** beside the Valkyrie instead of the usual Assassin
-   Cross changer, which stays as it was. You are asked to confirm twice.
+   **Guillotine Cross** at the end of the Assassin Cross changer's row
+   instead of the Assassin Cross changer, which stays as it was. You are asked to confirm twice.
 
 The class's skill tree is renewal's Guillotine Cross tree: Novice, Thief,
 Assassin and the Guillotine Cross's own skills, with the 69 job levels of
@@ -96,15 +100,91 @@ worth carrying. Transcendent classes only.
 
 The items borrow stock art, so the mod ships no sprites.
 
+## Shadow Chaser
+
+### The path
+
+1. Rogue, base 99 / job 50 → the Valkyrie's rebirth → High Novice → High
+   Thief. The rebirth remembers Stalker as the target, as usual.
+2. **High Thief, job 40 or later**, no unspent skill points: talk to the
+   **Shadow Chaser** at the end of the Stalker changer's row instead of the
+   Stalker changer, which stays as it was. You are asked to confirm twice.
+
+The class's skill tree is renewal's Shadow Chaser tree: Novice, Thief,
+Rogue and the Shadow Chaser's own skills, with a Stalker's 69 job levels
+and skill points. It never learns Preserve, Full Strip, Reject Sword or
+Chase Walk.
+
+### Two stolen skills, no Preserve
+
+A Stalker keeps one stolen skill for good with Preserve. A Shadow Chaser
+has two slots instead:
+
+- **Plagiarism**, as a Rogue's: every copyable skill that hits you
+  replaces it.
+- **Reproduce**: for five minutes after you cast it, a copyable skill that
+  hits you goes into its own slot, at Reproduce's level (capped at what
+  the caster used). Outside those five minutes nothing replaces it, so
+  this is the slot you choose. It copies first and second class skills
+  too, not only third class ones.
+
+**Auto Shadow Spell** then casts a stolen spell by itself on your
+attacks, at (its level + 5) / 2, no higher than the level you stole. It
+takes Mage and Wizard spells and Heal, as in renewal, and this mod adds
+**Turn Undead** and three ninjutsu: **Flaming Petals**, **Freezing
+Spear** and **Wind Blade**. rAthena never auto-casts Holy Light or Magnus
+Exorcismus, and the self-centred and catalyst ninjutsu would not place or
+would cast for free, so those are left out.
+
+### How strong
+
+Same tables, same gear, measured against a Stalker of the same level and
+stats, with the same weapon, on the same target, with no consumables:
+
+| | Shadow Chaser | Stalker |
+|---|---|---|
+| Bow (DEX build) | Triangle Shot 2243 dmg/s | Double Strafe 2280 |
+| Dagger (STR build), one target | Fatal Menace 1076, on every target around it | auto-attack 651; Back Stab only from behind, once |
+| Burst | Feint Bomb about 2200 a blast, every 5 s | |
+
+- **Triangle Shot** is the main attack, at a Stalker's Double Strafe.
+- **Fatal Menace** hits an area for about what Meteor Assault does per
+  target (1176), which no Stalker skill of its own does.
+- **Feint Bomb** leaves a decoy that draws monsters off you, throws you
+  back and blasts for about two Triangle Shots. It costs a Paint Brush and
+  a Surface Paint.
+- **Invisibility** lets you attack while hidden, but turns your attacks
+  Ghost, so it is for Ghost-weak targets and escapes, not damage.
+- The **Masquerades**, **Shadow Form**, **Strip Accessory**, **Body
+  Painting** and the ground skills (**Man Hole**, **Dimension Door**,
+  **Chaos Panic**, **Maelstrom**, **Bloody Lust**) are as in renewal.
+- What a Stalker keeps instead: one stolen skill kept for good, Full
+  Strip, Reject Sword and Chase Walk.
+
+### Equipment
+
+Two tiers, a dagger and a bow each, for both of the Rogue's transcendent
+paths. Each raises Back Stab or Double Strafe for everyone, the same skill
+further for a Stalker, and Fatal Menace or Triangle Shot for a Shadow
+Chaser. Transcendent classes only.
+
+| Item | Level | Drops from |
+|---|---|---|
+| Cutpurse's Stiletto | 70 | Ancient Mimic |
+| Trickster's Bow | 70 | Raydric Archer |
+| Nightshade Dirk | 90 | Nightmare Terror |
+| Phantom Longbow | 90 | Banshee Master |
+
 ## Files
 
 | | |
 |---|---|
 | `npc/guillotine_cross.txt` | the Guillotine Cross changer |
+| `npc/shadow_chaser.txt` | the Shadow Chaser changer |
 | `lua/third_classes.lua` | the skill damage scaling |
 | `db/job_stats.yml` | HP, SP, EXP, bonuses, ASPD, weight |
 | `db/skill_tree.yml` | renewal's trees, under the third classes |
-| `db/skill_db.yml` | renewal's entries for the third-class skills, with the fixed cast times turned into delay |
+| `db/skill_db.yml` | renewal's entries for the third-class skills, with the fixed cast times turned into delay, and the Auto Shadow Spell flag on four more spells |
 | `db/item_db.yml` | the equipment |
 | `db/item_combos.yml` | the set bonuses (none yet) |
 | `db/mob_db.yml` | the equipment's drops |
@@ -113,7 +193,8 @@ The items borrow stock art, so the mod ships no sprites.
 Everything under `db/` and `System/` is generated by
 `registry/tools/transcendent-third-classes/build.py`, run by the shared
 `registry/tools/expanded_class/expanded_class.py`, from the pinned rAthena
-and the three CSV files beside it:
+and each class's three CSV files, in its own directory beside it
+(`guillotine_cross/`, `shadow_chaser/`):
 
 ```
 python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena
