@@ -741,6 +741,43 @@ every branch and confirm with `--check` that each mod's output does not
 change. If the pinned `vendor/rathena` lacks the pinned commit, pass
 `--rathena ../rathena`.
 
+### Added with the Shadow Chaser
+
+- **Several classes, one mod.** `run()` takes a list of configs, one per
+  class, and joins their tables; each class keeps its CSVs in its own
+  directory (`CSV_DIR`). A monster may drop items of one class only. A
+  single config builds exactly as before.
+- **The changers' places.** The stock transcendent changers stand in two
+  rows in the Valkyrie's hall (`npc/jobs/2-1/`, `2-2/` headers give the
+  cells). Put each third class's changer at the end of its transcendent
+  class's row (Assassin Cross 44,58 → Guillotine Cross 44,61; Stalker
+  53,58 → Shadow Chaser 53,61).
+- **The Job Master is a back door.** The app's `common-npcs` mod loads
+  rAthena's `npc/custom/jobmaster.txt` with `.ThirdClass = true`: it
+  offers any second class at 99/50 its third class at job 1, skipping
+  the rebirth (and its expanded-class option skips Kagerou's and
+  Rebellion's paths). A report of "the NPC made my Assassin Cross a
+  Guillotine Cross" is this NPC, not the mod's. Not fixed yet.
+- **Ask what the transcendent class gives up before deciding what the
+  third class must not have.** Renewal's non-transcendent Shadow Chaser
+  tree has no Preserve: Reproduce, a second slot written only during its
+  five-minute window, is its kept copy. It copies first and second class
+  skills (163 in all), not only third class ones.
+- **Flags on other classes' skills.** `SKILL_FLAGS_ADD` writes an import
+  entry with only that flag (Flags merge key by key). Check the C++ before
+  adding one: Auto Shadow Spell skips Holy Light and Magnus Exorcismus by
+  name, casts a self skill as a support skill on the enemy, and pays item
+  costs it may not have.
+- **Openers are not rotations.** In pre-renewal Back Stab works only from
+  behind, and turns the target to face you; compare against what a class
+  can repeat (the Stalker's Double Strafe).
+- **Skills with item costs** (Feint Bomb: Paint Brush, Surface Paint) need
+  the items on the test character, or they fail with nothing logged.
+- **Testing copied skills**: a test monster with a `mob_skill_db.txt`
+  entry casting the spell at you, Reproduce first, then Auto Shadow Spell's
+  selection packet (`0x442`, answered with `0x443`). The list it sends
+  shows which flags took effect.
+
 ### Per new third class, in short
 
 1. Agree identity and targets with the human.
