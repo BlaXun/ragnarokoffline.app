@@ -1050,15 +1050,13 @@
       "name": "transcendent-third-classes",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross, the Assassin's other path, and Shadow Chaser, the Rogue's, each with a few weapons that both paths can use.",
+      "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross, the Assassin's other path, Shadow Chaser, the Rogue's, and Arch Bishop, the Priest's, each with a few weapons that both paths can use.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/transcendent-third-classes",
       "tags": [
-        "guillotine-cross",
         "jobs",
         "lua",
         "pre-renewal",
         "rebirth",
-        "shadow-chaser",
         "third-class",
         "transcendent"
       ],
@@ -1072,51 +1070,55 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "fda157f189d26ca65a397f0b2d96705f758077fd93b3bae105e4faf3e45c7700"
+          "sha256": "8df05847be94c87643074cfe5e4a5cdbbee5263bafd63e3c284c7d11b8430d5c"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "9e3bf82cb3da420d1bc4d3fb6dc5c56d98c83dd9847abcc30cbdca62e3c79273"
+          "sha256": "e84db2e0d856a5f12ccb15eb93f2d715e25ae4f69d4f7741f2ab832b8e9cc14e"
         },
         {
           "path": "db/item_combos.yml",
-          "sha256": "c2660beaf7e736e0c8c9bd7bc62968891a4bf1337baec45efcfdf1bd856a0d33"
+          "sha256": "3b8c59993c5ae97e2560a85d0557235fead47a85800629e6274ded2a0cc6158f"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "af865a8b4529196f847bfe4e5798f74469410c68633f059913c40338b026b8d4"
+          "sha256": "3fce2fb1068cbca624457874356bb600008da427446f5c37d1a12d39a70447be"
         },
         {
           "path": "db/job_stats.yml",
-          "sha256": "d380200d4060b49fe5b7442601223caf50cfdc062e3b6103f0440daeb0083e12"
+          "sha256": "d161f68de549f567c73590df18dc3d0ef9b9d26bf2aec957d6359aca42ec2342"
         },
         {
           "path": "db/mob_db.yml",
-          "sha256": "92bb942370cbcc1952ff92ce94992d1ebbe54e040e5c7083b21f66153b4f8a03"
+          "sha256": "285b30487103b7a1aa32e9f85778ffeab4fd31609d22cd67746e3bb3260df47e"
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "2dea2d04ac9efa0297f45e1d5037c3cf58d11d42c0eaa03d0337bba6473f31df"
+          "sha256": "4602b8ae18e59810bab6871e9e2addf405118e874af9e12a485e030b08b67ee4"
         },
         {
           "path": "db/skill_tree.yml",
-          "sha256": "b0f092f6f9f579683247c3ae41470e73feaf9835d93f0b6daf95d2432d379323"
+          "sha256": "d975d932799dd3cb28b12799aba025633724ec1b76fbad6d36021dc3ddd1bfb5"
         },
         {
           "path": "lua/third_classes.lua",
-          "sha256": "87955d64f8352653fe1a01b494ed7c3d9171318550fa82e2383de36969ddb14b"
+          "sha256": "2d3dccfab021f8166e8e19b4a7aee51d2ff509b35fa87e9ae873ca7f23b88bff"
         },
         {
           "path": "mod.json",
-          "sha256": "9b3d9cf6ee2b7abb2378c8d8331d16df8c7bc9f27245a263914a8694a951f541"
+          "sha256": "e16f3a0bc371ab42e68920abe2179fecdeed0d60b850efcffd4080f1195289e2"
+        },
+        {
+          "path": "npc/arch_bishop.txt",
+          "sha256": "56f99ebcda93386f127da589c7732dbb5091b51f385592423496182f29ae9342"
         },
         {
           "path": "npc/guillotine_cross.txt",
-          "sha256": "5492585d7a17adbcee52f50c60341c4e49381587d50d6739e5f993d33990c0b9"
+          "sha256": "aab513bc583e783b9f3cd726cf13b3f98457824f223ca843c663423e57865327"
         },
         {
           "path": "npc/shadow_chaser.txt",
-          "sha256": "d8b2bc79500dc1d7d90c0bf094741704e78bc42211770adeda2c1be7867f0d88"
+          "sha256": "584eee7d2ccdcba6b99f1bab4ac4eb37fbd751d5e296d04e9135508f15cfeba1"
         }
       ]
     },
