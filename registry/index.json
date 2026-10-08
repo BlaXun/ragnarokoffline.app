@@ -968,7 +968,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "37eb962cf4c542d9b9ff3211716d6084e03ea1df6d76ef286a6b363d4698d089"
+          "sha256": "0531f098e62255fd00647c98b2d6d5768a3daf74104329195b50fde922ab138a"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1000,7 +1000,7 @@
         },
         {
           "path": "lua/soul_reaper.lua",
-          "sha256": "b0e67c7d3e7aa578f52f0d51e6c3014fe335a65b6d60724b2f14c815a7ba48f1"
+          "sha256": "b4aebf2786e278f1d3bef9280ba2944694b0d0568e75a1c761433c038e536a39"
         },
         {
           "path": "mod.json",
