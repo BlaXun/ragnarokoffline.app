@@ -1,0 +1,144 @@
+//===== star-emperor ===========================================
+//= Star Emperor for pre-renewal: the Star Gladiator's rebirth.
+//=
+//= A Star Gladiator at base 99 / job 50 is reborn as a Novice.
+//= At job 10 the Novice becomes a Taekwon, with the transcendent
+//= class's 100 starting status points. From Taekwon job 40 the
+//= reborn Taekwon becomes a Star Emperor (job levels to 70), the
+//= way a reborn Swordman becomes a Lord Knight.
+//=
+//= Star Emperor is a third class in rAthena, so the change goes
+//= through Star Gladiator: jobchange to Star Gladiator, then at
+//= once to Star Emperor. rAthena records the job level each change
+//= was made at and holds the skill tree back until that many
+//= points are spent in the class before. Going through Star
+//= Gladiator at job 1 records nothing for it, so the 69 Star
+//= Emperor points go wherever the player likes: Star Gladiator
+//= skills (the tree inherits them) or Star Emperor skills.
+//= Total: 9 + 49 + 69 = 127 at Taekwon job 50, a transcendent
+//= class's.
+//=
+//= The character variable star_emperor_reborn marks the path:
+//=   1  reborn as a Novice
+//=   2  a Taekwon again
+//=   3  a Star Emperor
+//==============================================================
+
+payon,160,141,3	script	Master Haneul#se_prere	753,{
+	.@n$ = "[Master Haneul]";
+	if (Class == Job_Star_Emperor || Class == Job_Star_Emperor2) {
+		mes .@n$;
+		mes "Sun, moon and stars answer to you now, Star Emperor.";
+		mes "Those who guard the sky's light carry gear made for your kind. Seek them out.";
+		close;
+	}
+	if (Upper != 0) {
+		mes .@n$;
+		mes "This path is not one I can show you.";
+		close;
+	}
+	switch (star_emperor_reborn) {
+	case 0:
+		if (Class != Job_Star_Gladiator) {
+			mes .@n$;
+			mes "A Star Gladiator who has learned all a Star Gladiator can learn may be born again, and rise as a Star Emperor.";
+			mes "Come back as a Star Gladiator of base level 99 and job level 50.";
+			if (Class == Job_Star_Gladiator2)
+				mes "And come to me on your own feet, not in Union.";
+			close;
+		}
+		if (BaseLevel < 99 || JobLevel < 50) {
+			mes .@n$;
+			mes "You are not ready. Come back at base level 99 and job level 50.";
+			close;
+		}
+		mes .@n$;
+		mes "You have learned all a Star Gladiator can learn.";
+		mes "If you are reborn, you begin again as a Novice: level 1, no skills, no stats.";
+		next;
+		mes .@n$;
+		mes "At job level 10 you come back to me and become a Taekwon again, stronger in body than before.";
+		mes "From Taekwon job level 40 you may become a ^0000FFStar Emperor^000000, and grow to job level 70.";
+		mes "Wait until Taekwon job level 50 and you will have ten more points for Taekwon skills.";
+		next;
+		mes .@n$;
+		mes "Come with nothing: no items, no zeny, and no skill points left to spend.";
+		if (select("I am ready to be reborn.:Not yet.") == 2) {
+			mes .@n$;
+			mes "The stars will wait.";
+			close;
+		}
+		if (Weight > 0 || Zeny > 0 || SkillPoint > 0) {
+			mes .@n$;
+			mes "You still carry something: items, zeny or unspent skill points. Come back without them.";
+			close;
+		}
+		callfunc "F_ClearJobVar";
+		star_emperor_reborn = 1;
+		jobchange Job_Novice;
+		resetlvl(1);
+		StatusPoint = 48;
+		skill "NV_FIRSTAID",1,SKILL_PERM;
+		skill "NV_TRICKDEAD",1,SKILL_PERM;
+		getitem 1202,1; // Knife_
+		getitem 2302,1; // Cotton_Shirt_
+		mes .@n$;
+		mes "Begin again. Come back at job level 10.";
+		close;
+
+	case 1:
+		if (Class != Job_Novice) {
+			mes .@n$;
+			mes "You were reborn to walk my path, and took another. I cannot help you now.";
+			close;
+		}
+		if (JobLevel < 10 || getskilllv("NV_BASIC") < 9) {
+			mes .@n$;
+			mes "Come back at job level 10, with your Basic Skill learned.";
+			close;
+		}
+		mes .@n$;
+		mes "Become a Taekwon once more.";
+		if (select("I am ready.:Not yet.") == 2)
+			close;
+		star_emperor_reborn = 2;
+		jobchange Job_Taekwon;
+		StatusPoint += 52;
+		mes .@n$;
+		mes "Your body remembers. Come back at Taekwon job level 40 or later.";
+		close;
+
+	case 2:
+		if (Class != Job_Taekwon) {
+			mes .@n$;
+			mes "You were reborn to walk my path, and took another. I cannot help you now.";
+			close;
+		}
+		if (JobLevel < 40) {
+			mes .@n$;
+			mes "Come back at Taekwon job level 40 or later.";
+			close;
+		}
+		if (SkillPoint > 0) {
+			mes .@n$;
+			mes "Spend your skill points first.";
+			close;
+		}
+		mes .@n$;
+		mes "You may become a ^0000FFStar Emperor^000000 now.";
+		if (JobLevel < 50) {
+			mes "If you wait until job level 50 you will have " + (50 - JobLevel) + " more point" + (50 - JobLevel == 1 ? "" : "s") + " for Taekwon skills.";
+		}
+		mes "As a Star Emperor, your 69 job levels go to Star Gladiator and Star Emperor skills alike.";
+		if (select("Make me a Star Emperor.:Not yet.") == 2)
+			close;
+		star_emperor_reborn = 3;
+		// Through Star Gladiator, at job 1: see the header.
+		jobchange Job_Star_Gladiator;
+		jobchange Job_Star_Emperor;
+		mes .@n$;
+		mes "Rise, Star Emperor.";
+		close;
+	}
+	end;
+}
