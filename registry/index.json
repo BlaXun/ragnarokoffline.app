@@ -1070,7 +1070,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "26f8722ddc44517fdf7b1f8a04cbcf4d82bce68c12b3a9eaee296850881303ed"
+          "sha256": "3f6cd2e43e71d25a444e49c35751cc2885a55bde14dcb702eb915d9b17fade04"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1106,7 +1106,7 @@
         },
         {
           "path": "lua/third_classes.lua",
-          "sha256": "75b8e4f8bf558f8621071ce1e05f9e339f7375637f8bf53277f7a52ae326e69c"
+          "sha256": "61875b3761b07639a764ffce3245cd370830b8990efee6b56c7b71e3766b0e17"
         },
         {
           "path": "mod.json",
