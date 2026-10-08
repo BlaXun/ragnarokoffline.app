@@ -16,7 +16,8 @@ transcendent class's skills. Tables are the transcendent class's own, so
 the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
-(instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight). Each class keeps its CSV files in its own directory.
+(instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
+Royal Guard (instead of Paladin). Each class keeps its CSV files in its own directory.
 """
 import sys
 from pathlib import Path
@@ -32,6 +33,8 @@ WEAPONS = {
     "staff":  dict(type="Weapon", sub="Staff",  loc=["Right_Hand"], label="Staff",  unid="Rod"),
     "sword2": dict(type="Weapon", sub="2hSword", loc=["Both_Hand"], label="Two-Handed Sword", unid="Sword"),
     "spear2": dict(type="Weapon", sub="2hSpear", loc=["Both_Hand"], label="Two-Handed Spear", unid="Spear"),
+    "spear1": dict(type="Weapon", sub="1hSpear", loc=["Right_Hand"], label="Spear", unid="Spear"),
+    "shield": dict(type="Armor",  sub=None,      loc=["Left_Hand"],  label="Shield", unid="Shield", view=True),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -155,4 +158,24 @@ rune_knight = ec.config(
     SKILL_OVERRIDES={"RK_GIANTGROWTH": {"Duration1": 30000}},
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight])
+royal_guard = ec.config(
+    __file__, **COMMON,
+    JOBS=("Royal_Guard_T",),
+    # Renewal's Royal Guard tree: Novice, Swordman, Crusader and the LG
+    # skills; renewal's transcendent one also inherits Paladin (Gloria
+    # Domini, Martyr's Reckoning, Battle Chant, Rapid Smiting).
+    TREE_FROM={"Royal_Guard_T": "Royal_Guard"},
+    BASE="Paladin",
+    SKILL_PREFIX="LG_",
+    HP_FROM="Paladin", HP_SCALE=1.0,
+    SP_FROM="Paladin", SP_SCALE=1.0,
+    EXP_FROM="Paladin",
+    # Renewal's Royal Guard bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Vit"), (70, "Str")],
+    EQUIP_JOBS=["Crusader"],
+    EQUIP_LABEL="Paladin or Royal Guard",
+    ITEMS_ABOUT="The Royal Guard's weapons and shields, from royal_guard/equipment.csv.",
+    CSV_DIR="royal_guard",
+)
+
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard])

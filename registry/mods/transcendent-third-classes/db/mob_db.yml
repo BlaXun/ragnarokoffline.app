@@ -21,6 +21,11 @@
 # Rune_Knight_T:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Royal_Guard_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
 Header:
   Type: MOB_DB
   Version: 5
@@ -89,4 +94,20 @@ Body:
   - Id: 1268    # Bloody Knight (BLOODY_KNIGHT), 8 stock drops
     Drops:
       - Item: Wyrmguard_Lance
+        Rate: 5
+  - Id: 1298    # Zombie Master (ZOMBIE_MASTER), 8 stock drops
+    Drops:
+      - Item: Vanguard_Spear
+        Rate: 10
+  - Id: 1297    # Ancient Mummy (ANCIENT_MUMMY), 8 stock drops
+    Drops:
+      - Item: Bulwark_Shield
+        Rate: 10
+  - Id: 1291    # Wraith Dead (WRAITH_DEAD), 8 stock drops
+    Drops:
+      - Item: Royal_Partisan
+        Rate: 5
+  - Id: 1634    # Seyren Windsor (SEYREN), 8 stock drops
+    Drops:
+      - Item: Aegis_Of_The_Guard
         Rate: 5

@@ -12,6 +12,8 @@
 --   Rune Knight vs Lord Knight (Spiral Pierce 1562): Sonic Wave 1415, Hundred
 --     Spear 1450; per target Wind Cutter 1222, Ignition Break 1198, Dragon
 --     Breath 991 (more with HP). Giant Growth is limited in build.py.
+--   Royal Guard vs Paladin (Rapid Smiting 1903): Banishing Point 1747; per
+--     target Overbrand 1013, Earth Drive 943, Cannon Spear 935.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 30,
@@ -30,6 +32,10 @@ local FACTOR = {
   RK_IGNITIONBREAK      = 66,
   RK_DRAGONBREATH       = 85,
   RK_DRAGONBREATH_WATER = 85,
+  LG_BANISHINGPOINT     = 25,
+  LG_OVERBRAND          = 11,
+  LG_CANNONSPEAR        = 70,
+  LG_EARTHDRIVE         = 70,
 }
 
 for name, percent in pairs(FACTOR) do

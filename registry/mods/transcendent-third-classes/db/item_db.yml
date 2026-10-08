@@ -25,6 +25,12 @@
 # 1. No job flags: rAthena already lets the class wear a Lord_Knight's items.
 # 2. No renewal-only items: the skills need none.
 # 3. The Rune Knight's weapons, from rune_knight/equipment.csv.
+#
+# _______________________
+# Royal_Guard_T:
+# 1. No job flags: rAthena already lets the class wear a Paladin's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Royal Guard's weapons and shields, from royal_guard/equipment.csv.
 Header:
   Type: ITEM_DB
   Version: 3
@@ -385,3 +391,85 @@ Body:
     Refineable: true
     Script: |
       bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"KN_BRANDISHSPEAR",15; if (Class == Job_Lord_Knight) bonus2 bSkillAtk,"LK_SPIRALPIERCE",15; else bonus2 bSkillAtk,"RK_HUNDREDSPEAR",30; bonus bUnbreakableWeapon;
+  - Id: 63581
+    AegisName: Vanguard_Spear
+    Name: Vanguard Spear
+    Type: Weapon
+    SubType: 1hSpear
+    Buy: 20
+    Weight: 1000
+    Attack: 150
+    Range: 3
+    Slots: 1
+    Jobs:
+      Crusader: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"CR_HOLYCROSS",10; if (Class == Job_Paladin) bonus2 bSkillAtk,"CR_HOLYCROSS",10; else bonus2 bSkillAtk,"LG_BANISHINGPOINT",20;
+  - Id: 63582
+    AegisName: Bulwark_Shield
+    Name: Bulwark Shield
+    Type: Armor
+    Buy: 20
+    Weight: 1500
+    Defense: 5
+    Slots: 1
+    Jobs:
+      Crusader: true
+    Classes:
+      Upper: true
+    Locations:
+      Left_Hand: true
+    ArmorLevel: 1
+    EquipLevelMin: 70
+    Refineable: true
+    View: 2
+    Script: |
+      bonus bVit,2; bonus2 bSkillAtk,"CR_SHIELDBOOMERANG",10; if (Class == Job_Paladin) bonus2 bSkillAtk,"PA_SHIELDCHAIN",10; else bonus2 bSkillAtk,"LG_SHIELDPRESS",20;
+  - Id: 63591
+    AegisName: Royal_Partisan
+    Name: Royal Partisan
+    Type: Weapon
+    SubType: 1hSpear
+    Buy: 20
+    Weight: 1200
+    Attack: 170
+    Range: 3
+    Slots: 1
+    Jobs:
+      Crusader: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"CR_HOLYCROSS",15; if (Class == Job_Paladin) bonus2 bSkillAtk,"CR_HOLYCROSS",15; else bonus2 bSkillAtk,"LG_BANISHINGPOINT",30; bonus bUnbreakableWeapon;
+  - Id: 63592
+    AegisName: Aegis_Of_The_Guard
+    Name: Aegis of the Guard
+    Type: Armor
+    Buy: 20
+    Weight: 2000
+    Defense: 7
+    Slots: 1
+    Jobs:
+      Crusader: true
+    Classes:
+      Upper: true
+    Locations:
+      Left_Hand: true
+    ArmorLevel: 1
+    EquipLevelMin: 90
+    Refineable: true
+    View: 4
+    Script: |
+      bonus bVit,3; bonus bMaxHPrate,5; bonus2 bSkillAtk,"CR_SHIELDBOOMERANG",15; if (Class == Job_Paladin) bonus2 bSkillAtk,"PA_SHIELDCHAIN",15; else bonus2 bSkillAtk,"LG_SHIELDPRESS",30; bonus bUnbreakableShield;

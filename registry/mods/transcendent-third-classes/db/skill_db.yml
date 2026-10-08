@@ -76,6 +76,26 @@
 # its whole fixed cast goes into its cast time instead.
 #
 # Skills: RK_ABUNDANCE, RK_CRUSHSTRIKE, RK_DEATHBOUND, RK_DRAGONBREATH, RK_DRAGONBREATH_WATER, RK_DRAGONHOWLING, RK_ENCHANTBLADE, RK_FIGHTINGSPIRIT, RK_GIANTGROWTH, RK_HUNDREDSPEAR, RK_IGNITIONBREAK, RK_LUXANIMA, RK_MILLENNIUMSHIELD, RK_REFRESH, RK_SONICWAVE, RK_STONEHARDSKIN, RK_STORMBLAST, RK_VITALITYACTIVATION, RK_WINDCUTTER
+#
+# _______________________
+# Royal_Guard_T:
+# Renewal's entries for the LG_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: LG_BANDING, LG_BANISHINGPOINT, LG_CANNONSPEAR, LG_EARTHDRIVE, LG_EXEEDBREAK, LG_FORCEOFVANGUARD, LG_HESPERUSLIT, LG_INSPIRATION, LG_KINGS_GRACE, LG_MOONSLASHER, LG_OVERBRAND, LG_PIETY, LG_PINPOINTATTACK, LG_PRESTIGE, LG_RAYOFGENESIS, LG_REFLECTDAMAGE, LG_SHIELDPRESS, LG_SHIELDSPELL
+#
+# Not in renewal's skill_db, so pre-renewal's entry is kept: LG_OVERBRAND_BRANDISH, LG_OVERBRAND_PLUSATK
 Header:
   Type: SKILL_DB
   Version: 4
@@ -2856,3 +2876,704 @@ Body:
     Duration1: 0    # pre-renewal's entry sets this; renewal's does not
     Knockback: 0    # pre-renewal's entry sets this; renewal's does not
     Range: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2319
+    Name: LG_BANDING
+    Description: Banding
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: 5
+    Duration1: -1
+    Duration2:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 120000
+      - Level: 4
+        Time: 150000
+      - Level: 5
+        Time: 180000
+    Cooldown: 5000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 30
+        - Level: 2
+          Amount: 36
+        - Level: 3
+          Amount: 42
+        - Level: 4
+          Amount: 48
+        - Level: 5
+          Amount: 54
+    Unit:
+      Id: Banding
+      Range: 3
+      Interval: 5000
+    Status: Banding
+    AfterCastActDelay: 750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    CastTime: 250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2308
+    Name: LG_BANISHINGPOINT
+    Description: Banishing Point
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    Range: 7
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 22
+        - Level: 3
+          Amount: 24
+        - Level: 4
+          Amount: 26
+        - Level: 5
+          Amount: 28
+        - Level: 6
+          Amount: 30
+        - Level: 7
+          Amount: 32
+        - Level: 8
+          Amount: 34
+        - Level: 9
+          Amount: 36
+        - Level: 10
+          Amount: 38
+      Weapon:
+        1hSpear: true
+        2hSpear: true
+  - Id: 2307
+    Name: LG_CANNONSPEAR
+    Description: Cannon Spear
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+      Critical: true
+    Range: 7
+    Hit: Multi_Hit
+    HitCount: 1
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 3
+    ActiveInstance: 11
+    Cooldown: 1700
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 30
+        - Level: 2
+          Amount: 35
+        - Level: 3
+          Amount: 40
+        - Level: 4
+          Amount: 45
+        - Level: 5
+          Amount: 50
+      Weapon:
+        1hSpear: true
+        2hSpear: true
+  - Id: 2323
+    Name: LG_EARTHDRIVE
+    Description: Earth Drive
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Flags:
+      TargetHidden: true
+    Hit: Multi_Hit
+    HitCount: -5
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1000
+    AfterCastActDelay: 1000
+    Duration1:
+      - Level: 1
+        Time: 3000
+      - Level: 2
+        Time: 6000
+      - Level: 3
+        Time: 9000
+      - Level: 4
+        Time: 12000
+      - Level: 5
+        Time: 15000
+    Cooldown:
+      - Level: 1
+        Time: 6500
+      - Level: 2
+        Time: 5500
+      - Level: 3
+        Time: 4500
+      - Level: 4
+        Time: 3500
+      - Level: 5
+        Time: 2500
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 52
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 68
+        - Level: 4
+          Amount: 76
+        - Level: 5
+          Amount: 84
+      State: Shield
+  - Id: 2316
+    Name: LG_EXEEDBREAK
+    Description: Exceed Break
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:
+      - Level: 1
+        Time: 5000
+      - Level: 2
+        Time: 5500
+      - Level: 3
+        Time: 6000
+      - Level: 4
+        Time: 6500
+      - Level: 5
+        Time: 7000
+    AfterCastActDelay: 1000
+    Duration1: 300000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 32
+        - Level: 3
+          Amount: 44
+        - Level: 4
+          Amount: 56
+        - Level: 5
+          Amount: 68
+    Status: ExeedBreak
+  - Id: 2313
+    Name: LG_FORCEOFVANGUARD
+    Description: Force of Vanguard
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 300000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    CastTimeFlags:
+      IgnoreDex: true
+      IgnoreStatus: true
+      IgnoreItemBonus: true
+    Requires:
+      SpCost: 30
+    Status: ForceOfVanguard
+    CastTime: 250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2324
+    Name: LG_HESPERUSLIT
+    Description: Hesperus Lit
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    Range: 3
+    Hit: Multi_Hit
+    HitCount: 3
+    Element: Weapon
+    AfterCastActDelay: 500
+    Cooldown: 200
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 37
+        - Level: 2
+          Amount: 44
+        - Level: 3
+          Amount: 51
+        - Level: 4
+          Amount: 58
+        - Level: 5
+          Amount: 65
+      Weapon:
+        1hSpear: true
+        2hSpear: true
+    CastTime: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2325
+    Name: LG_INSPIRATION
+    Description: Inspiration
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    CastTime: 3000    # renewal's FixedCastTime added here: a 180s+ cooldown already stops spam
+    AfterCastActDelay: 2000
+    Duration1:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 120000
+      - Level: 4
+        Time: 150000
+      - Level: 5
+        Time: 180000
+    Cooldown:
+      - Level: 1
+        Time: 500000
+      - Level: 2
+        Time: 420000
+      - Level: 3
+        Time: 340000
+      - Level: 4
+        Time: 260000
+      - Level: 5
+        Time: 180000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 80
+        - Level: 2
+          Amount: 90
+        - Level: 3
+          Amount: 100
+        - Level: 4
+          Amount: 110
+        - Level: 5
+          Amount: 120
+    Status: Inspiration
+  - Id: 5013
+    Name: LG_KINGS_GRACE
+    Description: King's Grace
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 500
+    Duration1: 5000
+    Cooldown:
+      - Level: 1
+        Time: 100000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 80000
+      - Level: 4
+        Time: 70000
+      - Level: 5
+        Time: 60000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 200
+        - Level: 2
+          Amount: 180
+        - Level: 3
+          Amount: 160
+        - Level: 4
+          Amount: 140
+        - Level: 5
+          Amount: 120
+    Unit:
+      Id: Kings_Grace
+      Layout: 3
+      Interval: -1
+      Flag:
+        NoReiteration: true
+        RangedSingleUnit: true
+    Status: Kings_Grace
+  - Id: 2320
+    Name: LG_MOONSLASHER
+    Description: Moon Slasher
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Flags:
+      IgnoreHovering: true
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1000
+    AfterCastActDelay: 1000
+    Duration1: 1000
+    Duration2:
+      - Level: 1
+        Time: 2000
+      - Level: 2
+        Time: 4000
+      - Level: 3
+        Time: 6000
+      - Level: 4
+        Time: 8000
+      - Level: 5
+        Time: 10000
+    Cooldown:
+      - Level: 1
+        Time: 6000
+      - Level: 2
+        Time: 5000
+      - Level: 3
+        Time: 4000
+      - Level: 4
+        Time: 3000
+      - Level: 5
+        Time: 2000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 24
+        - Level: 3
+          Amount: 28
+        - Level: 4
+          Amount: 32
+        - Level: 5
+          Amount: 36
+      Weapon:
+        1hSpear: true
+        2hSpear: true
+    Status: OverBrandReady
+  - Id: 2317
+    Name: LG_OVERBRAND
+    Description: Over Brand
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Range: 2
+    Hit: Multi_Hit
+    HitCount: 3
+    Element: Weapon
+    SplashArea: 3
+    AfterCastActDelay: 1375    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 300
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 30
+        - Level: 3
+          Amount: 40
+        - Level: 4
+          Amount: 50
+        - Level: 5
+          Amount: 60
+      Weapon:
+        1hSpear: true
+        2hSpear: true
+    CastTime: 125    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2322
+    Name: LG_PIETY
+    Description: Piety
+    MaxLevel: 5
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: 1
+    CastTime:
+      - Level: 1
+        Time: 3000
+      - Level: 2
+        Time: 2500
+      - Level: 3
+        Time: 2000
+      - Level: 4
+        Time: 1500
+      - Level: 5
+        Time: 1000
+    Duration1:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 80000
+      - Level: 3
+        Time: 100000
+      - Level: 4
+        Time: 120000
+      - Level: 5
+        Time: 140000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 45
+        - Level: 3
+          Amount: 50
+        - Level: 4
+          Amount: 55
+        - Level: 5
+          Amount: 60
+      ItemCost:
+        - Item: Holy_Water
+          Amount: 2
+    Status: Benedictio
+  - Id: 2312
+    Name: LG_PINPOINTATTACK
+    Description: Pinpoint Attack
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Critical: true
+    Range: 5
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    AfterCastActDelay: 1000
+    Duration1: 12000
+    Cooldown: 5000
+    Requires:
+      SpCost: 50
+      Weapon:
+        1hSpear: true
+        2hSpear: true
+  - Id: 2318
+    Name: LG_PRESTIGE
+    Description: Prestige
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    CastTime: 3000    # renewal's FixedCastTime added here: a 60s+ cooldown already stops spam
+    Duration1:
+      - Level: 1
+        Time: 30000
+      - Level: 2
+        Time: 45000
+      - Level: 3
+        Time: 60000
+      - Level: 4
+        Time: 75000
+      - Level: 5
+        Time: 90000
+    Cooldown: 60000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 75
+        - Level: 2
+          Amount: 80
+        - Level: 3
+          Amount: 85
+        - Level: 4
+          Amount: 90
+        - Level: 5
+          Amount: 95
+    Status: Prestige
+  - Id: 2321
+    Name: LG_RAYOFGENESIS
+    Description: Ray of Genesis
+    MaxLevel: 10
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Range: 1
+    Hit: Multi_Hit
+    HitCount: -7
+    Element: Holy
+    SplashArea: 5
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 2125
+      - Level: 2
+        Time: 2125
+      - Level: 3
+        Time: 3125
+      - Level: 4
+        Time: 3125
+      - Level: 5
+        Time: 4125
+      - Level: 6
+        Time: 4125
+      - Level: 7
+        Time: 5125
+      - Level: 8
+        Time: 5125
+      - Level: 9
+        Time: 6125
+      - Level: 10
+        Time: 6125
+    AfterCastActDelay: 1375    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 10000
+    Cooldown: 2000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 45
+        - Level: 2
+          Amount: 50
+        - Level: 3
+          Amount: 55
+        - Level: 4
+          Amount: 60
+        - Level: 5
+          Amount: 65
+        - Level: 6
+          Amount: 70
+        - Level: 7
+          Amount: 75
+        - Level: 8
+          Amount: 80
+        - Level: 9
+          Amount: 85
+        - Level: 10
+          Amount: 90
+  - Id: 2311
+    Name: LG_REFLECTDAMAGE
+    Description: Reflect Damage Reduction
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: 3
+    Duration1: 300000
+    Cooldown: 60000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 60
+        - Level: 2
+          Amount: 70
+        - Level: 3
+          Amount: 80
+        - Level: 4
+          Amount: 90
+        - Level: 5
+          Amount: 100
+      State: Shield
+    Status: ReflectDamage
+  - Id: 2310
+    Name: LG_SHIELDPRESS
+    Description: Shield Press
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    Range: 1
+    Hit: Single
+    HitCount: -5
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Cooldown: 2000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 10
+        - Level: 2
+          Amount: 12
+        - Level: 3
+          Amount: 14
+        - Level: 4
+          Amount: 16
+        - Level: 5
+          Amount: 18
+        - Level: 6
+          Amount: 20
+        - Level: 7
+          Amount: 22
+        - Level: 8
+          Amount: 24
+        - Level: 9
+          Amount: 26
+        - Level: 10
+          Amount: 28
+      State: Shield
+  - Id: 2315
+    Name: LG_SHIELDSPELL
+    Description: Shield Spell
+    MaxLevel: 3
+    TargetType: Self
+    CastTime: 1000
+    AfterCastActDelay: 1000
+    Duration1: 90000
+    Cooldown: 2000
+    Requires:
+      SpCost: 50
+      State: Shield
+    CopyFlags:    # pre-renewal's entry lets Plagiarism/Reproduce copy it; renewal's does not
+      Skill:
+        Plagiarism: false
+        Reproduce: false
+    Element: Neutral    # pre-renewal's entry sets this; renewal's does not
+    # Hit: pre-renewal's value stays (renewal's default, Normal, cannot be written)
+    HitCount: 0    # pre-renewal's entry sets this; renewal's does not
+    Knockback: 0    # pre-renewal's entry sets this; renewal's does not
+    DamageFlags:
+      Splash: false    # set in pre-renewal's entry; renewal's leaves it out

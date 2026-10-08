@@ -21,6 +21,11 @@
 # Rune_Knight_T:
 # Renewal's trees for Rune_Knight_T, taken from Rune_Knight for Rune_Knight_T:
 # the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Royal_Guard_T:
+# Renewal's trees for Royal_Guard_T, taken from Royal_Guard for Royal_Guard_T:
+# the class gets that job's skills and what it inherits, nothing more.
 Header:
   Type: SKILL_TREE_DB
   Version: 1
@@ -460,5 +465,119 @@ Body:
         Requires:
           - Name: RK_DRAGONTRAINING
             Level: 2
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Royal_Guard_T    # renewal's Royal_Guard tree
+    Inherit:
+      Novice: true
+      Swordman: true
+      Crusader: true
+    Tree:
+      - Name: LG_CANNONSPEAR
+        MaxLevel: 5
+        Requires:
+          - Name: LG_PINPOINTATTACK
+            Level: 1
+      - Name: LG_BANISHINGPOINT
+        MaxLevel: 10
+        Requires:
+          - Name: KN_SPEARMASTERY
+            Level: 1
+      - Name: LG_TRAMPLE
+        MaxLevel: 3
+      - Name: LG_SHIELDPRESS
+        MaxLevel: 10
+        Requires:
+          - Name: CR_SHIELDCHARGE
+            Level: 3
+      - Name: LG_REFLECTDAMAGE
+        MaxLevel: 5
+        Requires:
+          - Name: CR_REFLECTSHIELD
+            Level: 5
+      - Name: LG_PINPOINTATTACK
+        MaxLevel: 5
+        Requires:
+          - Name: LG_BANISHINGPOINT
+            Level: 5
+      - Name: LG_FORCEOFVANGUARD
+        MaxLevel: 5
+      - Name: LG_RAGEBURST
+        MaxLevel: 1
+        Requires:
+          - Name: LG_FORCEOFVANGUARD
+            Level: 1
+      - Name: LG_SHIELDSPELL
+        MaxLevel: 3
+        Requires:
+          - Name: LG_SHIELDPRESS
+            Level: 3
+          - Name: LG_EARTHDRIVE
+            Level: 2
+      - Name: LG_EXEEDBREAK
+        MaxLevel: 5
+        Requires:
+          - Name: LG_BANISHINGPOINT
+            Level: 3
+      - Name: LG_OVERBRAND
+        MaxLevel: 5
+        Requires:
+          - Name: LG_PINPOINTATTACK
+            Level: 1
+          - Name: LG_MOONSLASHER
+            Level: 3
+      - Name: LG_PRESTIGE
+        MaxLevel: 5
+        Requires:
+          - Name: LG_TRAMPLE
+            Level: 3
+      - Name: LG_BANDING
+        MaxLevel: 5
+        Requires:
+          - Name: LG_PINPOINTATTACK
+            Level: 3
+          - Name: LG_RAGEBURST
+            Level: 1
+      - Name: LG_MOONSLASHER
+        MaxLevel: 5
+        Requires:
+          - Name: KN_SPEARMASTERY
+            Level: 1
+      - Name: LG_RAYOFGENESIS
+        MaxLevel: 10
+        Requires:
+          - Name: CR_GRANDCROSS
+            Level: 5
+      - Name: LG_PIETY
+        MaxLevel: 5
+        Requires:
+          - Name: CR_TRUST
+            Level: 3
+      - Name: LG_EARTHDRIVE
+        MaxLevel: 5
+        Requires:
+          - Name: LG_REFLECTDAMAGE
+            Level: 3
+      - Name: LG_HESPERUSLIT
+        MaxLevel: 5
+        Requires:
+          - Name: LG_PRESTIGE
+            Level: 3
+          - Name: LG_BANDING
+            Level: 3
+      - Name: LG_INSPIRATION
+        MaxLevel: 5
+        Requires:
+          - Name: LG_SHIELDSPELL
+            Level: 3
+          - Name: LG_RAYOFGENESIS
+            Level: 4
+          - Name: LG_PIETY
+            Level: 5
+      - Name: LG_KINGS_GRACE
+        MaxLevel: 5
+        Requires:
+          - Name: LG_REFLECTDAMAGE
+            Level: 5
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5

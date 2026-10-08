@@ -17,11 +17,16 @@
 # _______________________
 # Rune_Knight_T:
 # No set bonuses.
+#
+# _______________________
+# Royal_Guard_T:
+# No set bonuses.
 Header:
   Type: COMBO_DB
   Version: 1
 
 Body:
+
 
 
 

@@ -293,7 +293,7 @@ def build_skill_tree(src):
     return about, "\n".join(out) + "\n"
 
 
-SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "SplashArea": "0", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
+SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "SplashArea": "0", "HitCount": "0", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
                   "Duration2": "0", "CastTime": "0", "Cooldown": "0", "FixedCastTime": "0"}
 
 
@@ -450,16 +450,31 @@ def build_skill_db(src):
     pre = by_field(body_entries(src["db/pre-re/skill_db.yml"], "Id"), "Name")
     ren = by_field(body_entries(src["db/re/skill_db.yml"], "Id"), "Name")
     names = sorted(n for n in pre if n.startswith(C.SKILL_PREFIX))
-    out, changed = [], []
+    out, changed, pre_only = [], [], []
     for n in names:
         if n not in ren:
-            fail(f"{n} is not in renewal's skill_db")
+            pre_only.append(n)          # an older revision's skill renewal dropped
+            continue
         if pre[n] == ren[n] and n not in C.SKILL_OVERRIDES:
             continue
         keys = lambda e: set(re.findall(r"^    (\w+):", e, re.M))
         dropped = keys(pre[n]) - keys(ren[n])
         entry = ren[n]
         for k in sorted(dropped):
+            if k == "CopyFlags":
+                # Both keys false: rAthena's parser clears a copy flag with
+                # `option &= FLAG` (not ~FLAG), so one false key alone keeps
+                # the other's bit; both together clear it, fixed or not.
+                entry += ("\n    CopyFlags:    # pre-renewal's entry lets Plagiarism/Reproduce copy it; renewal's does not"
+                          "\n      Skill:\n        Plagiarism: false\n        Reproduce: false")
+                continue
+            if k in FLAG_MAPS:
+                continue                # nested_resets clears it key by key
+            if k == "Hit":
+                # Renewal's default is DMG_NORMAL, which has no YAML name; Hit
+                # only changes how the hit is shown, so pre-renewal's stays.
+                entry += "\n    # Hit: pre-renewal's value stays (renewal's default, Normal, cannot be written)"
+                continue
             if k not in SKILL_DEFAULTS:
                 fail(f"{n}: pre-renewal sets {k}, renewal does not, and there is no reset value for it")
             entry += f"\n    {k}: {SKILL_DEFAULTS[k]}    # pre-renewal's entry sets this; renewal's does not"
@@ -498,6 +513,8 @@ def build_skill_db(src):
                       "its whole fixed cast goes into its cast time instead."]
     about += [
              "", "Skills: " + ", ".join(changed)]
+    if pre_only:
+        about += ["", "Not in renewal's skill_db, so pre-renewal's entry is kept: " + ", ".join(pre_only)]
     if added:
         about += ["", "Flags added to other classes' skills (only that key; the rest of", "pre-renewal's entry stays): " + ", ".join(added)]
     return about, "\n".join(out) + "\n"
@@ -610,7 +627,9 @@ def build_items(src, iteminfo):
             e.append("    ArmorLevel: 1")
         e.append(f"    EquipLevelMin: {r['level']}")
         e.append("    Refineable: true")
-        if r["kind"] == "head":
+        if r["kind"] == "head" or kind.get("view"):   # headgear, and shields: the look's sprite
+            if not look["view"]:
+                fail(f"{r['aegis']}: look {r['look']} has no View")
             e.append(f"    View: {look['view']}")
         e += ["    Script: |", "      " + r["script"].strip()]
         new.append("\n".join(e))
