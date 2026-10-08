@@ -1150,6 +1150,8 @@ function getSettings() {
 // only names set_app_preference will write. Everything else in that file
 // changes how the server runs and has to go through Apply.
 const APP_PREFERENCES = new Set(['open_settings_first']);
+// Settings -> Mods -> Favorites: how many mods can be starred (settings-store checks the same).
+const MOD_FAVORITES_MAX = 500;
 
 // The AI agent's bearer token, for redaction. Read from its connection file
 // rather than from the agent: it outlives the session that made it, and it is
@@ -3139,6 +3141,21 @@ const handlers = {
 		return next.vm_ram_mib;
 	},
 	save_settings: ({ settings }) => saveSettings(settings),
+	// Star or unstar a mod for Settings -> Mods -> Favorites. One name at a
+	// time, so two windows starring different mods don't overwrite each other.
+	mod_favorites_set: ({ name, favorite }) => {
+		name = String(name || '');
+		if (!/^[A-Za-z0-9_-]{1,64}$/.test(name)) throw new Error(`${name} is not a mod name`);
+		const list = (getSettings().mod_favorites || []).filter(n => n !== name);
+		if (favorite) {
+			// settings-store holds the list to the same 500, but its message is for a damaged file.
+			if (list.length >= MOD_FAVORITES_MAX) throw new Error(`You can star at most ${MOD_FAVORITES_MAX} mods. Unstar one first.`);
+			list.push(name);
+		}
+		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
+			{ mod_favorites: list.sort() }, SETTINGS_DEFAULTS);
+		return settings.mod_favorites;
+	},
 	// The preferences the app acts on itself. Written straight to
 	// settings.json, and deliberately not server operations: nothing the
 	// supervisor reads is involved, and going the usual way would restart the
@@ -3147,17 +3164,6 @@ const handlers = {
 	// The allowlist is the point. Every other key in settings.json changes how
 	// the server runs and has to go through Apply, which regenerates its config
 	// and restarts it; a setter that took any name would be a way around that.
-	// Star or unstar a mod for Settings -> Mods -> Favorites. One name at a
-	// time, so two windows starring different mods don't overwrite each other.
-	mod_favorites_set: ({ name, favorite }) => {
-		name = String(name || '');
-		if (!/^[A-Za-z0-9_-]{1,64}$/.test(name)) throw new Error(`${name} is not a mod name`);
-		const list = (getSettings().mod_favorites || []).filter(n => n !== name);
-		if (favorite) list.push(name);
-		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
-			{ mod_favorites: list.sort() }, SETTINGS_DEFAULTS);
-		return settings.mod_favorites;
-	},
 	set_app_preference: ({ key, value }) => {
 		if (!APP_PREFERENCES.has(key)) throw new Error(`${key} is not an app preference`);
 		const on = !!value;
