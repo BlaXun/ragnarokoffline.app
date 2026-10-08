@@ -891,7 +891,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "8b9fd02dc1887965249743fec2503a25c5aed8e43376a6c746a76ede84324224"
+          "sha256": "372fa0b0974b803d6c63c2f7ed863b5e860e6aa7f9e8b9619288173bf5c4a316"
         },
         {
           "path": "System/itemInfo.lua",
@@ -903,7 +903,7 @@
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "f8f1f35dc32dc35a010278f8d9b828bca234242fd68c93525581398aad74d96a"
+          "sha256": "799b72ba6ca2dcf19bb1396a652fd28cb74ddbe0b9eff57db04c15abe21138b2"
         },
         {
           "path": "db/job_stats.yml",
@@ -915,7 +915,7 @@
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "9fe3ad036c146748a87e6884d2c446082f6f65797077f5e376e15c394afd1620"
+          "sha256": "2fcee8772ca94fe722a153c81fea1be9299f4a7467c70d07d20c681088a724a4"
         },
         {
           "path": "db/skill_tree.yml",
@@ -923,7 +923,7 @@
         },
         {
           "path": "lua/rebellion.lua",
-          "sha256": "70763db8c28a5ba5eebaa951f9576c8dc2ac8f96f9678d32ac9852bdec148b72"
+          "sha256": "afd3a5a79f74d6d8f32fc09ae186c368d0158340f03557ef84513207c1e7cac4"
         },
         {
           "path": "mod.json",
