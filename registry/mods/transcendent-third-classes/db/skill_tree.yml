@@ -26,6 +26,11 @@
 # Royal_Guard_T:
 # Renewal's trees for Royal_Guard_T, taken from Royal_Guard for Royal_Guard_T:
 # the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Warlock_T:
+# Renewal's trees for Warlock_T, taken from Warlock for Warlock_T:
+# the class gets that job's skills and what it inherits, nothing more.
 Header:
   Type: SKILL_TREE_DB
   Version: 1
@@ -578,6 +583,132 @@ Body:
         MaxLevel: 5
         Requires:
           - Name: LG_REFLECTDAMAGE
+            Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Warlock_T    # renewal's Warlock tree
+    Inherit:
+      Novice: true
+      Mage: true
+      Wizard: true
+    Tree:
+      - Name: WL_WHITEIMPRISON
+        MaxLevel: 5
+        Requires:
+          - Name: WL_SOULEXPANSION
+            Level: 3
+      - Name: WL_SOULEXPANSION
+        MaxLevel: 5
+        Requires:
+          - Name: WL_DRAINLIFE
+            Level: 1
+      - Name: WL_FROSTMISTY
+        MaxLevel: 5
+        Requires:
+          - Name: WL_SUMMONWB
+            Level: 1
+      - Name: WL_JACKFROST
+        MaxLevel: 5
+        Requires:
+          - Name: WL_FROSTMISTY
+            Level: 2
+      - Name: WL_MARSHOFABYSS
+        MaxLevel: 5
+        Requires:
+          - Name: WZ_QUAGMIRE
+            Level: 1
+      - Name: WL_RECOGNIZEDSPELL
+        MaxLevel: 5
+        Requires:
+          - Name: WL_WHITEIMPRISON
+            Level: 1
+          - Name: WL_STASIS
+            Level: 1
+          - Name: WL_RELEASE
+            Level: 2
+      - Name: WL_SIENNAEXECRATE
+        MaxLevel: 5
+        Requires:
+          - Name: WL_SUMMONSTONE
+            Level: 1
+      - Name: WL_RADIUS
+        MaxLevel: 3
+      - Name: WL_STASIS
+        MaxLevel: 5
+        Requires:
+          - Name: WL_DRAINLIFE
+            Level: 1
+      - Name: WL_DRAINLIFE
+        MaxLevel: 5
+        Requires:
+          - Name: WL_RADIUS
+            Level: 1
+      - Name: WL_CRIMSONROCK
+        MaxLevel: 5
+        Requires:
+          - Name: WL_SUMMONFB
+            Level: 1
+      - Name: WL_HELLINFERNO
+        MaxLevel: 5
+        Requires:
+          - Name: WL_CRIMSONROCK
+            Level: 2
+      - Name: WL_COMET
+        MaxLevel: 5
+        Requires:
+          - Name: WL_HELLINFERNO
+            Level: 3
+      - Name: WL_CHAINLIGHTNING
+        MaxLevel: 5
+        Requires:
+          - Name: WL_SUMMONBL
+            Level: 1
+      - Name: WL_EARTHSTRAIN
+        MaxLevel: 5
+        Requires:
+          - Name: WL_SIENNAEXECRATE
+            Level: 2
+      - Name: WL_TETRAVORTEX
+        MaxLevel: 10
+        Requires:
+          - Name: WL_JACKFROST
+            Level: 5
+          - Name: WL_HELLINFERNO
+            Level: 5
+          - Name: WL_CHAINLIGHTNING
+            Level: 5
+          - Name: WL_EARTHSTRAIN
+            Level: 5
+      - Name: WL_SUMMONFB
+        MaxLevel: 2
+        Requires:
+          - Name: WZ_METEOR
+            Level: 1
+      - Name: WL_SUMMONBL
+        MaxLevel: 2
+        Requires:
+          - Name: WZ_VERMILION
+            Level: 1
+      - Name: WL_SUMMONWB
+        MaxLevel: 2
+        Requires:
+          - Name: WZ_STORMGUST
+            Level: 1
+      - Name: WL_SUMMONSTONE
+        MaxLevel: 2
+        Requires:
+          - Name: WZ_HEAVENDRIVE
+            Level: 1
+      - Name: WL_RELEASE
+        MaxLevel: 2
+      - Name: WL_READING_SB
+        MaxLevel: 1
+      - Name: WL_FREEZE_SP
+        MaxLevel: 10
+      - Name: WL_TELEKINESIS_INTENSE
+        MaxLevel: 5
+        Requires:
+          - Name: WL_SOULEXPANSION
             Level: 5
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5

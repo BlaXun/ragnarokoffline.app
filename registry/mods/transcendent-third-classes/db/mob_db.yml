@@ -26,6 +26,11 @@
 # Royal_Guard_T:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Warlock_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
 Header:
   Type: MOB_DB
   Version: 5
@@ -110,4 +115,20 @@ Body:
   - Id: 1634    # Seyren Windsor (SEYREN), 8 stock drops
     Drops:
       - Item: Aegis_Of_The_Guard
+        Rate: 5
+  - Id: 1377    # Elder (ELDER), 8 stock drops
+    Drops:
+      - Item: Elemental_Rod
+        Rate: 10
+  - Id: 1374    # Incubus (INCUBUS), 8 stock drops
+    Drops:
+      - Item: Ember_Staff
+        Rate: 10
+  - Id: 1370    # Succubus (SUCCUBUS), 8 stock drops
+    Drops:
+      - Item: Arcane_Conduit
+        Rate: 5
+  - Id: 1639    # Kathryne Keyron (KATRINN), 8 stock drops
+    Drops:
+      - Item: Staff_Of_Starfall
         Rate: 5

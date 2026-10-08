@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Warlock ===========
+//= The Wizard's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Mage of job 40 or more
+//= whose rebirth target is High Wizard (ADVJOB) may become a
+//= Warlock here instead, beside the stock High Wizard changer,
+//= which is untouched. The choice is permanent.
+//=
+//= Warlock is a third class in rAthena. The change goes
+//= through High Wizard and at once on to Warlock, so
+//= rAthena's third-class skill lock records High Wizard job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Warlock tree (Novice, Mage,
+//= Wizard and its own skills), with the same 69 job levels a
+//= High Wizard has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,42,47,5	script	Warlock#Valkyrie	735,{
+	.@n$ = "[Warlock]";
+	if (Class == Job_Warlock_T) {
+		mes .@n$;
+		mes "You chose the elements. The Spellbook Seller in the Geffen magic school has the books you will read; the staves made for our kind are carried by those who once studied with us and went too far.";
+		close;
+	}
+	if (ADVJOB != Job_High_Wizard || Class != Job_Mage_High) {
+		mes .@n$;
+		mes "A Wizard who has been reborn chooses here: the High Wizard's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A High Wizard makes the Wizard's storms greater: Mystical Amplification, Soul Drain, Gravitation Field. A ^0000FFWarlock^000000 leaves them behind for spells of its own: comets, chain lightning, walls of fire and ice, and spells it stores to release in an instant.";
+	next;
+	mes .@n$;
+	mes "You keep every Wizard skill. You will never learn a High Wizard skill: no Mystical Amplification, no Soul Drain, no Gravitation Field, no Ganbantein, no Napalm Vulcan, no Magic Crasher.";
+	mes "Your job levels, your body and your gear are the same as a High Wizard's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the elements.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through High Wizard, at job 1: see the header.
+	jobchange Job_High_Wizard;
+	jobchange Job_Warlock_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Warlock.";
+	close;
+}

@@ -1,0 +1,62 @@
+//===== transcendent-third-classes: Spellbook Seller ===========
+//= Sells a Warlock the spellbooks Reading Spellbook reads.
+//=
+//= Renewal lends them through Lea and Galfos (npc/re/quests/
+//= magic_books.txt), which a pre-renewal server does not load. This
+//= one stands where Lea does, in the Geffen magic school, and sells
+//= them outright at renewal's deposits: 100,000 zeny for the
+//= intermediate books, 500,000 for the superior ones, and 1,000,000
+//= for Comet and Tetra Vortex, which renewal makes a quest of. A
+//= book is not used up when it is read; one copy each is enough.
+//==============================================================
+
+geffen_in,175,112,4	script	Spellbook Seller#tc	2_F_MAGICMASTER,{
+	.@n$ = "[Spellbook Seller]";
+	mes .@n$;
+	if ((eaclass()&EAJ_THIRDMASK) != EAJ_WARLOCK) {
+		mes "These books are written for Warlocks. To anyone else they are only paper.";
+		close;
+	}
+	mes "Which books do you need?";
+	next;
+	switch (select("Intermediate: 100,000 zeny:Superior: 500,000 zeny:Ultimate: 1,000,000 zeny:Nothing.")) {
+	case 1:
+		setarray .@books, 100065, 100066, 100067;
+		.@price = 100000;
+		break;
+	case 2:
+		setarray .@books, 100068, 100069, 100070, 100071, 100072;
+		.@price = 500000;
+		break;
+	case 3:
+		setarray .@books, 100073, 100074;
+		.@price = 1000000;
+		break;
+	default:
+		close;
+	}
+	.@menu$ = "";
+	for (.@i = 0; .@i < getarraysize(.@books); .@i++)
+		.@menu$ += getitemname(.@books[.@i]) + ":";
+	.@pick = select(.@menu$ + "Nothing.") - 1;
+	if (.@pick >= getarraysize(.@books))
+		close;
+	.@book = .@books[.@pick];
+	mes .@n$;
+	if (countitem(.@book)) {
+		mes "You already have that one. A book is not used up when you read it.";
+		close;
+	}
+	if (Zeny < .@price) {
+		mes "That book costs " + callfunc("F_InsertComma", .@price) + " zeny.";
+		close;
+	}
+	if (!checkweight(.@book, 1)) {
+		mes "You are carrying too much. Make some room first.";
+		close;
+	}
+	Zeny -= .@price;
+	getitem .@book, 1;
+	mes "Read it with care.";
+	close;
+}

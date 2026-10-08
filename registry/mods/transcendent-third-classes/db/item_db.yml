@@ -31,6 +31,12 @@
 # 1. No job flags: rAthena already lets the class wear a Paladin's items.
 # 2. No renewal-only items: the skills need none.
 # 3. The Royal Guard's weapons and shields, from royal_guard/equipment.csv.
+#
+# _______________________
+# Warlock_T:
+# 1. No job flags: rAthena already lets the class wear a High_Wizard's items.
+# 2. Renewal's WL_MB_SG, WL_MB_LOV, WL_MB_MS, WL_MB_DL, WL_MB_JF, WL_MB_ES, WL_MB_CR, WL_MB_CL, WL_MB_CM, WL_MB_TV, which the skills need.
+# 3. The Warlock's weapons, from warlock/equipment.csv.
 Header:
   Type: ITEM_DB
   Version: 3
@@ -473,3 +479,167 @@ Body:
     View: 4
     Script: |
       bonus bVit,3; bonus bMaxHPrate,5; bonus2 bSkillAtk,"CR_SHIELDBOOMERANG",15; if (Class == Job_Paladin) bonus2 bSkillAtk,"PA_SHIELDCHAIN",15; else bonus2 bSkillAtk,"LG_SHIELDPRESS",30; bonus bUnbreakableShield;
+  - Id: 100065
+    AegisName: WL_MB_SG
+    Name: Spell Book(Storm Gust)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",1;
+  - Id: 100066
+    AegisName: WL_MB_LOV
+    Name: Spell Book(Lord of Vermilion)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",2;
+  - Id: 100067
+    AegisName: WL_MB_MS
+    Name: Spell Book(Meteor Storm)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",3;
+  - Id: 100068
+    AegisName: WL_MB_DL
+    Name: Spell Book(Drain Life)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",4;
+  - Id: 100069
+    AegisName: WL_MB_JF
+    Name: Spell Book(Jack Frost)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",5;
+  - Id: 100070
+    AegisName: WL_MB_ES
+    Name: Spell Book(Earth Strain)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",6;
+  - Id: 100071
+    AegisName: WL_MB_CR
+    Name: Spell Book(Crimson Rock)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",7;
+  - Id: 100072
+    AegisName: WL_MB_CL
+    Name: Spell Book(Chain Lightning)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",8;
+  - Id: 100073
+    AegisName: WL_MB_CM
+    Name: Spell Book(Comet)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",9;
+  - Id: 100074
+    AegisName: WL_MB_TV
+    Name: Spell Book(Tetra Vortex)
+    Type: DelayConsume
+    Flags:
+      NoConsume: true
+    Script: |
+      itemskill "WL_READING_SB_READING",10;
+  - Id: 63601
+    AegisName: Elemental_Rod
+    Name: Elemental Rod
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 500
+    Attack: 60
+    Range: 1
+    Slots: 1
+    Jobs:
+      Wizard: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_JUPITEL",10; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_JUPITEL",10; else bonus2 bSkillAtk,"WL_CHAINLIGHTNING",20;
+  - Id: 63602
+    AegisName: Ember_Staff
+    Name: Ember Staff
+    Type: Weapon
+    SubType: 2hStaff
+    Buy: 20
+    Weight: 1200
+    Attack: 110
+    Range: 1
+    Slots: 1
+    Jobs:
+      Wizard: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",10; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",10; else bonus2 bSkillAtk,"WL_CRIMSONROCK",20;
+  - Id: 63611
+    AegisName: Arcane_Conduit
+    Name: Arcane Conduit
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 600
+    Attack: 70
+    Range: 1
+    Slots: 1
+    Jobs:
+      Wizard: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_JUPITEL",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_JUPITEL",15; else bonus2 bSkillAtk,"WL_CHAINLIGHTNING",30; bonus bUnbreakableWeapon;
+  - Id: 63612
+    AegisName: Staff_Of_Starfall
+    Name: Staff of Starfall
+    Type: Weapon
+    SubType: 2hStaff
+    Buy: 20
+    Weight: 1400
+    Attack: 130
+    Range: 1
+    Slots: 1
+    Jobs:
+      Wizard: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;

@@ -96,6 +96,24 @@
 # Skills: LG_BANDING, LG_BANISHINGPOINT, LG_CANNONSPEAR, LG_EARTHDRIVE, LG_EXEEDBREAK, LG_FORCEOFVANGUARD, LG_HESPERUSLIT, LG_INSPIRATION, LG_KINGS_GRACE, LG_MOONSLASHER, LG_OVERBRAND, LG_PIETY, LG_PINPOINTATTACK, LG_PRESTIGE, LG_RAYOFGENESIS, LG_REFLECTDAMAGE, LG_SHIELDPRESS, LG_SHIELDSPELL
 #
 # Not in renewal's skill_db, so pre-renewal's entry is kept: LG_OVERBRAND_BRANDISH, LG_OVERBRAND_PLUSATK
+#
+# _______________________
+# Warlock_T:
+# Renewal's entries for the WL_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: WL_CHAINLIGHTNING, WL_COMET, WL_CRIMSONROCK, WL_DRAINLIFE, WL_EARTHSTRAIN, WL_FROSTMISTY, WL_HELLINFERNO, WL_JACKFROST, WL_MARSHOFABYSS, WL_READING_SB, WL_RECOGNIZEDSPELL, WL_SIENNAEXECRATE, WL_SOULEXPANSION, WL_STASIS, WL_SUMMONBL, WL_SUMMONFB, WL_SUMMONSTONE, WL_SUMMONWB, WL_TELEKINESIS_INTENSE, WL_TETRAVORTEX, WL_WHITEIMPRISON, WL_READING_SB_READING (new)
 Header:
   Type: SKILL_DB
   Version: 4
@@ -3577,3 +3595,979 @@ Body:
     Knockback: 0    # pre-renewal's entry sets this; renewal's does not
     DamageFlags:
       Splash: false    # set in pre-renewal's entry; renewal's leaves it out
+  - Id: 2214
+    Name: WL_CHAINLIGHTNING
+    Description: Chain Lightning
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 3750
+      - Level: 2
+        Time: 4250
+      - Level: 3
+        Time: 4750
+      - Level: 4
+        Time: 5250
+      - Level: 5
+        Time: 5750
+    AfterCastActDelay: 3750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 100
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 80
+        - Level: 2
+          Amount: 90
+        - Level: 3
+          Amount: 100
+        - Level: 4
+          Amount: 110
+        - Level: 5
+          Amount: 120
+  - Id: 2213
+    Name: WL_COMET
+    Description: Comet
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Ground
+    DamageFlags:
+      Splash: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount: -10
+    SplashArea: 6
+    Knockback: 2
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:    # renewal's FixedCastTime added here: a 20s+ cooldown already stops spam
+      - Level: 1
+        Time: 8000
+      - Level: 2
+        Time: 9000
+      - Level: 3
+        Time: 10000
+      - Level: 4
+        Time: 11000
+      - Level: 5
+        Time: 12000
+    AfterCastActDelay: 1500
+    Duration1: 100
+    Duration2: 42000
+    Cooldown: 20000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 70
+        - Level: 2
+          Amount: 90
+        - Level: 3
+          Amount: 110
+        - Level: 4
+          Amount: 130
+        - Level: 5
+          Amount: 150
+    Unit:
+      Id: Dummyskill
+      Range: 6
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        PathCheck: true
+    Status: Magic_Poison
+  - Id: 2211
+    Name: WL_CRIMSONROCK
+    Description: Crimson Rock
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount: -7
+    Element: Fire
+    SplashArea: 3
+    Knockback: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 4500
+    Cooldown: 5000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 25
+        - Level: 2
+          Amount: 29
+        - Level: 3
+          Amount: 34
+        - Level: 4
+          Amount: 38
+        - Level: 5
+          Amount: 42
+    Status: Stun
+  - Id: 2210
+    Name: WL_DRAINLIFE
+    Description: Drain Life
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 4250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 2000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 24
+        - Level: 3
+          Amount: 28
+        - Level: 4
+          Amount: 32
+        - Level: 5
+          Amount: 36
+    AfterCastActDelay: 750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2216
+    Name: WL_EARTHSTRAIN
+    Description: Earth Strain
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Ground
+    Flags:
+      TargetHidden: true
+    Range: 6
+    Hit: Multi_Hit
+    HitCount:
+      - Level: 1
+        Count: -6
+      - Level: 2
+        Count: -7
+      - Level: 3
+        Count: -8
+      - Level: 4
+        Count: -9
+      - Level: 5
+        Count: -10
+    Element: Earth
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 2250
+      - Level: 2
+        Time: 3250
+      - Level: 3
+        Time: 4250
+      - Level: 4
+        Time: 5250
+      - Level: 5
+        Time: 6250
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 100
+    Duration2:
+      - Level: 1
+        Time: 75000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 105000
+      - Level: 4
+        Time: 120000
+      - Level: 5
+        Time: 135000
+    Cooldown: 7000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 70
+        - Level: 2
+          Amount: 78
+        - Level: 3
+          Amount: 86
+        - Level: 4
+          Amount: 94
+        - Level: 5
+          Amount: 102
+    Unit:
+      Id: Earthstrain
+      Layout: -1
+      Range: 2
+      Interval: 2000
+      Target: Enemy
+      Flag:
+        NoOverlap: true
+        PathCheck: true
+  - Id: 2203
+    Name: WL_FROSTMISTY
+    Description: Frosty Misty
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Ground
+    DamageFlags:
+      Splash: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount:
+      - Level: 1
+        Count: 1
+      - Level: 2
+        Count: 2
+      - Level: 3
+        Count: 3
+      - Level: 4
+        Count: 4
+      - Level: 5
+        Count: 5
+    Element: Water
+    SplashArea:
+      - Level: 1
+        Area: 3
+      - Level: 2
+        Area: 3
+      - Level: 3
+        Area: 4
+      - Level: 4
+        Area: 4
+      - Level: 5
+        Area: 5
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 2125
+      - Level: 2
+        Time: 2625
+      - Level: 3
+        Time: 3125
+      - Level: 4
+        Time: 3625
+      - Level: 5
+        Time: 4125
+    AfterCastActDelay: 1375    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 40000
+    Duration2: 10000
+    Cooldown: 8000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 26
+        - Level: 2
+          Amount: 31
+        - Level: 3
+          Amount: 37
+        - Level: 4
+          Amount: 42
+        - Level: 5
+          Amount: 47
+    Status: Freezing
+  - Id: 2212
+    Name: WL_HELLINFERNO
+    Description: Hell Inferno
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    Element: Fire
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 1
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 2
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 3250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 3000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 57
+        - Level: 2
+          Amount: 63
+        - Level: 3
+          Amount: 68
+        - Level: 4
+          Amount: 74
+        - Level: 5
+          Amount: 79
+    Duration1: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2204
+    Name: WL_JACKFROST
+    Description: Jack Frost
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount: -5
+    Element: Water
+    SplashArea:
+      - Level: 1
+        Area: 3
+      - Level: 2
+        Area: 3
+      - Level: 3
+        Area: 4
+      - Level: 4
+        Area: 4
+      - Level: 5
+        Area: 5
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 2250
+      - Level: 2
+        Time: 2750
+      - Level: 3
+        Time: 3250
+      - Level: 4
+        Time: 3750
+      - Level: 5
+        Time: 4250
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 12500
+      - Level: 2
+        Time: 17500
+      - Level: 3
+        Time: 22500
+      - Level: 4
+        Time: 27500
+      - Level: 5
+        Time: 32500
+    Cooldown: 4000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 22
+        - Level: 2
+          Amount: 26
+        - Level: 3
+          Amount: 30
+        - Level: 4
+          Amount: 35
+        - Level: 5
+          Amount: 39
+  - Id: 2205
+    Name: WL_MARSHOFABYSS
+    Description: Marsh of Abyss
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 1375    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 30000
+    Cooldown:
+      - Level: 1
+        Time: 2500
+      - Level: 2
+        Time: 3000
+      - Level: 3
+        Time: 3500
+      - Level: 4
+        Time: 4000
+      - Level: 5
+        Time: 4500
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 42
+        - Level: 3
+          Amount: 44
+        - Level: 4
+          Amount: 46
+        - Level: 5
+          Amount: 48
+    Status: MarshOfAbyss
+    CastTime: 125    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2231
+    Name: WL_READING_SB
+    Description: Reading Spellbook
+    MaxLevel: 1
+    CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 30000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    # Hit: pre-renewal's value stays (renewal's default, Normal, cannot be written)
+    HitCount: 0    # pre-renewal's entry sets this; renewal's does not
+    Requires:    # pre-renewal's entry has costs; renewal's has none
+      SpCost: 0
+    TargetType: Passive    # pre-renewal's entry sets this; renewal's does not
+    Type: None    # pre-renewal's entry sets this; renewal's does not
+    DamageFlags:
+      NoDamage: false    # set in pre-renewal's entry; renewal's leaves it out
+  - Id: 2206
+    Name: WL_RECOGNIZEDSPELL
+    Description: Recognized Spell
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    CastTime: 2000    # renewal's FixedCastTime added here: a 50s+ cooldown already stops spam
+    AfterCastActDelay: 1000
+    Duration1:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 120000
+      - Level: 4
+        Time: 150000
+      - Level: 5
+        Time: 180000
+    Cooldown:
+      - Level: 1
+        Time: 50000
+      - Level: 2
+        Time: 80000
+      - Level: 3
+        Time: 110000
+      - Level: 4
+        Time: 140000
+      - Level: 5
+        Time: 170000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 100
+        - Level: 2
+          Amount: 120
+        - Level: 3
+          Amount: 140
+        - Level: 4
+          Amount: 160
+        - Level: 5
+          Amount: 180
+    Status: RecognizedSpell
+  - Id: 2207
+    Name: WL_SIENNAEXECRATE
+    Description: Sienna Execrate
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 7
+    Hit: Single
+    HitCount: 1
+    Element: Earth
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 2
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 3
+      - Level: 5
+        Area: 3
+    CastTime: 2000
+    AfterCastActDelay: 2000
+    Duration1: 100
+    Duration2:
+      - Level: 1
+        Time: 7000
+      - Level: 2
+        Time: 9000
+      - Level: 3
+        Time: 11000
+      - Level: 4
+        Time: 13000
+      - Level: 5
+        Time: 15000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 32
+        - Level: 2
+          Amount: 34
+        - Level: 3
+          Amount: 36
+        - Level: 4
+          Amount: 38
+        - Level: 5
+          Amount: 40
+      ItemCost:
+        - Item: Red_Gemstone
+          Amount: 2
+    Status: StoneWait
+  - Id: 2202
+    Name: WL_SOULEXPANSION
+    Description: Soul Expansion
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount: -2
+    Element: Ghost
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 1
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 2
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2000
+    AfterCastActDelay: 500
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 17
+        - Level: 2
+          Amount: 20
+        - Level: 3
+          Amount: 22
+        - Level: 4
+          Amount: 25
+        - Level: 5
+          Amount: 28
+  - Id: 2209
+    Name: WL_STASIS
+    Description: Stasis
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 9
+      - Level: 2
+        Area: 10
+      - Level: 3
+        Area: 11
+      - Level: 4
+        Area: 12
+      - Level: 5
+        Area: 13
+    CastTime: 4000    # renewal's FixedCastTime added here: a 180s+ cooldown already stops spam
+    AfterCastActDelay: 2000
+    Duration1:
+      - Level: 1
+        Time: 20000
+      - Level: 2
+        Time: 30000
+      - Level: 3
+        Time: 40000
+      - Level: 4
+        Time: 50000
+      - Level: 5
+        Time: 60000
+    Cooldown:
+      - Level: 1
+        Time: 180000
+      - Level: 2
+        Time: 190000
+      - Level: 3
+        Time: 200000
+      - Level: 4
+        Time: 210000
+      - Level: 5
+        Time: 220000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 50
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 70
+        - Level: 4
+          Amount: 80
+        - Level: 5
+          Amount: 90
+    Status: Stasis
+  - Id: 2223
+    Name: WL_SUMMONBL
+    Description: Summon Lightning Ball
+    MaxLevel: 2
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    Element: Wind
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2000
+    Duration1:
+      - Level: 1
+        Time: 120000
+      - Level: 2
+        Time: 160000
+      - Level: 3
+        Time: 200000
+      - Level: 4
+        Time: 240000
+      - Level: 5
+        Time: 280000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 10
+        - Level: 2
+          Amount: 12
+        - Level: 3
+          Amount: 14
+        - Level: 4
+          Amount: 16
+        - Level: 5
+          Amount: 18
+  - Id: 2222
+    Name: WL_SUMMONFB
+    Description: Summon Fire Ball
+    MaxLevel: 2
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    Element: Fire
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2000
+    Duration1:
+      - Level: 1
+        Time: 120000
+      - Level: 2
+        Time: 160000
+      - Level: 3
+        Time: 200000
+      - Level: 4
+        Time: 240000
+      - Level: 5
+        Time: 280000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 10
+        - Level: 2
+          Amount: 12
+        - Level: 3
+          Amount: 14
+        - Level: 4
+          Amount: 16
+        - Level: 5
+          Amount: 18
+  - Id: 2229
+    Name: WL_SUMMONSTONE
+    Description: Summon Stone
+    MaxLevel: 2
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    Element: Earth
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2000
+    Duration1:
+      - Level: 1
+        Time: 120000
+      - Level: 2
+        Time: 160000
+      - Level: 3
+        Time: 200000
+      - Level: 4
+        Time: 240000
+      - Level: 5
+        Time: 280000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 10
+        - Level: 2
+          Amount: 12
+        - Level: 3
+          Amount: 14
+        - Level: 4
+          Amount: 16
+        - Level: 5
+          Amount: 18
+  - Id: 2224
+    Name: WL_SUMMONWB
+    Description: Summon Water Ball
+    MaxLevel: 2
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    Element: Water
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2000
+    Duration1:
+      - Level: 1
+        Time: 120000
+      - Level: 2
+        Time: 160000
+      - Level: 3
+        Time: 200000
+      - Level: 4
+        Time: 240000
+      - Level: 5
+        Time: 280000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 10
+        - Level: 2
+          Amount: 12
+        - Level: 3
+          Amount: 14
+        - Level: 4
+          Amount: 16
+        - Level: 5
+          Amount: 18
+  - Id: 5012
+    Name: WL_TELEKINESIS_INTENSE
+    Description: Intense Telekinesis
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 500
+    Duration1: 60000
+    Cooldown: 300000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 100
+        - Level: 2
+          Amount: 150
+        - Level: 3
+          Amount: 200
+        - Level: 4
+          Amount: 250
+        - Level: 5
+          Amount: 300
+    Status: Telekinesis_Intense
+  - Id: 2217
+    Name: WL_TETRAVORTEX
+    Description: Tetra Vortex
+    MaxLevel: 10
+    Type: Magic
+    TargetType: Attack
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 0
+      - Level: 2
+        Area: 0
+      - Level: 3
+        Area: 0
+      - Level: 4
+        Area: 0
+      - Level: 5
+        Area: 0
+      - Level: 6
+        Area: 1
+      - Level: 7
+        Area: 1
+      - Level: 8
+        Area: 2
+      - Level: 9
+        Area: 2
+      - Level: 10
+        Area: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:    # renewal's FixedCastTime added here: a 15s+ cooldown already stops spam
+      - Level: 1
+        Time: 6000
+      - Level: 2
+        Time: 7000
+      - Level: 3
+        Time: 8000
+      - Level: 4
+        Time: 9000
+      - Level: 5
+        Time: 10000
+      - Level: 6
+        Time: 11000
+      - Level: 7
+        Time: 12000
+      - Level: 8
+        Time: 13000
+      - Level: 9
+        Time: 14000
+      - Level: 10
+        Time: 15000
+    Cooldown: 15000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 108
+        - Level: 2
+          Amount: 135
+        - Level: 3
+          Amount: 162
+        - Level: 4
+          Amount: 189
+        - Level: 5
+          Amount: 216
+        - Level: 6
+          Amount: 180
+        - Level: 7
+          Amount: 216
+        - Level: 8
+          Amount: 252
+        - Level: 9
+          Amount: 288
+        - Level: 10
+          Amount: 324
+    AfterCastActDelay: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2201
+    Name: WL_WHITEIMPRISON
+    Description: White Imprison
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Support
+    Flags:
+      AlterRangeRadius: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    Duration1:
+      - Level: 1
+        Time: 6000
+      - Level: 2
+        Time: 8000
+      - Level: 3
+        Time: 10000
+      - Level: 4
+        Time: 12000
+      - Level: 5
+        Time: 14000
+    Duration2: 18000
+    Cooldown: 4000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 50
+        - Level: 2
+          Amount: 55
+        - Level: 3
+          Amount: 60
+        - Level: 4
+          Amount: 65
+        - Level: 5
+          Amount: 70
+    Status: WhiteImprison
+  - Id: 5078
+    Name: WL_READING_SB_READING
+    Description: Reading Spellbook
+    MaxLevel: 10
+    TargetType: Self
+    CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay

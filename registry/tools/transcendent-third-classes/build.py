@@ -17,7 +17,7 @@ the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
 (instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
-Royal Guard (instead of Paladin). Each class keeps its CSV files in its own directory.
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard). Each class keeps its CSV files in its own directory.
 """
 import sys
 from pathlib import Path
@@ -34,6 +34,7 @@ WEAPONS = {
     "sword2": dict(type="Weapon", sub="2hSword", loc=["Both_Hand"], label="Two-Handed Sword", unid="Sword"),
     "spear2": dict(type="Weapon", sub="2hSpear", loc=["Both_Hand"], label="Two-Handed Spear", unid="Spear"),
     "spear1": dict(type="Weapon", sub="1hSpear", loc=["Right_Hand"], label="Spear", unid="Spear"),
+    "staff2": dict(type="Weapon", sub="2hStaff", loc=["Both_Hand"], label="Two-Handed Staff", unid="Rod"),
     "shield": dict(type="Armor",  sub=None,      loc=["Left_Hand"],  label="Shield", unid="Shield", view=True),
 }
 
@@ -156,6 +157,15 @@ rune_knight = ec.config(
         "Runstone_Turisus": {"Delay": {"Duration": 180000}},
     },
     SKILL_OVERRIDES={"RK_GIANTGROWTH": {"Duration1": 30000}},
+    # What the rune stones' own descriptions do not say, or no longer get
+    # right, after the delays above.
+    ITEM_DESCRIPTIONS={
+        "Runstone_Turisus": ["^FF0000Giant Growth lasts 30 seconds. The rune can be used again after 3 minutes.^000000"],
+        "Runstone_Rhydo": ["^FF0000The rune can be used again after 30 seconds.^000000"],
+        "Runstone_Verkana": ["^FF0000The rune can be used again after 60 seconds.^000000"],
+        "Runstone_Nosiege": ["^FF0000The rune can be used again after 2 minutes.^000000"],
+        "Runstone_Pertz": ["^FF0000On this pre-renewal server Storm Blast deals no damage.^000000"],
+    },
 )
 
 royal_guard = ec.config(
@@ -178,4 +188,52 @@ royal_guard = ec.config(
     CSV_DIR="royal_guard",
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard])
+warlock = ec.config(
+    __file__, **COMMON,
+    JOBS=("Warlock_T",),
+    # Renewal's Warlock tree: Novice, Mage, Wizard and the WL skills;
+    # renewal's transcendent one also inherits High Wizard (Mystical
+    # Amplification, Napalm Vulcan, Gravitation Field, ...).
+    TREE_FROM={"Warlock_T": "Warlock"},
+    BASE="High_Wizard",
+    SKILL_PREFIX="WL_",
+    HP_FROM="High_Wizard", HP_SCALE=1.0,
+    SP_FROM="High_Wizard", SP_SCALE=1.0,
+    EXP_FROM="High_Wizard",
+    # Renewal's Warlock bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Int"), (70, "Dex")],
+    EQUIP_JOBS=["Wizard"],
+    EQUIP_LABEL="High Wizard or Warlock",
+    ITEMS_ABOUT="The Warlock's weapons, from warlock/equipment.csv.",
+    CSV_DIR="warlock",
+    # Spellbooks. rAthena reads a book only renewal's way: a WL_MB_ book
+    # casts Reading Spellbook (Reading), which needs the passive Reading
+    # Spellbook. Pre-renewal has the active skill, neither of the others,
+    # no such books and no spellbook_db rows, so all of it comes from
+    # renewal. The books are sold in Geffen (npc/spellbook_seller.txt).
+    NEW_SKILLS_FROM_RENEWAL=["WL_READING_SB_READING"],
+    NEW_FROM_RENEWAL=["WL_MB_SG", "WL_MB_LOV", "WL_MB_MS", "WL_MB_DL", "WL_MB_JF",
+                      "WL_MB_ES", "WL_MB_CR", "WL_MB_CL", "WL_MB_CM", "WL_MB_TV"],
+    COPY_TABLES={"db/spellbook_db.yml": ("db/re/spellbook_db.yml", "READING_SPELLBOOK_DB", 1)},
+    # Pre-renewal's Comet costs 2 Red Gemstones and renewal's none; an import
+    # entry cannot take an item cost away, so pre-renewal's stays. Fitting for
+    # the Warlock's biggest spell, and the README says so.
+    ITEMCOST_KEPT=["WL_COMET"],
+    # SP. Without Soul Drain (+20% max SP, SP back on single-target kills)
+    # and at renewal's prices, the Warlock's area spells ran a full SP bar
+    # dry three times faster than a High Wizard's amplified Meteor Storm at
+    # the same damage, and Soul Expansion in about a minute. These costs
+    # give its area spells about 0.8x the damage a High Wizard deals with a
+    # full SP bar of amplified Meteor Storm, and its single-target spells about
+    # 0.9x that of amplified Jupitel Thunder (README.md has the measurements).
+    SKILL_OVERRIDES={
+        "WL_CRIMSONROCK": {"Requires.SpCost": [25, 29, 34, 38, 42]},
+        "WL_JACKFROST": {"Requires.SpCost": [22, 26, 30, 35, 39]},
+        "WL_FROSTMISTY": {"Requires.SpCost": [26, 31, 37, 42, 47]},
+        "WL_SOULEXPANSION": {"Requires.SpCost": [17, 20, 22, 25, 28]},
+        "WL_HELLINFERNO": {"Requires.SpCost": [57, 63, 68, 74, 79]},
+        "WL_TETRAVORTEX": {"Requires.SpCost": [108, 135, 162, 189, 216, 180, 216, 252, 288, 324]},
+    },
+)
+
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock])

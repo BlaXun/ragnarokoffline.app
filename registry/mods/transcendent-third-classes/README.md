@@ -26,6 +26,7 @@ The mod grows class by class. So far:
 | Arch Bishop | High Priest | `valkyrie 42 42` |
 | Rune Knight | Lord Knight | `valkyrie 42 39` |
 | Royal Guard | Paladin | `valkyrie 55 39` |
+| Warlock | High Wizard | `valkyrie 42 47` |
 
 The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
@@ -389,6 +390,83 @@ Shield Press grow with a shield's weight. Transcendent classes only.
 | Royal Partisan | 90 | Wraith Dead |
 | Aegis of the Guard | 90 | Seyren Windsor |
 
+## Warlock
+
+### The path
+
+1. Wizard, base 99 / job 50 → the Valkyrie's rebirth → High Novice → High
+   Mage. The rebirth remembers High Wizard as the target, as usual.
+2. **High Mage, job 40 or later**, no unspent skill points: talk to the
+   **Warlock** beside the High Wizard changer instead of the High Wizard
+   changer, which stays as it was. You are asked to confirm twice.
+
+The class's skill tree is renewal's Warlock tree: Novice, Mage, Wizard and
+the Warlock's own skills, with a High Wizard's 69 job levels and skill
+points. It never learns Mystical Amplification, Soul Drain, Gravitation
+Field, Ganbantein, Napalm Vulcan or Magic Crasher.
+
+### High Wizard or Warlock
+
+- **High Wizard**, the storm-caller: the Wizard's spells made greater by
+  Mystical Amplification, Soul Drain for SP, Gravitation Field and
+  Ganbantein for bosses and sieges. The best single target, and the one
+  that never runs dry while it kills with single-target spells.
+- **Warlock**, the elementalist: spells of its own (Comet, Crimson Rock,
+  Hell Inferno, Chain Lightning, Earth Strain, Tetra Vortex, Soul
+  Expansion, Jack Frost, Frost Misty, Drain Life), control (White
+  Imprison, Stasis, Marsh of Abyss, Sienna Execrate), and stored spells:
+  elemental spheres and spellbooks that Release fires without a cast.
+
+### Spellbooks
+
+Reading Spellbook works renewal's way: use a **spellbook**, which reads it
+(a 5 s cast), and the spell is stored; **Release** at level 1 casts it at
+once. The books are sold by the **Spellbook Seller** in the Geffen magic
+school (`geffen_in 175 112`), where renewal's Lea stands, at renewal's
+prices: 100,000 zeny for Storm Gust, Lord of Vermilion and Meteor Storm,
+500,000 for Drain Life, Jack Frost, Earth Strain, Crimson Rock and Chain
+Lightning, 1,000,000 for Comet and Tetra Vortex. A book is not used up.
+Pre-renewal has none of this (its own Reading Spellbook does nothing on
+rAthena), so the books, the reading skill and the spellbook table come
+from renewal.
+
+### How strong
+
+Measured against a High Wizard of the same level and stats, with the same
+staff, on the same target, one cast at a time, without consumables:
+
+| | Warlock | High Wizard |
+|---|---|---|
+| One target | Hell Inferno 1926 dmg/s, Tetra Vortex (with its four spheres) 1995, Soul Expansion 1836 | Jupitel Thunder 1750, with Mystical Amplification 2032 |
+| Area, per target | Jack Frost 1390, Crimson Rock 1280, Chain Lightning 1259, Frost Misty 1249, Comet 1409 | Meteor Storm 960, with Mystical Amplification 1255 |
+
+- **SP.** A Warlock has no Soul Drain: about a sixth less SP and nothing
+  back for a kill. At renewal's prices its area spells ran a full bar dry
+  three times faster than an amplified Meteor Storm. Its costs here give
+  about the same damage from a full SP bar: 235k-240k on one target
+  against 257k for amplified Jupitel Thunder (before Soul Drain), and
+  492k-513k on each target of an area against 642k for amplified Meteor
+  Storm. Crimson Rock costs 42 SP at level 5, Jack Frost 39, Frost Misty
+  47, Soul Expansion 28, Hell Inferno 79.
+- **Comet** keeps pre-renewal's cost of **2 Red Gemstones** (an import
+  entry cannot take an item cost away), with renewal's 20 second cooldown.
+- **Area is the Warlock's job**, as it is the High Wizard's.
+
+### Equipment
+
+Two tiers, a staff and a two-handed staff each, for both of the Wizard's
+transcendent paths. Each staff raises Jupitel Thunder for everyone, again
+for a High Wizard, and Chain Lightning for a Warlock; each two-handed
+staff raises Lord of Vermilion for everyone, again for a High Wizard, and
+Crimson Rock for a Warlock. All give MATK +15%. Transcendent classes only.
+
+| Item | Level | Drops from |
+|---|---|---|
+| Elemental Rod | 70 | Elder |
+| Ember Staff | 70 | Incubus |
+| Arcane Conduit | 90 | Succubus |
+| Staff of Starfall | 90 | Kathryne Keyron |
+
 ## Files
 
 | | |
@@ -399,11 +477,14 @@ Shield Press grow with a shield's weight. Transcendent classes only.
 | `npc/rune_knight.txt` | the Rune Knight changer |
 | `npc/dragon_breeder.txt` | the Dragon Breeder in Prontera |
 | `npc/royal_guard.txt` | the Royal Guard changer |
+| `npc/warlock.txt` | the Warlock changer |
+| `npc/spellbook_seller.txt` | the Spellbook Seller in Geffen |
+| `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the skill damage scaling |
 | `db/job_stats.yml` | HP, SP, EXP, bonuses, ASPD, weight |
 | `db/skill_tree.yml` | renewal's trees, under the third classes |
 | `db/skill_db.yml` | renewal's entries for the third-class skills, with the fixed cast times turned into delay, the Arch Bishop's lower SP costs, and the Auto Shadow Spell flag on four more spells |
-| `db/item_db.yml` | the equipment, and the rune stones' reuse delays |
+| `db/item_db.yml` | the equipment, the rune stones' reuse delays, and renewal's spellbooks |
 | `db/item_combos.yml` | the set bonuses (none yet) |
 | `db/mob_db.yml` | the equipment's drops |
 | `System/itemInfo.lua` | the equipment's names and descriptions |
@@ -413,7 +494,7 @@ Everything under `db/` and `System/` is generated by
 `registry/tools/expanded_class/expanded_class.py`, from the pinned rAthena
 and each class's three CSV files, in its own directory beside it
 (`guillotine_cross/`, `shadow_chaser/`, `arch_bishop/`, `rune_knight/`,
-`royal_guard/`):
+`royal_guard/`, `warlock/`):
 
 ```
 python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena
