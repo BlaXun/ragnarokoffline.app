@@ -748,10 +748,12 @@ change. If the pinned `vendor/rathena` lacks the pinned commit, pass
   directory (`CSV_DIR`). A monster may drop items of one class only. A
   single config builds exactly as before.
 - **The changers' places.** The stock transcendent changers stand in two
-  rows in the Valkyrie's hall (`npc/jobs/2-1a/`, `2-2a/` give the
-  cells). Put each third class's changer at the end of its transcendent
-  class's row (Assassin Cross 44,58 → Guillotine Cross 44,61; Stalker
-  53,58 → Shadow Chaser 53,61).
+  rows in the Valkyrie's hall (`npc/jobs/2-1a/`, `2-2a/` give the cells),
+  with two walkable cells between each and the wall. Each third class's
+  changer stands right beside its transcendent class's, on the wall side
+  (x 42 for the west row, 55 for the east): Guillotine Cross 42,58,
+  Shadow Chaser 55,58, Arch Bishop 42,42. Check a cell with
+  `checkcell(map, x, y, cell_chkpass)`.
 - **The Job Master is a back door.** The app's `common-npcs` mod loads
   rAthena's `npc/custom/jobmaster.txt` with `.ThirdClass = true`: it
   offers any second class at 99/50 its third class at job 1, skipping
@@ -777,6 +779,31 @@ change. If the pinned `vendor/rathena` lacks the pinned commit, pass
   entry casting the spell at you, Reproduce first, then Auto Shadow Spell's
   selection packet (`0x442`, answered with `0x443`). The list it sends
   shows which flags took effect.
+
+### Added with the Arch Bishop
+
+- **Measure SP, not just output, for a support class.** Renewal prices
+  third-class skills for renewal's SP pools and SP gear; on a transcendent
+  class's pool, without its SP skills (Meditatio, Mana Recharge), the Arch
+  Bishop sustained half a High Priest's healing. Model a minute of party
+  play: buff upkeep (durations and costs from the tables), heal per SP,
+  SP recovered (`sp#0`, wait, read), with Magnificat for both. Balance
+  heals by SP cost, buffs by "what five single buffs cost the other
+  class".
+- **`SKILL_OVERRIDES` reach nested fields** (`"Requires.SpCost"`) and take
+  a list per level. A skill whose pre-renewal entry already matches
+  renewal's is written anyway when it has an override.
+- **Heals don't show as damage.** Drop HP to 1 (`hp#1`), cast, read HP;
+  SP the same way. Subtract the SP regained between casts.
+- **Passive procs can beat casting.** Duple Light's magic strike added
+  645 dmg/s to staff auto-attacks on an INT build, more than Adoramus,
+  for no SP. Measure auto-attacks with every proc buff on.
+- **A support's damage benchmark is another class's.** The High Priest's
+  own offence is weak, so the Arch Bishop's Holy magic was set against a
+  High Wizard (0.7x), not against Holy Light.
+- **`mod.json` takes at most 8 tags**; a growing mod should not tag each
+  class.
+- Pre-renewal's mace subtype is `Mace`, renewal's `1hMace`.
 
 ### Per new third class, in short
 
