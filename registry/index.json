@@ -1070,11 +1070,11 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "3f6cd2e43e71d25a444e49c35751cc2885a55bde14dcb702eb915d9b17fade04"
+          "sha256": "60324a0c81c6220d3ad972515ef42c06d3b4dcc6c037a0db56156bf2e0d39eed"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "96b656bb255d1220362ef31ec14a76104efbd5b4482510fbe14de434880a5f6f"
+          "sha256": "585d19c48709d1f5ac78f9f1c6c81f8566fac49dcb36e4da5956acc3fc4c9312"
         },
         {
           "path": "db/item_combos.yml",
@@ -1082,7 +1082,7 @@
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "8904a9d0f2bd7790abff074ce92ec47a75b9f045dc467f6c877baed9bcaab927"
+          "sha256": "d92edf656aa84a687a49c110a62e8d1afe49571cc96755eda2b78049dbd50709"
         },
         {
           "path": "db/job_stats.yml",
