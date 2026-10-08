@@ -571,8 +571,8 @@ fn read_manifest(dir: &Path) -> Result<Option<Manifest>, String> {
             }
             m.settings.push(Setting { key, label, description, value, min, max });
         }
-        if m.settings.len() > 20 {
-            return Err("mod.json: a mod may declare at most 20 settings".into());
+        if m.settings.len() > 40 {
+            return Err("mod.json: a mod may declare at most 40 settings".into());
         }
     }
     if let Some(req) = v.get("requires") {
