@@ -77,7 +77,11 @@ def config(build_file, **kw):
         # {flag: [skill names]}: Flags: this mod turns on for skills of other
         # classes (an import entry's Flags merge key by key, so only this one
         # is added), e.g. {"IsAutoShadowSpell": ["PR_TURNUNDEAD"]}.
-        SKILL_FLAGS_ADD={})
+        SKILL_FLAGS_ADD={},
+        # {item aegis: {field: value}}: fields this mod sets on a stock item.
+        # A value is "renewal" (copy the field, with everything under it,
+        # from renewal's entry for the item) or a scalar or a dict of scalars.
+        ITEM_FIELDS={})
     c.__dict__.update(kw)
     c.MOD = root / "registry" / "mods" / c.MOD_NAME
     c.KINDS = {**c.WEAPON_KINDS, **ARMOR_KINDS}
@@ -289,7 +293,7 @@ def build_skill_tree(src):
     return about, "\n".join(out) + "\n"
 
 
-SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
+SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "SplashArea": "0", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
                   "Duration2": "0", "CastTime": "0", "Cooldown": "0", "FixedCastTime": "0"}
 
 
@@ -546,6 +550,29 @@ def build_items(src, iteminfo):
         if C.ITEM_JOB and jobs.get(C.BASE) == "true" and C.ITEM_JOB not in jobs:
             e = re.sub(r"(^    Jobs:\n(?:      .*\n)+)", lambda m: m.group(1) + f"      {C.ITEM_JOB}: true\n", e + "\n", count=1, flags=re.M).rstrip("\n")
         flags.append(e)
+
+    # 2b. Fields this mod sets on stock items (ITEM_FIELDS).
+    re_all = {}
+    for f in ("db/re/item_db_etc.yml", "db/re/item_db_usable.yml"):
+        for e in body_entries(src[f], "Id"):
+            re_all[item_fields(e)["aegis"]] = e
+    for aegis, fields in C.ITEM_FIELDS.items():
+        it, pre_e = stock.get(aegis) or fail(f"ITEM_FIELDS: {aegis} is not a pre-renewal item")
+        lines = [f"  - Id: {it['id']}    # {it['name']}: this mod's fields only"]
+        for field, value in fields.items():
+            if value == "renewal":
+                e = re_all.get(aegis) or fail(f"ITEM_FIELDS: renewal has no {aegis}")
+                m = re.search(r"^    " + field + r":.*\n(?:      .*\n)*", e + "\n", re.M)
+                if not m:
+                    fail(f"ITEM_FIELDS: renewal's {aegis} has no {field}")
+                first, *rest = m.group(0).rstrip("\n").split("\n")
+                lines += [first + "    # renewal's"] + rest
+            elif isinstance(value, dict):
+                lines.append(f"    {field}:    # this mod's balance")
+                lines += [f"      {k}: {v}" for k, v in value.items()]
+            else:
+                lines.append(f"    {field}: {value}    # this mod's balance")
+        flags.append("\n".join(lines))
 
     # 3. The mod's own equipment.
     rows = read_csv("equipment.csv")
