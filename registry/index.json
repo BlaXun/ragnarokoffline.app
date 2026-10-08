@@ -1023,7 +1023,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "428cddeb4040de925cfe834ac6f7831878819dd4a5c1cbcad2f2a0ab88b6e8bd"
+          "sha256": "450f13d86f6dbd0f5b4f57cb2f218e308d2aec28c6c445be059bcce89f4d896e"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1047,7 +1047,7 @@
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "f38133e27d0f253ed9e72c734f816b32cefe7e1f5e7e3a3e49558de8031e8166"
+          "sha256": "5e3bce2ce9072d4dbd6de7108223cefcda180a7923588089d10479628e27edc2"
         },
         {
           "path": "db/skill_tree.yml",
