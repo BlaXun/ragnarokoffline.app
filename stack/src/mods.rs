@@ -4265,6 +4265,22 @@ mod tests {
         assert!(out.npc_lines.contains("npc: npc/mods/both-clients/iro.txt\n"), "{}", out.npc_lines);
     }
 
+    /// A mod may declare up to 40 settings; one more is refused by name.
+    #[test]
+    fn a_mod_may_declare_forty_settings_and_no_more() {
+        let cfg = kind_config("settings-limit");
+        let dir = cfg.state.join("mods/m");
+        fs::create_dir_all(&dir).unwrap();
+        let settings = |n: usize| {
+            let list: Vec<String> = (0..n).map(|i| format!(r#"{{"key": "s{i}", "type": "boolean", "default": true}}"#)).collect();
+            format!(r#"{{"settings": [{}]}}"#, list.join(", "))
+        };
+        fs::write(dir.join("mod.json"), settings(40)).unwrap();
+        assert_eq!(read_manifest(&dir).unwrap().unwrap().settings.len(), 40);
+        fs::write(dir.join("mod.json"), settings(41)).unwrap();
+        assert!(read_manifest(&dir).unwrap_err().contains("at most 40 settings"));
+    }
+
     #[test]
     fn client_folders_are_checked_like_era_folders() {
         let cfg = kind_config("client-folders");
