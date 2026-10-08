@@ -596,6 +596,165 @@ the better. The worked example is `registry/mods/star-emperor` (branch
 
 ---
 
+## 12. Third classes as sidegrades: Guillotine Cross
+
+Renewal's other third classes (Guillotine Cross, Rune Knight, Arch Bishop,
+...) sit on top of second classes that pre-renewal already finishes with a
+transcendent class. They do not become a rebirth; they become **the other
+way to finish one**: after the Valkyrie, a High Thief picks Assassin Cross
+*or* Guillotine Cross. All of them go into one mod,
+`registry/mods/transcendent-third-classes` (branch
+`mods/transcendent-third-classes`), which grows a class at a time; the
+Guillotine Cross was the pilot.
+
+### Decided with the human (do not re-ask)
+
+- **Sidegrade, at parity.** Not "a bit below" as in §1: the transcendent
+  class is the yardstick, and the third class trades its strengths, not
+  its total.
+- **Its own skills only.** The third class keeps its first and second
+  class's skills and gets its own, and never learns the transcendent ones
+  (no EDP for a Guillotine Cross). Sharing the transcendent skills would
+  make it an upgrade.
+- **Permanent choice.** No NPC to swap back.
+- **A few weapons, no full set**, and the transcendent class may use them
+  too (see Gear).
+- **Split by sex** where renewal splits (Minstrel/Wanderer), as two
+  classes.
+- **Fourth classes are out**: their trait stats (P.ATK, S.MATK, RES, ...)
+  only work under `#ifdef RENEWAL` in `battle.cpp`/`status.cpp`.
+
+### Agree the identity before measuring
+
+Write down with the human what each of the two classes is *for* before
+choosing any factor; "parity" alone does not say what to scale. For the
+Assassin's pair:
+
+- **Assassin Cross**: single-target burst (Sonic Blow, EDP windows). It
+  keeps the single-target crown.
+- **Guillotine Cross**: about 0.9 times that on one target, in return for
+  a wider area (Rolling Cutter), a debuff (Dark Crow), poisons with
+  effects, parry and counter (Weapon Blocking → Counter Slash) and
+  mobility (Hallucination Walk, Cloaking Exceed, Dark Illusion).
+
+Then set the targets from it: which rotation is compared with which, and
+at what ratio. Report where the result misses the identity: the
+Guillotine Cross's Rolling Cutter came out at 704 per target against
+Meteor Assault's 1176, so it beats the Assassin Cross on groups only
+through its larger area.
+
+### The class
+
+- **Use the `_T` job** (`Job_Guillotine_Cross_T`, 4065). It carries
+  `JOBL_UPPER`, so it gets the transcendent HP factor and transcendent-only
+  gear like any reborn class.
+- **Ship the non-`_T` tree under the `_T` name.** Renewal's
+  `Guillotine_Cross_T` tree inherits Assassin Cross and its skills; the
+  plain `Guillotine_Cross` tree inherits only Assassin. The generator's
+  `TREE_FROM={"Guillotine_Cross_T": "Guillotine_Cross"}` does this. Check
+  on the server that a transcendent skill stays at 0 (`skillup 378` for
+  EDP).
+- **Copy the transcendent class's tables**: `HP_FROM`, `SP_FROM`,
+  `EXP_FROM` = the transcendent class, scale 1.0, its 69 job levels
+  (`MAX_JOB_LEVEL=70`). Renewal's third-class job bonuses fall short of
+  45; top them up with `EXTRA_BONUS` to `BONUS_TOTAL=45`.
+
+### The changer
+
+- An NPC beside the Valkyrie (`valkyrie 52 58`), next to where the stock
+  route goes on. The stock changer is left as it was; test that its route
+  still makes the transcendent class without third-class skills.
+- Conditions: `ADVJOB` is the transcendent class (so the player came
+  through the Valkyrie for this branch), `Class` is the High first class,
+  job 40 or more, and **no unspent skill points**, since they would be
+  carried into a tree they were not earned for.
+- Ask twice, say "permanent", then `jobchange <transcendent>;
+  jobchange <third>_T; set ADVJOB, 0;`. Going through the transcendent
+  class is the §11 trick: the third-class change happens at its job 1, so
+  `change_level_3rd` holds nothing back.
+
+### Gear
+
+- `Classes: Upper` with the second class's job key lets **both**
+  transcendent paths wear it: pre-renewal's `pc_isItemClass` lets a
+  `JOBL_THIRD` class wear Upper items. A non-reborn second class cannot.
+  `Classes: Third` would lock the transcendent class out; the human chose
+  against that.
+- Give each weapon bonuses for both paths (two skills of each), so
+  neither class gets dead weight.
+- Assassin-branch third classes dual-wield daggers through the upper
+  mask, with no flag. Test it as the client does: `wear <idx> 2`, then
+  `wear <idx> 32` (left hand).
+- **Raise base level before an equip test.** A level-70 item on a level-1
+  test character fails silently and looks like a class-flag bug.
+- Check the other class mods' `drops.csv` for the same monsters; rAthena
+  keeps only ten drops each.
+
+### Skill entries
+
+- Renewal entries can leave a `Knockback:` that pre-renewal sets and
+  renewal does not; the generator now resets it to 0.
+- `SKILL_OVERRIDES` replaces a whole field, a per-level list included.
+  Before this it replaced only the first line and left the list behind.
+- **Read `Requires: Status:` before calling a skill broken.** Counter Slash
+  fails with cause 31 (`USESKILL_FAIL_GC_WEAPONBLOCKING`) until Weapon
+  Blocking has parried a hit; Venom Pressure needs a poison on the blade;
+  Cross Ripper Slasher needs Rolling Cutter's status. Fail causes are the
+  `USESKILL_FAIL_*` enum in `src/map/clif.hpp`.
+- **Read `TargetType`.** Cross Ripper Slasher cast on yourself does
+  nothing and reports nothing; it needs the target.
+
+### Measuring
+
+- **Renewal cadence can be absurd here.** Cross Impact has 0.5 s delay and
+  a 0.35 s cooldown at level 5, which renewal pays for with its stats; in
+  pre-renewal that was nine times Sonic Blow. A factor alone would have
+  made it a pile of small hits; overriding its delay to 1.5 s and then
+  scaling (29%) kept it the heavy hit. Prefer that when a skill's role is
+  a big hit.
+- **Stack and payoff skills.** Cross Ripper Slasher gains 200% per Rolling
+  Cutter counter, up to ten, and does not consume them, so the best
+  rotation is to alternate the two. Measure at the fastest cadence the
+  server accepts: here 0.35 s (`... mob - 0.35 seq`); at 0.3 s every Cross
+  Ripper Slasher arrives inside Rolling Cutter's delay and is dropped
+  without a failure packet. Report the perfect number and a relaxed one
+  (0.5 s): 964 and 688.
+- **Amplifying debuffs.** Dark Crow adds 30% per level to *short-range*
+  damage on its target for 20 s a minute (half on bosses). Weapon skills
+  with range 5 or more are long range and do not gain from it. Measure
+  without it and describe it as the burst window.
+- **Passives explain gaps.** The Guillotine Cross auto-attacks for 470
+  against the Assassin Cross's 614: Advanced Katar Mastery is an Assassin
+  Cross skill. That is the trade, not a bug.
+- Crit skills (Cross Impact) vary by about 10% run to run; measure 60 s,
+  twice.
+- A skill that needs a consumable through a client menu (Venom Pressure)
+  can be scaled from its ratio relative to a measured skill. Say so in the
+  README.
+
+### Generator
+
+The four class mods' branches carry the same
+`registry/tools/expanded_class/expanded_class.py`; this branch added
+`TREE_FROM`, the Knockback reset and the whole-field override. Sync it to
+every branch and confirm with `--check` that each mod's output does not
+change. If the pinned `vendor/rathena` lacks the pinned commit, pass
+`--rathena ../rathena`.
+
+### Per new third class, in short
+
+1. Agree identity and targets with the human.
+2. Add the class to `JOBS`, `TREE_FROM`, the table sources, `EXTRA_BONUS`,
+   `SKILL_PREFIX` and `EQUIP_JOBS` in the mod's `build.py`, and its
+   weapons and drops to the CSVs.
+3. Write its changer beside the Valkyrie.
+4. Test the path both ways, the transcendent skills blocked, the gear on
+   both paths, and the drops.
+5. Measure against the transcendent class, set factors and overrides,
+   remeasure, and add a section to the README and a line to `mod.json`.
+
+---
+
 ## Appendix: Kagerou's file list
 
 ```
