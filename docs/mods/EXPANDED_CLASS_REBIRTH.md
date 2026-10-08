@@ -805,6 +805,31 @@ change. If the pinned `vendor/rathena` lacks the pinned commit, pass
   class.
 - Pre-renewal's mace subtype is `Mace`, renewal's `1hMace`.
 
+### Added with the Rune Knight
+
+- **Mounts the class needs.** Dragon Breath needs a dragon; only
+  `setdragon` gives one (Dragon Training required), and renewal's Dragon
+  Breeder (`npc/re/merchants/renters.txt`) is not loaded in pre-renewal.
+  The mod ships its own beside the Peco Peco Breeder. Check every
+  `Requires: State:` (Ridingdragon, Madogear, ...) for what provides it.
+- **Consumable skills: check the item, not just the skill.** Pre-renewal's
+  rune stones have no reuse delay; renewal's do. `ITEM_FIELDS` copies a
+  field from renewal's item (`"renewal"`) or sets this mod's value. Look
+  for renewal durations measured in minutes on strong buffs: Giant Growth
+  was x3.5 auto-attack damage for 15 minutes; it became a 30-second burst
+  every 3 minutes (skill `Duration1` plus the rune's `Delay`).
+- **Benchmarks that depend on gear.** Pre-renewal Spiral Pierce scales
+  with weapon weight; a test weapon of weight 1 made it look useless. Use
+  a realistic weight (a Lance's, 2500).
+- **HP-scaled skills.** Dragon Breath uses current HP and max SP, so a VIT
+  build hits harder than the measuring template; say by how much.
+- **Some skills simply do not work in pre-renewal** (Storm Blast hits
+  nothing even when learned and cast directly). Note it and leave it; a
+  fix belongs in rAthena.
+- **Buffs that block whispers** (Frenzy: NoChat) stall the test helper,
+  which is driven by whispers; set the dummy up first (`dummy#9`).
+- `SKILL_DEFAULTS` gained `SplashArea: 0` (Fighting Spirit).
+
 ### Per new third class, in short
 
 1. Agree identity and targets with the human.
