@@ -326,7 +326,9 @@ its enum in `src/map/script.hpp`. The number is what the server sends.
 The list was generated from the rAthena and roBrowserLegacy commits in
 `config/VENDOR_PINS`, an October 2026 iRO `data.grf` and a 2025-11-05 kRO
 `data.grf`. A later pin or a newer client can add constants, and can turn a
-"nothing" into a picture.
+"nothing" into a picture. `scripts/hat-effects-doc.py` regenerates the **Client
+draws** column from the pins and the two GRFs: with `--iro` and `--kro` it lists
+the rows that would change, and with `--write` as well it rewrites them.
 
 | # | Constant | Item | Client draws |
 |---|---|---|---|
