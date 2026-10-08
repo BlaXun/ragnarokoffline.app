@@ -830,6 +830,28 @@ change. If the pinned `vendor/rathena` lacks the pinned commit, pass
   which is driven by whispers; set the dummy up first (`dummy#9`).
 - `SKILL_DEFAULTS` gained `SplashArea: 0` (Fighting Spirit).
 
+### Added with the Royal Guard
+
+- **Renewal can drop or strip a skill.** Pre-renewal still has
+  LG_OVERBRAND_BRANDISH and LG_OVERBRAND_PLUSATK, renewal does not: the
+  generator keeps pre-renewal's entry and lists it. Renewal's Shield
+  Spell left out DamageFlags, Hit, HitCount, Element, Knockback and
+  CopyFlags; each needs a reset. `Hit` cannot be reset (renewal's default,
+  DMG_NORMAL, has no YAML name; only Single and Multi_Hit do), so
+  pre-renewal's stays, which only changes how the hit is shown.
+- **CopyFlags: write both copy types false.** rAthena's parser clears one
+  with `option &= FLAG` instead of `&= ~FLAG`
+  (fix: rathena branch `fix/skill-copyflags-false`).
+- **Shields need a `View`**, like headgear, or rAthena warns and shows a
+  Guard. A kind with `view=True` copies its look item's.
+- **Gear-weighted benchmarks again**: Rapid Smiting and Shield Press grow
+  with shield weight and refine; measure with a shield of a real one's
+  weight (a Stone Buckler's, 1500).
+- **Party-only skills** (Banding, Hesperus Lit, Ray of Genesis without
+  Inspiration) cannot be measured alone; they stay as in renewal.
+- The Royal Guard's gryphon is the Crusader's Peco Peco riding: no
+  breeder needed, unlike the Rune Knight's dragon.
+
 ### Per new third class, in short
 
 1. Agree identity and targets with the human.
