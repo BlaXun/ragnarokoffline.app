@@ -61,7 +61,8 @@ def config(build_file, **kw):
         # A skill whose cooldown is at least this long (ms) cannot be spammed
         # anyway: its whole fixed cast goes into CastTime, where DEX and
         # Izayoi reduce it as renewal's fixed-cast reductions would.
-        FIXED_CAST_COOLDOWN_EXEMPT=10000)
+        FIXED_CAST_COOLDOWN_EXEMPT=10000,
+        ASPD=None)              # {weapon: value} instead of the base class's BaseASPD
     c.__dict__.update(kw)
     c.MOD = root / "registry" / "mods" / c.MOD_NAME
     c.KINDS = {**c.WEAPON_KINDS, **ARMOR_KINDS}
@@ -211,7 +212,7 @@ def build_job_stats(src):
     jobs = ["  - Jobs:"] + [f"      {j}: true" for j in C.JOBS]
     out = list(jobs)
     out += [f"    MaxWeight: {weight}", f"    HpFactor: {hp_factor}", f"    SpIncrease: {sp_increase}", "    BaseASPD:"]
-    out += aspd
+    out += [f"      {k}: {v}" for k, v in C.ASPD.items()] if C.ASPD else aspd
     out += ["    BonusStats:"]
     by_level = {}
     for lvl, stat, val in bonus:
@@ -240,7 +241,9 @@ def build_job_stats(src):
         f"{', '.join(C.JOBS)}, which pre-renewal's job tables do not have.",
         f"Base levels 1-{max_base} on the transcendent EXP table, job levels",
         f"1-{C.MAX_JOB_LEVEL} on the transcendent second-job table (cut at {C.MAX_JOB_LEVEL}).",
-        f"HP: {C.HP_FROM} x {C.HP_SCALE}. SP: {C.SP_FROM} x {C.SP_SCALE}. ASPD and weight: the {C.BASE}'s.",
+        f"HP: {C.HP_FROM} x {C.HP_SCALE}. SP: {C.SP_FROM} x {C.SP_SCALE}. "
+        + (f"Weight: the {C.BASE}'s. ASPD: " + ", ".join(f"{k} {v}" for k, v in C.ASPD.items()) + "."
+           if C.ASPD else f"ASPD and weight: the {C.BASE}'s."),
         f"Job bonuses: renewal's to job {C.MAX_JOB_LEVEL}"
         + (", then one each at " + ", ".join(str(l) for l, _ in C.EXTRA_BONUS) if C.EXTRA_BONUS else "")
         + (f" less its last {len(dropped_bonus)}" if dropped_bonus else "")
