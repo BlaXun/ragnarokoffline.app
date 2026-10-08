@@ -188,13 +188,16 @@
   .mgroup:first-child { margin-top: 2px; }
   .mrow { border-bottom: 1px solid var(--line); }
   .mrow:last-child { border-bottom: 0; }
-  .mrow-main { display: grid; grid-template-columns: 34px auto minmax(0, 1fr); gap: 4px 10px; align-items: center; }
+  .mrow-main { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: center; }
   .mrow-hit { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: center;
     width: 100%; min-width: 0; padding: 9px 0; background: none; border: 0; border-radius: 6px;
     color: inherit; font: inherit; text-align: left; cursor: pointer; }
   .mrow-hit:hover:not(:disabled) { background: none; }
   .mrow-hit:hover .mname { color: var(--accent-hi); }
-  .mrow-hit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* The name is the row's keyboard control (aria-expanded); the rest of the row opens it on a click. */
+  button.mname, button.mname:hover:not(:disabled) { background: none; border: 0; padding: 0; text-align: left;
+    font: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; border-radius: 3px; }
+  button.mname:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .mrow-hit .modicon { width: 36px; height: 36px; font-size: 14px; }
   .mhead { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-width: 0; }
   .mname { color: var(--text); font-weight: 600; font-size: 13.5px; overflow-wrap: anywhere; }
@@ -239,7 +242,7 @@
   .star[aria-pressed="true"] { color: var(--warn); }
   .star:focus-visible { outline: 1px solid var(--accent-dim); border-radius: 4px; }
   .modhead .star { align-self: baseline; padding: 0 4px; font-size: 16px; }
-  .mrow-main .star { align-self: flex-start; margin-top: 9px; padding: 0 2px; }
+  .mhead .star { padding: 0 2px; font-size: 16px; }
   .favrow { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line, #8882); }
   .favrow:last-child { border-bottom: none; }
   .favrow .favname { font-weight: 600; font-size: 13px; color: var(--text); }
@@ -2197,30 +2200,34 @@ function modRow(m, kindBoxes, pendingNames) {
   };
   if (m.kind && !m.refused) (kindBoxes[m.kind] = kindBoxes[m.kind] || []).push([m.name, cb]);
 
-  const hit = el('button', 'mrow-hit');
-  hit.type = 'button';
-  hit.setAttribute('aria-expanded', String(open));
+  // A click anywhere on the row opens it; the name is the button for the keyboard (and for a
+  // screen reader). Not one button around the whole row, so the star can sit on the title line.
+  const hit = el('div', 'mrow-hit');
+  const nameButton = el('button', 'mname', m.name);
+  nameButton.type = 'button';
+  nameButton.setAttribute('aria-expanded', String(open));
   const text = el('div');
   text.style.minWidth = '0';
   const head = el('div', 'mhead');
-  head.append(el('span', 'mname', m.name));
+  head.append(nameButton);
   if (m.version) head.append(el('span', 'modver', 'v' + m.version.replace(/^v/i, '')));
   const badges = el('span', 'mhead badges');
   badges.append(...modBadges(m, pendingNames));
-  head.append(badges);
+  head.append(badges, starButton(m.name));
   text.append(head, el('div', 'mone', m.refused ? 'Not loaded — ' + m.reason : (m.description || '')));
   hit.append(letterTile(m.name), text);
-  main.append(sw, starButton(m.name), hit);
+  main.append(sw, hit);
 
   const more = el('div', 'mrow-more');
   more.hidden = !open;
   more.id = 'mod-more-' + m.name;
-  hit.setAttribute('aria-controls', more.id);
+  nameButton.setAttribute('aria-controls', more.id);
+  // The name's click (a press of Enter or Space included) reaches the row's, once.
   hit.onclick = () => {
     const now = more.hidden;
     more.hidden = !now;
     row.classList.toggle('open', now);
-    hit.setAttribute('aria-expanded', String(now));
+    nameButton.setAttribute('aria-expanded', String(now));
     if (now) modsOpen.add(m.name); else modsOpen.delete(m.name);
   };
 
@@ -2861,7 +2868,7 @@ function openInstalled(name) {
   const row = [...$('mods-list').querySelectorAll('.mrow')].find(r => r.dataset.mod === name);
   if (!row) return;
   row.scrollIntoView({ block: 'center' });
-  row.querySelector('.mrow-hit').focus({ preventScroll: true });
+  row.querySelector('button.mname').focus({ preventScroll: true });
 }
 
 function tagChips(mod, after) {
@@ -3122,10 +3129,10 @@ function showFavorite(name) {
     showModsSub('installed');
     const row = document.querySelector(`#mods-list .mrow[data-mod="${CSS.escape(name)}"]`);
     if (row) {
-      const hit = row.querySelector('.mrow-hit');
-      if (hit && hit.getAttribute('aria-expanded') !== 'true') hit.click();
+      const name = row.querySelector('button.mname');
+      if (name && name.getAttribute('aria-expanded') !== 'true') name.click();
       row.scrollIntoView({ block: 'center' });
-      if (hit) hit.focus();
+      if (name) name.focus();
     }
     return;
   }
