@@ -13,22 +13,26 @@ dialogue around it.
     python3 build.py --write      write the mod's scripts
     python3 build.py --check      fail if the mod's scripts are stale
 
-maps.csv   the renewal-only maps the mod opens, by region.
+maps.csv   the renewal-only maps the mod covers, by region. access "open":
+           the mod opens a way in. access "staged": the map is joined to its
+           neighbours, but nothing leads in from outside yet. That way can
+           come later: a gate, or a portal turned on, and the rest is ready.
 gates.csv  one NPC per row: where it stands, what it looks like, where it
            sends you. kind "talk" asks first; kind "touch" is a portal you walk
            into. Gates are free.
 
 What is copied from renewal, for the maps in maps.csv:
   - every warp portal between two listed maps, or between a listed map and a
-    map pre-renewal already has (splendide -> bif_fild01, juperos_01 -> ver_eju);
+    map pre-renewal already has (splendide -> bif_fild01, juperos_01 -> ver_eju),
+    except one that leads into a staged map from outside the staged maps;
   - the map flags in WANTED_FLAGS (town, nomemo, noteleport, ...).
 A portal to a renewal-only map that is not listed is left out and reported.
 
 The build fails when a gate stands on a cell that is not walkable in
 pre-renewal (Alberta and Izlude have their classic layouts there), when a gate
 or portal stands next to one pre-renewal already has, when a name is already
-taken, or when a listed map cannot be reached from the old world or cannot
-get back to it.
+taken, when an open map cannot be reached from the old world or cannot get
+back to it, or when a staged map can be reached at all.
 
 The CSVs live here, beside this script, and are not shipped: the mod carries
 only the scripts generated from them. After --write, run scripts/mod-index.py.
@@ -167,7 +171,8 @@ class Cells:
         self.c = zlib.decompress(packed)
 
     def walkable(self, x, y):
-        return 0 <= x < self.w and 0 <= y < self.h and self.c[x + y * self.w] == 0
+        # rAthena's map_gat2cell: types 1 (wall) and 5 (gap) are the only ones you cannot walk on.
+        return 0 <= x < self.w and 0 <= y < self.h and self.c[x + y * self.w] not in (1, 5)
 
 
 def read_csv(name):
@@ -210,6 +215,10 @@ def build(rathena):
 
     rows = read_csv("maps.csv")
     listed = {r["map"]: r["region"] for r in rows}
+    staged = {r["map"] for r in rows if r["access"] == "staged"}
+    for r in rows:
+        if r["access"] not in ("open", "staged"):
+            errors.append(f"maps.csv: {r['map']}: access must be open or staged, not {r['access']!r}")
     old = pre.maps
     for mp in listed:
         if mp not in cache:
@@ -231,12 +240,16 @@ def build(rathena):
             if src in listed or dst in listed:
                 dropped[(src, dst)] += 1
             continue
+        if dst in staged and src not in staged:
+            dropped[(src, dst)] += 1
+            continue
         if line in seen:
             continue
         seen.add(line)
         warps.append((f, line, src, x, y, name, dst, dx, dy))
     for (src, dst), n in sorted(dropped.items()):
-        notes.append(f"left out: {n} portal(s) {src} -> {dst} (not listed)")
+        why = "into a staged map" if dst in staged else "not listed"
+        notes.append(f"left out: {n} portal(s) {src} -> {dst} ({why})")
 
     gates = read_csv("gates.csv")
     for g in gates:
@@ -263,6 +276,8 @@ def build(rathena):
             errors.append(f"{where}: stands on {g['map']}, which is neither listed nor in pre-renewal")
         if g["to_map"] not in listed and g["to_map"] not in old:
             errors.append(f"{where}: sends to {g['to_map']}, which is neither listed nor in pre-renewal")
+        if g["to_map"] in staged and g["map"] not in staged:
+            errors.append(f"{where}: leads into staged {g['to_map']}; make the map open first")
         # A portal must stand on a cell you can step on. Someone you talk to
         # may stand on a wall or a pier's edge, as long as you can get close.
         near = 0 if g["kind"] == "touch" else TALK_REACH
@@ -279,7 +294,11 @@ def build(rathena):
             for t in crowded(src, x, y, name):
                 errors.append(f"portal {name} ({src},{x},{y}): within {KEEP_CLEAR} cells of pre-renewal's {t[2]} at {t[0]},{t[1]}")
         if not walkable(dst, dx, dy):
-            notes.append(f"portal {name}: lands on an unwalkable cell {dst},{dx},{dy} (as in renewal)")
+            if dst in old and src not in staged:
+                errors.append(f"portal {name}: lands on an unwalkable cell {dst},{dx},{dy} in pre-renewal")
+            else:
+                notes.append(f"portal {name}: lands on an unwalkable cell {dst},{dx},{dy}"
+                             + (" in pre-renewal; fix before opening" if dst in old else " (as in renewal)"))
 
     # --- the world graph ----------------------------------------------------
     OLD = "<pre-renewal world>"
@@ -303,6 +322,12 @@ def build(rathena):
 
     inward, outward = reach(fwd), reach(back)
     for mp in listed:
+        if mp in staged:
+            if mp in inward:
+                errors.append(f"{mp}: staged, but a way in from the pre-renewal world reaches it")
+            elif mp not in outward:
+                notes.append(f"{mp}: staged, and no way back to the pre-renewal world once opened")
+            continue
         if mp not in inward:
             errors.append(f"{mp}: no way in from the pre-renewal world")
         if mp not in outward:
@@ -328,7 +353,8 @@ def build(rathena):
     out_w = [gen, "// Warp portals, copied from renewal as they are.\n"]
     for region in dict.fromkeys(r["region"] for r in rows):
         if by_region.get(region):
-            out_w.append(f"\n//== {region} " + "=" * 50 + "\n")
+            tag = " (staged: no way in yet)" if all(m in staged for m, r in listed.items() if r == region) else ""
+            out_w.append(f"\n//== {region}{tag} " + "=" * 50 + "\n")
             out_w += [w[1] + "\n" for w in by_region[region]]
     out_g = [gen, "// Gates: the entrances renewal keeps behind a quest, an instance or a ship.\n"]
     for g in gates:
@@ -338,7 +364,7 @@ def build(rathena):
         out_f.append(f"{m}\tmapflag\t{fl}" + (f"\t{v}" if v else "") + "\n")
 
     files = {OUT_WARPS: "".join(out_w), OUT_GATES: "".join(out_g), OUT_FLAGS: "".join(out_f)}
-    summary = (f"{len(listed)} maps in {len(set(listed.values()))} regions, "
+    summary = (f"{len(listed)} maps in {len(set(listed.values()))} regions ({len(staged)} staged), "
                f"{len(warps)} portals, {len(gates)} gates, {len(flags)} map flags")
     return files, errors, notes, summary
 

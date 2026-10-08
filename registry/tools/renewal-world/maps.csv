@@ -1,56 +1,133 @@
-map,region,note
-bif_fild01,bifrost,Splendide Bifrost; portal from splendide
-bif_fild02,bifrost,Mora field; Log Tunnel gate from bif_fild01 replaces the Hazy Forest instance
-mora,bifrost,town; Small Hole gates from bif_fild02
-dali,bifrost,Dimensional Gap hub; Transport Devices from mid_camp / moc_fild22b / bif_fild01 / dic_fild02
-dic_fild01,dicastes,Kamidal Mountain
-dic_fild02,dicastes,Kamidal Tunnel; Transport Device to dali
-dicastes01,dicastes,town; Capital City Guard gate from dic_fild01
-dicastes02,dicastes,town upper level
-dic_in01,dicastes,interiors; some rooms are reached by quest elevators and stay closed
-dic_dun01,dicastes,Scaraba Hole; portal from dic_fild01 and Entrance Manager gate from manuk
-dic_dun02,dicastes,Scaraba Hole 2; Vigilante gate
-dic_dun03,dicastes,Scaraba Hole 3; Dirty Vigilante gate
-ecl_fild01,eclage,Eclage field; portal from bif_fild02
-eclage,eclage,town; Entrance gate from ecl_fild01
-ecl_hub01,eclage,interior hub
-ecl_in01,eclage,interior
-ecl_in02,eclage,interior
-ecl_in03,eclage,interior
-ecl_tdun01,eclage,Eclage tree dungeon 1
-ecl_tdun02,eclage,Eclage tree dungeon 2
-ecl_tdun03,eclage,Eclage tree dungeon 3
-ecl_tdun04,eclage,Eclage tree dungeon 4
-ver_eju,verus,Juperos side entrance; portal from juperos_01
-ver_tunn,verus,tunnel
-verus01,verus,Verus city
-verus02,verus,Verus city
-verus03,verus,Verus city
-verus04,verus,Verus city
-dewata,dewata,town; ship from alberta
-dew_fild01,dewata,Dewata field
-dew_in01,dewata,interior
-dew_dun01,dewata,Krakatau volcano; Gatekeeper gate
-dew_dun02,dewata,Istana cave
-malaya,malaya,town; ship from alberta
-ma_fild01,malaya,Malaya field
-ma_fild02,malaya,Malaya field
-ma_in01,malaya,interiors
-ma_dun01,malaya,Bangungot hospital; Hospital Door gate
-malangdo,malangdo,town; ship from alberta
-mal_in01,malangdo,interiors
-mal_in02,malangdo,interiors
-mal_dun01,malangdo,Octopus dungeon; portal from malangdo
-harboro1,rockridge,Rockridge harbour; ship from alberta
-har_in01,rockridge,interiors
-harboro2,rockridge,Underground Passage gate
-rockrdg1,rockridge,Rockridge field
-rockrdg2,rockridge,Rockridge field
-rockmi1,rockridge,mine; portal from rockrdg2
-rockmi2,rockridge,mine; Shawn McCurdy gate
-nif_dun01,dungeons,Niflheim dungeon 1; gate from niflheim
-nif_dun02,dungeons,Niflheim dungeon 2
-iz_dun05,dungeons,Izlude undersea 6; Gatekeeper gate from iz_dun04
-abyss_04,dungeons,Abyss Lakes 4; Sign gate from abyss_03
-ein_dun03,dungeons,Einbroch mine 3; gate from ein_dun02
-mag_dun03,dungeons,Magma dungeon 3; gate from mag_dun02
+map,region,access,note
+bif_fild01,bifrost,open,Splendide Bifrost; portal from splendide
+bif_fild02,bifrost,open,Mora field; Log Tunnel gate from bif_fild01 replaces the Hazy Forest instance
+mora,bifrost,open,town; Small Hole gates from bif_fild02
+dali,bifrost,open,Dimensional Gap hub; Transport Devices from mid_camp / moc_fild22b / bif_fild01 / dic_fild02
+dic_fild01,dicastes,open,Kamidal Mountain
+dic_fild02,dicastes,open,Kamidal Tunnel; Transport Device to dali
+dicastes01,dicastes,open,town; Capital City Guard gate from dic_fild01
+dicastes02,dicastes,open,town upper level
+dic_in01,dicastes,open,interiors; some rooms are reached by quest elevators and stay closed
+dic_dun01,dicastes,open,Scaraba Hole; portal from dic_fild01 and Entrance Manager gate from manuk
+dic_dun02,dicastes,open,Scaraba Hole 2; Vigilante gate
+dic_dun03,dicastes,open,Scaraba Hole 3; Dirty Vigilante gate
+ecl_fild01,eclage,open,Eclage field; portal from bif_fild02
+eclage,eclage,open,town; Entrance gate from ecl_fild01
+ecl_hub01,eclage,open,interior hub
+ecl_in01,eclage,open,interior
+ecl_in02,eclage,open,interior
+ecl_in03,eclage,open,interior
+ecl_tdun01,eclage,open,Eclage tree dungeon 1
+ecl_tdun02,eclage,open,Eclage tree dungeon 2
+ecl_tdun03,eclage,open,Eclage tree dungeon 3
+ecl_tdun04,eclage,open,Eclage tree dungeon 4
+ver_eju,verus,open,Juperos side entrance; portal from juperos_01
+ver_tunn,verus,open,tunnel
+verus01,verus,open,Verus city
+verus02,verus,open,Verus city
+verus03,verus,open,Verus city
+verus04,verus,open,Verus city
+dewata,dewata,open,town; ship from alberta
+dew_fild01,dewata,open,Dewata field
+dew_in01,dewata,open,interior
+dew_dun01,dewata,open,Krakatau volcano; Gatekeeper gate
+dew_dun02,dewata,open,Istana cave
+malaya,malaya,open,town; ship from alberta
+ma_fild01,malaya,open,Malaya field
+ma_fild02,malaya,open,Malaya field
+ma_in01,malaya,open,interiors
+ma_dun01,malaya,open,Bangungot hospital; Hospital Door gate
+malangdo,malangdo,open,town; ship from alberta
+mal_in01,malangdo,open,interiors
+mal_in02,malangdo,open,interiors
+mal_dun01,malangdo,open,Octopus dungeon; portal from malangdo
+harboro1,rockridge,open,Rockridge harbour; ship from alberta
+har_in01,rockridge,open,interiors
+harboro2,rockridge,open,Underground Passage gate
+rockrdg1,rockridge,open,Rockridge field
+rockrdg2,rockridge,open,Rockridge field
+rockmi1,rockridge,open,mine; portal from rockrdg2
+rockmi2,rockridge,open,mine; Shawn McCurdy gate
+nif_dun01,dungeons,open,Niflheim dungeon 1; gate from niflheim
+nif_dun02,dungeons,open,Niflheim dungeon 2
+iz_dun05,dungeons,open,Izlude undersea 6; Gatekeeper gate from iz_dun04
+abyss_04,dungeons,open,Abyss Lakes 4; Sign gate from abyss_03
+ein_dun03,dungeons,open,Einbroch mine 3; gate from ein_dun02
+mag_dun03,dungeons,open,Magma dungeon 3; gate from mag_dun02
+lasagna,lasagna,staged,
+lasa_fild01,lasagna,staged,
+lasa_fild02,lasagna,staged,
+lasa_in01,lasagna,staged,
+conch_in,lasagna,staged,
+lasa_dun01,lasagna,staged,
+lasa_dun02,lasagna,staged,
+lasa_dun03,lasagna,staged,
+lasa_dun_q,lasagna,staged,
+ba_maison,bios-island,staged,
+ba_in01,bios-island,staged,
+ba_lost,bios-island,staged,
+ba_lib,bios-island,staged,
+ba_bath,bios-island,staged,
+ba_2whs01,bios-island,staged,
+ba_2whs02,bios-island,staged,
+ba_pw01,bios-island,staged,
+ba_pw02,bios-island,staged,
+ba_pw03,bios-island,staged,
+sp_os,rudus,staged,
+sp_cor,rudus,staged,
+sp_rudus,rudus,staged,
+sp_rudus2,rudus,staged,
+sp_rudus3,rudus,staged,
+sp_rudus4,rudus,staged,
+amicitia1,amicitia,staged,
+amicitia2,amicitia,staged,
+lhz_dun04,wolfchev-lab,staged,
+que_lhz,wolfchev-lab,staged,
+moc_prydn1,nightmare-dungeons,staged,
+moc_prydn2,nightmare-dungeons,staged,
+c_tower2_,nightmare-dungeons,staged,
+c_tower3_,nightmare-dungeons,staged,
+gl_chyard_,nightmare-dungeons,staged,
+gl_cas01_,nightmare-dungeons,staged,
+gl_cas02_,nightmare-dungeons,staged,
+treasure_n1,nightmare-dungeons,staged,
+treasure_n2,nightmare-dungeons,staged,
+lhz_dun_n,nightmare-dungeons,staged,
+lhz_d_n2,nightmare-dungeons,staged,
+ant_d02_i,illusion-dungeons,staged,
+com_d02_i,illusion-dungeons,staged,
+ein_d02_i,illusion-dungeons,staged,
+gef_d01_i,illusion-dungeons,staged,
+ice_d03_i,illusion-dungeons,staged,
+iz_d04_i,illusion-dungeons,staged,
+iz_d05_i,illusion-dungeons,staged,
+pay_d03_i,illusion-dungeons,staged,
+tur_d03_i,illusion-dungeons,staged,
+tur_d04_i,illusion-dungeons,staged,
+prt_mz03_i,illusion-dungeons,staged,
+moro_cav,bios-temple,staged,
+moro_vol,bios-temple,staged,
+dali02,bios-temple,staged,
+gw_fild01,wolf-village,staged,
+gw_fild02,wolf-village,staged,
+wolfvill,wolf-village,staged,
+oz_dun01,wolf-village,staged,
+oz_dun02,wolf-village,staged,
+for_dun01,garden-of-time,staged,
+for_dun02,garden-of-time,staged,
+t_garden,garden-of-time,staged,
+slabw01,werner-lab,staged,
+que_swat,werner-lab,staged,
+un_bunker,verus-bunker,staged,
+un_myst,verus-bunker,staged,
+un_bk_q,verus-bunker,staged,
+ma_scene01,malaya-lake,staged,
+ecl_in04,eclage-residence,staged,
+prt_cas,prontera-castle,staged,
+prt_cas_q,prontera-castle,staged,
+prt_lib,prontera-castle,staged,
+prt_lib_q,prontera-castle,staged,
+prt_q,prontera-castle,staged,
+prt_prison,prontera-castle,staged,
+prt_pri00,prontera-castle,staged,
+prt_elib,prontera-castle,staged,

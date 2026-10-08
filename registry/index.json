@@ -915,7 +915,7 @@
       "name": "renewal-world",
       "version": "0.1.0",
       "author": "BlaXun",
-      "description": "Opens renewal's new lands in pre-renewal, joined to the old world where renewal joins them: Bifrost, Mora, Eclage and El Dicastes, Verus, the ships from Alberta to Dewata, Port Malaya, Malangdo and Rockridge, and the deeper floors of Niflheim, Izlude, Abyss Lakes, Einbroch and Magma dungeons. 55 maps. This first version opens the way only: the new maps have no monsters, shops or quests yet. Entrances that renewal hides behind a quest are free gates here.",
+      "description": "Opens renewal's new lands in pre-renewal, joined to the old world where renewal joins them: Bifrost, Mora, Eclage and El Dicastes, Verus, the ships from Alberta to Dewata, Port Malaya, Malangdo and Rockridge, and the deeper floors of Niflheim, Izlude, Abyss Lakes, Einbroch and Magma dungeons. 55 maps. This first version opens the way only: the new maps have no monsters, shops or quests yet. Entrances that renewal hides behind a quest are free gates here. Another 77 maps (Lasagna, Bios Island, Rudus, the nightmare and illusion dungeons, Prontera Castle, ...) are joined to their neighbours but have no way in yet.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/renewal-world",
       "tags": [
         "exploration",
@@ -934,11 +934,11 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "ca2ca73a7d0630decb8ed12d2119b98d94fab43ec3616c0cecc57b625ff6fba4"
+          "sha256": "88484f4ae71c2fa3b602abd096837e1d4a995c3d2a8a0900c75d7be871c2ff9b"
         },
         {
           "path": "mod.json",
-          "sha256": "a888ef575e87af55c5588c9718b9f2713101f0ace0beec21c15b7a05e7e4912d"
+          "sha256": "6052fc9694945a8a072080e10659852d84917ea1a97a92c44eb35dd9ad51e7ff"
         },
         {
           "path": "npc/renewal_world_gates.txt",
@@ -946,11 +946,11 @@
         },
         {
           "path": "npc/renewal_world_mapflags.txt",
-          "sha256": "6e3a0eb0574745638037fe092a2a7a7a8dbe52232e84454b8165aa767ba000ce"
+          "sha256": "c621d6331a08b02ed2e06ca1f28499efb8e098064e0a34df9df1e57459747118"
         },
         {
           "path": "npc/renewal_world_warps.txt",
-          "sha256": "6babaf7ac26097597184c33a4bb233e917e8d792abe78c87f83c6471b4684020"
+          "sha256": "ce4488e9ffd04fbeabcfac393ae7a4f809dc00ef9a3706b128ad198f08496897"
         }
       ]
     },
