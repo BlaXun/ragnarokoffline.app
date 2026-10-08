@@ -44,17 +44,22 @@ pub struct Grants {
 impl Grants {
     /// What the server holds before any mod's file is read.
     pub fn stock() -> Grants {
-        let mut held: BTreeMap<(u32, bool), BTreeMap<String, String>> = BTreeMap::new();
-        let mut known = BTreeSet::new();
+        let mut g = Grants {
+            held: BTreeMap::new(),
+            known: STOCK_GROUPS.iter().copied().collect(),
+            aliases: STOCK_ALIASES.iter().map(|(a, c)| (a.to_string(), c.to_string())).collect(),
+        };
+        // Under the command each one names, as dedupe looks them up: the stock
+        // file grants some by an alias (`noks`, `alootid`, `block`).
         for (id, char_commands, name) in STOCK_GRANTS {
-            known.insert(*id);
-            held.entry((*id, *char_commands))
+            g.known.insert(*id);
+            let command = g.resolve(name);
+            g.held
+                .entry((*id, *char_commands))
                 .or_default()
-                .insert(name.to_string(), "rAthena's own groups.yml".to_string());
+                .insert(command, "rAthena's own groups.yml".to_string());
         }
-        known.extend(STOCK_GROUPS.iter().copied());
-        let aliases = STOCK_ALIASES.iter().map(|(a, c)| (a.to_string(), c.to_string())).collect();
-        Grants { held, known, aliases }
+        g
     }
 
     /// Learn the aliases a mod's `atcommands.yml` defines, so a grant spelled
@@ -335,6 +340,24 @@ mod tests {
         let (out, notes) = g.dedupe(&format!("{HEADER}  - Id: 0\n    Commands:\n      AccountInfo: true\n"), "b");
         assert!(!out.contains("AccountInfo"), "{out}");
         assert!(notes[0].contains("@accinfo (as \"AccountInfo\")"), "{notes:?}");
+    }
+
+    /// rAthena's own file grants some commands by an alias; a mod naming the
+    /// command, or the alias, repeats them all the same.
+    #[test]
+    fn a_stock_grant_written_as_an_alias_is_the_command_it_names() {
+        let mut g = Grants::stock();
+        let text = format!(
+            "{HEADER}  - Id: 1\n    Commands:\n      autolootitem: true\n      ksprotection: true\n      noks: true\n      \
+             jumpto: true\n  - Id: 10\n    Commands:\n      char_block: true\n"
+        );
+        let (out, notes) = g.dedupe(&text, "m");
+        for name in ["autolootitem", "ksprotection", "noks", "char_block"] {
+            assert!(!out.contains(name), "{name} kept: {out}");
+        }
+        assert!(out.contains("jumpto: true"), "{out}");
+        assert_eq!(notes.len(), 4, "{notes:?}");
+        assert!(notes.iter().all(|n| n.contains("rAthena's own groups.yml")), "{notes:?}");
     }
 
     #[test]
