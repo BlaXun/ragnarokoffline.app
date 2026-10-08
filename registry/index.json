@@ -998,6 +998,76 @@
       ]
     },
     {
+      "name": "star-emperor",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Star Emperor in pre-renewal, as the Star Gladiator's rebirth. A Star Gladiator at 99/50 is reborn as a Novice, becomes a Taekwon again with transcendent stat points, and from Taekwon job 40 becomes a Star Emperor, to job 70: the same skill points and gear rules as any transcendent class. The skills are scaled to sit a little below the transcendent classes, and four tiers of Star Emperor gear (levels 50 to 95) drop from monsters.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/star-emperor",
+      "tags": [
+        "equipment",
+        "jobs",
+        "lua",
+        "pre-renewal",
+        "rebirth",
+        "star-emperor",
+        "star-gladiator",
+        "taekwon"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "pre-renewal",
+        "app": ">=1.5.4"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "4e10e214ad38089bd0305e01fa39824884dacda72f54ccbcc1480e0edd63aa70"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "fc0352bdb4524dea81fd15ac45122e424cec0482ef7cc8927697be0b99167188"
+        },
+        {
+          "path": "db/item_combos.yml",
+          "sha256": "bf4a06106b4a7a9c1656a4554e57bc0beb2cc0de93f7d86a6b9b0f8f5126a0b8"
+        },
+        {
+          "path": "db/item_db.yml",
+          "sha256": "6506a57d137969f2d7460a7ad93c26867e867eec086a77349e9a706b1382bc7f"
+        },
+        {
+          "path": "db/job_stats.yml",
+          "sha256": "36b456604b649bd230cf12d027362af2c87dc2414327b03f8b61daa7b2923b15"
+        },
+        {
+          "path": "db/mob_db.yml",
+          "sha256": "149189c423510c5ed330eec2cc282a3a99fabab97fdf8380e903c4603de266de"
+        },
+        {
+          "path": "db/skill_db.yml",
+          "sha256": "82d15fac8918c5493949b239ce81fc91be6edd96cb3058d597b8a81ff98cfc5b"
+        },
+        {
+          "path": "db/skill_tree.yml",
+          "sha256": "75de95f550b33148f660de1187cb35ccd860694402e22987a985dff8e3d1be39"
+        },
+        {
+          "path": "lua/star_emperor.lua",
+          "sha256": "9b379ed8c43d0b79cf7b1d94f0e4bb7134f73f99c45d5fc962a0a41fd2570f6c"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "c79156d766adfabe15a5cc5f0b37b38a95840ba094aee5fb00f66304a6b4eb22"
+        },
+        {
+          "path": "npc/star_emperor.txt",
+          "sha256": "0221c7054ceafdeaa7b9123386da35f1605c6a2cc0b991c162a9bcf1de0e5427"
+        }
+      ]
+    },
+    {
       "name": "steal-cards",
       "version": "2.0.0",
       "author": "BlaXun",
