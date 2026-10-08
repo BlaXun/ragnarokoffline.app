@@ -188,7 +188,7 @@
   .mgroup:first-child { margin-top: 2px; }
   .mrow { border-bottom: 1px solid var(--line); }
   .mrow:last-child { border-bottom: 0; }
-  .mrow-main { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: center; }
+  .mrow-main { display: grid; grid-template-columns: 34px auto minmax(0, 1fr); gap: 4px 10px; align-items: center; }
   .mrow-hit { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: center;
     width: 100%; min-width: 0; padding: 9px 0; background: none; border: 0; border-radius: 6px;
     color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -238,6 +238,8 @@
   .star:hover { color: var(--text); }
   .star[aria-pressed="true"] { color: var(--warn); }
   .star:focus-visible { outline: 1px solid var(--accent-dim); border-radius: 4px; }
+  .modhead .star { align-self: baseline; padding: 0 4px; font-size: 16px; }
+  .mrow-main .star { align-self: flex-start; margin-top: 9px; padding: 0 2px; }
   .favrow { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line, #8882); }
   .favrow:last-child { border-bottom: none; }
   .favrow .favname { font-weight: 600; font-size: 13px; color: var(--text); }
@@ -2208,7 +2210,7 @@ function modRow(m, kindBoxes, pendingNames) {
   head.append(badges);
   text.append(head, el('div', 'mone', m.refused ? 'Not loaded — ' + m.reason : (m.description || '')));
   hit.append(letterTile(m.name), text);
-  main.append(sw, hit, starButton(m.name));
+  main.append(sw, starButton(m.name), hit);
 
   const more = el('div', 'mrow-more');
   more.hidden = !open;
@@ -2891,6 +2893,7 @@ function modCard(mod, { detail = false } = {}) {
   }
   head.append(name);
   if (mod.version) head.append(el('span', 'modver', 'v' + mod.version.replace(/^v/i, '')));
+  head.append(starButton(mod.name));
   body.append(head);
   const byline = el('div', 'modbyline');
   if (mod.author) {
@@ -2906,7 +2909,7 @@ function modCard(mod, { detail = false } = {}) {
     if (mod.tags.length) body.append(tagChips(mod));
   }
   const side = el('div', 'modside');
-  side.append(starButton(mod.name), actionButton(mod, state));
+  side.append(actionButton(mod, state));
   card.append(body, side);
   return card;
 }
