@@ -57,7 +57,11 @@ def config(build_file, **kw):
         # DEX, to nothing at 150. When set, this share of each skill's
         # renewal FixedCastTime becomes after-cast delay (which DEX does not
         # touch) and the rest is added to its CastTime. None leaves it.
-        FIXED_CAST_TO_DELAY=None)
+        FIXED_CAST_TO_DELAY=None,
+        # A skill whose cooldown is at least this long (ms) cannot be spammed
+        # anyway: its whole fixed cast goes into CastTime, where DEX and
+        # Izayoi reduce it as renewal's fixed-cast reductions would.
+        FIXED_CAST_COOLDOWN_EXEMPT=10000)
     c.__dict__.update(kw)
     c.MOD = root / "registry" / "mods" / c.MOD_NAME
     c.KINDS = {**c.WEAPON_KINDS, **ARMOR_KINDS}
@@ -357,9 +361,21 @@ def fold_fixed_cast(name, entry):
         return entry
     cast = level_values_of(entry, "CastTime", "Time", maxlv)
     delay = level_values_of(entry, "AfterCastActDelay", "Time", maxlv)
-    to_delay = [round(f * share) for f in fixed]
-    note = f"renewal's FixedCastTime: {int(share * 100)}% added here as delay, the rest to CastTime"
-    entry = set_level_values(entry, "AfterCastActDelay", "Time", [d + t for d, t in zip(delay, to_delay)], note)
+    cooldown = level_values_of(entry, "Cooldown", "Time", maxlv)
+    exempt = C.FIXED_CAST_COOLDOWN_EXEMPT
+    # Per level: a level whose cooldown is long enough keeps its whole fixed
+    # cast as cast time; the others split it.
+    long_cd = [exempt is not None and cd >= exempt for cd in cooldown]
+    to_delay = [0 if lc else round(f * share) for f, lc in zip(fixed, long_cd)]
+    if all(long_cd):
+        note = f"renewal's FixedCastTime added here: a {min(cooldown) // 1000}s+ cooldown already stops spam"
+    elif any(long_cd):
+        note = (f"renewal's FixedCastTime: {int(share * 100)}% added to delay, the rest here;"
+                f" levels with a {exempt // 1000}s+ cooldown keep all of it here")
+    else:
+        note = f"renewal's FixedCastTime: {int(share * 100)}% added here as delay, the rest to CastTime"
+    if any(to_delay):
+        entry = set_level_values(entry, "AfterCastActDelay", "Time", [d + t for d, t in zip(delay, to_delay)], note)
     entry = set_level_values(entry, "CastTime", "Time", [c + f - t for c, f, t in zip(cast, fixed, to_delay)], note)
     entry = set_level_values(entry, "FixedCastTime", "Time", [0] * maxlv, "moved into CastTime and AfterCastActDelay")
     return entry
@@ -404,6 +420,9 @@ def build_skill_db(src):
         about += [f"Pre-renewal has no fixed cast time, so {int(C.FIXED_CAST_TO_DELAY * 100)}% of each skill's renewal",
                   "FixedCastTime is added to its after-cast delay, which DEX does not",
                   "reduce, and the rest to its cast time."]
+        if C.FIXED_CAST_COOLDOWN_EXEMPT is not None:
+            about += [f"A skill with a cooldown of {C.FIXED_CAST_COOLDOWN_EXEMPT // 1000}s or more cannot be spammed anyway:",
+                      "its whole fixed cast goes into its cast time instead."]
     about += [
              "", "Skills: " + ", ".join(changed)]
     return about, "\n".join(out) + "\n"

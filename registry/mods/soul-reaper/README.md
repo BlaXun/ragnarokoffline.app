@@ -45,7 +45,10 @@ A little below the transcendent classes:
 - **Cast times**: pre-renewal has no fixed cast time, and DEX shortens every
   cast to nothing at 150. 75% of each skill's renewal fixed cast becomes
   after-cast delay, which DEX does not reduce, and the rest is added to its
-  cast time: Espa casts in 0.75 s (before DEX) and then waits 0.75 s.
+  cast time: Espa casts in 0.75 s (before DEX) and then waits 0.75 s. A
+  skill (or level) with a cooldown of 10 s or more cannot be spammed anyway,
+  so its whole fixed cast goes into the cast time, where DEX reduces it: Soul
+  Explosion, the Soul Reaper buff, Soul Unity from level 2.
 - **Skill damage**: scaled in `lua/soul_reaper.lua`, then measured on a
   pre-renewal server against a High Wizard with the same level, stats and
   staff, on the same target:
