@@ -5,6 +5,11 @@
 -- times a Sniper's Double Strafe per second, to everything around, and one
 -- Slug Shot hit for 45,000.
 --
+-- db/skill_db.yml also turns 75% of each renewal fixed cast into after-cast
+-- delay and the rest into cast time, since pre-renewal has no fixed cast and
+-- DEX would shorten Mass Spiral and the other gun skills to nothing (see
+-- build.py). The factors below were measured after that.
+--
 -- Each factor scales the skill's own percentage, after everything the server
 -- adds to it (Desperado's bonus to Fire Dance, coins), so those keep their
 -- share. The aim is a little below a transcendent class. Measured on a
@@ -13,13 +18,13 @@
 -- of their kind:
 --
 --   Single target, skills of one gun used together      Rebellion   Sniper
---     Rifle: Mass Spiral + Anti-Material Blast              2085    2454 Double Strafe
---     Shotgun: Banishing Buster + Slug Shot + Shatter Storm 2209
+--     Rifle: Mass Spiral + Anti-Material Blast              2151    2452 Double Strafe
+--     Shotgun: Banishing Buster + Slug Shot + Shatter Storm 2044
 --     Grenade: Howling Mine + Dragon Tail, target marked    1994
 --   Area
 --     Fire Dance (revolver)                                 1036     814 Sharp Shooting
 --     Round Trip, Fire Rain (gatling)                       1003
---     Shatter Storm (shotgun)                               1010
+--     Shatter Storm (shotgun)                                999
 --
 -- The area skills sit at 0.85 of the best transcendent area skill measured
 -- (Meteor Assault, 1180), which is above the Sniper's own Sharp Shooting.
@@ -33,14 +38,14 @@
 -- coin), Quick Draw Shot (a Chain Action proc), and the buffs and traps.
 
 local FACTOR = {
-  RL_MASS_SPIRAL      = 45,
-  RL_AM_BLAST         = 30,
-  RL_BANISHING_BUSTER = 23,
-  RL_SLUGSHOT         = 17,
+  RL_MASS_SPIRAL      = 68,
+  RL_AM_BLAST         = 46,
+  RL_BANISHING_BUSTER = 29,
+  RL_SLUGSHOT         = 22,
   RL_FIREDANCE        = 12,
   RL_R_TRIP           = 31,
   RL_FIRE_RAIN        = 40,
-  RL_S_STORM          = 28,
+  RL_S_STORM          = 30,
   RL_D_TAIL           = 28,
 }
 

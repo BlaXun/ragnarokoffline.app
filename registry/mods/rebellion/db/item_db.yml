@@ -5,7 +5,7 @@
 #
 # 1. Rebellion: true on every pre-renewal item a Gunslinger can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
-# 2. Renewal's Full_Metal_Jacket, Shooting_Mine, Dragon_Tail_Missile, Slug_Bullet, Sanctified_Bullet, Silver_Bullet_, which the skills consume.
+# 2. Renewal's Full_Metal_Jacket, Shooting_Mine, Dragon_Tail_Missile, Slug_Bullet, Sanctified_Bullet, Silver_Bullet_, which the skills need.
 # 3. The mod's equipment, from equipment.csv: four tiers, levels 50-95.
 Header:
   Type: ITEM_DB
