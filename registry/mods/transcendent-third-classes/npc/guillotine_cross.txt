@@ -15,7 +15,7 @@
 //= Assassin Cross has: a sidegrade, not an upgrade.
 //==============================================================
 
-valkyrie,44,61,5	script	Guillotine Cross#Valkyrie	725,{
+valkyrie,42,58,5	script	Guillotine Cross#Valkyrie	725,{
 	.@n$ = "[Guillotine Cross]";
 	if (Class == Job_Guillotine_Cross_T) {
 		mes .@n$;

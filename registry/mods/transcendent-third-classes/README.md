@@ -21,11 +21,13 @@ The mod grows class by class. So far:
 
 | Third class | Instead of | Changer |
 |---|---|---|
-| Guillotine Cross | Assassin Cross | end of the Assassin Cross changer's row (`valkyrie 44 61`) |
-| Shadow Chaser | Stalker | end of the Stalker changer's row (`valkyrie 53 61`) |
+| Guillotine Cross | Assassin Cross | `valkyrie 42 58` |
+| Shadow Chaser | Stalker | `valkyrie 55 58` |
+| Arch Bishop | High Priest | `valkyrie 42 42` |
 
-The stock changers in the Valkyrie's hall stand in two rows; each third
-class's changer stands at the end of its transcendent class's row.
+The stock transcendent changers in the Valkyrie's hall stand in two rows.
+Each third class's changer stands right beside its transcendent class's,
+on the wall side.
 
 ## Guillotine Cross
 
@@ -34,8 +36,8 @@ class's changer stands at the end of its transcendent class's row.
 1. Assassin, base 99 / job 50 → the Valkyrie's rebirth, choosing Assassin
    Cross as usual → High Novice → High Thief.
 2. **High Thief, job 40 or later**, no unspent skill points: talk to the
-   **Guillotine Cross** at the end of the Assassin Cross changer's row
-   instead of the Assassin Cross changer, which stays as it was. You are asked to confirm twice.
+   **Guillotine Cross** beside the Assassin Cross changer instead of the
+   Assassin Cross changer, which stays as it was. You are asked to confirm twice.
 
 The class's skill tree is renewal's Guillotine Cross tree: Novice, Thief,
 Assassin and the Guillotine Cross's own skills, with the 69 job levels of
@@ -107,8 +109,8 @@ The items borrow stock art, so the mod ships no sprites.
 1. Rogue, base 99 / job 50 → the Valkyrie's rebirth → High Novice → High
    Thief. The rebirth remembers Stalker as the target, as usual.
 2. **High Thief, job 40 or later**, no unspent skill points: talk to the
-   **Shadow Chaser** at the end of the Stalker changer's row instead of the
-   Stalker changer, which stays as it was. You are asked to confirm twice.
+   **Shadow Chaser** beside the Stalker changer instead of the Stalker
+   changer, which stays as it was. You are asked to confirm twice.
 
 The class's skill tree is renewal's Shadow Chaser tree: Novice, Thief,
 Rogue and the Shadow Chaser's own skills, with a Stalker's 69 job levels
@@ -175,16 +177,92 @@ Chaser. Transcendent classes only.
 | Nightshade Dirk | 90 | Nightmare Terror |
 | Phantom Longbow | 90 | Banshee Master |
 
+## Arch Bishop
+
+### The path
+
+1. Priest, base 99 / job 50 → the Valkyrie's rebirth → High Novice → High
+   Acolyte. The rebirth remembers High Priest as the target, as usual.
+2. **High Acolyte, job 40 or later**, no unspent skill points: talk to the
+   **Arch Bishop** beside the High Priest changer instead of the High Priest
+   changer, which stays as it was. You are asked to confirm twice.
+
+The class's skill tree is renewal's Arch Bishop tree: Novice, Acolyte,
+Priest and the Arch Bishop's own skills, with a High Priest's 69 job
+levels and skill points. It never learns Assumptio, Basilica, Meditatio
+or Mana Recharge.
+
+### High Priest or Arch Bishop
+
+- **High Priest**, the guardian: Assumptio halves the damage one person
+  takes, Basilica shuts out attacks, Meditatio and Mana Recharge make its
+  SP last. The priest for boss fights and tanks.
+- **Arch Bishop**, the party leader and battle priest: buffs for the whole
+  party in one cast (Clementia: Blessing, Canto Candidus: Increase AGI,
+  Praefatio: Kyrie Eleison, Expiatio, Sacrament), heals for the whole
+  party (Coluceo Heal) and a big single heal (Highness Heal), Renovatio,
+  Epiclesis, the Laudas, Silentium, Oratio, Clearance, and Holy magic
+  (Adoramus, Judex) and Duple Light for fighting. The priest for groups
+  and levelling.
+
+### How strong
+
+Measured on a pre-renewal server with the same level, stats and staff,
+on the same target. Renewal prices the Arch Bishop's own skills for
+renewal's larger SP pools; on a High Priest's pool, without Meditatio or
+Mana Recharge, it could keep up only half of a High Priest's healing. This
+mod lowers those costs (the heal amounts and durations are renewal's):
+
+| | Renewal SP | Here |
+|---|---|---|
+| Clementia 3 | 360 | 256: what five Blessings cost a High Priest |
+| Canto Candidus 3 | 240 | 192: five Increase AGIs |
+| Praefatio 10 | 180 | 140: five Kyries |
+| Highness Heal 5 | 190 | 80 |
+| Coluceo Heal 3 | 240 | 110 |
+
+In a party of five, buffs kept up and Magnificat doubling SP recovery:
+
+| | High Priest | Arch Bishop |
+|---|---|---|
+| Max SP, SP recovered a minute standing | 2326, 888 | 2125, 752 |
+| Buff upkeep, SP a minute | 232 | 209 |
+| HP healed per SP | Heal 82 | Highness Heal 88, Coluceo Heal on five 100, Heal 55 |
+| Healing it can keep up, against a High Priest | | 0.89 on one person, 1.02 on the party |
+
+Its Holy magic is scaled to about 0.7 of a High Wizard's Cold Bolt (847
+dmg/s): Adoramus 636 (it also costs a Blue Gemstone), Judex 564. Duple
+Light's magic strikes on a staff come to about 490 a second with
+auto-attacks, below casting; its melee strike, for a STR battle priest,
+is as in renewal.
+
+### Equipment
+
+Two tiers, a mace and a staff each, for both of the Priest's transcendent
+paths. Each mace raises damage against Undead and Demons for everyone, by
+the same again for a High Priest, and Duple Light's melee strike for an
+Arch Bishop; each staff raises MATK and healing for everyone, healing
+again for a High Priest, and Adoramus for an Arch Bishop. Transcendent
+classes only.
+
+| Item | Level | Drops from |
+|---|---|---|
+| Censer Mace | 70 | Khalitzburg |
+| Pilgrim's Rod | 70 | Evil Druid |
+| Grand Censer | 90 | Dark Priest |
+| Staff of Absolution | 90 | Necromancer |
+
 ## Files
 
 | | |
 |---|---|
 | `npc/guillotine_cross.txt` | the Guillotine Cross changer |
 | `npc/shadow_chaser.txt` | the Shadow Chaser changer |
+| `npc/arch_bishop.txt` | the Arch Bishop changer |
 | `lua/third_classes.lua` | the skill damage scaling |
 | `db/job_stats.yml` | HP, SP, EXP, bonuses, ASPD, weight |
 | `db/skill_tree.yml` | renewal's trees, under the third classes |
-| `db/skill_db.yml` | renewal's entries for the third-class skills, with the fixed cast times turned into delay, and the Auto Shadow Spell flag on four more spells |
+| `db/skill_db.yml` | renewal's entries for the third-class skills, with the fixed cast times turned into delay, the Arch Bishop's lower SP costs, and the Auto Shadow Spell flag on four more spells |
 | `db/item_db.yml` | the equipment |
 | `db/item_combos.yml` | the set bonuses (none yet) |
 | `db/mob_db.yml` | the equipment's drops |
@@ -194,7 +272,7 @@ Everything under `db/` and `System/` is generated by
 `registry/tools/transcendent-third-classes/build.py`, run by the shared
 `registry/tools/expanded_class/expanded_class.py`, from the pinned rAthena
 and each class's three CSV files, in its own directory beside it
-(`guillotine_cross/`, `shadow_chaser/`):
+(`guillotine_cross/`, `shadow_chaser/`, `arch_bishop/`):
 
 ```
 python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena

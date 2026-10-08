@@ -411,6 +411,37 @@ def fold_fixed_cast(name, entry):
     return entry
 
 
+# The per-level field name of each key that takes a level list.
+LEVEL_FIELD = {"SpCost": "Amount", "HpCost": "Amount"}
+
+
+def override_field(name, entry, key, value):
+    """Replace a field, a per-level list under it included. KEY may name a
+    field inside a map ("Requires.SpCost"); VALUE is a scalar or, for a
+    per-level value, a list with one entry per level."""
+    note = "this mod's balance; renewal's is different"
+    *parents, field = key.split(".")
+    indent = 4 + 2 * len(parents)
+    pad = " " * indent
+    if isinstance(value, list):
+        sub = LEVEL_FIELD.get(field, "Time")
+        text = f"{pad}{field}:    # {note}\n" + "".join(
+            f"{pad}  - Level: {i}\n{pad}    {sub}: {x}\n" for i, x in enumerate(value, 1))
+    else:
+        text = f"{pad}{field}: {value}    # {note}\n"
+    start, end = 0, len(entry) + 1
+    body = entry + "\n"
+    for i, p in enumerate(parents):          # narrow to the parent map's block
+        m = re.compile(r"^" + " " * (4 + 2 * i) + p + r":[^\n]*\n((?:" + " " * (6 + 2 * i) + r".*\n)*)", re.M).search(body, start, end)
+        if not m:
+            fail(f"{name}: no {'.'.join(parents[:i + 1])} to override")
+        start, end = m.start(1), m.end(1)
+    m = re.compile(r"^" + pad + field + r":.*\n(?:" + pad + r"  .*\n)*", re.M).search(body, start, end)
+    if not m:
+        fail(f"{name}: no {key} to override")
+    return (body[:m.start()] + text + body[m.end():]).rstrip("\n")
+
+
 def build_skill_db(src):
     pre = by_field(body_entries(src["db/pre-re/skill_db.yml"], "Id"), "Name")
     ren = by_field(body_entries(src["db/re/skill_db.yml"], "Id"), "Name")
@@ -419,7 +450,7 @@ def build_skill_db(src):
     for n in names:
         if n not in ren:
             fail(f"{n} is not in renewal's skill_db")
-        if pre[n] == ren[n]:
+        if pre[n] == ren[n] and n not in C.SKILL_OVERRIDES:
             continue
         keys = lambda e: set(re.findall(r"^    (\w+):", e, re.M))
         dropped = keys(pre[n]) - keys(ren[n])
@@ -432,11 +463,7 @@ def build_skill_db(src):
         if C.FIXED_CAST_TO_DELAY is not None:
             entry = fold_fixed_cast(n, entry)
         for k, v in C.SKILL_OVERRIDES.get(n, {}).items():
-            # the whole field, a per-level list under it included
-            line = re.compile(r"^    " + k + r":.*$(?:\n      .*$)*", re.M)
-            if not line.search(entry):
-                fail(f"{n}: no {k} to override")
-            entry = line.sub(f"    {k}: {v}    # this mod's balance; renewal's is different", entry)
+            entry = override_field(n, entry, k, v)
         out.append(entry)
         changed.append(n)
     added = []

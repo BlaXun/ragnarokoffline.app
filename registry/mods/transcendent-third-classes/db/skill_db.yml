@@ -40,6 +40,24 @@
 #
 # Flags added to other classes' skills (only that key; the rest of
 # pre-renewal's entry stays): IsAutoShadowSpell on PR_TURNUNDEAD, IsAutoShadowSpell on NJ_KOUENKA, IsAutoShadowSpell on NJ_HYOUSENSOU, IsAutoShadowSpell on NJ_HUUJIN
+#
+# _______________________
+# Arch_Bishop_T:
+# Renewal's entries for the AB_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: AB_ADORAMUS, AB_ANCILLA, AB_CANTO, AB_CHEAL, AB_CLEMENTIA, AB_CONVENIO, AB_DUPLELIGHT, AB_EPICLESIS, AB_EXPIATIO, AB_HIGHNESSHEAL, AB_JUDEX, AB_LAUDAAGNUS, AB_LAUDARAMUS, AB_OFFERTORIUM, AB_ORATIO, AB_PRAEFATIO, AB_RENOVATIO, AB_SECRAMENT, AB_VITUPERATUM
 Header:
   Type: SKILL_DB
   Version: 4
@@ -1339,3 +1357,814 @@ Body:
     Name: NJ_HUUJIN
     Flags:
       IsAutoShadowSpell: true    # this mod's; pre-renewal's entry is otherwise kept
+  - Id: 2040
+    Name: AB_ADORAMUS
+    Description: Adoramus
+    MaxLevel: 10
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount: -10
+    Element: Holy
+    SplashArea:
+      - Level: 1
+        Area: 3
+      - Level: 2
+        Area: 3
+      - Level: 3
+        Area: 3
+      - Level: 4
+        Area: 3
+      - Level: 5
+        Area: 3
+      - Level: 6
+        Area: 3
+      - Level: 7
+        Area: 5
+      - Level: 8
+        Area: 5
+      - Level: 9
+        Area: 5
+      - Level: 10
+        Area: 5
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2125    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 875    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 8000
+      - Level: 2
+        Time: 9000
+      - Level: 3
+        Time: 10000
+      - Level: 4
+        Time: 11000
+      - Level: 5
+        Time: 12000
+      - Level: 6
+        Time: 13000
+      - Level: 7
+        Time: 14000
+      - Level: 8
+        Time: 15000
+      - Level: 9
+        Time: 16000
+      - Level: 10
+        Time: 17000
+    Duration2:
+      - Level: 1
+        Time: 15000
+      - Level: 2
+        Time: 20000
+      - Level: 3
+        Time: 25000
+      - Level: 4
+        Time: 30000
+      - Level: 5
+        Time: 35000
+      - Level: 6
+        Time: 40000
+      - Level: 7
+        Time: 45000
+      - Level: 8
+        Time: 50000
+      - Level: 9
+        Time: 55000
+      - Level: 10
+        Time: 60000
+    Cooldown: 2500
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 22
+        - Level: 2
+          Amount: 28
+        - Level: 3
+          Amount: 34
+        - Level: 4
+          Amount: 40
+        - Level: 5
+          Amount: 46
+        - Level: 6
+          Amount: 52
+        - Level: 7
+          Amount: 58
+        - Level: 8
+          Amount: 64
+        - Level: 9
+          Amount: 70
+        - Level: 10
+          Amount: 76
+      ItemCost:
+        - Item: Blue_Gemstone
+          Amount: 1
+    Status: Adoramus
+  - Id: 2039
+    Name: AB_ANCILLA
+    Description: Ancilla
+    MaxLevel: 1
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    CastTime: 1000
+    AfterCastActDelay: 1000
+    Requires:
+      SpCost: 30
+      SpRateCost: -10
+      ItemCost:
+        - Item: Blue_Gemstone
+          Amount: 0
+  - Id: 2042
+    Name: AB_CANTO
+    Description: Canto Candidus
+    MaxLevel: 3
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 3
+      - Level: 2
+        Area: 7
+      - Level: 3
+        Area: 15
+    CastTime: 3250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 120000
+      - Level: 2
+        Time: 180000
+      - Level: 3
+        Time: 240000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 160
+        - Level: 2
+          Amount: 176
+        - Level: 3
+          Amount: 192
+    Status: IncreaseAgi
+    AfterCastActDelay: 750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2043
+    Name: AB_CHEAL
+    Description: Coluceo Heal
+    MaxLevel: 3
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    SplashArea:
+      - Level: 1
+        Area: 3
+      - Level: 2
+        Area: 7
+      - Level: 3
+        Area: 15
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 3250
+      - Level: 2
+        Time: 3125
+      - Level: 3
+        Time: 3000
+    Cooldown: 2000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 90
+        - Level: 2
+          Amount: 100
+        - Level: 3
+          Amount: 110
+    AfterCastActDelay:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 750
+      - Level: 2
+        Time: 375
+      - Level: 3
+        Time: 0
+  - Id: 2041
+    Name: AB_CLEMENTIA
+    Description: Crementia
+    MaxLevel: 3
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 3
+      - Level: 2
+        Area: 7
+      - Level: 3
+        Area: 15
+    CastTime: 3250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 120000
+      - Level: 2
+        Time: 180000
+      - Level: 3
+        Time: 240000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 200
+        - Level: 2
+          Amount: 228
+        - Level: 3
+          Amount: 256
+    Status: Blessing
+    AfterCastActDelay: 750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 5073
+    Name: AB_CONVENIO
+    Description: Convenio
+    MaxLevel: 1
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    CastTime: 2500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 2500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 5000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost: 70
+  - Id: 2054
+    Name: AB_DUPLELIGHT
+    Description: Duple Light
+    MaxLevel: 10
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 2500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 90000
+      - Level: 2
+        Time: 120000
+      - Level: 3
+        Time: 150000
+      - Level: 4
+        Time: 180000
+      - Level: 5
+        Time: 210000
+      - Level: 6
+        Time: 240000
+      - Level: 7
+        Time: 270000
+      - Level: 8
+        Time: 300000
+      - Level: 9
+        Time: 330000
+      - Level: 10
+        Time: 360000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 55
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 65
+        - Level: 4
+          Amount: 70
+        - Level: 5
+          Amount: 75
+        - Level: 6
+          Amount: 80
+        - Level: 7
+          Amount: 85
+        - Level: 8
+          Amount: 90
+        - Level: 9
+          Amount: 95
+        - Level: 10
+          Amount: 100
+    Status: DupleLight
+  - Id: 2044
+    Name: AB_EPICLESIS
+    Description: Epiclesis
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    SplashArea: 2
+    ActiveInstance: 1
+    CastTime:    # renewal's FixedCastTime added here: a 60s+ cooldown already stops spam
+      - Level: 1
+        Time: 4000
+      - Level: 2
+        Time: 4500
+      - Level: 3
+        Time: 5000
+      - Level: 4
+        Time: 5500
+      - Level: 5
+        Time: 6000
+    AfterCastActDelay: 2000
+    Duration1:
+      - Level: 1
+        Time: 18000
+      - Level: 2
+        Time: 21000
+      - Level: 3
+        Time: 24000
+      - Level: 4
+        Time: 27000
+      - Level: 5
+        Time: 30000
+    Cooldown: 60000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost: 300
+      ItemCost:
+        - Item: Ansila
+          Amount: 1
+        - Item: Holy_Water
+          Amount: 1
+    Unit:
+      Id: Epiclesis
+      Range: 2
+      Interval: 1000
+      Flag:
+        NoOverlap: true
+        PathCheck: true
+    Status: Epiclesis
+  - Id: 2053
+    Name: AB_EXPIATIO
+    Description: Expiatio
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    CastTime: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 150000
+      - Level: 2
+        Time: 180000
+      - Level: 3
+        Time: 210000
+      - Level: 4
+        Time: 240000
+      - Level: 5
+        Time: 270000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 35
+        - Level: 2
+          Amount: 40
+        - Level: 3
+          Amount: 45
+        - Level: 4
+          Amount: 50
+        - Level: 5
+          Amount: 55
+    Status: Expiatio
+    AfterCastActDelay: 750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2051
+    Name: AB_HIGHNESSHEAL
+    Description: Highness Heal
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+      IgnoreDefense: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1000
+    AfterCastActDelay: 1000
+    Cooldown: 3000
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 30
+        - Level: 2
+          Amount: 43
+        - Level: 3
+          Amount: 55
+        - Level: 4
+          Amount: 68
+        - Level: 5
+          Amount: 80
+  - Id: 2038
+    Name: AB_JUDEX
+    Description: Judex
+    MaxLevel: 10
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount: -3
+    Element: Holy
+    SplashArea: 1
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2125    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 875    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 23
+        - Level: 3
+          Amount: 26
+        - Level: 4
+          Amount: 29
+        - Level: 5
+          Amount: 32
+        - Level: 6
+          Amount: 34
+        - Level: 7
+          Amount: 36
+        - Level: 8
+          Amount: 38
+        - Level: 9
+          Amount: 40
+        - Level: 10
+          Amount: 42
+  - Id: 2047
+    Name: AB_LAUDAAGNUS
+    Description: Lauda Agnus
+    MaxLevel: 4
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    SplashArea: 15
+    CastTime: 1000
+    Duration1: 60000
+    Cooldown: 3000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 50
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 70
+        - Level: 4
+          Amount: 80
+    Status: LaudaAgnus
+  - Id: 2048
+    Name: AB_LAUDARAMUS
+    Description: Lauda Ramus
+    MaxLevel: 4
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    SplashArea: 15
+    CastTime: 1000
+    Duration1: 60000
+    Cooldown: 3000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 50
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 70
+        - Level: 4
+          Amount: 80
+    Status: LaudaRamus
+  - Id: 5011
+    Name: AB_OFFERTORIUM
+    Description: Offertorium
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    CastTime:
+      - Level: 1
+        Time: 5000
+      - Level: 2
+        Time: 4000
+      - Level: 3
+        Time: 3000
+      - Level: 4
+        Time: 2000
+      - Level: 5
+        Time: 1000
+    AfterCastActDelay: 500
+    Duration1: 90000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 30
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 90
+        - Level: 4
+          Amount: 120
+        - Level: 5
+          Amount: 150
+    Status: Offertorium
+  - Id: 2046
+    Name: AB_ORATIO
+    Description: Oratio
+    MaxLevel: 10
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    SplashArea: 15
+    CastTime: 4250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 30000
+    Cooldown: 2000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 35
+        - Level: 2
+          Amount: 38
+        - Level: 3
+          Amount: 41
+        - Level: 4
+          Amount: 44
+        - Level: 5
+          Amount: 47
+        - Level: 6
+          Amount: 50
+        - Level: 7
+          Amount: 53
+        - Level: 8
+          Amount: 56
+        - Level: 9
+          Amount: 59
+        - Level: 10
+          Amount: 62
+    Status: Oratio
+    AfterCastActDelay: 750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2045
+    Name: AB_PRAEFATIO
+    Description: Praefatio
+    MaxLevel: 10
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: 15
+    CastTime: 3000    # renewal's FixedCastTime added here: a 13s+ cooldown already stops spam
+    Duration1: 120000
+    Cooldown:
+      - Level: 1
+        Time: 13000
+      - Level: 2
+        Time: 16000
+      - Level: 3
+        Time: 19000
+      - Level: 4
+        Time: 22000
+      - Level: 5
+        Time: 25000
+      - Level: 6
+        Time: 28000
+      - Level: 7
+        Time: 31000
+      - Level: 8
+        Time: 34000
+      - Level: 9
+        Time: 37000
+      - Level: 10
+        Time: 40000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:    # this mod's balance; renewal's is different
+        - Level: 1
+          Amount: 70
+        - Level: 2
+          Amount: 78
+        - Level: 3
+          Amount: 86
+        - Level: 4
+          Amount: 94
+        - Level: 5
+          Amount: 102
+        - Level: 6
+          Amount: 109
+        - Level: 7
+          Amount: 117
+        - Level: 8
+          Amount: 125
+        - Level: 9
+          Amount: 132
+        - Level: 10
+          Amount: 140
+    Status: Kyrie
+  - Id: 2050
+    Name: AB_RENOVATIO
+    Description: Renovatio
+    MaxLevel: 4
+    Type: Magic
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    Element: Holy
+    SplashArea: 15
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 3500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 90000
+      - Level: 2
+        Time: 120000
+      - Level: 3
+        Time: 150000
+      - Level: 4
+        Time: 180000
+    Cooldown: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 240
+        - Level: 2
+          Amount: 280
+        - Level: 3
+          Amount: 320
+        - Level: 4
+          Amount: 360
+    Status: Renovatio
+    AfterCastActDelay: 1500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2515
+    Name: AB_SECRAMENT
+    Description: Secrament
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    CastTime: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 120000
+      - Level: 4
+        Time: 150000
+      - Level: 5
+        Time: 180000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 100
+        - Level: 2
+          Amount: 120
+        - Level: 3
+          Amount: 140
+        - Level: 4
+          Amount: 160
+        - Level: 5
+          Amount: 180
+    Status: Secrament
+  - Id: 5072
+    Name: AB_VITUPERATUM
+    Description: Vituperatum
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Range: 9
+    Hit: Single
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 1
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 2
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 1750
+      - Level: 2
+        Time: 1625
+      - Level: 3
+        Time: 1500
+      - Level: 4
+        Time: 1375
+      - Level: 5
+        Time: 1250
+    AfterCastActDelay:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 3250
+      - Level: 2
+        Time: 2875
+      - Level: 3
+        Time: 2500
+      - Level: 4
+        Time: 2125
+      - Level: 5
+        Time: 1750
+    Duration1: 600000
+    Cooldown: 5000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 144
+        - Level: 2
+          Amount: 120
+        - Level: 3
+          Amount: 106
+        - Level: 4
+          Amount: 92
+        - Level: 5
+          Amount: 78
+      ItemCost:
+        - Item: Blue_Gemstone
+          Amount: 1
+    Status: Aeterna

@@ -11,6 +11,11 @@
 # Shadow_Chaser_T:
 # Renewal's trees for Shadow_Chaser_T, taken from Shadow_Chaser for Shadow_Chaser_T:
 # the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Arch_Bishop_T:
+# Renewal's trees for Arch_Bishop_T, taken from Arch_Bishop for Arch_Bishop_T:
+# the class gets that job's skills and what it inherits, nothing more.
 Header:
   Type: SKILL_TREE_DB
   Version: 1
@@ -247,3 +252,137 @@ Body:
             Level: 2
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5
+  - Job: Arch_Bishop_T    # renewal's Arch_Bishop tree
+    Inherit:
+      Novice: true
+      Acolyte: true
+      Priest: true
+    Tree:
+      - Name: AB_JUDEX
+        MaxLevel: 10
+        Requires:
+          - Name: PR_TURNUNDEAD
+            Level: 1
+      - Name: AB_ANCILLA
+        MaxLevel: 1
+        Requires:
+          - Name: AB_CLEMENTIA
+            Level: 3
+      - Name: AB_ADORAMUS
+        MaxLevel: 10
+        Requires:
+          - Name: PR_MAGNUS
+            Level: 1
+          - Name: AB_JUDEX
+            Level: 5
+          - Name: AB_ANCILLA
+            Level: 1
+      - Name: AB_CLEMENTIA
+        MaxLevel: 3
+        Requires:
+          - Name: AL_BLESSING
+            Level: 1
+      - Name: AB_CANTO
+        MaxLevel: 3
+        Requires:
+          - Name: AL_INCAGI
+            Level: 1
+      - Name: AB_CHEAL
+        MaxLevel: 3
+        Requires:
+          - Name: AL_HEAL
+            Level: 1
+      - Name: AB_EPICLESIS
+        MaxLevel: 5
+        Requires:
+          - Name: AB_ANCILLA
+            Level: 1
+          - Name: AB_HIGHNESSHEAL
+            Level: 1
+      - Name: AB_PRAEFATIO
+        MaxLevel: 10
+        Requires:
+          - Name: PR_KYRIE
+            Level: 1
+      - Name: AB_ORATIO
+        MaxLevel: 10
+        Requires:
+          - Name: AB_PRAEFATIO
+            Level: 5
+      - Name: AB_LAUDAAGNUS
+        MaxLevel: 4
+        Requires:
+          - Name: PR_STRECOVERY
+            Level: 1
+      - Name: AB_LAUDARAMUS
+        MaxLevel: 4
+        Requires:
+          - Name: AB_LAUDAAGNUS
+            Level: 2
+     # - Name: AB_EUCHARISTICA
+       # MaxLevel: 10
+       # Requires:
+         # - Name: AB_EPICLESIS
+           # Level: 1
+         # - Name: AB_EXPIATIO
+           # Level: 1
+      - Name: AB_RENOVATIO
+        MaxLevel: 4
+        Requires:
+          - Name: AB_CHEAL
+            Level: 3
+      - Name: AB_HIGHNESSHEAL
+        MaxLevel: 5
+        Requires:
+          - Name: AB_RENOVATIO
+            Level: 1
+      - Name: AB_CLEARANCE
+        MaxLevel: 5
+        Requires:
+          - Name: AB_LAUDARAMUS
+            Level: 2
+      - Name: AB_EXPIATIO
+        MaxLevel: 5
+        Requires:
+          - Name: AB_ORATIO
+            Level: 5
+          - Name: AB_DUPLELIGHT
+            Level: 5
+      - Name: AB_DUPLELIGHT
+        MaxLevel: 10
+        Requires:
+          - Name: PR_ASPERSIO
+            Level: 1
+      - Name: AB_SILENTIUM
+        MaxLevel: 5
+        Requires:
+          - Name: AB_CLEARANCE
+            Level: 1
+      - Name: AB_SECRAMENT
+        MaxLevel: 5
+        Requires:
+          - Name: AB_EPICLESIS
+            Level: 1
+          - Name: AB_EXPIATIO
+            Level: 1
+      - Name: AB_OFFERTORIUM
+        MaxLevel: 5
+        Requires:
+          - Name: AB_HIGHNESSHEAL
+            Level: 2
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+      - Name: AB_VITUPERATUM
+        MaxLevel: 5
+        Requires:
+          - Name: AB_EPICLESIS
+            Level: 1
+          - Name: AB_EXPIATIO
+            Level: 1
+      - Name: AB_CONVENIO
+        MaxLevel: 1
+        Requires:
+          - Name: AB_ANCILLA
+            Level: 1
+          - Name: AB_ORATIO
+            Level: 5

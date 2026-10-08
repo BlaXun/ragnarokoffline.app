@@ -3,9 +3,8 @@
 //=
 //= After the Valkyrie's rebirth, a High Thief of job 40 or more
 //= whose rebirth target is Stalker (ADVJOB) may become a
-//= Shadow Chaser here instead, at the end of the row of stock
-//= changers that holds the Stalker's, which is untouched. The
-//= choice is permanent.
+//= Shadow Chaser here instead, beside the stock Stalker changer,
+//= which is untouched. The choice is permanent.
 //=
 //= Shadow Chaser is a third class in rAthena. The change goes
 //= through Stalker and at once on to Shadow Chaser, so
@@ -16,7 +15,7 @@
 //= Stalker has: a sidegrade, not an upgrade.
 //==============================================================
 
-valkyrie,53,61,3	script	Shadow Chaser#Valkyrie	747,{
+valkyrie,55,58,3	script	Shadow Chaser#Valkyrie	747,{
 	.@n$ = "[Shadow Chaser]";
 	if (Class == Job_Shadow_Chaser_T) {
 		mes .@n$;

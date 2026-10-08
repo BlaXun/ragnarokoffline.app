@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Arch Bishop ===========
+//= The Priest's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Acolyte of job 40 or more
+//= whose rebirth target is High Priest (ADVJOB) may become an
+//= Arch Bishop here instead, beside the stock High Priest
+//= changer, which is untouched. The choice is permanent.
+//=
+//= Arch Bishop is a third class in rAthena. The change goes
+//= through High Priest and at once on to Arch Bishop, so
+//= rAthena's third-class skill lock records High Priest job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Arch Bishop tree (Novice, Acolyte,
+//= Priest and its own skills), with the same 69 job levels a
+//= High Priest has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,42,42,5	script	Arch Bishop#Valkyrie	60,{
+	.@n$ = "[Arch Bishop]";
+	if (Class == Job_Arch_Bishop_T) {
+		mes .@n$;
+		mes "You chose to lead the faithful. Maces and staves blessed for our order were lost to the dead and the fallen; take them back.";
+		close;
+	}
+	if (ADVJOB != Job_High_Priest || Class != Job_Acolyte_High) {
+		mes .@n$;
+		mes "A Priest who has been reborn chooses here: the High Priest's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A High Priest guards one life at a time: Assumptio, Basilica, Meditatio. An ^0000FFArch Bishop^000000 leaves them behind to bless a whole party at once, heal many in one prayer, and strike with holy light.";
+	next;
+	mes .@n$;
+	mes "You keep every Priest skill. You will never learn a High Priest skill: no Assumptio, no Basilica, no Meditatio, no Mana Recharge.";
+	mes "Your job levels, your body and your gear are the same as a High Priest's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the bishop's path.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through High Priest, at job 1: see the header.
+	jobchange Job_High_Priest;
+	jobchange Job_Arch_Bishop_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Arch Bishop.";
+	close;
+}

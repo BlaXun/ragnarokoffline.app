@@ -6,6 +6,9 @@
 --     ratio, not measured.
 --   Shadow Chaser vs Stalker (Double Strafe 2280): Triangle Shot 2243, Fatal
 --     Menace 1076 a target, Feint Bomb about 2200 a blast every 5 s.
+--   Arch Bishop vs High Wizard (Cold Bolt 847): Adoramus 636, Judex 564,
+--     Duple Light's magic strikes about 490 with auto-attacks. Its heals are
+--     balanced by SP cost instead (build.py, SKILL_OVERRIDES).
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 30,
@@ -15,6 +18,9 @@ local FACTOR = {
   SC_TRIANGLESHOT       = 15,
   SC_FATALMENACE        = 10,
   SC_FEINTBOMB          = 25,
+  AB_ADORAMUS           = 15,
+  AB_JUDEX              = 25,
+  AB_DUPLELIGHT_MAGIC   = 50,
 }
 
 for name, percent in pairs(FACTOR) do

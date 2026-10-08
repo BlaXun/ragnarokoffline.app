@@ -16,7 +16,7 @@ transcendent class's skills. Tables are the transcendent class's own, so
 the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
-(instead of Stalker). Each class keeps its CSV files in its own directory.
+(instead of Stalker), Arch Bishop (instead of High Priest). Each class keeps its CSV files in its own directory.
 """
 import sys
 from pathlib import Path
@@ -28,6 +28,8 @@ WEAPONS = {
     "katar":  dict(type="Weapon", sub="Katar",  loc=["Both_Hand"],  label="Katar",  unid="Katar"),
     "dagger": dict(type="Weapon", sub="Dagger", loc=["Right_Hand"], label="Dagger", unid="Dagger"),
     "bow":    dict(type="Weapon", sub="Bow",    loc=["Both_Hand"],  label="Bow",    unid="Bow"),
+    "mace":   dict(type="Weapon", sub="Mace",   loc=["Right_Hand"], label="Mace",   unid="Mace"),
+    "staff":  dict(type="Weapon", sub="Staff",  loc=["Right_Hand"], label="Staff",  unid="Rod"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -85,4 +87,37 @@ shadow_chaser = ec.config(
     SKILL_FLAGS_ADD={"IsAutoShadowSpell": ["PR_TURNUNDEAD", "NJ_KOUENKA", "NJ_HYOUSENSOU", "NJ_HUUJIN"]},
 )
 
-ec.run([guillotine_cross, shadow_chaser])
+arch_bishop = ec.config(
+    __file__, **COMMON,
+    JOBS=("Arch_Bishop_T",),
+    # Renewal's Arch Bishop tree: Novice, Acolyte, Priest and the AB skills;
+    # renewal's transcendent one also inherits High Priest (Assumptio,
+    # Basilica, Meditatio, Mana Recharge).
+    TREE_FROM={"Arch_Bishop_T": "Arch_Bishop"},
+    BASE="High_Priest",
+    SKILL_PREFIX="AB_",
+    HP_FROM="High_Priest", HP_SCALE=1.0,
+    SP_FROM="High_Priest", SP_SCALE=1.0,
+    EXP_FROM="High_Priest",
+    # Renewal's Arch Bishop bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Int"), (70, "Dex")],
+    EQUIP_JOBS=["Priest"],
+    EQUIP_LABEL="High Priest or Arch Bishop",
+    # Renewal prices the Arch Bishop's own skills for renewal's SP pools and
+    # SP gear. On a High Priest's pool and without Meditatio or Mana
+    # Recharge they sustained half a High Priest's healing in a party. The
+    # party buffs now cost what a High Priest pays to give five people the
+    # single buff; the heals give about a High Priest's Heal per SP
+    # (Highness Heal) or more across a party (Coluceo Heal).
+    SKILL_OVERRIDES={
+        "AB_CLEMENTIA":    {"Requires.SpCost": [200, 228, 256]},
+        "AB_CANTO":        {"Requires.SpCost": [160, 176, 192]},
+        "AB_PRAEFATIO":    {"Requires.SpCost": [70, 78, 86, 94, 102, 109, 117, 125, 132, 140]},
+        "AB_HIGHNESSHEAL": {"Requires.SpCost": [30, 43, 55, 68, 80]},
+        "AB_CHEAL":        {"Requires.SpCost": [90, 100, 110]},
+    },
+    ITEMS_ABOUT="The Arch Bishop's weapons, from arch_bishop/equipment.csv.",
+    CSV_DIR="arch_bishop",
+)
+
+ec.run([guillotine_cross, shadow_chaser, arch_bishop])

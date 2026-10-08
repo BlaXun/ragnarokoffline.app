@@ -9,10 +9,15 @@
 # _______________________
 # Shadow_Chaser_T:
 # No set bonuses.
+#
+# _______________________
+# Arch_Bishop_T:
+# No set bonuses.
 Header:
   Type: COMBO_DB
   Version: 1
 
 Body:
+
 
 

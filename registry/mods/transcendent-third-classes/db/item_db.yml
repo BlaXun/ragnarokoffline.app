@@ -13,6 +13,12 @@
 # 1. No job flags: rAthena already lets the class wear a Stalker's items.
 # 2. No renewal-only items: the skills need none.
 # 3. The Shadow Chaser's weapons, from shadow_chaser/equipment.csv.
+#
+# _______________________
+# Arch_Bishop_T:
+# 1. No job flags: rAthena already lets the class wear a High_Priest's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Arch Bishop's weapons, from arch_bishop/equipment.csv.
 Header:
   Type: ITEM_DB
   Version: 3
@@ -186,3 +192,87 @@ Body:
     Refineable: true
     Script: |
       bonus bDex,3; bonus bAgi,2; bonus2 bSkillAtk,"AC_DOUBLE",15; if (Class == Job_Stalker) bonus2 bSkillAtk,"AC_DOUBLE",15; else bonus2 bSkillAtk,"SC_TRIANGLESHOT",30; bonus bUnbreakableWeapon;
+  - Id: 63541
+    AegisName: Censer_Mace
+    Name: Censer Mace
+    Type: Weapon
+    SubType: Mace
+    Buy: 20
+    Weight: 1300
+    Attack: 135
+    Range: 1
+    Slots: 1
+    Jobs:
+      Priest: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus bInt,1; bonus2 bAddRace,RC_Undead,5; bonus2 bAddRace,RC_Demon,5; if (Class == Job_High_Priest) { bonus2 bAddRace,RC_Undead,5; bonus2 bAddRace,RC_Demon,5; } else bonus2 bSkillAtk,"AB_DUPLELIGHT_MELEE",20;
+  - Id: 63542
+    AegisName: Pilgrim_Rod
+    Name: Pilgrim's Rod
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 500
+    Attack: 60
+    Range: 1
+    Slots: 1
+    Jobs:
+      Priest: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus bMatkRate,5; bonus bHealPower,5; if (Class == Job_High_Priest) bonus bHealPower,5; else bonus2 bSkillAtk,"AB_ADORAMUS",20;
+  - Id: 63551
+    AegisName: Grand_Censer
+    Name: Grand Censer
+    Type: Weapon
+    SubType: Mace
+    Buy: 20
+    Weight: 1500
+    Attack: 150
+    Range: 1
+    Slots: 1
+    Jobs:
+      Priest: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bInt,2; bonus2 bAddRace,RC_Undead,8; bonus2 bAddRace,RC_Demon,8; if (Class == Job_High_Priest) { bonus2 bAddRace,RC_Undead,8; bonus2 bAddRace,RC_Demon,8; } else bonus2 bSkillAtk,"AB_DUPLELIGHT_MELEE",30; bonus bUnbreakableWeapon;
+  - Id: 63552
+    AegisName: Staff_Of_Absolution
+    Name: Staff of Absolution
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 600
+    Attack: 75
+    Range: 1
+    Slots: 1
+    Jobs:
+      Priest: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus bMatkRate,8; bonus bHealPower,8; if (Class == Job_High_Priest) bonus bHealPower,8; else bonus2 bSkillAtk,"AB_ADORAMUS",30; bonus bUnbreakableWeapon;

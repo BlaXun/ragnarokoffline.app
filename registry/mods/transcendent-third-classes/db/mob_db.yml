@@ -11,6 +11,11 @@
 # Shadow_Chaser_T:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Arch_Bishop_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
 Header:
   Type: MOB_DB
   Version: 5
@@ -47,4 +52,20 @@ Body:
   - Id: 1974    # Banshee Master (BANSHEE_MASTER), 8 stock drops
     Drops:
       - Item: Phantom_Longbow
+        Rate: 5
+  - Id: 1132    # Khalitzburg (KHALITZBURG), 8 stock drops
+    Drops:
+      - Item: Censer_Mace
+        Rate: 10
+  - Id: 1117    # Evil Druid (EVIL_DRUID), 8 stock drops
+    Drops:
+      - Item: Pilgrim_Rod
+        Rate: 10
+  - Id: 1198    # Dark Priest (DARK_PRIEST), 8 stock drops
+    Drops:
+      - Item: Grand_Censer
+        Rate: 5
+  - Id: 1870    # Necromancer (NECROMANCER), 8 stock drops
+    Drops:
+      - Item: Staff_Of_Absolution
         Rate: 5
