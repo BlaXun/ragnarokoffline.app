@@ -3,9 +3,10 @@
 # CSV beside it changes.
 # Source: rathena 5209ce07ec58dc7f1875da47d8e6b0e0bae2a9a1
 #
-# 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use, with
-#    the item's other jobs restated (an import entry's Jobs replaces them).
-# 2. The mod's equipment, from equipment.csv: four tiers, levels 50-95.
+# 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
+#    with the item's other jobs restated (an import entry's Jobs replaces them).
+# 2. No renewal-only items: the skills need none.
+# 3. The mod's equipment, from equipment.csv: four tiers, levels 50-95.
 Header:
   Type: ITEM_DB
   Version: 3

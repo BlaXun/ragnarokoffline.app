@@ -3,8 +3,8 @@
 # CSV beside it changes.
 # Source: rathena 5209ce07ec58dc7f1875da47d8e6b0e0bae2a9a1
 #
-# Renewal's Kagerou and Oboro trees, unchanged. Both inherit Novice and
-# Ninja, so every point a Kagerou earns can also go into Ninja skills.
+# Renewal's Kagerou, Oboro tree, unchanged. It inherits Novice and
+# Ninja, so every point earned after the change can also go into Ninja skills.
 Header:
   Type: SKILL_TREE_DB
   Version: 1

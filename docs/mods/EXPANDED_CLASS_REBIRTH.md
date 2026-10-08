@@ -321,6 +321,48 @@ Only measuring found these.
 - Leave era-independent skills alone: zeny-based (Rapid Throw), %-of-HP
   (Illusion – Death), pure buffs and debuffs.
 
+### The fixed cast time rule
+
+Renewal splits a skill's cast into a variable part, which DEX reduces, and a
+**fixed** part, which it does not. Pre-renewal has only the first: every cast
+time is `cast × (1 − DEX / 150)` (`castrate_dex_scale`), and rAthena honours
+`FixedCastTime` only when the global `RENEWAL_CAST` flag is compiled in. A
+renewal skill copied as it is therefore loses its fixed part, and at high DEX
+it fires almost instantly: Soul Reaper's Espa (0.5 s cast + 1 s fixed in
+renewal) cast in a quarter of a second and chained every 0.6 s, at 30 times
+a High Wizard's damage per second. No damage factor fixes how that plays.
+
+The rule, decided with the mod owner and applied to every class mod:
+
+- **75% of each skill's renewal `FixedCastTime` is added to its
+  `AfterCastActDelay`, and the other 25% to its `CastTime`.** `FixedCastTime`
+  is set to 0. After-cast delay is pre-renewal's own limiter (Sonic Blow, the
+  bolts and Storm Gust are held back by it) and DEX does not reduce it, so it
+  puts a floor under the skill's rate; the 25% keeps a short, interruptible
+  cast bar so the skill still feels cast. Espa becomes a 0.75 s cast (before
+  DEX) and a 0.75 s delay.
+- **Exception: a skill, or a level of one, with a cooldown of 10 s or more
+  keeps its whole fixed cast as cast time.** Its cooldown already stops spam,
+  and as cast time it can be reduced the way renewal reduced fixed cast: by
+  DEX, and by Kagerou/Oboro's Izayoi, which in pre-renewal halves the whole
+  cast (`skill_castfix_sc`, `#ifndef RENEWAL_CAST`) but never touches delay.
+  Distorted Crescent goes from 3.9 s of lockout at DEX 90 to 3.0 s, and 2.0 s
+  with Izayoi; Soul Unity from level 2, Soul Explosion, Nova Explosion and
+  the Soul Reaper buff are the others.
+- In the generator: `FIXED_CAST_TO_DELAY=0.75` and
+  `FIXED_CAST_COOLDOWN_EXEMPT=10000` (the default) in the class's
+  `build.py`. Every converted line is commented in the generated entry.
+- **Measure after converting.** The delay slows the skill, so its damage
+  factor has to be set from the converted entry: Rebellion's rifle pair fell
+  from 0.85 to 0.56 of a Sniper when the rule went on, and its factors went
+  up to compensate.
+
+Caveats to tell the owner: Bragi and delay gear (Kiel-D-01 Card) reduce the
+delay, as they do for every pre-renewal class; delay comes *after* the hit
+where fixed cast came before it, which matters for PvP timing but not for
+damage per second; and a combo starter that gains delay may lose its combo
+window, so check every combo after converting.
+
 ### Method
 
 1. Build both characters from one template: base 99, max job, the same stats
@@ -331,7 +373,10 @@ Only measuring found these.
    and VIT (Kagerou used 30/30), `NoRandomWalk`, and a negligible attack.
 3. Spam the skill every 0.1 s for 30 s, and total the damage the client
    receives. The server enforces delays and cooldowns itself, so spamming
-   gives the real maximum rate.
+   gives the real maximum rate. **For skills with a cast bar, also measure
+   paced** (one request per cast + delay, and one skill per tick for a
+   rotation) and keep the best: requests during a cast cost Jupiter Thunder
+   two thirds of its casts.
 4. Measure **rotations**, not just single skills. A skill with a cooldown
    (rather than a delay) leaves gaps another skill fills: Cross Slash plus
    Soul Cutter was 1.6 × Sonic Blow while Cross Slash alone was 1.37 ×.
@@ -342,6 +387,20 @@ Only measuring found these.
    1,150 per cast on one character and 3,570 on the other.
 7. Set factors as `old × target / measured`, then measure again. Record the
    final table in the Lua file's header and in the README.
+8. **Ground skills report their damage from their skill unit**, not from the
+   caster (the packet's source is the unit's id). Count them by skill id, or
+   Storm Gust and Lord of Vermilion read as zero.
+9. **Cast toggles and long buffs once, at the start.** Star Emperor's
+   Universe Stance is a toggle: re-casting it every 10 s switched it off half
+   the time, and every kick measured low until that was found.
+10. **Resources set the real rate.** Soul energy comes from Soul Collect at
+   one per 20 s (the Soul Reaper buff only gains it from players); Gunslinger
+   coins from Rich's Coin. Measure the sustained rotation on the real income,
+   and the burst with an unlimited supply (`@soulball`, `@spiritball` in the
+   test helper) to check it does not overshoot.
+11. **Pick the reference by role**: Assassin Cross for melee (Sonic Blow,
+   Meteor Assault), Sniper for ranged (Double Strafe), High Wizard for casters
+   (Jupiter Thunder, Cold Bolt; Lord of Vermilion for area).
 
 Kagerou's final numbers (damage per second against an Assassin Cross):
 
@@ -529,9 +588,11 @@ the better. The worked example is `registry/mods/star-emperor` (branch
   `attack` pseudo-skill), and scale the extra hits too: Falling Star's took
   plain attacks to 1.8 times Sonic Blow.
 - **Shared generator.** `registry/tools/expanded_class/expanded_class.py` is
-  the generator as a module; a class's `build.py` is a config. It trims job
-  bonuses down to `BONUS_TOTAL` when renewal's exceed it, and skips item flags
-  when `ITEM_JOB` is unset.
+  the generator as a module, the same file on every class mod's branch; a
+  class's `build.py` is a config. It trims job bonuses down to `BONUS_TOTAL`
+  when renewal's exceed it, skips item flags when `ITEM_JOB` is unset, takes
+  an `ASPD` override, and applies the fixed cast time rule (§7) when
+  `FIXED_CAST_TO_DELAY` is set. All four class mods use it.
 
 ---
 

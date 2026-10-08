@@ -3,14 +3,19 @@
 # CSV beside it changes.
 # Source: rathena 5209ce07ec58dc7f1875da47d8e6b0e0bae2a9a1
 #
-# Renewal's entries for the Kagerou/Oboro skills whose pre-renewal entry
+# Renewal's entries for the KO_/OB_/KG_ skills whose pre-renewal entry
 # differs. Pre-renewal's are an older revision: no Status: (so the buffs
-# start nothing) and target types the skill classes no longer handle.
+# start nothing) and other fields the skill classes no longer match.
 # A field pre-renewal sets and renewal does not is reset explicitly,
 # since an import entry only replaces the fields it names. The same goes
 # for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
 # merge key by key, so a key pre-renewal sets is cleared explicitly.
-# Kunai Splash's after-cast delay is this mod's own: see SKILL_OVERRIDES.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
 #
 # Skills: KG_KAGEHUMI, KG_KAGEMUSYA, KG_KYOMU, KO_BAKURETSU, KO_HAPPOKUNAI, KO_HUUMARANKA, KO_IZAYOI, KO_JYUMONJIKIRI, KO_JYUSATSU, KO_KYOUGAKU, KO_MAKIBISHI, KO_MEIKYOUSISUI, KO_MUCHANAGE, KO_YAMIKUMO, KO_ZENKAI, OB_AKAITSUKI, OB_OBOROGENSOU, OB_ZANGETSU
 Header:
@@ -709,17 +714,17 @@ Body:
       NoDamage: true
     Range: 7
     Hit: Single
-    CastTime:
+    CastTime:    # renewal's FixedCastTime added here: a 30s+ cooldown already stops spam
       - Level: 1
-        Time: 1000
-      - Level: 2
-        Time: 1500
-      - Level: 3
-        Time: 2000
-      - Level: 4
-        Time: 2500
-      - Level: 5
         Time: 3000
+      - Level: 2
+        Time: 3500
+      - Level: 3
+        Time: 4000
+      - Level: 4
+        Time: 4500
+      - Level: 5
+        Time: 5000
     AfterCastActDelay: 1000
     Duration1:
       - Level: 1
@@ -733,7 +738,7 @@ Body:
       - Level: 5
         Time: 30000
     Cooldown: 30000
-    FixedCastTime: 2000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
       SpCost:
         - Level: 1
@@ -794,17 +799,17 @@ Body:
     Range: 7
     Hit: Single
     HitCount: 1
-    CastTime:
+    CastTime:    # renewal's FixedCastTime added here: a 30s+ cooldown already stops spam
       - Level: 1
-        Time: 1000
-      - Level: 2
-        Time: 1500
-      - Level: 3
-        Time: 2000
-      - Level: 4
-        Time: 2500
-      - Level: 5
         Time: 3000
+      - Level: 2
+        Time: 3500
+      - Level: 3
+        Time: 4000
+      - Level: 4
+        Time: 4500
+      - Level: 5
+        Time: 5000
     AfterCastActDelay: 1000
     Duration1:
       - Level: 1
@@ -818,7 +823,7 @@ Body:
       - Level: 5
         Time: 120000
     Cooldown: 30000
-    FixedCastTime: 2000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
       SpCost:
         - Level: 1

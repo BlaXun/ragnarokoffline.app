@@ -3,11 +3,11 @@
 # CSV beside it changes.
 # Source: rathena 5209ce07ec58dc7f1875da47d8e6b0e0bae2a9a1
 #
-# Kagerou and Oboro, which pre-renewal's job tables do not have.
+# Kagerou, Oboro, which pre-renewal's job tables do not have.
 # Base levels 1-99 on the transcendent EXP table, job levels
 # 1-60 on the transcendent second-job table (cut at 60).
-# HP: Assassin_Cross x 1.1. SP: Ninja x 1.1. ASPD: the Ninja's, Huuma 700.
-# Job bonuses: renewal's to job 50, then one each at 52, 54, 56, 58, 60 (+40 in all).
+# HP: Assassin_Cross x 1.1. SP: Ninja x 1.1. Weight: the Ninja's. ASPD: Fist 400, Dagger 500, Huuma 700.
+# Job bonuses: renewal's to job 60, then one each at 52, 54, 56, 58, 60 (+40 in all).
 Header:
   Type: JOB_STATS
   Version: 4
@@ -17,7 +17,7 @@ Body:
       Kagerou: true
       Oboro: true
     MaxWeight: 26000
-    HpFactor: 75
+    HpFactor: 80
     SpIncrease: 540
     BaseASPD:
       Fist: 400
