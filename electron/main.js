@@ -1021,6 +1021,9 @@ const SETTINGS_DEFAULTS = {
 	// every start after, once it has been); off closes them and keeps them
 	// closed, editor or not.
 	map_editor_agent: true,
+	// Mods the player starred in Settings -> Mods, by folder name: the Favorites
+	// tab lists them. Installed or not; nothing about the server reads it.
+	mod_favorites: [],
 	// How long a friends invitation stays valid, in days. Nothing to do with
 	// Cloudflare -- the tunnel runs as long as the app shares; this is only how
 	// long the invite token is accepted. A link posted in Discord should still
@@ -3144,6 +3147,17 @@ const handlers = {
 	// The allowlist is the point. Every other key in settings.json changes how
 	// the server runs and has to go through Apply, which regenerates its config
 	// and restarts it; a setter that took any name would be a way around that.
+	// Star or unstar a mod for Settings -> Mods -> Favorites. One name at a
+	// time, so two windows starring different mods don't overwrite each other.
+	mod_favorites_set: ({ name, favorite }) => {
+		name = String(name || '');
+		if (!/^[A-Za-z0-9_-]{1,64}$/.test(name)) throw new Error(`${name} is not a mod name`);
+		const list = (getSettings().mod_favorites || []).filter(n => n !== name);
+		if (favorite) list.push(name);
+		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
+			{ mod_favorites: list.sort() }, SETTINGS_DEFAULTS);
+		return settings.mod_favorites;
+	},
 	set_app_preference: ({ key, value }) => {
 		if (!APP_PREFERENCES.has(key)) throw new Error(`${key} is not an app preference`);
 		const on = !!value;
@@ -3742,7 +3756,7 @@ const HEADLESS_PAGE_HANDLERS = new Set([
 	'get_settings', 'get_vm_ram_mib', 'host_facts', 'host_ram_mib', 'hosting_check', 'install_mod',
 	'install_registry_mod', 'install_skin', 'list_mods', 'list_registry_mods', 'mod_data_reset', 'mod_host_list', 'mod_host_set',
 	'open_data_folder', 'open_mods_folder', 'packetvers', 'registry_image', 'registry_release', 'remove_mod',
-	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'set_client_paths',
+	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'mod_favorites_set', 'set_client_paths',
 	'set_mod_enabled', 'set_mod_settings', 'set_mode', 'set_vm_ram_mib', 'sharing_status', 'sharing_token_help',
 	'sign_in_status', 'stack_down', 'stack_repair', 'stack_status', 'stack_up', 'start_stack', 'tools_list',
 	'accounts', 'save_diagnostics', 'sharing_connect', 'sharing_start', 'sharing_forget', 'sharing_stop',
