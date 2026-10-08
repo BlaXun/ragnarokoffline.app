@@ -11,6 +11,13 @@
     "kro",
     "renewal"
   ],
+  "icon": "images/icon.png",
+  "screenshots": [
+    "images/administrators.jpg",
+    "images/mission-board.jpg",
+    "images/champion-hunt.jpg",
+    "images/quest-window.jpg"
+  ],
   "homepage": "https://github.com/akreao/eden-rework-2021",
   "requires": {
     "era": "renewal"
