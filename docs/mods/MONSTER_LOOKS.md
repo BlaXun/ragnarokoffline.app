@@ -428,28 +428,28 @@ The list was generated from the rAthena and roBrowserLegacy commits in
 | 96 | `HAT_EF_C_GHOST_EFFECT` | Costume Ghost Effect, Ghost Effect | `efst_C_Ghost_Effect/C_Ghost_Effect.str` |
 | 97 | `HAT_EF_C_POPPING_PORING_AURA` | Costume Popping Poring Aura | `efst_C_Popping_Poring_Aura/C_Popping_Poring_Aura.str` |
 | 98 | `HAT_EF_RESONATETAEGO` | Ancient Resonance, Costume Ancient Resonance, Rumble Effect | `efst_ResonateTaego/youmei.str` |
-| 99 | `HAT_EF_99LV_RUNE_RED` | — | nothing: effect 1325 is not in roBrowser's effect table |
-| 100 | `HAT_EF_99LV_ROYAL_GUARD_BLUE` | — | nothing: effect 1326 is not in roBrowser's effect table |
-| 101 | `HAT_EF_99LV_WARLOCK_VIOLET` | — | nothing: effect 1327 is not in roBrowser's effect table |
-| 102 | `HAT_EF_99LV_SORCERER_LBLUE` | — | nothing: effect 1328 is not in roBrowser's effect table |
-| 103 | `HAT_EF_99LV_RANGER_GREEN` | — | nothing: effect 1329 is not in roBrowser's effect table |
-| 104 | `HAT_EF_99LV_MINSTREL_PINK` | — | nothing: effect 1330 is not in roBrowser's effect table |
-| 105 | `HAT_EF_99LV_ARCHBISHOP_WHITE` | — | nothing: effect 1331 is not in roBrowser's effect table |
-| 106 | `HAT_EF_99LV_GUILL_SILVER` | — | nothing: effect 1332 is not in roBrowser's effect table |
-| 107 | `HAT_EF_99LV_SHADOWC_BLACK` | — | nothing: effect 1333 is not in roBrowser's effect table |
-| 108 | `HAT_EF_99LV_MECHANIC_GOLD` | — | nothing: effect 1334 is not in roBrowser's effect table |
-| 109 | `HAT_EF_99LV_GENETIC_YGREEN` | — | nothing: effect 1335 is not in roBrowser's effect table |
-| 110 | `HAT_EF_160LV_RUNE_RED` | Costume Red Aura | nothing: effect 1336 is not in roBrowser's effect table |
-| 111 | `HAT_EF_160LV_ROYAL_G_BLUE` | — | nothing: effect 1337 is not in roBrowser's effect table |
-| 112 | `HAT_EF_160LV_WARLOCK_VIOLET` | — | nothing: effect 1338 is not in roBrowser's effect table |
-| 113 | `HAT_EF_160LV_SORCERER_LBLUE` | — | nothing: effect 1339 is not in roBrowser's effect table |
-| 114 | `HAT_EF_160LV_RANGER_GREEN` | — | nothing: effect 1340 is not in roBrowser's effect table |
-| 115 | `HAT_EF_160LV_MINSTREL_PINK` | — | nothing: effect 1341 is not in roBrowser's effect table |
-| 116 | `HAT_EF_160LV_ARCHB_WHITE` | — | nothing: effect 1342 is not in roBrowser's effect table |
-| 117 | `HAT_EF_160LV_GUILL_SILVER` | — | nothing: effect 1343 is not in roBrowser's effect table |
-| 118 | `HAT_EF_160LV_SHADOWC_BLACK` | — | nothing: effect 1344 is not in roBrowser's effect table |
-| 119 | `HAT_EF_160LV_MECHANIC_GOLD` | Costume Gold Aura | nothing: effect 1345 is not in roBrowser's effect table |
-| 120 | `HAT_EF_160LV_GENETIC_YGREEN` | — | nothing: effect 1346 is not in roBrowser's effect table |
+| 99 | `HAT_EF_99LV_RUNE_RED` | — | effect 1325 |
+| 100 | `HAT_EF_99LV_ROYAL_GUARD_BLUE` | — | effect 1326 |
+| 101 | `HAT_EF_99LV_WARLOCK_VIOLET` | — | effect 1327 |
+| 102 | `HAT_EF_99LV_SORCERER_LBLUE` | — | effect 1328 |
+| 103 | `HAT_EF_99LV_RANGER_GREEN` | — | effect 1329 |
+| 104 | `HAT_EF_99LV_MINSTREL_PINK` | — | effect 1330 |
+| 105 | `HAT_EF_99LV_ARCHBISHOP_WHITE` | — | effect 1331 |
+| 106 | `HAT_EF_99LV_GUILL_SILVER` | — | effect 1332 |
+| 107 | `HAT_EF_99LV_SHADOWC_BLACK` | — | effect 1333 |
+| 108 | `HAT_EF_99LV_MECHANIC_GOLD` | — | effect 1334 |
+| 109 | `HAT_EF_99LV_GENETIC_YGREEN` | — | effect 1335 |
+| 110 | `HAT_EF_160LV_RUNE_RED` | Costume Red Aura | effect 1336 |
+| 111 | `HAT_EF_160LV_ROYAL_G_BLUE` | — | effect 1337 |
+| 112 | `HAT_EF_160LV_WARLOCK_VIOLET` | — | effect 1338 |
+| 113 | `HAT_EF_160LV_SORCERER_LBLUE` | — | effect 1339 |
+| 114 | `HAT_EF_160LV_RANGER_GREEN` | — | effect 1340 |
+| 115 | `HAT_EF_160LV_MINSTREL_PINK` | — | effect 1341 |
+| 116 | `HAT_EF_160LV_ARCHB_WHITE` | — | effect 1342 |
+| 117 | `HAT_EF_160LV_GUILL_SILVER` | — | effect 1343 |
+| 118 | `HAT_EF_160LV_SHADOWC_BLACK` | — | effect 1344 |
+| 119 | `HAT_EF_160LV_MECHANIC_GOLD` | Costume Gold Aura | effect 1345 |
+| 120 | `HAT_EF_160LV_GENETIC_YGREEN` | — | effect 1346 |
 | 121 | `HAT_EF_WATER_BELOW3` | — | `efst_Waterfield/waterfield2.str` |
 | 122 | `HAT_EF_WATER_BELOW4` | Water Field Effect | `efst_Waterfield2/waterfield3.str` |
 | 123 | `HAT_EF_C_VALKYRIE_WING` | Costume Valkyrie Wings | nothing: effect 1377 is not in roBrowser's effect table |
@@ -474,9 +474,9 @@ The list was generated from the rAthena and roBrowserLegacy commits in
 | 142 | `HAT_EF_2020RTC_EFFECT_02` | — | nothing: effect 2281 is not in roBrowser's effect table |
 | 143 | `HAT_EF_2020RTC_EFFECT_03` | — | nothing: effect 2281 is not in roBrowser's effect table |
 | 144 | `HAT_EF_99LV_STAR_E_MBLUE` | Costume Midnight Blue Energy | nothing: effect 2281 is not in roBrowser's effect table |
-| 145 | `HAT_EF_160LV_STAR_E_MBLUE` | Costume Midnight Blue Aura | nothing: effect 2282 is not in roBrowser's effect table |
-| 146 | `HAT_EF_99LV_SOUL_R_GRAY` | Costume Gray Energy | nothing: effect 2283 is not in roBrowser's effect table |
-| 147 | `HAT_EF_160LV_SOUL_R_GRAY` | Costume Gray Aura | nothing: effect 2284 is not in roBrowser's effect table |
+| 145 | `HAT_EF_160LV_STAR_E_MBLUE` | Costume Midnight Blue Aura | effect 2282 |
+| 146 | `HAT_EF_99LV_SOUL_R_GRAY` | Costume Gray Energy | effect 2283 |
+| 147 | `HAT_EF_160LV_SOUL_R_GRAY` | Costume Gray Aura | effect 2284 |
 | 148 | `HAT_EF_GEARWHEEL` | Costume Rotating Gears | `C_Rotating_Gears/gearwheel.str` |
 | 149 | `HAT_EF_GIFT_OF_SNOW` | Costume Gift of Snow | `efst_gift_of_snow/gift_of_snow.str` |
 | 150 | `HAT_EF_SNOW_POWDER` | Costume Snow Powder | `efst_Snow_Powder/ssnnnn2.str` |
