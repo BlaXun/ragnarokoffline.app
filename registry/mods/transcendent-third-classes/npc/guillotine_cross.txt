@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Guillotine Cross ===========
+//= The Assassin's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Thief of job 40 or more
+//= whose rebirth target is Assassin Cross (ADVJOB) may become a
+//= Guillotine Cross here instead, beside the stock Assassin Cross
+//= changer, which is untouched. The choice is permanent.
+//=
+//= Guillotine Cross is a third class in rAthena. The change goes
+//= through Assassin Cross and at once on to Guillotine Cross, so
+//= rAthena's third-class skill lock records Assassin Cross job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Guillotine Cross tree (Novice, Thief,
+//= Assassin and its own skills), with the same 69 job levels an
+//= Assassin Cross has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,52,58,3	script	Guillotine Cross#Valkyrie	725,{
+	.@n$ = "[Guillotine Cross]";
+	if (Class == Job_Guillotine_Cross_T) {
+		mes .@n$;
+		mes "You chose the guillotine. The guild's executioners carry blades made for our kind; take them from the desert's kings and their guards.";
+		close;
+	}
+	if (ADVJOB != Job_Assassin_Cross || Class != Job_Thief_High) {
+		mes .@n$;
+		mes "An Assassin who has been reborn chooses here: the Assassin Cross's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "An Assassin Cross perfects the Assassin's arts. A ^0000FFGuillotine Cross^000000 leaves them behind for new ones: poisons on the blade, counters, rolling cuts that end in a ripper slash.";
+	next;
+	mes .@n$;
+	mes "You keep every Assassin skill. You will never learn an Assassin Cross skill: no Enchant Deadly Poison, no Meteor Assault, no Soul Breaker.";
+	mes "Your job levels, your body and your gear are the same as an Assassin Cross's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the guillotine.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Assassin Cross, at job 1: see the header.
+	jobchange Job_Assassin_Cross;
+	jobchange Job_Guillotine_Cross_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Guillotine Cross.";
+	close;
+}

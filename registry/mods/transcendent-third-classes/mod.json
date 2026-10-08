@@ -1,0 +1,17 @@
+{
+  "name": "transcendent-third-classes",
+  "version": "1.0.0",
+  "author": "BlaXun",
+  "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross, the Assassin's other path, with a few katars and daggers of its own.",
+  "requires": { "app": ">=1.5.4", "era": "pre-renewal" },
+  "tags": [
+    "jobs",
+    "third-class",
+    "guillotine-cross",
+    "transcendent",
+    "rebirth",
+    "pre-renewal",
+    "lua"
+  ],
+  "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/transcendent-third-classes"
+}
