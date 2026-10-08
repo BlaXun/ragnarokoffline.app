@@ -1,0 +1,147 @@
+//===== rebellion ==============================================
+//= Rebellion for pre-renewal, by rebirth.
+//=
+//= A Gunslinger at base 99 / job 70 is reborn as a Novice. At job
+//= 10 the Novice becomes a Gunslinger again, with the transcendent
+//= class's 100 starting status points. From Gunslinger job 50 the
+//= reborn Gunslinger may become a Rebellion (job levels to 60).
+//= Every Gunslinger job level past 50 is one more skill point,
+//= which rAthena makes the player spend on Gunslinger skills
+//= before any Rebellion skill: a change at Gunslinger job 70
+//= gives 137 (69 Gunslinger, 59 Rebellion, 9 Novice), ten below
+//= renewal's 147.
+//=
+//= The character variable rebellion_reborn marks the path:
+//=   1  reborn as a Novice
+//=   2  a Gunslinger again
+//=   3  a Rebellion
+//==============================================================
+
+que_ng,156,167,3	script	Old Hand Jesse#rl_prere	901,{
+	.@n$ = "[Old Hand Jesse]";
+	if (Class == Job_Rebellion) {
+		mes .@n$;
+		mes "A Rebellion. Not many get this far.";
+		mes "The guns made for your kind are out past Einbroch, in the mines, the dig sites and the labs. Go and take them.";
+		close;
+	}
+	if (Upper != 0) {
+		mes .@n$;
+		mes "This road isn't one I can show you.";
+		close;
+	}
+	switch (rebellion_reborn) {
+	case 0:
+		if (Class != Job_Gunslinger) {
+			mes .@n$;
+			mes "A Gunslinger who has learned all a Gunslinger can learn may start over, and come back a Rebellion.";
+			mes "Come back as a Gunslinger of base level 99 and job level 70.";
+			close;
+		}
+		if (BaseLevel < 99 || JobLevel < 70) {
+			mes .@n$;
+			mes "You're not there yet. Come back at base level 99 and job level 70.";
+			close;
+		}
+		mes .@n$;
+		mes "You've learned all a Gunslinger can learn.";
+		mes "If you start over, you begin again as a Novice: level 1, no skills, no stats.";
+		next;
+		mes .@n$;
+		mes "At job level 10 you come back to me and become a Gunslinger again, steadier than before.";
+		mes "From Gunslinger job level 50 you may become a ^0000FFRebellion^000000.";
+		mes "The longer you stay a Gunslinger, up to job level 70, the more Gunslinger skills you will have.";
+		mes "Your own skills as a Rebellion come from your 59 job levels after that.";
+		next;
+		mes .@n$;
+		mes "Come with nothing: no items, no zeny, and no skill points left to spend.";
+		if (select("I'm ready to start over.:Not yet.") == 2) {
+			mes .@n$;
+			mes "The trail will wait.";
+			close;
+		}
+		if (Weight > 0 || Zeny > 0 || SkillPoint > 0) {
+			mes .@n$;
+			mes "You still carry something: items, zeny or unspent skill points. Come back without them.";
+			close;
+		}
+		callfunc "F_ClearJobVar";
+		rebellion_reborn = 1;
+		jobchange Job_Novice;
+		resetlvl(1);
+		StatusPoint = 48;
+		skill "NV_FIRSTAID",1,SKILL_PERM;
+		skill "NV_TRICKDEAD",1,SKILL_PERM;
+		getitem 1202,1; // Knife_
+		getitem 2302,1; // Cotton_Shirt_
+		mes .@n$;
+		mes "Start over. Come back at job level 10.";
+		close;
+
+	case 1:
+		if (Class != Job_Novice) {
+			mes .@n$;
+			mes "You started over to ride with me, and took another road. I can't help you now.";
+			close;
+		}
+		if (JobLevel < 10 || getskilllv("NV_BASIC") < 9) {
+			mes .@n$;
+			mes "Come back at job level 10, with your Basic Skill learned.";
+			close;
+		}
+		mes .@n$;
+		mes "Pick up a gun again.";
+		if (select("I'm ready.:Not yet.") == 2)
+			close;
+		rebellion_reborn = 2;
+		jobchange Job_Gunslinger;
+		StatusPoint += 52;
+		mes .@n$;
+		mes "Your hands remember. Come back at Gunslinger job level 50 or later.";
+		mes "Each level past 50, up to 70, is one more point for Gunslinger skills.";
+		close;
+
+	case 2:
+		if (Class != Job_Gunslinger) {
+			mes .@n$;
+			mes "You started over to ride with me, and took another road. I can't help you now.";
+			close;
+		}
+		if (JobLevel < 50) {
+			mes .@n$;
+			mes "Come back at Gunslinger job level 50 or later.";
+			close;
+		}
+		if (SkillPoint > 0) {
+			mes .@n$;
+			mes "Spend your skill points first.";
+			close;
+		}
+		mes .@n$;
+		mes "You may become a ^0000FFRebellion^000000 now.";
+		if (JobLevel < 70) {
+			mes "If you wait until job level 70 you will have " + (70 - JobLevel) + " more point" + (70 - JobLevel == 1 ? "" : "s") + " for Gunslinger skills.";
+		}
+		if (select("Make me a Rebellion.:Not yet.") == 2)
+			close;
+		rebellion_reborn = 3;
+		jobchange Job_Rebellion;
+		mes .@n$;
+		mes "Ride out, Rebellion.";
+		close;
+	}
+	end;
+}
+
+que_ng,148,167,5	script	Gunsmith#rl_prere	83,{
+	if (Class != Job_Rebellion) {
+		mes "[Gunsmith]";
+		mes "These rounds are for Rebellions.";
+		close;
+	}
+	callshop "rebellion_shop",1;
+	end;
+}
+
+// Full Metal Jacket, Grenade Launcher (mine), Dragon Tail Missile, Slug Bullet, Special Alloy Trap
+-	shop	rebellion_shop	-1,7663:-1,7664:-1,7665:-1,25187:-1,7940:-1
