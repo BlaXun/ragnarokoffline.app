@@ -915,7 +915,7 @@
       "name": "renewal-world",
       "version": "0.1.0",
       "author": "BlaXun",
-      "description": "Opens renewal's new lands in pre-renewal, joined to the old world where renewal joins them: Bifrost, Mora, Eclage and El Dicastes, Verus, the ships from Alberta to Dewata, Port Malaya, Malangdo and Rockridge, and the deeper floors of Niflheim, Izlude, Abyss Lakes, Einbroch and Magma dungeons. 55 maps. This first version opens the way only: the new maps have no monsters, shops or quests yet. Entrances that renewal hides behind a quest are free gates here. Another 77 maps (Lasagna, Bios Island, Rudus, the nightmare and illusion dungeons, Prontera Castle, ...) are joined to their neighbours but have no way in yet.",
+      "description": "Opens renewal's new lands in pre-renewal, joined to the old world where renewal joins them: Bifrost, Mora, Eclage and El Dicastes, Verus, the ships from Alberta to Dewata, Port Malaya, Malangdo and Rockridge, and new floors of Niflheim, Izlude, Abyss Lakes, Einbroch and Magma dungeons. With the quest areas setting on, also Lasagna, Bios Island, Rudus, Amicitia, the nightmare and illusion dungeons, Prontera Castle and other episode areas, whose entrances renewal keeps behind quests. 122 maps. This first version opens the way only: the new maps have no monsters, shops or quests yet. Every entrance renewal locks behind a quest is a free gate here.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/renewal-world",
       "tags": [
         "exploration",
@@ -934,11 +934,11 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "88484f4ae71c2fa3b602abd096837e1d4a995c3d2a8a0900c75d7be871c2ff9b"
+          "sha256": "84d4925dd92d00ee5b24cb97535efcebe3a45f22c1487314fa191c97df0f9762"
         },
         {
           "path": "mod.json",
-          "sha256": "6052fc9694945a8a072080e10659852d84917ea1a97a92c44eb35dd9ad51e7ff"
+          "sha256": "f916b4541c82d3b0b9dc1267e276f05d506da64301eec70e16e373f2d6bd94d5"
         },
         {
           "path": "npc/renewal_world_gates.txt",
@@ -950,7 +950,11 @@
         },
         {
           "path": "npc/renewal_world_warps.txt",
-          "sha256": "ce4488e9ffd04fbeabcfac393ae7a4f809dc00ef9a3706b128ad198f08496897"
+          "sha256": "7c26dfbcb82b06a872dcaf7c0e5caa91c7c1624fdb4f1bc795a96168e2fba253"
+        },
+        {
+          "path": "npc/when/quest_areas/renewal_world_quest_areas.txt",
+          "sha256": "7c1284bdc8a86b68fcc3b908be4c702c7693a88282cba70af0298fa873209580"
         }
       ]
     },

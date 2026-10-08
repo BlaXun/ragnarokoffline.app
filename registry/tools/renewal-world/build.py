@@ -14,12 +14,14 @@ dialogue around it.
     python3 build.py --check      fail if the mod's scripts are stale
 
 maps.csv   the renewal-only maps the mod covers, by region. access "open":
-           the mod opens a way in. access "staged": the map is joined to its
-           neighbours, but nothing leads in from outside yet. That way can
-           come later: a gate, or a portal turned on, and the rest is ready.
+           always reachable. "quest": an area renewal keeps behind an episode
+           quest, reachable only while the mod's quest_areas setting is on.
+           "staged": joined to its neighbours, but nothing leads in yet.
 gates.csv  one NPC per row: where it stands, what it looks like, where it
            sends you. kind "talk" asks first; kind "touch" is a portal you walk
-           into. Gates are free.
+           into. Gates are free. switch "quest_areas" puts the gate in
+           npc/when/quest_areas/, which the app loads only while that setting
+           is on; renewal's own portals into a quest area go there too.
 
 What is copied from renewal, for the maps in maps.csv:
   - every warp portal between two listed maps, or between a listed map and a
@@ -32,7 +34,8 @@ The build fails when a gate stands on a cell that is not walkable in
 pre-renewal (Alberta and Izlude have their classic layouts there), when a gate
 or portal stands next to one pre-renewal already has, when a name is already
 taken, when an open map cannot be reached from the old world or cannot get
-back to it, or when a staged map can be reached at all.
+back to it, when a quest map can be reached with the setting off or cannot be
+reached (or left) with it on, or when a staged map can be reached at all.
 
 The CSVs live here, beside this script, and are not shipped: the mod carries
 only the scripts generated from them. After --write, run scripts/mod-index.py.
@@ -55,6 +58,10 @@ MOD = os.path.join(ROOT, "registry/mods/renewal-world")
 OUT_WARPS = "npc/renewal_world_warps.txt"
 OUT_GATES = "npc/renewal_world_gates.txt"
 OUT_FLAGS = "npc/renewal_world_mapflags.txt"
+# The mod's yes/no setting for the quest areas. The app loads npc/when/<key>/
+# only while it is on.
+SWITCH = "quest_areas"
+OUT_QUEST = f"npc/when/{SWITCH}/renewal_world_quest_areas.txt"
 
 # Map flags worth carrying over. Left out: pvp off (the default), reset,
 # restricted (renewal's item zones) and the private airship flags.
@@ -215,10 +222,13 @@ def build(rathena):
 
     rows = read_csv("maps.csv")
     listed = {r["map"]: r["region"] for r in rows}
-    staged = {r["map"] for r in rows if r["access"] == "staged"}
+    access = {r["map"]: r["access"] for r in rows}
+    quest = {m for m, a in access.items() if a == "quest"}
+    staged = {m for m, a in access.items() if a == "staged"}
+    closed = quest | staged
     for r in rows:
-        if r["access"] not in ("open", "staged"):
-            errors.append(f"maps.csv: {r['map']}: access must be open or staged, not {r['access']!r}")
+        if r["access"] not in ("open", "quest", "staged"):
+            errors.append(f"maps.csv: {r['map']}: access must be open, quest or staged, not {r['access']!r}")
     old = pre.maps
     for mp in listed:
         if mp not in cache:
@@ -226,38 +236,52 @@ def build(rathena):
         if mp in old:
             errors.append(f"maps.csv: {mp} already has warps, NPCs or monsters in pre-renewal")
 
+    def crowded(mp, x, y, me):
+        return [t for t in pre.things.get(mp, []) if t[2] != me and max(abs(t[0] - x), abs(t[1] - y)) <= KEEP_CLEAR]
+
     # --- portals copied from renewal ---------------------------------------
+    # Always on: portals among the listed maps and out to the old world.
+    # Behind the switch: renewal's portals into a quest map from outside.
+    # Never: a portal into a staged map from outside.
     pre_lines = {w[1] for w in pre.warps}
-    warps, dropped, seen = [], collections.Counter(), set()
+    warps, switched, dropped, seen = [], [], collections.Counter(), set()
     for f, line, src, x, y, name, dst, dx, dy in re_s.warps:
         if SKIP_SCRIPTS.search(f) or line in pre_lines:
             continue
-        if src in listed and (dst in listed or dst in old):
-            pass
-        elif src in old and dst in listed:
-            pass
-        else:
+        if not ((src in listed and (dst in listed or dst in old)) or (src in old and dst in listed)):
             if src in listed or dst in listed:
-                dropped[(src, dst)] += 1
-            continue
-        if dst in staged and src not in staged:
-            dropped[(src, dst)] += 1
+                dropped[(src, dst, "not listed")] += 1
             continue
         if line in seen:
             continue
         seen.add(line)
-        warps.append((f, line, src, x, y, name, dst, dx, dy))
-    for (src, dst), n in sorted(dropped.items()):
-        why = "into a staged map" if dst in staged else "not listed"
+        w = (f, line, src, x, y, name, dst, dx, dy)
+        if dst in staged and src not in staged:
+            dropped[(src, dst, "into a staged map")] += 1
+        elif dst in quest and src not in closed:
+            busy = crowded(src, x, y, name) if src in old else []
+            if busy:
+                dropped[(src, dst, f"crowds pre-renewal's {busy[0][2]}; needs a gate")] += 1
+            else:
+                switched.append(w)
+        else:
+            warps.append(w)
+    for (src, dst, why), n in sorted(dropped.items()):
         notes.append(f"left out: {n} portal(s) {src} -> {dst} ({why})")
 
+    sprites = set(re.findall(r"export_constant_npc\(JT_(\w+)\)",
+                             open(f"{rathena}/src/map/script_constants.hpp", errors="ignore").read()))
     gates = read_csv("gates.csv")
     for g in gates:
+        if not g["sprite"].isdigit() and g["sprite"] not in sprites:
+            errors.append(f"gate {g['id']}: rAthena has no NPC sprite {g['sprite']!r}")
         for k in ("x", "y", "to_x", "to_y"):
             g[k] = int(g[k])
+        if g["switch"] not in ("", SWITCH):
+            errors.append(f"gate {g['id']}: switch must be empty or {SWITCH}, not {g['switch']!r}")
 
     # --- names --------------------------------------------------------------
-    ours = collections.Counter([unique_name(w[5]) for w in warps] + [f"{g['name']}#rw_{g['id']}" for g in gates])
+    ours = collections.Counter([unique_name(w[5]) for w in warps + switched] + [f"{g['name']}#rw_{g['id']}" for g in gates])
     for n, c in ours.items():
         if c > 1:
             errors.append(f"name used {c} times by this mod: {n}")
@@ -267,9 +291,6 @@ def build(rathena):
             errors.append(f"name longer than {NAME_MAX}: {n}")
 
     # --- cells --------------------------------------------------------------
-    def crowded(mp, x, y, me):
-        return [t for t in pre.things.get(mp, []) if t[2] != me and max(abs(t[0] - x), abs(t[1] - y)) <= KEEP_CLEAR]
-
     for g in gates:
         where = f"gate {g['id']} ({g['map']},{g['x']},{g['y']})"
         if g["map"] not in listed and g["map"] not in old:
@@ -277,10 +298,12 @@ def build(rathena):
         if g["to_map"] not in listed and g["to_map"] not in old:
             errors.append(f"{where}: sends to {g['to_map']}, which is neither listed nor in pre-renewal")
         if g["to_map"] in staged and g["map"] not in staged:
-            errors.append(f"{where}: leads into staged {g['to_map']}; make the map open first")
-        # A portal must stand on a cell you can step on. Someone you talk to
-        # may stand on a wall or a pier's edge, as long as you can get close.
-        near = 0 if g["kind"] == "touch" else TALK_REACH
+            errors.append(f"{where}: leads into staged {g['to_map']}; make the map open or quest first")
+        if g["to_map"] in quest and g["map"] not in closed and not g["switch"]:
+            errors.append(f"{where}: leads into quest map {g['to_map']}, so it needs switch {SWITCH}")
+        # A portal must have a cell you can step on in its area. Someone you
+        # talk to may stand on a wall or a pier's edge, as long as you can get close.
+        near = 1 if g["kind"] == "touch" else TALK_REACH   # a portal's area reaches 1 cell out
         if not any(walkable(g["map"], g["x"] + dx, g["y"] + dy)
                    for dx in range(-near, near + 1) for dy in range(-near, near + 1)):
             errors.append(f"{where}: no walkable cell within {near} in pre-renewal")
@@ -289,8 +312,8 @@ def build(rathena):
         if g["map"] in old:
             for t in crowded(g["map"], g["x"], g["y"], None):
                 errors.append(f"{where}: within {KEEP_CLEAR} cells of pre-renewal's {t[2]} at {t[0]},{t[1]}")
-    for f, line, src, x, y, name, dst, dx, dy in warps:
-        if src in old:
+    for f, line, src, x, y, name, dst, dx, dy in warps + switched:
+        if src in old and line not in {s[1] for s in switched}:
             for t in crowded(src, x, y, name):
                 errors.append(f"portal {name} ({src},{x},{y}): within {KEEP_CLEAR} cells of pre-renewal's {t[2]} at {t[0]},{t[1]}")
         if not walkable(dst, dx, dy):
@@ -300,16 +323,18 @@ def build(rathena):
                 notes.append(f"portal {name}: lands on an unwalkable cell {dst},{dx},{dy}"
                              + (" in pre-renewal; fix before opening" if dst in old else " (as in renewal)"))
 
-    # --- the world graph ----------------------------------------------------
+    # --- the world graph, with the switch off and on ------------------------
     OLD = "<pre-renewal world>"
     node = lambda mp: OLD if mp in old else mp
-    fwd, back = collections.defaultdict(set), collections.defaultdict(set)
-    for w in warps:
-        fwd[node(w[2])].add(node(w[6]))
-        back[node(w[6])].add(node(w[2]))
-    for g in gates:
-        fwd[node(g["map"])].add(node(g["to_map"]))
-        back[node(g["to_map"])].add(node(g["map"]))
+
+    def world(with_switch):
+        fwd, back = collections.defaultdict(set), collections.defaultdict(set)
+        edges = [(w[2], w[6]) for w in warps + (switched if with_switch else [])]
+        edges += [(g["map"], g["to_map"]) for g in gates if with_switch or not g["switch"]]
+        for a, b in edges:
+            fwd[node(a)].add(node(b))
+            back[node(b)].add(node(a))
+        return reach(fwd), reach(back)
 
     def reach(edges):
         seen, todo = {OLD}, [OLD]
@@ -320,18 +345,26 @@ def build(rathena):
                     todo.append(v)
         return seen
 
-    inward, outward = reach(fwd), reach(back)
+    off_in, off_out = world(False)
+    on_in, on_out = world(True)
     for mp in listed:
         if mp in staged:
-            if mp in inward:
+            if mp in on_in:
                 errors.append(f"{mp}: staged, but a way in from the pre-renewal world reaches it")
-            elif mp not in outward:
+            elif mp not in on_out:
                 notes.append(f"{mp}: staged, and no way back to the pre-renewal world once opened")
-            continue
-        if mp not in inward:
-            errors.append(f"{mp}: no way in from the pre-renewal world")
-        if mp not in outward:
-            errors.append(f"{mp}: no way back to the pre-renewal world")
+        elif mp in quest:
+            if mp in off_in:
+                errors.append(f"{mp}: quest map, but it can be reached with {SWITCH} off")
+            if mp not in on_in:
+                errors.append(f"{mp}: quest map with no way in, even with {SWITCH} on")
+            if mp not in on_out:
+                errors.append(f"{mp}: quest map with no way back to the pre-renewal world")
+        else:
+            if mp not in off_in:
+                errors.append(f"{mp}: no way in from the pre-renewal world")
+            if mp not in off_out:
+                errors.append(f"{mp}: no way back to the pre-renewal world")
 
     # --- map flags ----------------------------------------------------------
     have = {(m, fl, v) for _, m, fl, v in pre.flags}
@@ -350,22 +383,38 @@ def build(rathena):
     by_region = collections.defaultdict(list)
     for w in sorted(warps, key=sort_key):
         by_region[listed.get(w[2]) or listed.get(w[6])].append(w)
-    out_w = [gen, "// Warp portals, copied from renewal as they are.\n"]
+    out_w = [gen, "// Warp portals, copied from renewal as they are. A portal into a quest area\n"
+                  f"// from outside is in when/{SWITCH}/ instead, with that area's gates.\n"]
     for region in dict.fromkeys(r["region"] for r in rows):
         if by_region.get(region):
-            tag = " (staged: no way in yet)" if all(m in staged for m, r in listed.items() if r == region) else ""
+            maps_of = [m for m, r in listed.items() if r == region]
+            tag = (" (staged: no way in yet)" if all(m in staged for m in maps_of) else
+                   f" (quest area: way in behind {SWITCH})" if all(m in closed for m in maps_of) else "")
             out_w.append(f"\n//== {region}{tag} " + "=" * 50 + "\n")
             out_w += [w[1] + "\n" for w in by_region[region]]
     out_g = [gen, "// Gates: the entrances renewal keeps behind a quest, an instance or a ship.\n"]
     for g in gates:
-        out_g.append("\n" + gate_script(g))
+        if not g["switch"]:
+            out_g.append("\n" + gate_script(g))
+    out_q = [gen, f"// Loaded only while the mod's \"{SWITCH}\" setting is on: the ways into the\n"
+                  "// areas renewal keeps behind episode quests.\n"]
+    if switched:
+        out_q.append("\n// Renewal's own portals into them.\n")
+        out_q += [w[1] + "\n" for w in sorted(switched, key=sort_key)]
+    for g in gates:
+        if g["switch"]:
+            out_q.append("\n" + gate_script(g))
     out_f = [gen, "// Map flags, copied from renewal.\n\n"]
     for m, fl, v in sorted(flags, key=lambda k: (order[k[0]], k[1])):
         out_f.append(f"{m}\tmapflag\t{fl}" + (f"\t{v}" if v else "") + "\n")
 
-    files = {OUT_WARPS: "".join(out_w), OUT_GATES: "".join(out_g), OUT_FLAGS: "".join(out_f)}
-    summary = (f"{len(listed)} maps in {len(set(listed.values()))} regions ({len(staged)} staged), "
-               f"{len(warps)} portals, {len(gates)} gates, {len(flags)} map flags")
+    files = {OUT_WARPS: "".join(out_w), OUT_GATES: "".join(out_g), OUT_FLAGS: "".join(out_f),
+             OUT_QUEST: "".join(out_q)}
+    n_sw = sum(1 for g in gates if g["switch"])
+    summary = (f"{len(listed)} maps in {len(set(listed.values()))} regions "
+               f"({len(listed) - len(closed)} open, {len(quest)} quest, {len(staged)} staged); "
+               f"{len(warps)} portals and {len(gates) - n_sw} gates always on, "
+               f"{len(switched)} portals and {n_sw} gates behind {SWITCH}; {len(flags)} map flags")
     return files, errors, notes, summary
 
 
