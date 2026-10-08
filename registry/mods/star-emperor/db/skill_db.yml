@@ -11,6 +11,9 @@
 # for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
 # merge key by key, so a key pre-renewal sets is cleared explicitly.
 # Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
 #
 # Skills: SJ_BOOKOFCREATINGSTAR, SJ_BOOKOFDIMENSION, SJ_DOCUMENT, SJ_FALLINGSTAR, SJ_FALLINGSTAR_ATK, SJ_FALLINGSTAR_ATK2, SJ_FLASHKICK, SJ_FULLMOONKICK, SJ_GRAVITYCONTROL, SJ_LIGHTOFMOON, SJ_LIGHTOFSTAR, SJ_LIGHTOFSUN, SJ_LUNARSTANCE, SJ_NEWMOONKICK, SJ_NOVAEXPLOSING, SJ_PROMINENCEKICK, SJ_SOLARBURST, SJ_STAREMPEROR, SJ_STARSTANCE, SJ_SUNSTANCE, SJ_UNIVERSESTANCE
 Header:
@@ -28,8 +31,8 @@ Body:
     Hit: Single
     HitCount: 1
     Element: Weapon
-    CastTime: 2000
-    AfterCastActDelay: 500
+    CastTime: 2250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     Duration1:
       - Level: 1
         Time: 6000
@@ -42,7 +45,7 @@ Body:
       - Level: 5
         Time: 10000
     Cooldown: 15000
-    FixedCastTime: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
       SpCost:
         - Level: 1
@@ -113,7 +116,7 @@ Body:
       NoDamage: true
     Hit: Single
     HitCount: 1
-    CastTime: 1000
+    CastTime: 1500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     Duration1:
       - Level: 1
         Time: 120000
@@ -135,7 +138,7 @@ Body:
         Time: 280000
       - Level: 10
         Time: 300000
-    FixedCastTime: 2000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
       SpCost:
         - Level: 1
@@ -160,6 +163,7 @@ Body:
           Amount: 85
       State: Starstance
     Status: FallingStar
+    AfterCastActDelay: 1500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
   - Id: 2594
     Name: SJ_FALLINGSTAR_ATK
     Description: Falling Star Attack
@@ -392,10 +396,10 @@ Body:
     HitCount: 1
     Element: Weapon
     SplashArea: 3
-    CastTime: 1000
+    CastTime: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     Duration1: 15000
     Cooldown: 1000
-    FixedCastTime: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
       SpCost:
         - Level: 1
@@ -415,6 +419,7 @@ Body:
       State: Moonstance
     Status: NewMoon
     CastCancel: false
+    AfterCastActDelay: 750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
   - Id: 2582
     Name: SJ_NOVAEXPLOSING
     Description: Nova Explosion
@@ -428,11 +433,11 @@ Body:
     Range: 3
     Hit: Single
     HitCount: 1
-    CastTime: 5000
-    AfterCastActDelay: 1000
+    CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     Duration1: 2000
     Cooldown: 20000
-    FixedCastTime: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
       SpCost:
         - Level: 1
@@ -514,10 +519,10 @@ Body:
     HitCount: 1
     Element: Weapon
     SplashArea: 3
-    AfterCastActDelay: 1000
+    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     Duration1: 5000
     Cooldown: 10000
-    FixedCastTime: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
       SpCost:
         - Level: 1
@@ -532,6 +537,7 @@ Body:
           Amount: 90
       State: Universestance
     Status: Silence
+    CastTime: 250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
   - Id: 2578
     Name: SJ_STARSTANCE
     Description: Star Stance

@@ -44,6 +44,10 @@ A little below the transcendent classes:
   +40. A transcendent class gets +45.
 - **EXP**: the transcendent tables, base and job.
 - **ASPD and weight**: the Star Gladiator's.
+- **Cast times**: pre-renewal has no fixed cast time, and DEX shortens every
+  cast to nothing at 150. 75% of each skill's renewal fixed cast becomes
+  after-cast delay, which DEX does not reduce, and the rest is added to its
+  cast time: New Moon Kick casts in 1.25 s (before DEX) and then waits 0.75 s.
 - **Gear**: everything a Star Gladiator wears, and the transcendent-only
   items (rAthena allows third classes those in pre-renewal).
 - **Skill damage**: scaled in `lua/star_emperor.lua`, then measured on a
@@ -52,9 +56,9 @@ A little below the transcendent classes:
 
   | | Star Emperor | Assassin Cross |
   |---|---|---|
-  | Prominence Kick (+ Solar Burst) | 886 dmg/s | Sonic Blow 1022 |
-  | Attacks with Falling Star on Flash-Kicked targets | 858 | Sonic Blow 1022 |
-  | New Moon Kick + Full Moon Kick (area) | 990 | Meteor Assault 1180 |
+  | Prominence Kick (+ Solar Burst) | 922 dmg/s | Sonic Blow 1044 |
+  | Attacks with Falling Star on Flash-Kicked targets | 904 | Sonic Blow 1044 |
+  | New Moon Kick + Full Moon Kick (area) | 954 | Meteor Assault 1180 |
 
   Nova Explosion, Star Emperor Advent, Gravity Control and the two Books work
   only on PvP and GvG maps, as in renewal, and are left as they are. Buffs
@@ -86,7 +90,7 @@ Flower Hat and Hat of the Sun God), so the mod ships no sprites.
 | `lua/star_emperor.lua` | the skill damage scaling, with the measured table |
 | `db/job_stats.yml` | HP, SP, EXP, bonuses, ASPD, weight for Star Emperor and its Union form |
 | `db/skill_tree.yml` | renewal's Star Emperor trees |
-| `db/skill_db.yml` | renewal's SJ skill entries, where pre-renewal's are an older revision without `Status:` |
+| `db/skill_db.yml` | renewal's SJ skill entries (pre-renewal's lack `Status:`), with the fixed cast times turned into delay |
 | `db/item_db.yml` | the equipment (no job flags are needed) |
 | `db/item_combos.yml` | the set bonuses |
 | `db/mob_db.yml` | the equipment's drops |

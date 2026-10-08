@@ -39,6 +39,10 @@ ec.run(ec.config(
     # The equipment is for Star Emperors only: a Star Gladiator's Jobs: key,
     # and Classes: Third, which a Star Gladiator is not.
     EQUIP_JOBS=["StarGladiator"], EQUIP_CLASSES=["Third"],
+    # Pre-renewal has no fixed cast time and DEX shortens every cast to
+    # nothing at 150; 75% of renewal's fixed cast becomes after-cast delay,
+    # which DEX does not touch, and the rest is added to the cast time.
+    FIXED_CAST_TO_DELAY=0.75,
     WEAPON_KINDS={
         "book": dict(type="Weapon", sub="Book", loc=["Right_Hand"], label="Book", unid="Book"),
     },

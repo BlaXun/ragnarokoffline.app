@@ -52,7 +52,12 @@ def config(build_file, **kw):
         ITEM_JOB=None,          # the class's own item_db Jobs: key, when it has one
         EQUIP_JOBS=None,        # Jobs: of the mod's equipment (default: [ITEM_JOB])
         EQUIP_CLASSES=None,     # Classes: of the mod's equipment, e.g. ["Third"]
-        NEW_FROM_RENEWAL=[], SKILL_OVERRIDES={}, EXTRA_BONUS=[], WEAPON_KINDS={})
+        NEW_FROM_RENEWAL=[], SKILL_OVERRIDES={}, EXTRA_BONUS=[], WEAPON_KINDS={},
+        # Pre-renewal has no fixed cast time: every cast time shrinks with
+        # DEX, to nothing at 150. When set, this share of each skill's
+        # renewal FixedCastTime becomes after-cast delay (which DEX does not
+        # touch) and the rest is added to its CastTime. None leaves it.
+        FIXED_CAST_TO_DELAY=None)
     c.__dict__.update(kw)
     c.MOD = root / "registry" / "mods" / c.MOD_NAME
     c.KINDS = {**c.WEAPON_KINDS, **ARMOR_KINDS}
@@ -311,6 +316,55 @@ def nested_resets(name, pre_e, entry):
     return entry.rstrip("\n")
 
 
+def level_values_of(entry, key, field, maxlv):
+    """A per-level key as a list of maxlv ints: a scalar, a level list, or 0."""
+    m = re.search(r"^    " + key + r": (\d+)", entry, re.M)
+    if m:
+        return [int(m.group(1))] * maxlv
+    blk = re.search(r"^    " + key + r":[^\n]*\n((?:      .*\n?)*)", entry + "\n", re.M)
+    if not blk:
+        return [0] * maxlv
+    vals = {int(l): int(v) for l, v in re.findall(r"- Level: (\d+)\n\s+" + field + r": (\d+)", blk.group(1))}
+    out, last = [], 0
+    for lv in range(1, maxlv + 1):          # rAthena repeats the last level given
+        last = vals.get(lv, last)
+        out.append(last)
+    return out
+
+
+def set_level_values(entry, key, field, values, note):
+    """Replace (or add) a per-level key, as a scalar when every level agrees."""
+    block = re.compile(r"^    " + key + r":[^\n]*\n(?:      .*\n)*|^    " + key + r": .*\n", re.M)
+    if len(set(values)) == 1:
+        text = f"    {key}: {values[0]}    # {note}\n"
+    else:
+        text = f"    {key}:    # {note}\n" + "".join(
+            f"      - Level: {i}\n        {field}: {v}\n" for i, v in enumerate(values, 1))
+    entry += "\n"
+    if block.search(entry):
+        entry = block.sub(lambda m: text, entry, count=1)
+    else:
+        entry += text
+    return entry.rstrip("\n")
+
+
+def fold_fixed_cast(name, entry):
+    """Pre-renewal ignores FixedCastTime; turn it into delay and cast time."""
+    share = C.FIXED_CAST_TO_DELAY
+    maxlv = int(re.search(r"^    MaxLevel: (\d+)", entry, re.M).group(1))
+    fixed = level_values_of(entry, "FixedCastTime", "Time", maxlv)
+    if not any(fixed):
+        return entry
+    cast = level_values_of(entry, "CastTime", "Time", maxlv)
+    delay = level_values_of(entry, "AfterCastActDelay", "Time", maxlv)
+    to_delay = [round(f * share) for f in fixed]
+    note = f"renewal's FixedCastTime: {int(share * 100)}% added here as delay, the rest to CastTime"
+    entry = set_level_values(entry, "AfterCastActDelay", "Time", [d + t for d, t in zip(delay, to_delay)], note)
+    entry = set_level_values(entry, "CastTime", "Time", [c + f - t for c, f, t in zip(cast, fixed, to_delay)], note)
+    entry = set_level_values(entry, "FixedCastTime", "Time", [0] * maxlv, "moved into CastTime and AfterCastActDelay")
+    return entry
+
+
 def build_skill_db(src):
     pre = by_field(body_entries(src["db/pre-re/skill_db.yml"], "Id"), "Name")
     ren = by_field(body_entries(src["db/re/skill_db.yml"], "Id"), "Name")
@@ -329,6 +383,8 @@ def build_skill_db(src):
                 fail(f"{n}: pre-renewal sets {k}, renewal does not, and there is no reset value for it")
             entry += f"\n    {k}: {SKILL_DEFAULTS[k]}    # pre-renewal's entry sets this; renewal's does not"
         entry = nested_resets(n, pre[n], entry)
+        if C.FIXED_CAST_TO_DELAY is not None:
+            entry = fold_fixed_cast(n, entry)
         for k, v in C.SKILL_OVERRIDES.get(n, {}).items():
             line = re.compile(r"^    " + k + r":.*$", re.M)
             if not line.search(entry):
@@ -343,7 +399,12 @@ def build_skill_db(src):
              "since an import entry only replaces the fields it names. The same goes",
              "for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those",
              "merge key by key, so a key pre-renewal sets is cleared explicitly.",
-             "Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.",
+             "Fields marked as this mod's own come from SKILL_OVERRIDES in build.py."]
+    if C.FIXED_CAST_TO_DELAY is not None:
+        about += [f"Pre-renewal has no fixed cast time, so {int(C.FIXED_CAST_TO_DELAY * 100)}% of each skill's renewal",
+                  "FixedCastTime is added to its after-cast delay, which DEX does not",
+                  "reduce, and the rest to its cast time."]
+    about += [
              "", "Skills: " + ", ".join(changed)]
     return about, "\n".join(out) + "\n"
 
