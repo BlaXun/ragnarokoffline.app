@@ -1050,7 +1050,7 @@
       "name": "transcendent-third-classes",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera) and Royal Guard (Crusader), each with a few weapons that both paths can use.",
+      "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera) Royal Guard (Crusader) and Warlock (Wizard, with spellbooks sold in Geffen), each with a few weapons that both paths can use.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/transcendent-third-classes",
       "tags": [
         "jobs",
@@ -1070,43 +1070,47 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "b350b3fe68e2e7b6b338a96dac26cb0fdf7f7b1fe2b753f1a03f8c3598d5042c"
+          "sha256": "26f8722ddc44517fdf7b1f8a04cbcf4d82bce68c12b3a9eaee296850881303ed"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "0c549f520ec6b0e7b4d5d39e454f6b2c0f89d0d5f6cc394bea5821bfa25cd075"
+          "sha256": "96b656bb255d1220362ef31ec14a76104efbd5b4482510fbe14de434880a5f6f"
         },
         {
           "path": "db/item_combos.yml",
-          "sha256": "7a833fe187f9a2bac44fe41511eb2de8ab0ca5ead77ab51714e8ebaf1571f25a"
+          "sha256": "7378dd3d7ed710d582e145ef2e6d668533c432354d69e978e7101f7ec5edad6a"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "79720f53054dd6826464090fa4cba997f9f16c96e0a16869620c5d18b92fa562"
+          "sha256": "8904a9d0f2bd7790abff074ce92ec47a75b9f045dc467f6c877baed9bcaab927"
         },
         {
           "path": "db/job_stats.yml",
-          "sha256": "e7ac0136b909da2b44325e94aa30acecea5fdb36938fcf50f06748ea66d47aa6"
+          "sha256": "1b89a6533068c4d208fff338c239f72f24896befbf2c80d26bb2af5ea7375ee0"
         },
         {
           "path": "db/mob_db.yml",
-          "sha256": "66799516452537f8124b86929f7fd33289b7fc69fcfd42780a3f68806abffe06"
+          "sha256": "d994e0e26d22a7e1d2dbd037a7ed962567d9ec1d5fafb2f6b0ca9afccd17a1d0"
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "15ef2ce3290d434e9e8381407ee2fd45c2a1dadfa2757a6056cb06c4d7cbac34"
+          "sha256": "fd12011347535dd5346d8847e892e65b636a641ca4af6d1976841a40951d87b1"
         },
         {
           "path": "db/skill_tree.yml",
-          "sha256": "bb4262bc8f00fb1f1a801dd9c4051248f063aebd14c92a1c5c414880e2fa39c6"
+          "sha256": "dd95391171167b47a7c56ed8416a01b9177ff7bdef7b248057f189a88eca458d"
+        },
+        {
+          "path": "db/spellbook_db.yml",
+          "sha256": "0730214a684bbaf27ca26bb9274eb518d402bd3d941055be5e460d071a4c9fed"
         },
         {
           "path": "lua/third_classes.lua",
-          "sha256": "94969c1ad5d2e993949ea09760407ee890ff1993280825c30775799ae4566078"
+          "sha256": "75b8e4f8bf558f8621071ce1e05f9e339f7375637f8bf53277f7a52ae326e69c"
         },
         {
           "path": "mod.json",
-          "sha256": "1d1649f1abf8aa41607a0e7c955ec9c1f7e0bdcd48afa5a9fe28e19137a7f61e"
+          "sha256": "210e2373f8488deba4a7242e0ac82024c970fb48b2b8e2738fc280e552450674"
         },
         {
           "path": "npc/arch_bishop.txt",
@@ -1131,6 +1135,14 @@
         {
           "path": "npc/shadow_chaser.txt",
           "sha256": "584eee7d2ccdcba6b99f1bab4ac4eb37fbd751d5e296d04e9135508f15cfeba1"
+        },
+        {
+          "path": "npc/spellbook_seller.txt",
+          "sha256": "5423c375527fd22db23ea9ad7ac236f2299151c81fe8972c26569a56352dc11f"
+        },
+        {
+          "path": "npc/warlock.txt",
+          "sha256": "29e0cc51aac06dedba1fb8ca1d8814976959e3c61337e0881c8b9f453d83a5cb"
         }
       ]
     },
