@@ -55,9 +55,9 @@ A little below the transcendent classes:
 
   | | Soul Reaper | High Wizard |
   |---|---|---|
-  | Espa | 734 dmg/s | ~850 (Jupiter Thunder, Cold Bolt) |
-  | Espa + Eswhoo | 732 | |
-  | Soul Curse + Curse Explosion | 756 | |
+  | Espa | 1570 dmg/s | 1867 Jupitel Thunder (1659-2203 a run), 1104 Cold Bolt |
+  | Espa + Eswhoo | about 1500 | |
+  | Soul Curse + Curse Explosion, soul energy refilled | 2755 | |
 
   Soul energy comes from Soul Collect (one every 20 s at level 5); the Soul
   Reaper buff only gains it against players. Espa costs none at level 10 and
