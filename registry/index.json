@@ -1050,7 +1050,7 @@
       "name": "transcendent-third-classes",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross, the Assassin's other path, Shadow Chaser, the Rogue's, Arch Bishop, the Priest's, and Rune Knight, the Knight's, with a Dragon Breeder in Prontera; each with a few weapons that both paths can use.",
+      "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera) and Royal Guard (Crusader), each with a few weapons that both paths can use.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/transcendent-third-classes",
       "tags": [
         "jobs",
@@ -1070,43 +1070,43 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "4efa6bf55451ddd03628fb10cd447874a9b3bc6092f915484dff7f376f8431ca"
+          "sha256": "b350b3fe68e2e7b6b338a96dac26cb0fdf7f7b1fe2b753f1a03f8c3598d5042c"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "714dc5da9d47249e7bc5b6743532648d1c14e3377785d9aeee7c8b007886c333"
+          "sha256": "0c549f520ec6b0e7b4d5d39e454f6b2c0f89d0d5f6cc394bea5821bfa25cd075"
         },
         {
           "path": "db/item_combos.yml",
-          "sha256": "7595d7e6a3f9547041c3a3429ff586c62fcc50e6398353653a0b2cb2a0cc805f"
+          "sha256": "7a833fe187f9a2bac44fe41511eb2de8ab0ca5ead77ab51714e8ebaf1571f25a"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "531793f4b5471556567fab5c56bd907958d22a4b008c49e8aa8f2b1e561f65d2"
+          "sha256": "79720f53054dd6826464090fa4cba997f9f16c96e0a16869620c5d18b92fa562"
         },
         {
           "path": "db/job_stats.yml",
-          "sha256": "10f454049d5b02da55927f8c0e62b5609b7a4936cd77502b65fe404c4baba74c"
+          "sha256": "e7ac0136b909da2b44325e94aa30acecea5fdb36938fcf50f06748ea66d47aa6"
         },
         {
           "path": "db/mob_db.yml",
-          "sha256": "bde3fd27976e2c4f84c8cd1607ae72eee3a8a92fed3f90cc62cc9ed9ee69554e"
+          "sha256": "66799516452537f8124b86929f7fd33289b7fc69fcfd42780a3f68806abffe06"
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "fc745f5c4029fc3b697039d39584ccda3851f7d48bcbb2f00a4e98b9814a4988"
+          "sha256": "15ef2ce3290d434e9e8381407ee2fd45c2a1dadfa2757a6056cb06c4d7cbac34"
         },
         {
           "path": "db/skill_tree.yml",
-          "sha256": "619b02aeddbe77e0fcbdc83abe968ca066b07a1d096872408ec195f9f1099ac5"
+          "sha256": "bb4262bc8f00fb1f1a801dd9c4051248f063aebd14c92a1c5c414880e2fa39c6"
         },
         {
           "path": "lua/third_classes.lua",
-          "sha256": "22ef85bcd6fc15f11e3c0782edecec259bd4cb6fa892e3741bd401042619fa8a"
+          "sha256": "94969c1ad5d2e993949ea09760407ee890ff1993280825c30775799ae4566078"
         },
         {
           "path": "mod.json",
-          "sha256": "100b6ad4fa04709ca56e42a958a54c7df5ff777891e40035316552c7295e1208"
+          "sha256": "1d1649f1abf8aa41607a0e7c955ec9c1f7e0bdcd48afa5a9fe28e19137a7f61e"
         },
         {
           "path": "npc/arch_bishop.txt",
@@ -1119,6 +1119,10 @@
         {
           "path": "npc/guillotine_cross.txt",
           "sha256": "aab513bc583e783b9f3cd726cf13b3f98457824f223ca843c663423e57865327"
+        },
+        {
+          "path": "npc/royal_guard.txt",
+          "sha256": "39cf969615ff902d445e1e22ceb968abdef2fbbf43db72cefa783fb92f520048"
         },
         {
           "path": "npc/rune_knight.txt",
