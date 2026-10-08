@@ -14,6 +14,8 @@
 # Pre-renewal has no fixed cast time, so 75% of each skill's renewal
 # FixedCastTime is added to its after-cast delay, which DEX does not
 # reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
 #
 # Skills: SJ_BOOKOFCREATINGSTAR, SJ_BOOKOFDIMENSION, SJ_DOCUMENT, SJ_FALLINGSTAR, SJ_FALLINGSTAR_ATK, SJ_FALLINGSTAR_ATK2, SJ_FLASHKICK, SJ_FULLMOONKICK, SJ_GRAVITYCONTROL, SJ_LIGHTOFMOON, SJ_LIGHTOFSTAR, SJ_LIGHTOFSUN, SJ_LUNARSTANCE, SJ_NEWMOONKICK, SJ_NOVAEXPLOSING, SJ_PROMINENCEKICK, SJ_SOLARBURST, SJ_STAREMPEROR, SJ_STARSTANCE, SJ_SUNSTANCE, SJ_UNIVERSESTANCE
 Header:
@@ -31,8 +33,8 @@ Body:
     Hit: Single
     HitCount: 1
     Element: Weapon
-    CastTime: 2250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
-    AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    CastTime: 3000    # renewal's FixedCastTime added here: a 15s+ cooldown already stops spam
+    AfterCastActDelay: 500
     Duration1:
       - Level: 1
         Time: 6000
@@ -433,8 +435,8 @@ Body:
     Range: 3
     Hit: Single
     HitCount: 1
-    CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
-    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    CastTime: 6000    # renewal's FixedCastTime added here: a 20s+ cooldown already stops spam
+    AfterCastActDelay: 1000
     Duration1: 2000
     Cooldown: 20000
     FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
@@ -519,7 +521,7 @@ Body:
     HitCount: 1
     Element: Weapon
     SplashArea: 3
-    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1000
     Duration1: 5000
     Cooldown: 10000
     FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
@@ -537,7 +539,7 @@ Body:
           Amount: 90
       State: Universestance
     Status: Silence
-    CastTime: 250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    CastTime: 1000    # renewal's FixedCastTime added here: a 10s+ cooldown already stops spam
   - Id: 2578
     Name: SJ_STARSTANCE
     Description: Star Stance

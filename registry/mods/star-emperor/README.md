@@ -48,6 +48,9 @@ A little below the transcendent classes:
   cast to nothing at 150. 75% of each skill's renewal fixed cast becomes
   after-cast delay, which DEX does not reduce, and the rest is added to its
   cast time: New Moon Kick casts in 1.25 s (before DEX) and then waits 0.75 s.
+  A skill with a cooldown of 10 s or more cannot be spammed anyway, so its
+  whole fixed cast goes into the cast time, where DEX reduces it: Nova
+  Explosion, Star Emperor Advent, Book of Creating Star.
 - **Gear**: everything a Star Gladiator wears, and the transcendent-only
   items (rAthena allows third classes those in pre-renewal).
 - **Skill damage**: scaled in `lua/star_emperor.lua`, then measured on a
