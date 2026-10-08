@@ -62,10 +62,26 @@ def config(build_file, **kw):
         # anyway: its whole fixed cast goes into CastTime, where DEX and
         # Izayoi reduce it as renewal's fixed-cast reductions would.
         FIXED_CAST_COOLDOWN_EXEMPT=10000,
-        ASPD=None)              # {weapon: value} instead of the base class's BaseASPD
+        ASPD=None,              # {weapon: value} instead of the base class's BaseASPD
+        # {job: renewal job}: ship that renewal job's tree under this job's
+        # name (a transcendent third class with the non-transcendent tree).
+        TREE_FROM={},
+        # A subdirectory of the tool's directory holding this class's
+        # equipment.csv, drops.csv and combos.csv, when one mod builds several
+        # classes (run() given a list of configs). None: the tool's own.
+        CSV_DIR=None,
+        # The Requirement line of the equipment's descriptions; default: JOBS.
+        EQUIP_LABEL=None,
+        # The item table's note on the equipment; default: four tiers.
+        ITEMS_ABOUT=None,
+        # {flag: [skill names]}: Flags: this mod turns on for skills of other
+        # classes (an import entry's Flags merge key by key, so only this one
+        # is added), e.g. {"IsAutoShadowSpell": ["PR_TURNUNDEAD"]}.
+        SKILL_FLAGS_ADD={})
     c.__dict__.update(kw)
     c.MOD = root / "registry" / "mods" / c.MOD_NAME
     c.KINDS = {**c.WEAPON_KINDS, **ARMOR_KINDS}
+    c.CSV = tool / c.CSV_DIR if c.CSV_DIR else tool
     if c.EQUIP_JOBS is None:
         c.EQUIP_JOBS = [c.ITEM_JOB]
     return c
@@ -254,15 +270,26 @@ def build_job_stats(src):
 
 def build_skill_tree(src):
     tree = body_entries(src["db/re/skill_tree.yml"], "Job")
-    out = [e for e in tree if e.split("\n")[0].strip() in [f"- Job: {j}" for j in C.JOBS]]
-    if len(out) != len(C.JOBS):
-        fail(f"renewal's skill tree lacks one of {C.JOBS}")
-    return [f"Renewal's {', '.join(C.JOBS)} tree, unchanged. It inherits Novice and",
-            f"{C.BASE}, so every point earned after the change can also go into {C.BASE} skills."], \
-        "\n".join(out) + "\n"
+    by_job = {e.split("\n")[0].strip()[len("- Job: "):]: e for e in tree}
+    out = []
+    for job in C.JOBS:
+        source = C.TREE_FROM.get(job, job)
+        if source not in by_job:
+            fail(f"renewal's skill tree has no {source}")
+        entry = by_job[source]
+        if source != job:
+            entry = entry.replace(f"- Job: {source}", f"- Job: {job}    # renewal's {source} tree", 1)
+        out.append(entry)
+    about = [f"Renewal's {', '.join(C.JOBS)} tree, unchanged. It inherits Novice and",
+             f"{C.BASE}, so every point earned after the change can also go into {C.BASE} skills."]
+    if C.TREE_FROM:
+        about = ["Renewal's trees for " + ", ".join(C.JOBS) + ", taken from "
+                 + ", ".join(f"{s} for {j}" for j, s in C.TREE_FROM.items()) + ":",
+                 "the class gets that job's skills and what it inherits, nothing more."]
+    return about, "\n".join(out) + "\n"
 
 
-SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
+SKILL_DEFAULTS = {"Element": "Neutral", "Range": "0", "Knockback": "0", "AfterCastActDelay": "0", "AfterCastWalkDelay": "0", "Duration1": "0",
                   "Duration2": "0", "CastTime": "0", "Cooldown": "0", "FixedCastTime": "0"}
 
 
@@ -384,6 +411,37 @@ def fold_fixed_cast(name, entry):
     return entry
 
 
+# The per-level field name of each key that takes a level list.
+LEVEL_FIELD = {"SpCost": "Amount", "HpCost": "Amount"}
+
+
+def override_field(name, entry, key, value):
+    """Replace a field, a per-level list under it included. KEY may name a
+    field inside a map ("Requires.SpCost"); VALUE is a scalar or, for a
+    per-level value, a list with one entry per level."""
+    note = "this mod's balance; renewal's is different"
+    *parents, field = key.split(".")
+    indent = 4 + 2 * len(parents)
+    pad = " " * indent
+    if isinstance(value, list):
+        sub = LEVEL_FIELD.get(field, "Time")
+        text = f"{pad}{field}:    # {note}\n" + "".join(
+            f"{pad}  - Level: {i}\n{pad}    {sub}: {x}\n" for i, x in enumerate(value, 1))
+    else:
+        text = f"{pad}{field}: {value}    # {note}\n"
+    start, end = 0, len(entry) + 1
+    body = entry + "\n"
+    for i, p in enumerate(parents):          # narrow to the parent map's block
+        m = re.compile(r"^" + " " * (4 + 2 * i) + p + r":[^\n]*\n((?:" + " " * (6 + 2 * i) + r".*\n)*)", re.M).search(body, start, end)
+        if not m:
+            fail(f"{name}: no {'.'.join(parents[:i + 1])} to override")
+        start, end = m.start(1), m.end(1)
+    m = re.compile(r"^" + pad + field + r":.*\n(?:" + pad + r"  .*\n)*", re.M).search(body, start, end)
+    if not m:
+        fail(f"{name}: no {key} to override")
+    return (body[:m.start()] + text + body[m.end():]).rstrip("\n")
+
+
 def build_skill_db(src):
     pre = by_field(body_entries(src["db/pre-re/skill_db.yml"], "Id"), "Name")
     ren = by_field(body_entries(src["db/re/skill_db.yml"], "Id"), "Name")
@@ -392,7 +450,7 @@ def build_skill_db(src):
     for n in names:
         if n not in ren:
             fail(f"{n} is not in renewal's skill_db")
-        if pre[n] == ren[n]:
+        if pre[n] == ren[n] and n not in C.SKILL_OVERRIDES:
             continue
         keys = lambda e: set(re.findall(r"^    (\w+):", e, re.M))
         dropped = keys(pre[n]) - keys(ren[n])
@@ -405,12 +463,19 @@ def build_skill_db(src):
         if C.FIXED_CAST_TO_DELAY is not None:
             entry = fold_fixed_cast(n, entry)
         for k, v in C.SKILL_OVERRIDES.get(n, {}).items():
-            line = re.compile(r"^    " + k + r":.*$", re.M)
-            if not line.search(entry):
-                fail(f"{n}: no {k} to override")
-            entry = line.sub(f"    {k}: {v}    # this mod's balance; renewal's is different", entry)
+            entry = override_field(n, entry, k, v)
         out.append(entry)
         changed.append(n)
+    added = []
+    for flag, skills in C.SKILL_FLAGS_ADD.items():
+        for n in skills:
+            if n not in pre:
+                fail(f"SKILL_FLAGS_ADD: {n} is not in pre-renewal's skill_db")
+            if re.search(r"^      " + flag + r": true", pre[n], re.M):
+                fail(f"SKILL_FLAGS_ADD: {n} already has {flag}")
+            sid = re.match(r"- Id: (\d+)", pre[n].strip()).group(1)
+            out.append(f"  - Id: {sid}\n    Name: {n}\n    Flags:\n      {flag}: true    # this mod's; pre-renewal's entry is otherwise kept")
+            added.append(f"{flag} on {n}")
     prefixes = "/".join(C.SKILL_PREFIX) if isinstance(C.SKILL_PREFIX, tuple) else C.SKILL_PREFIX
     about = [f"Renewal's entries for the {prefixes} skills whose pre-renewal entry",
              "differs. Pre-renewal's are an older revision: no Status: (so the buffs",
@@ -429,11 +494,13 @@ def build_skill_db(src):
                       "its whole fixed cast goes into its cast time instead."]
     about += [
              "", "Skills: " + ", ".join(changed)]
+    if added:
+        about += ["", "Flags added to other classes' skills (only that key; the rest of", "pre-renewal's entry stays): " + ", ".join(added)]
     return about, "\n".join(out) + "\n"
 
 
 def read_csv(name):
-    with open(C.TOOL / name, newline="", encoding="utf-8") as f:
+    with open(C.CSV / name, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
 
@@ -531,7 +598,7 @@ def build_items(src, iteminfo):
             if r["kind"] == "head":
                 lines.append("^0000CCPosition:^000000 " + ", ".join(HEAD_POSITION[l] for l in locs))
             lines += [f"^0000CCWeight:^000000 {int(r['weight']) // 10}", "^0000CCArmor Level:^000000 1"]
-        lines += [RULE, "^0000CCRequirement:^000000", f"Base Level {r['level']}", " and ".join(C.JOBS)]
+        lines += [RULE, "^0000CCRequirement:^000000", f"Base Level {r['level']}", C.EQUIP_LABEL or " and ".join(C.JOBS)]
         info.append((r, kind, art, lines))
 
     combos = read_csv("combos.csv")
@@ -552,16 +619,24 @@ def build_items(src, iteminfo):
              [f"1. No job flags: rAthena already lets the class wear a {C.BASE}'s items."]) + [
              ("2. Renewal's " + ", ".join(C.NEW_FROM_RENEWAL) + ", which the skills need."
               if C.NEW_FROM_RENEWAL else "2. No renewal-only items: the skills need none."),
-             "3. The mod's equipment, from equipment.csv: four tiers, levels 50-95."]
+             "3. " + (C.ITEMS_ABOUT or "The mod's equipment, from equipment.csv: four tiers, levels 50-95.")]
     lua = build_iteminfo(info, combo_desc)
     return about, "\n".join(flags + new) + "\n", lua, rows, combos
 
 
-def build_iteminfo(info, combo_desc):
+def wrap_iteminfo(entries):
     out = [f"-- Generated by registry/tools/{C.MOD_NAME}/build.py -- do not hand-edit.",
            f"-- The names, descriptions and art of the {C.MOD_NAME} mod's equipment.",
            "-- The art is borrowed from stock items, by their resource names.",
-           "tbl = {"]
+           "tbl = {"] + entries
+    out[-1] = "\t}"
+    out.append("}")
+    return "\n".join(out) + "\n"
+
+
+def build_iteminfo(info, combo_desc):
+    """The equipment's itemInfo entries, as lines; wrap_iteminfo makes the file."""
+    out = []
     q = lambda s: '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
     for r, kind, art, lines in info:
         if r["aegis"] in combo_desc:
@@ -579,9 +654,7 @@ def build_iteminfo(info, combo_desc):
                 "\t\tidentifiedDescriptionName = {"]
         out += [f"\t\t\t{q(l)}," for l in lines[:-1]] + [f"\t\t\t{q(lines[-1])}"]
         out += ["\t\t},", f"\t\tslotCount = {int(r['slots'])},", f"\t\tClassNum = {art['classnum']}", "\t},"]
-    out[-1] = "\t}"
-    out.append("}")
-    return "\n".join(out) + "\n"
+    return out
 
 
 def build_combos(combos):
@@ -589,6 +662,8 @@ def build_combos(combos):
     for c in combos:
         out += ["  - Combos:", "      - Combo:"] + [f"          - {a}" for a in c["items"].split()]
         out += ["    Script: |", "      " + c["script"].strip()]
+    if not combos:
+        return ["No set bonuses."], "\n".join(out) + "\n"
     return ["The equipment's set bonuses, from combos.csv: mask, garb, scarf and",
             "tabi of one tier."], "\n".join(out) + "\n"
 
@@ -626,10 +701,40 @@ def build_drops(src, rows):
 
 # ---------------------------------------------------------------- main
 
+def build_class(src, iteminfo, lua):
+    """One class's (about, body) for each table; its itemInfo entries go to lua."""
+    out = {}
+    out["db/job_stats.yml"] = build_job_stats(src)
+    out["db/skill_tree.yml"] = build_skill_tree(src)
+    out["db/skill_db.yml"] = build_skill_db(src)
+    about, body, entries, rows, combos = build_items(src, iteminfo)
+    # Every item a shipped skill entry names must exist, or rAthena drops the entry.
+    known = {item_fields(e)["aegis"] for f in ("db/pre-re/item_db_equip.yml", "db/pre-re/item_db_usable.yml",
+                                                "db/pre-re/item_db_etc.yml") for e in body_entries(src[f], "Id")}
+    known |= set(C.NEW_FROM_RENEWAL)
+    skill_text = out["db/skill_db.yml"][1]
+    named = set(re.findall(r"^        - Item: (\S+)", skill_text, re.M))
+    for block in re.findall(r"^      Equipment:\n((?:        \w+: true\n)+)", skill_text, re.M):
+        named |= set(re.findall(r"(\w+): true", block))
+    missing = sorted(n for n in named if n not in known and not n[0].isdigit())
+    if missing:
+        fail("skill entries name items pre-renewal lacks: " + ", ".join(missing) + " -- add them to NEW_FROM_RENEWAL")
+    out["db/item_db.yml"] = (about, body)
+    lua += entries
+    out["db/item_combos.yml"] = build_combos(combos)
+    out["db/mob_db.yml"] = build_drops(src, rows)
+    return out
+
+
 def run(cfg):
-    """Build one mod from its config (see registry/tools/*/build.py)."""
+    """Build one mod from its config (see registry/tools/*/build.py), or from a
+    list of configs, one per class, into one mod."""
     global C
-    C = cfg
+    cfgs = cfg if isinstance(cfg, list) else [cfg]
+    for c in cfgs[1:]:
+        if c.MOD_NAME != cfgs[0].MOD_NAME or c.ROOT != cfgs[0].ROOT:
+            sys.exit("build.py: every class config must name the same mod")
+    C = cfgs[0]
     ap = argparse.ArgumentParser(description=f"Regenerate the {C.MOD_NAME} mod's tables.")
     ap.add_argument("--rathena", type=Path, default=C.ROOT / "vendor" / "rathena")
     ap.add_argument("--commit", default=None, help="default: the pin in config/VENDOR_PINS")
@@ -645,31 +750,31 @@ def run(cfg):
     source = f"rathena {commit}"
     iteminfo = lua_items(C.ITEMINFO)
 
+    # Each class's part of every file; several classes' parts are joined.
+    parts, lua, mobs = {}, [], {}
+    for cfg in cfgs:
+        C = cfg
+        for rel, (about, body) in build_class(src, iteminfo, lua).items():
+            parts.setdefault(rel, []).append((about, body))
+        for mob in re.findall(r"^  - Id: (\d+)", parts["db/mob_db.yml"][-1][1], re.M):
+            if mob in mobs:
+                fail(f"monster {mob} drops items of two classes: give each class its own monsters")
+            mobs[mob] = cfg.JOBS
+    kinds = {"db/job_stats.yml": ("JOB_STATS", 4), "db/skill_tree.yml": ("SKILL_TREE_DB", 1),
+             "db/skill_db.yml": ("SKILL_DB", 4), "db/item_db.yml": ("ITEM_DB", 3),
+             "db/item_combos.yml": ("COMBO_DB", 1), "db/mob_db.yml": ("MOB_DB", 5)}
     outputs = {}
-    about, body = build_job_stats(src)
-    outputs["db/job_stats.yml"] = header("JOB_STATS", 4, source, about) + body
-    about, body = build_skill_tree(src)
-    outputs["db/skill_tree.yml"] = header("SKILL_TREE_DB", 1, source, about) + body
-    about, body = build_skill_db(src)
-    outputs["db/skill_db.yml"] = header("SKILL_DB", 4, source, about) + body
-    about, body, lua, rows, combos = build_items(src, iteminfo)
-    # Every item a shipped skill entry names must exist, or rAthena drops the entry.
-    known = {item_fields(e)["aegis"] for f in ("db/pre-re/item_db_equip.yml", "db/pre-re/item_db_usable.yml",
-                                                "db/pre-re/item_db_etc.yml") for e in body_entries(src[f], "Id")}
-    known |= set(C.NEW_FROM_RENEWAL)
-    skill_text = outputs["db/skill_db.yml"]
-    named = set(re.findall(r"^        - Item: (\S+)", skill_text, re.M))
-    for block in re.findall(r"^      Equipment:\n((?:        \w+: true\n)+)", skill_text, re.M):
-        named |= set(re.findall(r"(\w+): true", block))
-    missing = sorted(n for n in named if n not in known and not n[0].isdigit())
-    if missing:
-        fail("skill entries name items pre-renewal lacks: " + ", ".join(missing) + " -- add them to NEW_FROM_RENEWAL")
-    outputs["db/item_db.yml"] = header("ITEM_DB", 3, source, about) + body
-    outputs["System/itemInfo.lua"] = lua
-    about, body = build_combos(combos)
-    outputs["db/item_combos.yml"] = header("COMBO_DB", 1, source, about) + body
-    about, body = build_drops(src, rows)
-    outputs["db/mob_db.yml"] = header("MOB_DB", 5, source, about) + body
+    for rel, (kind, version) in kinds.items():
+        if len(cfgs) == 1:
+            about = parts[rel][0][0]
+        else:
+            about = []
+            for cfg, (a, _) in zip(cfgs, parts[rel]):
+                about += (["", RULE] if about else []) + [", ".join(cfg.JOBS) + ":"] + a
+        text = header(kind, version, source, about) + "".join(b for _, b in parts[rel])
+        outputs[rel] = text
+        if rel == "db/item_db.yml":
+            outputs["System/itemInfo.lua"] = wrap_iteminfo(lua)
 
     stale = []
     for rel, text in outputs.items():
