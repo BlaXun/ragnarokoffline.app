@@ -1070,7 +1070,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "ee200104adf3cede645d2263742a560aeccac343d4e408eb6b047c2553fbb828"
+          "sha256": "34b0935e85753e670ce19093213693c50a29cb53a7ee0612c5c78aa8cf1f4ec6"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1094,7 +1094,7 @@
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "fd12011347535dd5346d8847e892e65b636a641ca4af6d1976841a40951d87b1"
+          "sha256": "011b0fcacf5673d919e46e1d8e05498d1e97b39c72302edefa4a4ec4fd213545"
         },
         {
           "path": "db/skill_tree.yml",
@@ -1106,7 +1106,7 @@
         },
         {
           "path": "lua/third_classes.lua",
-          "sha256": "a05c3c43ec437190ed38a7a34c70ab6638699ca0227c43b6ab7bbe0fdfc20f0a"
+          "sha256": "48efb3b0229f1a0d87bbae8560faab02670836d48ef73b2da00b01135ba4d4b6"
         },
         {
           "path": "mod.json",
