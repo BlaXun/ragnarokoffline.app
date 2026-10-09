@@ -1023,7 +1023,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "0eb0ca14facb7823268e0b79c2873bed2f4c93f97de0dadae2807e5f9c314625"
+          "sha256": "f041ded9250df54abf3cedcb7d95f739d301b1334f0d5aed28c333723ffd6ce7"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1055,7 +1055,7 @@
         },
         {
           "path": "lua/star_emperor.lua",
-          "sha256": "daffaadebd147911997b556021d26826afecb1735bcaea2181c95070b847cb0a"
+          "sha256": "e5639c1b522229078090c59c3805793cdf91cba361cfd2ef62252b943bf3bd2c"
         },
         {
           "path": "mod.json",
