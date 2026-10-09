@@ -3626,17 +3626,17 @@ Body:
     Duration1: 100
     FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
     Requires:
-      SpCost:
+      SpCost:    # this mod's balance; renewal's is different
         - Level: 1
-          Amount: 80
+          Amount: 40
         - Level: 2
-          Amount: 90
+          Amount: 45
         - Level: 3
-          Amount: 100
+          Amount: 50
         - Level: 4
-          Amount: 110
+          Amount: 55
         - Level: 5
-          Amount: 120
+          Amount: 60
   - Id: 2213
     Name: WL_COMET
     Description: Comet
@@ -3932,15 +3932,15 @@ Body:
     Requires:
       SpCost:    # this mod's balance; renewal's is different
         - Level: 1
-          Amount: 57
+          Amount: 36
         - Level: 2
-          Amount: 63
+          Amount: 39
         - Level: 3
-          Amount: 68
+          Amount: 43
         - Level: 4
-          Amount: 74
+          Amount: 46
         - Level: 5
-          Amount: 79
+          Amount: 49
     Duration1: 0    # pre-renewal's entry sets this; renewal's does not
   - Id: 2204
     Name: WL_JACKFROST

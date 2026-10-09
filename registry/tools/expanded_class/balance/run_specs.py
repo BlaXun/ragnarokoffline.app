@@ -16,6 +16,7 @@ Run fields (only id, class, weapon, skills and levels are required):
     class     the job id (4013 Assassin Cross, 4065 Guillotine Cross T, ...)
     weapon    item id, usually a test weapon from kotest/db/item_db.yml
     ammo      ammunition item id (arrows, bullets), 0 for none
+    left      item id of a second weapon worn in the left hand (dual wielding)
     skills    comma-separated skill ids cast in turn; "attack" for auto-attacks;
               a trailing "s" casts on yourself (2036s)
     levels    their levels, comma-separated
@@ -26,7 +27,8 @@ Run fields (only id, class, weapon, skills and levels are required):
               "normal" (hits back; use it for skills that knock targets away)
     method    "step" (requests at a fixed pace: instant skills), "paced" (one
               cast at a time: cast-time skills) or "best" (both, the higher)
-    step      seconds between requests for "step" (default 0.1)
+    step      seconds between requests for "step" (default 0.1), or a list of
+              them to try, the highest kept (casters' rhythms differ: [1.0, 1.5])
     seq       true: one skill per step, in turn
     repeat    measurements per method, the highest kept (default 2)
     versus    the id of the run this one is compared with
@@ -47,17 +49,19 @@ ROOT = HERE.parents[3]
 
 def measure(run, seconds):
     method = run.get("method", "step")
-    modes = ["step", "paced"] if method == "best" else [method]
+    steps = run.get("step", 0.1)
+    steps = steps if isinstance(steps, list) else [steps]
+    modes = ([("step", s) for s in steps] if method != "paced" else []) + ([("paced", 1)] if method != "step" else [])
     results = []
-    for mode in modes:
+    for mode, step in modes:
         if mode == "paced":
             tail = ["1", "paced"]
         else:
-            tail = [str(run.get("step", "0.1"))] + (["seq"] if run.get("seq") else [])
+            tail = [str(step)] + (["seq"] if run.get("seq") else [])
         args = ["python3", "kotest/measure2.py", "player", "player123", str(run["class"]), str(run["weapon"]),
                 str(run.get("ammo", 0)), str(run["skills"]), str(run["levels"]), str(seconds),
                 run.get("how", "mob"), run.get("pre") or "-"] + tail
-        env = {**os.environ, "EXTRA": run.get("extra", ""),
+        env = {**os.environ, "EXTRA": run.get("extra", ""), "LEFT": str(run.get("left", "")),
                "DUMMY": "dummy#4" if run.get("dummy", "anchored") == "anchored" else "dummy"}
         for _ in range(int(run.get("repeat", 2))):
             try:

@@ -234,7 +234,10 @@ warlock = ec.config(
         "WL_JACKFROST": {"Requires.SpCost": [22, 26, 30, 35, 39]},
         "WL_FROSTMISTY": {"Requires.SpCost": [26, 31, 37, 42, 47]},
         "WL_SOULEXPANSION": {"Requires.SpCost": [17, 20, 22, 25, 28]},
-        "WL_HELLINFERNO": {"Requires.SpCost": [57, 63, 68, 74, 79]},
+        "WL_HELLINFERNO": {"Requires.SpCost": [36, 39, 43, 46, 49]},
+        # Chain Lightning strikes at least four times, all on a lone target:
+        # scaled as single-target damage, its cost scaled with it.
+        "WL_CHAINLIGHTNING": {"Requires.SpCost": [40, 45, 50, 55, 60]},
         "WL_TETRAVORTEX": {"Requires.SpCost": [108, 135, 162, 189, 216, 180, 216, 252, 288, 324]},
     },
 )

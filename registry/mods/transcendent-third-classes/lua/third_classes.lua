@@ -18,10 +18,11 @@
 --     Breath 743 (more with HP). Giant Growth is limited in build.py.
 --   Royal Guard vs Paladin (Rapid Smiting 1876): Banishing Point 1729; per
 --     target Overbrand 826, Earth Drive 864, Cannon Spear 871.
---   Warlock vs High Wizard (Mystical Amplification + Jupitel 2032, + Meteor
---     Storm 1255 a target): Hell Inferno 1926, Tetra Vortex 1995, Soul
---     Expansion 1836; a target Jack Frost 1390, Crimson Rock 1280, Chain
---     Lightning 1259, Frost Misty about 1300, Comet 1409. SP costs: build.py.
+--   Warlock vs High Wizard (Mystical Amplification + Jupitel 2008-2288, +
+--     Meteor Storm 1348-1396 a target): Hell Inferno 1745, Tetra Vortex 1909,
+--     Soul Expansion 1904, Chain Lightning 1886 (all four strikes on a lone
+--     target); a target Jack Frost 1512, Crimson Rock 1363, Frost Misty 1411,
+--     Comet 1409. SP costs: build.py.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -44,7 +45,7 @@ local FACTOR = {
   LG_OVERBRAND          = 9,
   LG_CANNONSPEAR        = 64,
   LG_EARTHDRIVE         = 66,
-  WL_HELLINFERNO        = 48,
+  WL_HELLINFERNO        = 30,
   WL_TETRAVORTEX_FIRE   = 40,
   WL_TETRAVORTEX_WATER  = 40,
   WL_TETRAVORTEX_WIND   = 40,
@@ -52,7 +53,7 @@ local FACTOR = {
   WL_CRIMSONROCK        = 47,
   WL_JACKFROST          = 61,
   WL_FROSTMISTY         = 62,
-  WL_CHAINLIGHTNING_ATK = 72,
+  WL_CHAINLIGHTNING_ATK = 36,
   WL_COMET              = 85,
 }
 

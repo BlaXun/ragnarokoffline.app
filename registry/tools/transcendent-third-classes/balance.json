@@ -89,7 +89,12 @@
    "weapon": 59011,
    "skills": "366s,84",
    "levels": "10,10",
-   "method": "paced"
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "HW_Amp_MeteorStorm",
@@ -98,7 +103,12 @@
    "skills": "366s,83",
    "levels": "10,10",
    "how": "pos",
-   "method": "paced"
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "AB_Adoramus_area",
@@ -106,12 +116,17 @@
    "weapon": 59011,
    "skills": "2040",
    "levels": "10",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_MeteorStorm",
    "aim": [
     0.4,
     0.65
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "AB_Judex_area",
@@ -119,12 +134,17 @@
    "weapon": 59011,
    "skills": "2038",
    "levels": "10",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_MeteorStorm",
    "aim": [
     0.4,
     0.65
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "LK_SpiralPierce",
@@ -275,12 +295,17 @@
    "weapon": 59011,
    "skills": "2212",
    "levels": "5",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_Jupitel",
    "aim": [
     0.85,
     1.0
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "WL_SoulExpansion",
@@ -288,12 +313,17 @@
    "weapon": 59011,
    "skills": "2202",
    "levels": "5",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_Jupitel",
    "aim": [
     0.85,
     1.0
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "WL_TetraVortex",
@@ -301,12 +331,17 @@
    "weapon": 59011,
    "skills": "2222s,2223s,2224s,2229s,2217",
    "levels": "5,5,5,5,10",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_Jupitel",
    "aim": [
     0.85,
     1.05
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "WL_CrimsonRock_area",
@@ -314,12 +349,17 @@
    "weapon": 59011,
    "skills": "2211",
    "levels": "5",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_MeteorStorm",
    "aim": [
     0.9,
     1.15
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "WL_JackFrost_area",
@@ -327,12 +367,17 @@
    "weapon": 59011,
    "skills": "2204",
    "levels": "5",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_MeteorStorm",
    "aim": [
     0.9,
     1.15
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
    "id": "WL_FrostMisty_area",
@@ -341,25 +386,35 @@
    "skills": "2203",
    "levels": "5",
    "how": "pos",
-   "method": "paced",
+   "method": "best",
    "versus": "HW_Amp_MeteorStorm",
    "aim": [
     0.9,
     1.15
-   ]
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   },
   {
-   "id": "WL_ChainLightning_area",
+   "id": "WL_ChainLightning_lone",
    "class": 4061,
    "weapon": 59011,
    "skills": "2214",
    "levels": "5",
-   "method": "paced",
-   "versus": "HW_Amp_MeteorStorm",
+   "method": "best",
+   "versus": "HW_Amp_Jupitel",
    "aim": [
-    0.9,
-    1.15
-   ]
+    0.85,
+    1.0
+   ],
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
   }
  ]
 }

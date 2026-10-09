@@ -167,6 +167,10 @@ class Client:
 
 	def event(self, ev, **kw):
 		e = {"t": round(time.time() - self.t0, 3), "ev": ev, **kw}
+		if ev == "text":                     # the test helper's give#: remember the unequipped copy
+			m = re.search(r"KoTest: idx (\d+) id \d+ equip=0\b", kw.get("text") or "")
+			if m:
+				self.given = int(m.group(1))
 		with self.cv:
 			self.events.append(e)
 			self.cv.notify_all()
@@ -670,6 +674,12 @@ class Client:
 			# wear <server inventory idx> <position mask>: equip as the client does (CZ_REQ_WEAR_EQUIP)
 			idx, pos = (int(x, 0) for x in rest.split())
 			self.send(struct.pack("<HHI", 0x998, idx + 2, pos))
+		elif cmd == "wear-given":
+			# wear-given <position mask>: wear the item the test helper's give# last handed out
+			if getattr(self, "given", None) is None:
+				self.out({"ev": "error", "wear-given": "no give# seen"})
+			else:
+				self.send(struct.pack("<HHI", 0x998, self.given + 2, int(rest, 0)))
 		elif cmd == "use":
 			# use <server inventory idx>: use an item, as the client does (CZ_USE_ITEM2)
 			self.send(struct.pack("<HHI", 0x439, int(rest.split()[0]) + 2, self.aid))

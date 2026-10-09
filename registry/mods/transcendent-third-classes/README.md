@@ -458,12 +458,17 @@ from renewal.
 ### How strong
 
 Measured against a High Wizard of the same level and stats, with the same
-staff, on the same target, one cast at a time, without consumables:
+staff, on the same target, without consumables, each spell at the pace
+that got the most out of it:
 
 | | Warlock | High Wizard |
 |---|---|---|
-| One target | Hell Inferno 1926 dmg/s, Tetra Vortex (with its four spheres) 1995, Soul Expansion 1836 | Jupitel Thunder 1750, with Mystical Amplification 2032 |
-| Area, per target | Jack Frost 1390, Crimson Rock 1280, Chain Lightning 1259, Frost Misty about 1300, Comet 1409 | Meteor Storm 960, with Mystical Amplification 1255 |
+| One target | Hell Inferno 1745 dmg/s, Tetra Vortex (with its four spheres) 1909, Soul Expansion 1904, Chain Lightning 1886 | Jupitel Thunder with Mystical Amplification 2008-2288 |
+| Area, per target | Jack Frost 1512, Crimson Rock 1363, Frost Misty 1411, Comet 1409 | Meteor Storm with Mystical Amplification 1348-1396 |
+
+Chain Lightning strikes at least four times, and on a lone target all four
+land on it, so it is set as a single-target spell; in a pack its nine
+strikes spread out.
 
 - **SP.** A Warlock has no Soul Drain: about a sixth less SP and nothing
   back for a kill. At renewal's prices its area spells ran a full bar dry
@@ -472,7 +477,7 @@ staff, on the same target, one cast at a time, without consumables:
   against 257k for amplified Jupitel Thunder (before Soul Drain), and
   492k-513k on each target of an area against 642k for amplified Meteor
   Storm. Crimson Rock costs 42 SP at level 5, Jack Frost 39, Frost Misty
-  47, Soul Expansion 28, Hell Inferno 79.
+  47, Soul Expansion 28, Hell Inferno 49, Chain Lightning 60.
 - **Comet** keeps pre-renewal's cost of **2 Red Gemstones** (an import
   entry cannot take an item cost away), with renewal's 20 second cooldown.
 - **Area is the Warlock's job**, as it is the High Wizard's.
