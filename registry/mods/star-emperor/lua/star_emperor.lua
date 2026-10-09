@@ -11,15 +11,19 @@
 -- DEX would shorten New Moon Kick and the others to nothing (see build.py).
 --
 -- Each factor scales the skill's own percentage, after everything the server
--- adds to it. The aim is a little below a transcendent class. Measured on a
+-- adds to it. The aim is 0.85-1.0 of a transcendent class on one target, and
+-- about half of that on each target of an area, the third classes' area rule.
+-- Measured on a
 -- pre-renewal server, damage per second over 45 s against one DEF 30 / VIT 30
 -- target, both characters base 99 with the same STR build and a 150 ATK
 -- weapon (a book for the Star Emperor, in Universe Stance):
 --
 --                                               Star Emperor  Assassin Cross
---   Prominence Kick (+ Solar Burst)                   922     1044 Sonic Blow
---   Attacks with Falling Star, targets Flash-Kicked   904     1044
---   New Moon Kick + Full Moon Kick (area)             954     1180 Meteor Assault
+--   Prominence Kick (+ Solar Burst)                   943     1044 Sonic Blow
+--   Attacks with Falling Star, targets Flash-Kicked   907     1044
+--   New Moon Kick + Full Moon Kick (area, a target)   459
+--
+-- The runs behind these are in registry/tools/star-emperor/balance.json.
 --
 -- Universe Stance is a toggle and Falling Star lasts minutes: both were cast
 -- once at the start. (An earlier measurement recast the stance every 10 s,
@@ -28,10 +32,10 @@
 local FACTOR = {
   SJ_PROMINENCEKICK   = 21,
   SJ_SOLARBURST       = 21,
-  SJ_NEWMOONKICK      = 22,
-  SJ_FULLMOONKICK     = 22,
-  SJ_FALLINGSTAR_ATK  = 26,
-  SJ_FALLINGSTAR_ATK2 = 26,
+  SJ_NEWMOONKICK      = 11,
+  SJ_FULLMOONKICK     = 11,
+  SJ_FALLINGSTAR_ATK  = 28,
+  SJ_FALLINGSTAR_ATK2 = 28,
 }
 
 for name, percent in pairs(FACTOR) do

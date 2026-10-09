@@ -48,15 +48,16 @@ OnWhisperGlobal:
 	} else if (.@c$ == "slots") {
 		dispbottom "KoTest: R=" + getequipid(EQI_HAND_R) + " L=" + getequipid(EQI_HAND_L) + " accL=" + getequipid(EQI_ACC_L) + " accR=" + getequipid(EQI_ACC_R) + " aspd=" + readparam(bAspd);
 		end;
-	} else if (.@c$ == "build") {          // build#job#weapon: the measurement template
+	} else if (.@c$ == "build") {          // build#job#weapon[#int|#dex|#str]: the measurement template
+		.@s$ = @whispervar3$;            // the stat build, when the class's usual one is not wanted
 		jobchange .@a;
 		atcommand "@blvl 98";
 		atcommand "@joblvl 69";
 		clearitem;
 		resetstatus;
-		if (.@a == 4240 || .@a == 4049 || .@a == 4010 || .@a == 4009 || .@a == 4063 || .@a == 8 || .@a == 4061)  // casters (and priests): INT/DEX builds
+		if (.@s$ == "int" || (.@s$ == "" && (.@a == 4240 || .@a == 4049 || .@a == 4010 || .@a == 4009 || .@a == 4063 || .@a == 8 || .@a == 4061)))  // casters (and priests): INT/DEX builds
 			{ statusup2 bInt,98; statusup2 bDex,79; statusup2 bVit,29; statusup2 bAgi,19; }
-		else if (.@a == 4215 || .@a == 24 || .@a == 4012 || getiteminfo(atoi(@whispervar2$), ITEMINFO_SUBTYPE) == W_BOW)  // gunners, the Sniper and bows are DEX builds
+		else if (.@s$ == "dex" || (.@s$ == "" && (.@a == 4215 || .@a == 24 || .@a == 4012 || getiteminfo(atoi(@whispervar2$), ITEMINFO_SUBTYPE) == W_BOW)))  // gunners, the Sniper and bows are DEX builds
 			{ statusup2 bDex,89; statusup2 bAgi,79; statusup2 bStr,29; statusup2 bLuk,19; statusup2 bVit,29; }
 		else
 			{ statusup2 bStr,79; statusup2 bAgi,89; statusup2 bDex,59; statusup2 bLuk,19; statusup2 bVit,29; }
@@ -65,11 +66,13 @@ OnWhisperGlobal:
 		getitem .@w, 1;
 		equip .@w;
 		if (.@a == 4211 || .@a == 4212) {
-			getitem 13294, 500;              // Explosive_Kunai
-			getitem 13255, 500; equip 13255; // Icicle Kunai (ammo)
-			getitem 6493, 200;               // Makibishi
+			.@n = (.@s$ == "int") ? 50 : 500;   // an INT build carries little
+			getitem 13294, .@n;              // Explosive_Kunai
+			getitem 13255, .@n; equip 13255; // Icicle Kunai (ammo)
+			getitem 6493, .@n * 2 / 5;       // Makibishi
 			getitem 6512, 50; getitem 6513, 50; getitem 6514, 50; getitem 6515, 50;
 			getitem 7524, 50;                // Shadow_Orb
+			if (.@s$ == "int") { getitem 7521, 50; getitem 7522, 50; getitem 7523, 50; }   // Flame, Ice, Wind Stones (ninjutsu)
 		}
 		Zeny = 10000000;
 		sc_end SC_ALL;

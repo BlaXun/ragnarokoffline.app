@@ -59,9 +59,13 @@ A little below the transcendent classes:
 
   | | Star Emperor | Assassin Cross |
   |---|---|---|
-  | Prominence Kick (+ Solar Burst) | 922 dmg/s | Sonic Blow 1044 |
-  | Attacks with Falling Star on Flash-Kicked targets | 904 | Sonic Blow 1044 |
-  | New Moon Kick + Full Moon Kick (area) | 954 | Meteor Assault 1180 |
+  | Prominence Kick (+ Solar Burst) | 943 dmg/s | Sonic Blow 1044 |
+  | Attacks with Falling Star on Flash-Kicked targets | 907 | Sonic Blow 1044 |
+  | New Moon Kick + Full Moon Kick (area, each target) | 459 | |
+
+  Like the transcendent third classes, a fighter's area damage is held to
+  about half of what it deals one target: renewal gave the kicks as much to
+  every enemy around as to one.
 
   Nova Explosion, Star Emperor Advent, Gravity Control and the two Books work
   only on PvP and GvG maps, as in renewal, and are left as they are. Buffs
