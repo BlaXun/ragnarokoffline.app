@@ -147,6 +147,7 @@ OnWhisperGlobal:
 		if (.@a == 2) monster .@m$, .@x, .@y + 1, "--ja--", 25500, 1;   // dummy#2: north of you
 		else if (.@a == 3) monster .@m$, .@x, .@y - 1, "--ja--", 25500, 1;   // dummy#3: south of you
 		else if (.@a == 4) monster .@m$, .@x + 1, .@y, "--ja--", 25503, 1;   // dummy#4: cannot be knocked back
+		else if (.@a == 5) monster .@m$, .@x + 1, .@y, "--ja--", 25504, 1;   // dummy#5: as #4, high magic defence (MDEF 40, INT 80, VIT 50)
 		else monster .@m$, .@x + 1, .@y, "--ja--", 25500, 1;
 		if (.@a == 9) sc_start SC_BERSERK, 300000, 1;   // dummy#9: and Frenzy, which then blocks whispers
 		dispbottom "KoTest: dummy gid " + $@mobid[0];
