@@ -25,8 +25,11 @@ Run fields (only id, class, weapon, skills and levels are required):
     how       "mob" (cast on the dummy) or "pos" (on the dummy's cell)
     pre       "id:lv[:self][:once]" casts before the rotation and every 10 s
     extra     kotest commands before the dummy, ";"-separated (a shield, a dragon)
-    dummy     "anchored" (default: never hits back, cannot be knocked back) or
-              "normal" (hits back; use it for skills that knock targets away)
+    charge    "id:lv:n": cast a self skill n times before the dummy (charms:
+              "3016:1:10" holds ten water charms through the run)
+    dummy     "anchored" (default: never hits back, cannot be knocked back),
+              "normal" (hits back; use it for skills that knock targets away) or
+              "mdef" (anchored, with high magic defence: MDEF 40, INT 80, VIT 50)
     method    "step" (requests at a fixed pace: instant skills), "paced" (one
               cast at a time: cast-time skills) or "best" (both, the higher)
     step      seconds between requests for "step" (default 0.1), or a list of
@@ -64,8 +67,12 @@ def measure(run, seconds):
         args = ["python3", "kotest/measure2.py", user, user + "123", str(run["class"]), str(run["weapon"]),
                 str(run.get("ammo", 0)), str(run["skills"]), str(run["levels"]), str(seconds),
                 run.get("how", "mob"), run.get("pre") or "-"] + tail
-        env = {**os.environ, "EXTRA": run.get("extra", ""), "LEFT": str(run.get("left", "")), "STATS": run.get("stats", ""),
-               "DUMMY": "dummy#4" if run.get("dummy", "anchored") == "anchored" else "dummy"}
+        extra = run.get("extra", "")
+        if run.get("charge"):
+            sid, lv, n = run["charge"].split(":")
+            extra = ";".join([f"skill {sid} {lv} self;wait 0.8"] * int(n) + ([extra] if extra else []))
+        env = {**os.environ, "EXTRA": extra, "LEFT": str(run.get("left", "")), "STATS": run.get("stats", ""),
+               "DUMMY": {"anchored": "dummy#4", "mdef": "dummy#5"}.get(run.get("dummy", "anchored"), "dummy")}
         for _ in range(int(run.get("repeat", 2))):
             try:
                 out = subprocess.run(args, cwd=HERE, env=env, capture_output=True, text=True,

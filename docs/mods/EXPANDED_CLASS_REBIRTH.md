@@ -416,9 +416,16 @@ target, against the Kagerou's own single target):
 | Swirling Petal: 440 | its single target: 872 | 0.50 |
 | Kunai Splash: 488 | its single target | 0.56 |
 | Kunai Explosion: 430 | its single target | 0.49 |
-| Ice Spear, Oboro, INT build: 2,036 | amplified Jupitel Thunder: 2,197 | 0.93 |
-| Ice Spear, Kagerou, INT build: 1,752 | amplified Jupitel Thunder | 0.80 |
-| Kamaitachi, INT build: 1,545 | amplified Meteor Storm: 1,390 | 1.11 |
+| Ice Spear, Oboro, INT build, ten charms: 3,184 | amplified Jupitel Thunder: 2,234 | 1.43 |
+| Ice Spear, Kagerou, INT build, ten charms: 2,810 | amplified Jupitel Thunder | 1.26 |
+| the same on a warded dummy: 1,677 / 1,398 | 1,176 | 1.43 / 1.19 |
+| Kamaitachi, INT build, ten charms: 2,177 | amplified Meteor Storm: 1,326 | 1.64 |
+
+The magical numbers sit above parity on purpose (the owner's call): the
+Ninja's spells are weak, charms are the Kagerou's and Oboro's gain, and
+without charms they cast exactly as a Ninja. Only 48% of the charm bonus
+is kept (renewal's full bonus put a charged Oboro at 1.8 times a High
+Wizard).
 
 A class with more than one build gets a run per build. A magical build may
 use skills the mod never changed (the Ninja's spells): measure it anyway,
@@ -888,6 +895,23 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   a single-target spell, and it was set as one. Before treating a run on
   one dummy as an area figure, check whether the skill piles its hits onto
   a lone target.
+- **Resources the class holds, not spends.** Kagerou and Oboro charms
+  (Fire, Ice, Wind, Earth) last five minutes and add to every ninjutsu of
+  their element: +20% a charm to Ice Spear's every hit, +100% a charm to
+  Kamaitachi and Exploding Dragon, so ten charms double or triple them. Only
+  Release Ninja Spell spends them, so in play they are always up. A
+  magical build measured without them is measured wrong: fill them first
+  (`"charge": "3016:1:10"`). A plain Ninja cannot make charms, so this is
+  the rebirth class's alone.
+- **Magic defence punishes many small hits.** In pre-renewal a target's
+  soft MDEF (from its INT and VIT) comes off every hit. Ice Spear's twelve
+  small hits keep about half their damage against a warded target (MDEF
+  40, INT 80, VIT 50: `"dummy": "mdef"`); Jupitel Thunder, also twelve hits
+  but bigger ones, about two thirds; Kamaitachi's single hit more. The
+  more a skill is scaled down, the smaller each hit and the larger the
+  share MDEF takes. Measure magic on both dummies and do not
+  scale a multi-hit class down from the standard dummy alone, or it is
+  useless against the monsters that matter.
 - **Pair skills.** Cross Slash's Cross Wound is meant for a Kagerou and an
   Oboro alternating, but rAthena lets a caster's own wound count: the
   solo figure already includes the bonus. Measure such a skill both with

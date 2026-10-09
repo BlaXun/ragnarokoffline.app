@@ -1,5 +1,5 @@
 {
- "_about": "Kagerou and Oboro against the transcendent classes. Physical (a Kagerou with a dagger in each hand) against an Assassin Cross's Sonic Blow, 0.85-1.0; its area skills, per target, at 0.4-0.6 of its own single-target rotation, the area rule the third classes follow. Magical (an INT/DEX build casting the Ninja's spells, with Ninja Aura; the Oboro also with Distorted Crescent) against a High Wizard's amplified Jupitel Thunder, 0.85-1.0; as casters their area spells may match an amplified Meteor Storm. Cross Slash's Cross Wound bonus (meant for a Kagerou and an Oboro alternating) is already in the physical figure: in rAthena a Cross Slash lands on its own caster's wound too. The Oboro is the stronger caster and the Kagerou the stronger fighter, as in renewal: Shadow Warrior (Kagerou) raises only physical damage, Distorted Crescent (Oboro) raises magic too, so a magical Kagerou is aimed lower (0.75-0.95).",
+ "_about": "Kagerou and Oboro against the transcendent classes. Physical (a Kagerou with a dagger in each hand) against an Assassin Cross's Sonic Blow, 0.85-1.0; its area skills, per target, at 0.4-0.6 of its own single-target rotation, the area rule the third classes follow. Magical (an INT/DEX build casting the Ninja's spells with ten charms of the spell's element, as it plays, and Ninja Aura; the Oboro also with Distorted Crescent) against a High Wizard's amplified Jupitel Thunder and Meteor Storm, on the standard dummy and on a warded one (MDEF 40, INT 80, VIT 50): many small hits lose more to magic defence, so the warded runs keep the spells from being cut too far. Charms are their gain over a Ninja (the user's call): without charms the spells are exactly a Ninja's, with ten they keep 48% of the charm bonus, so a charged Kagerou lands about 1.2x and an Oboro about 1.4x an amplified High Wizard; as casters their area spells are not held to half. The Oboro is the stronger caster and the Kagerou the stronger fighter, as in renewal: Shadow Warrior raises only physical damage, Distorted Crescent magic too.",
  "load": [
   "registry/mods/kagerou-oboro"
  ],
@@ -80,6 +80,20 @@
    "repeat": 2
   },
   {
+   "id": "HW_Amp_Jupitel_mdef",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "366s,84",
+   "levels": "10,10",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "dummy": "mdef"
+  },
+  {
    "id": "HW_Amp_MeteorStorm",
    "class": 4010,
    "weapon": 59011,
@@ -94,24 +108,19 @@
    "repeat": 2
   },
   {
-   "id": "KG_magic_IceSpear",
+   "id": "HW_Amp_MeteorStorm_mdef",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "366s,83",
+   "levels": "10,10",
+   "how": "pos",
    "method": "best",
    "step": [
     1.0,
     1.5
    ],
    "repeat": 2,
-   "stats": "int",
-   "weapon": 59002,
-   "levels": "10",
-   "class": 4211,
-   "skills": "537",
-   "pre": "543:5:self",
-   "versus": "HW_Amp_Jupitel",
-   "aim": [
-    0.75,
-    0.95
-   ]
+   "dummy": "mdef"
   },
   {
    "id": "OB_magic_IceSpear",
@@ -123,15 +132,82 @@
    "repeat": 2,
    "stats": "int",
    "weapon": 59002,
+   "skills": "537",
    "levels": "10",
+   "pre": "543:5:self,3026:5:self",
+   "charge": "3016:1:10",
    "class": 4212,
    "user": "fem",
-   "skills": "537",
-   "pre": "543:5:self,3026:5:self",
    "versus": "HW_Amp_Jupitel",
    "aim": [
-    0.85,
-    1.0
+    1.3,
+    1.6
+   ]
+  },
+  {
+   "id": "OB_magic_IceSpear_mdef",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "stats": "int",
+   "weapon": 59002,
+   "skills": "537",
+   "levels": "10",
+   "pre": "543:5:self,3026:5:self",
+   "charge": "3016:1:10",
+   "class": 4212,
+   "user": "fem",
+   "dummy": "mdef",
+   "versus": "HW_Amp_Jupitel_mdef",
+   "aim": [
+    1.1,
+    1.8
+   ]
+  },
+  {
+   "id": "KG_magic_IceSpear",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "stats": "int",
+   "weapon": 59002,
+   "skills": "537",
+   "levels": "10",
+   "pre": "543:5:self",
+   "charge": "3016:1:10",
+   "class": 4211,
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    1.1,
+    1.35
+   ]
+  },
+  {
+   "id": "KG_magic_IceSpear_mdef",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "stats": "int",
+   "weapon": 59002,
+   "skills": "537",
+   "levels": "10",
+   "pre": "543:5:self",
+   "charge": "3016:1:10",
+   "class": 4211,
+   "dummy": "mdef",
+   "versus": "HW_Amp_Jupitel_mdef",
+   "aim": [
+    1.0,
+    1.4
    ]
   },
   {
@@ -144,14 +220,37 @@
    "repeat": 2,
    "stats": "int",
    "weapon": 59002,
-   "levels": "5",
-   "class": 4211,
    "skills": "542",
+   "levels": "5",
    "pre": "543:5:self",
+   "charge": "3017:1:10",
+   "class": 4211,
    "versus": "HW_Amp_MeteorStorm",
    "aim": [
-    0.75,
-    1.15
+    1.3,
+    1.7
+   ]
+  },
+  {
+   "id": "KG_magic_Kamaitachi_area_mdef",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "stats": "int",
+   "weapon": 59002,
+   "skills": "542",
+   "levels": "5",
+   "pre": "543:5:self",
+   "charge": "3017:1:10",
+   "class": 4211,
+   "dummy": "mdef",
+   "versus": "HW_Amp_MeteorStorm_mdef",
+   "aim": [
+    1.3,
+    1.9
    ]
   }
  ]

@@ -58,13 +58,22 @@ A little below the transcendent classes:
   | Swirling Petal (area, each target) | 440 | |
   | Kunai Splash (area, each target) | 488 | |
   | Kunai Explosion (area, ranged, each target) | 430 | |
-  | Ice Spear, INT build, Oboro with Distorted Crescent | 2036 | Jupitel Thunder with Mystical Amplification 2197 |
-  | Ice Spear, INT build, Kagerou | 1752 | |
-  | Kamaitachi, INT build (area, each target) | 1545 | Meteor Storm with Mystical Amplification 1390 |
+  | Ice Spear, INT build, ten water charms, Oboro with Distorted Crescent | 3184 | Jupitel Thunder with Mystical Amplification 2234 |
+  | Ice Spear, the same, Kagerou | 2810 | |
+  | Kamaitachi, INT build, ten wind charms (area, each target) | 2177 | Meteor Storm with Mystical Amplification 1326 |
+  | The same against a warded monster (MDEF 40, INT 80, VIT 50): Oboro Ice Spear, Kagerou Ice Spear, Kamaitachi | 1677, 1398, 1390 | 1176, 799 |
 
-  A magical build casts the Ninja's spells, which are pre-renewal's and not
-  changed here; as a caster's, its area spells are not held to half. The
-  Oboro is the stronger caster and the Kagerou the stronger fighter, as in
+  A magical build casts the Ninja's spells. Without charms a Kagerou or
+  Oboro casts them exactly as a Ninja does. Charms (ten of one element, for
+  five minutes) add to every ninjutsu of their element; at full strength,
+  as in renewal, ten of them doubled the spells and put a charged Oboro at
+  1.8 times a High Wizard. Here a Kagerou or Oboro keeps 48% of that bonus
+  (`lua/kagerou_oboro.lua`), so ten charms still make Ice Spear about 1.6
+  times as strong: a charged Kagerou casts at about 1.25 and an Oboro at
+  about 1.4 times a High Wizard, also against well-warded monsters, where
+  the Ninja's many small hits lose the most. Charms cost a cast and a charm
+  item each. As a caster's, its area spells are not held to half. The Oboro
+  is the stronger caster and the Kagerou the stronger fighter, as in
   renewal: Shadow Warrior raises only physical damage, Distorted Crescent
   magic too.
 

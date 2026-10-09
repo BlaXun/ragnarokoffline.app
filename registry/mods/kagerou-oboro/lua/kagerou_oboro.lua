@@ -45,3 +45,45 @@ for name, percent in pairs(FACTOR) do
     end,
   })
 end
+
+-- Charms and the Ninja's spells. A Kagerou or Oboro holds up to ten charms
+-- of one element for five minutes, and each adds to every ninjutsu of that
+-- element (Ice Spear +20% a hit, Kamaitachi and Exploding Dragon +100%):
+-- ten of them doubled the spells, as in renewal, which put a charged Oboro
+-- at 1.8 times a High Wizard. The Ninja's spells are weak, so the charms
+-- stay the Kagerou's and Oboro's real gain, but only part of their bonus
+-- is kept: ten charms make Ice Spear about 1.6 times as strong. Without
+-- charms a Kagerou or Oboro casts exactly as a Ninja does, never less.
+--
+-- The hook cannot count charms, so it takes the bonus as what the skill's
+-- percentage holds above its pre-renewal formula for that level. Keeping
+-- the rest of the spell intact matters against magic defence: soft MDEF
+-- comes off every one of Ice Spear's twelve hits, so a spell scaled down
+-- as a whole would lose far more on a warded monster than on the dummy.
+
+local CHARM_KEPT = 48   -- percent of the charm bonus a Kagerou/Oboro keeps
+
+local NINJUTSU_BASE = {   -- the stock percentage, by level (pre-renewal)
+  NJ_HYOUSENSOU   = function(lv) return 100 end,            -- Ice Spear, water
+  NJ_HYOUSYOURAKU = function(lv) return 100 + 50 * lv end,  -- Ice Meteor, water
+  NJ_KAMAITACHI   = function(lv) return 100 + 100 * lv end, -- Kamaitachi, wind
+  NJ_HUUJIN       = function(lv) return 100 end,            -- Wind Blade, wind
+  NJ_RAIGEKISAI   = function(lv) return 160 + 40 * lv end,  -- Lightning Strike, wind
+  NJ_BAKUENRYU    = function(lv) return 150 + 150 * lv end, -- Exploding Dragon, fire
+  NJ_KOUENKA      = function(lv) return 90 end,             -- Fire Petal, fire
+  NJ_KAENSIN      = function(lv) return 50 end,             -- Fire Formation, fire
+}
+
+local KAGEROU, OBORO = 4211, 4212
+
+for name, base in pairs(NINJUTSU_BASE) do
+  skill(name, {
+    ratio = function(c, stock)
+      local job = c.caster.job
+      if job ~= KAGEROU and job ~= OBORO then return stock end
+      local bonus = stock - base(c.skill_lv)
+      if bonus <= 0 then return stock end
+      return stock - bonus + bonus * CHARM_KEPT // 100
+    end,
+  })
+end
