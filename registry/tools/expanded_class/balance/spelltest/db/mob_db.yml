@@ -1,0 +1,63 @@
+Header:
+  Type: MOB_DB
+  Version: 5
+
+Body:
+  - Id: 25501
+    AegisName: KO_COLDBOLTER
+    Name: Cold Bolter
+    Level: 80
+    Hp: 50000000
+    Attack: 1
+    Attack2: 1
+    Defense: 30
+    MagicDefense: 10
+    Str: 1
+    Agi: 1
+    Vit: 30
+    Int: 1
+    Dex: 1
+    Luk: 1
+    AttackRange: 1
+    SkillRange: 9
+    ChaseRange: 12
+    Size: Medium
+    Race: Formless
+    Element: Neutral
+    ElementLevel: 1
+    WalkSpeed: 1000
+    AttackDelay: 5000
+    AttackMotion: 500
+    DamageMotion: 1
+    Ai: 04
+    Modes:
+      NoRandomWalk: true
+  - Id: 25502
+    AegisName: KO_WINDBLADER
+    Name: Wind Blader
+    Level: 80
+    Hp: 50000000
+    Attack: 1
+    Attack2: 1
+    Defense: 30
+    MagicDefense: 10
+    Str: 1
+    Agi: 1
+    Vit: 30
+    Int: 1
+    Dex: 1
+    Luk: 1
+    AttackRange: 1
+    SkillRange: 9
+    ChaseRange: 12
+    Size: Medium
+    Race: Formless
+    Element: Neutral
+    ElementLevel: 1
+    WalkSpeed: 1000
+    AttackDelay: 5000
+    AttackMotion: 500
+    DamageMotion: 1
+    Ai: 04
+    Modes:
+      NoRandomWalk: true

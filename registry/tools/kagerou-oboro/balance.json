@@ -1,0 +1,77 @@
+{
+ "_about": "Kagerou vs Assassin Cross, a little below. Damage per second on one target; for an area skill, on each target. Cross Slash's Cross Wound bonus (meant for a Kagerou and an Oboro alternating) is already in the solo figure: in rAthena a Cross Slash lands on its own caster's wound too, so a pair gets no more per player.",
+ "load": [
+  "registry/mods/kagerou-oboro"
+ ],
+ "seconds": 40,
+ "runs": [
+  {
+   "id": "AX_SonicBlow",
+   "class": 4013,
+   "weapon": 59001,
+   "skills": "136",
+   "levels": "10"
+  },
+  {
+   "id": "AX_MeteorAssault_area",
+   "class": 4013,
+   "weapon": 59001,
+   "skills": "406s",
+   "levels": "10"
+  },
+  {
+   "id": "KG_CrossSlash_SoulCutter_dual",
+   "class": 4211,
+   "weapon": 59002,
+   "skills": "3004,3005",
+   "levels": "10,5",
+   "versus": "AX_SonicBlow",
+   "aim": [
+    0.8,
+    0.95
+   ],
+   "left": 59002
+  },
+  {
+   "id": "KG_SwirlingPetal_area",
+   "class": 4211,
+   "weapon": 59003,
+   "skills": "3009",
+   "levels": "10",
+   "method": "best",
+   "step": 0.5,
+   "versus": "AX_MeteorAssault_area",
+   "aim": [
+    0.75,
+    0.95
+   ]
+  },
+  {
+   "id": "KG_KunaiSplash_area",
+   "class": 4211,
+   "weapon": 59002,
+   "skills": "3007s",
+   "levels": "5",
+   "step": 0.3,
+   "versus": "AX_MeteorAssault_area",
+   "aim": [
+    0.6,
+    0.95
+   ]
+  },
+  {
+   "id": "KG_KunaiExplosion_area",
+   "class": 4211,
+   "weapon": 59002,
+   "skills": "3006",
+   "levels": "5",
+   "method": "best",
+   "step": 0.5,
+   "versus": "AX_MeteorAssault_area",
+   "aim": [
+    0.6,
+    0.95
+   ]
+  }
+ ]
+}

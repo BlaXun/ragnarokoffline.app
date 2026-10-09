@@ -18,8 +18,10 @@
 --   Kunai Splash Lv 5 (area)                  813    1180
 --   Kunai Explosion Lv 5 (area, ranged)       830    1180
 --
--- One Cross Slash hits as hard as one Sonic Blow, but it has a 3.1 s cooldown
--- and needs a weapon in each hand. Kunai Splash's damage is added outside the
+-- Cross Slash was measured with a dagger in each hand, on a target carrying
+-- its own Cross Wound (754 per cast without the wound, about 2,100 with it:
+-- rAthena lets a Kagerou's own wound count, not only a partner's). It has a
+-- 3.1 s cooldown. Kunai Splash's damage is added outside the
 -- percentage, so a factor here cannot reach it: db/skill_db.yml gives it a 2 s
 -- delay instead. Kunai Explosion, Rapid Throw (zeny), Illusion - Death (% of
 -- HP) and the Oboro skills (buffs and debuffs) are left as they are.

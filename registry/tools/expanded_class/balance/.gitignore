@@ -1,0 +1,4 @@
+rathena/
+logs/
+.lock
+__pycache__/

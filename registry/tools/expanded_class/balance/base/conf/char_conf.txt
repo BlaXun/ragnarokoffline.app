@@ -1,0 +1,7 @@
+// rig
+login_ip: 127.0.0.1
+login_port: 16900
+char_ip: 127.0.0.1
+char_port: 16121
+bind_ip: 127.0.0.1
+pincode_enabled: no

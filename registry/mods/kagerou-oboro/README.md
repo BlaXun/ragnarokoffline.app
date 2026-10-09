@@ -57,8 +57,15 @@ A little below the transcendent classes:
   | Kunai Splash (area) | 813 | Meteor Assault 1180 |
   | Kunai Explosion (area, ranged) | 830 | Meteor Assault 1180 |
 
-  Cross Slash needs a weapon in each hand, as in renewal. Buffs on either side
-  (Kagemusya, Distorted Crescent, Enchant Deadly Poison) are not counted.
+  The Kagerou dual-wields daggers. Cross Slash leaves a Cross Wound, and a
+  Cross Slash on a wounded target hits much harder (about 2,100 instead of
+  754 per cast). Renewal means that for a Kagerou and an Oboro taking turns,
+  but in rAthena your own wound counts too, so the 875 already includes it:
+  without it, against a fresh target, the pair would do about 440. Buffs on
+  either side (Kagemusya, Distorted Crescent, Enchant Deadly Poison) are not
+  counted. The runs behind the table are in
+  `registry/tools/kagerou-oboro/balance.json`; to measure them again, see
+  `registry/tools/expanded_class/balance/README.md`.
 
 ## Equipment
 

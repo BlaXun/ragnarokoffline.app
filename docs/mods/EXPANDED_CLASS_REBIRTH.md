@@ -386,7 +386,9 @@ window, so check every combo after converting.
    earlier run survive logout. A leftover status made the same skill measure
    1,150 per cast on one character and 3,570 on the other.
 7. Set factors as `old × target / measured`, then measure again. Record the
-   final table in the Lua file's header and in the README.
+   final table in the Lua file's header and in the README, and the runs
+   behind it in the mod's `registry/tools/<mod>/balance.json` (§8), so the
+   next person can measure the same thing again.
 8. **Ground skills report their damage from their skill unit**, not from the
    caster (the packet's source is the unit's id). Count them by skill id, or
    Storm Gust and Lord of Vermilion read as zero.
@@ -422,9 +424,23 @@ and say what it leaves out:
 
 ## 8. Testing without the app
 
-`scripts/rotest` needs the app, and so macOS. On Linux or WSL, build a
-headless rig instead. In the Kagerou work this was a scratchpad folder, which
-does not survive the session, so rebuild it from this description:
+`scripts/rotest` needs the app, and so macOS. On Linux or WSL, use the
+headless rig in `registry/tools/expanded_class/balance/` (its README has the
+commands). `setup.sh` builds the pinned rAthena for pre-renewal in Docker,
+and `run_specs.py <mod's balance.json>` loads the mod, measures every run
+and checks each ratio against its aim:
+
+```
+registry/tools/expanded_class/balance/setup.sh ../rathena
+python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/kagerou-oboro/balance.json
+```
+
+A spec run is one rotation on the §7 template against the test dummy, with
+the run it is compared with and the band its ratio should fall in. Every
+class mod keeps its runs in `registry/tools/<mod>/balance.json`; when a
+factor changes, the spec is run again and the README's table follows it.
+
+What the rig is made of, for when it needs changing:
 
 - **Server.** Build rAthena **at the pin** in Docker, the way
   `containers/rathena/Dockerfile` does: alpine,
@@ -871,9 +887,9 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
 
 ### Generator
 
-All class mods' branches carry the same
-`registry/tools/expanded_class/expanded_class.py`. After any change, copy
-it to every branch and confirm with `--check` that each mod's output does
+All class mods' branches carry the same `registry/tools/expanded_class/`
+directory: the generator `expanded_class.py` and the balance rig
+`balance/`. After any change, copy it to every branch and confirm with `--check` that each mod's output does
 not change. If the pinned `vendor/rathena` lacks the pinned commit, pass
 `--rathena ../rathena`. Several classes go into one mod as a list of
 configs, each with its CSVs in its own directory (`CSV_DIR`).
@@ -888,9 +904,10 @@ configs, each with its CSVs in its own directory (`CSV_DIR`).
    class cannot work without.
 4. Test the path both ways, the transcendent skills blocked, the gear on
    both paths, the drops, and the class's own mechanics end to end.
-5. Measure against the transcendent class on the anchored dummy, set
-   factors, overrides and SP costs, keep fighting classes' area damage at
-   half their single target, and remeasure.
+5. Write the class's runs into the mod's `balance.json` (the
+   transcendent class's rotations, the new class's, the aims), run it,
+   set factors, overrides and SP costs, keep fighting classes' area damage
+   at half their single target, and run it again until it exits 0.
 6. Update the README (identity, numbers, changed stock items), `mod.json`
    and the Lua comments; reindex; sync the generator.
 
