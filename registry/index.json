@@ -554,7 +554,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "7503f07410ed243bde0d733a6fac6f086e9d355f00c71c8153b53799c5dc53a6"
+          "sha256": "54e71156a550d76a43586e6fcfb01c3377142a75247371f4387389c3911ca067"
         },
         {
           "path": "System/itemInfo.lua",
@@ -578,7 +578,7 @@
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "08497de0123ceaf12bf0ec3fef009be988bc31dbc2d833c2015854793b788ca1"
+          "sha256": "fed96cd0357bb662edd692ed5963b054b5bf2ac1882363ffdea5ca715f8a8bd4"
         },
         {
           "path": "db/skill_tree.yml",
@@ -586,7 +586,7 @@
         },
         {
           "path": "lua/kagerou_oboro.lua",
-          "sha256": "f01dfb15a3e456d94036e73fe642d43aca06e93b658def00c64224826804423e"
+          "sha256": "8d7eb2fa3afccf25190c23d6c745b9c34770ce2c05edc863d23e95728c7952e3"
         },
         {
           "path": "mod.json",
