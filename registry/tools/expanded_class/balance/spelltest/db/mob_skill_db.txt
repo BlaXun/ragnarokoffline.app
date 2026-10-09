@@ -1,0 +1,2 @@
+25501,Cold Bolter@MG_COLDBOLT,anytarget,14,5,10000,0,2500,no,target,always,0,,,,,,,
+25502,Wind Blader@NJ_HUUJIN,anytarget,540,5,10000,0,2500,no,target,always,0,,,,,,,

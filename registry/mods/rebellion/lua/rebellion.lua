@@ -18,13 +18,15 @@
 -- of their kind:
 --
 --   Single target, skills of one gun used together      Rebellion   Sniper
---     Rifle: Mass Spiral + Anti-Material Blast              2151    2452 Double Strafe
---     Shotgun: Banishing Buster + Slug Shot + Shatter Storm 2044
---     Grenade: Howling Mine + Dragon Tail, target marked    1994
+--     Rifle: Mass Spiral + Anti-Material Blast              2197    2448 Double Strafe
+--     Shotgun: Banishing Buster + Slug Shot + Shatter Storm 2106
+--     Grenade: Howling Mine + Dragon Tail, target marked    2023
 --   Area
---     Fire Dance (revolver)                                 1036     814 Sharp Shooting
---     Round Trip, Fire Rain (gatling)                       1003
---     Shatter Storm (shotgun)                                999
+--     Fire Dance (revolver)                                 1040     814 Sharp Shooting
+--     Round Trip, Fire Rain (gatling)                 1086, 1011
+--     Shatter Storm (shotgun)                               1000
+--
+-- The runs behind these are in registry/tools/rebellion/balance.json.
 --
 -- The area skills sit at 0.85 of the best transcendent area skill measured
 -- (Meteor Assault, 1180), which is above the Sniper's own Sharp Shooting.
@@ -46,7 +48,7 @@ local FACTOR = {
   RL_R_TRIP           = 31,
   RL_FIRE_RAIN        = 40,
   RL_S_STORM          = 30,
-  RL_D_TAIL           = 28,
+  RL_D_TAIL           = 31,
 }
 
 for name, percent in pairs(FACTOR) do

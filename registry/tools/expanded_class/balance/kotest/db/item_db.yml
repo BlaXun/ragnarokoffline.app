@@ -1,0 +1,181 @@
+Header:
+  Type: ITEM_DB
+  Version: 3
+
+Body:
+  - Id: 59001
+    AegisName: Test_Katar
+    Name: Test Katar
+    Type: Weapon
+    SubType: Katar
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59002
+    AegisName: Test_Dagger
+    Name: Test Dagger
+    Type: Weapon
+    SubType: Dagger
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+  - Id: 59003
+    AegisName: Test_Huuma
+    Name: Test Huuma
+    Type: Weapon
+    SubType: Huuma
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59004
+    AegisName: Test_Bow
+    Name: Test Bow
+    Type: Weapon
+    SubType: Bow
+    Weight: 10
+    Attack: 150
+    Range: 5
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59005
+    AegisName: Test_Revolver
+    Name: Test Revolver
+    Type: Weapon
+    SubType: Revolver
+    Weight: 10
+    Attack: 150
+    Range: 7
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+  - Id: 59006
+    AegisName: Test_Rifle
+    Name: Test Rifle
+    Type: Weapon
+    SubType: Rifle
+    Weight: 10
+    Attack: 150
+    Range: 9
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59007
+    AegisName: Test_Gatling
+    Name: Test Gatling
+    Type: Weapon
+    SubType: Gatling
+    Weight: 10
+    Attack: 150
+    Range: 9
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59008
+    AegisName: Test_Shotgun
+    Name: Test Shotgun
+    Type: Weapon
+    SubType: Shotgun
+    Weight: 10
+    Attack: 150
+    Range: 9
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59009
+    AegisName: Test_Grenade
+    Name: Test Grenade
+    Type: Weapon
+    SubType: Grenade
+    Weight: 10
+    Attack: 150
+    Range: 9
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59010
+    AegisName: Test_Book
+    Name: Test Book
+    Type: Weapon
+    SubType: Book
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+  - Id: 59011
+    AegisName: Test_Staff
+    Name: Test Staff
+    Type: Weapon
+    SubType: Staff
+    Weight: 10
+    Attack: 60
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    Script: |
+      bonus bMatkRate,15;
+  - Id: 59012
+    AegisName: Test_2hSword
+    Name: Test Two-Handed Sword
+    Type: Weapon
+    SubType: 2hSword
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59013
+    AegisName: Test_2hSpear
+    Name: Test Two-Handed Spear
+    Type: Weapon
+    SubType: 2hSpear
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59014
+    AegisName: Test_Heavy_Spear
+    Name: Test Heavy Spear
+    Type: Weapon
+    SubType: 2hSpear
+    Weight: 2500
+    Attack: 150
+    Range: 1
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+  - Id: 59015
+    AegisName: Test_1hSpear
+    Name: Test Spear
+    Type: Weapon
+    SubType: 1hSpear
+    Weight: 1000
+    Attack: 150
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+  - Id: 59016
+    AegisName: Test_Shield
+    Name: Test Shield
+    Type: Armor
+    Weight: 1500
+    Defense: 3
+    Locations:
+      Left_Hand: true
+    ArmorLevel: 1

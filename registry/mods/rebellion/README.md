@@ -52,10 +52,10 @@ A little below the transcendent classes:
 
   | | Rebellion | Sniper |
   |---|---|---|
-  | Rifle (Mass Spiral + Anti-Material Blast) | 2151 dmg/s | Double Strafe 2452 |
-  | Shotgun (Banishing Buster + Slug Shot + Shatter Storm) | 2044 | Double Strafe 2452 |
-  | Grenade launcher (Howling Mine + Dragon Tail, marked target) | 1994 | Double Strafe 2452 |
-  | Fire Dance, Round Trip, Fire Rain, Shatter Storm (area) | 1003-1036 | Sharp Shooting 814 |
+  | Rifle (Mass Spiral + Anti-Material Blast) | 2197 dmg/s | Double Strafe 2448 |
+  | Shotgun (Banishing Buster + Slug Shot + Shatter Storm) | 2106 | Double Strafe 2448 |
+  | Grenade launcher (Howling Mine + Dragon Tail, marked target) | 2023 | Double Strafe 2448 |
+  | Fire Dance, Round Trip, Fire Rain, Shatter Storm (area) | 1000-1086 | Sharp Shooting 814 |
 
   The area skills are set at 0.85 of an Assassin Cross's Meteor Assault, the
   strongest transcendent area skill measured, so they come out above the
@@ -114,6 +114,14 @@ then rerun it:
 ```
 python3 registry/tools/rebellion/build.py --rathena ../rathena
 python3 registry/tools/rebellion/build.py --rathena ../rathena --check
+```
+
+The damage figures above come from the runs in
+`registry/tools/rebellion/balance.json`; to measure them again, see
+`registry/tools/expanded_class/balance/README.md`:
+
+```
+python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/rebellion/balance.json
 ```
 
 `docs/mods/EXPANDED_CLASS_REBIRTH.md` (on the kagerou-oboro branch) is the
