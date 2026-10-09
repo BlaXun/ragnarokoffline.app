@@ -864,6 +864,23 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   instant skills spam at a fixed pace (`... 0.1`); for cast-time skills
   cast one at a time (`... 1 paced`, the client's `cast` command resends
   only when nothing answered); measure both ways and keep the higher.
+  Neither is always right: one-at-a-time caught half of Hell Inferno's
+  casts, and a fixed pace can fall out of step with a caster's rhythm and
+  lose a fifth. A spec run can list several paces (`"step": [1.0, 1.5]`)
+  with `"method": "best"`; give every caster that.
+- **The counter can lie too.** Fire Rain reports each hit twice, from its
+  unit and from the caster (the rig now counts it once); Chain Lightning
+  reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run
+  it with `HPCHECK=1`: `hp_dps` is what the dummy really lost.
+- **One dummy is one target.** Chain Lightning strikes at least four
+  times and, with one target in reach, all four hit it: on the dummy it is
+  a single-target spell, and it was set as one. Before treating a run on
+  one dummy as an area figure, check whether the skill piles its hits onto
+  a lone target.
+- **Pair skills.** Cross Slash's Cross Wound is meant for a Kagerou and an
+  Oboro alternating, but rAthena lets a caster's own wound count: the
+  solo figure already includes the bonus. Measure such a skill both with
+  and without it (one cast on a fresh target, then the rotation).
 - **Renewal cadence can be absurd** (Cross Impact twice a second). When a
   skill's role is a big hit, lengthen its delay and then scale it, rather
   than scaling it into a pile of small hits.
