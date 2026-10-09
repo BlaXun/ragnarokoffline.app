@@ -47,10 +47,13 @@ offer it, but let the person choose.
 
 1. **The path.** Default: base class 99/70 → reborn as a plain Novice →
    Novice job 10 → base class again → expanded class from base-class job 50.
-2. **Power target.** Kagerou's owner chose "a little below the transcendent
-   classes". Ask whether it is on par, a bit below or below, and **which
-   transcendent class to compare against** (melee: Assassin Cross; ranged:
-   Sniper; caster: High Wizard).
+2. **Power target.** Damage was first set "a little below the transcendent
+   classes". Since 2026-10 the rebirth classes follow the third classes'
+   rules (§12): 0.85-1.0 of a transcendent class on one target, and a
+   fighter's area damage per target at about half of its own single target
+   (casters exempt). Agree **which transcendent class to compare against**
+   (melee: Assassin Cross; ranged: Sniper; caster: High Wizard), and every
+   build the class supports (the Kagerou fights, the Oboro casts too).
 3. **Max job level of the expanded class.** Default 60 (see §4 for why).
 4. **Rebirth stat points.** Default: the transcendent 100, given as +52 when
    the character becomes the base class again (see §5 for why then).
@@ -404,14 +407,22 @@ window, so check every combo after converting.
    Meteor Assault), Sniper for ranged (Double Strafe), High Wizard for casters
    (Jupiter Thunder, Cold Bolt; Lord of Vermilion for area).
 
-Kagerou's final numbers (damage per second against an Assassin Cross):
+Kagerou's numbers after the 2026-10 pass (damage per second; area skills per
+target, against the Kagerou's own single target):
 
-| Kagerou | Assassin Cross | Ratio |
+| Kagerou / Oboro | Compared with | Ratio |
 |---|---|---|
-| Cross Slash + Soul Cutter: 875 | Sonic Blow: 1,020 | 0.86 |
-| Swirling Petal: 975 | Meteor Assault: 1,180 | 0.83 |
-| Kunai Splash: 813 | Meteor Assault: 1,180 | 0.69 |
-| Kunai Explosion: 830 | Meteor Assault: 1,180 | 0.70 |
+| Cross Slash + Soul Cutter: 872 | Sonic Blow: 1,016 | 0.86 |
+| Swirling Petal: 440 | its single target: 872 | 0.50 |
+| Kunai Splash: 488 | its single target | 0.56 |
+| Kunai Explosion: 430 | its single target | 0.49 |
+| Ice Spear, Oboro, INT build: 2,036 | amplified Jupitel Thunder: 2,197 | 0.93 |
+| Ice Spear, Kagerou, INT build: 1,752 | amplified Jupitel Thunder | 0.80 |
+| Kamaitachi, INT build: 1,545 | amplified Meteor Storm: 1,390 | 1.11 |
+
+A class with more than one build gets a run per build. A magical build may
+use skills the mod never changed (the Ninja's spells): measure it anyway,
+since the class around them (its buffs, its stats) did change.
 
 **The human decides whether those ratios are right.** Show them the table,
 and say what it leaves out:
