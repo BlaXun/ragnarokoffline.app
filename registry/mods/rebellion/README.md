@@ -52,14 +52,15 @@ A little below the transcendent classes:
 
   | | Rebellion | Sniper |
   |---|---|---|
-  | Rifle (Mass Spiral + Anti-Material Blast) | 2197 dmg/s | Double Strafe 2448 |
-  | Shotgun (Banishing Buster + Slug Shot + Shatter Storm) | 2106 | Double Strafe 2448 |
-  | Grenade launcher (Howling Mine + Dragon Tail, marked target) | 2023 | Double Strafe 2448 |
-  | Fire Dance, Round Trip, Fire Rain, Shatter Storm (area) | 1000-1086 | Sharp Shooting 814 |
+  | Rifle (Mass Spiral + Anti-Material Blast) | 2039-2309 dmg/s | Double Strafe 2448 |
+  | Shotgun (Banishing Buster + Slug Shot + Shatter Storm) | 2203 | Double Strafe 2448 |
+  | Grenade launcher (Howling Mine + Dragon Tail, marked target) | 2105 | Double Strafe 2448 |
+  | Fire Dance, Round Trip, Fire Rain, Shatter Storm (area, each target) | 999-1088 | Sharp Shooting 814 |
 
-  The area skills are set at 0.85 of an Assassin Cross's Meteor Assault, the
-  strongest transcendent area skill measured, so they come out above the
-  Sniper's own. Buffs (Heat Barrel, Platinum Alter, Improve Concentration)
+  Each gun is aimed at 0.85-1.0 of a Sniper on one target, and the area
+  skills at about half of the rifle on each target, the rule the
+  transcendent third classes follow; at a Sniper's scale that still puts
+  them above Sharp Shooting. Buffs (Heat Barrel, Platinum Alter, Improve Concentration)
   and gear bonuses are not counted.
 
 ## Equipment

@@ -18,18 +18,19 @@
 -- of their kind:
 --
 --   Single target, skills of one gun used together      Rebellion   Sniper
---     Rifle: Mass Spiral + Anti-Material Blast              2197    2448 Double Strafe
---     Shotgun: Banishing Buster + Slug Shot + Shatter Storm 2106
---     Grenade: Howling Mine + Dragon Tail, target marked    2023
+--     Rifle: Mass Spiral + Anti-Material Blast              2309    2448 Double Strafe
+--     Shotgun: Banishing Buster + Slug Shot + Shatter Storm 2203
+--     Grenade: Howling Mine + Dragon Tail, target marked    2105
 --   Area
---     Fire Dance (revolver)                                 1040     814 Sharp Shooting
---     Round Trip, Fire Rain (gatling)                 1086, 1011
---     Shatter Storm (shotgun)                               1000
+--     Fire Dance (revolver)                                 1042     814 Sharp Shooting
+--     Round Trip, Fire Rain (gatling)                 1088, 1011
+--     Shatter Storm (shotgun)                                999
 --
 -- The runs behind these are in registry/tools/rebellion/balance.json.
 --
--- The area skills sit at 0.85 of the best transcendent area skill measured
--- (Meteor Assault, 1180), which is above the Sniper's own Sharp Shooting.
+-- Each gun aims at 0.85-1.0 of the Sniper on one target, and the area skills
+-- at about half of the rifle on each target (0.43-0.47), the third classes'
+-- area rule; at a Sniper's scale that is still above Sharp Shooting.
 --
 -- Skills of one gun are scaled together, since their cooldowns interleave:
 -- Mass Spiral alone at 90% already matched the target, and with Anti-Material
@@ -40,15 +41,15 @@
 -- coin), Quick Draw Shot (a Chain Action proc), and the buffs and traps.
 
 local FACTOR = {
-  RL_MASS_SPIRAL      = 68,
-  RL_AM_BLAST         = 46,
-  RL_BANISHING_BUSTER = 29,
-  RL_SLUGSHOT         = 22,
+  RL_MASS_SPIRAL      = 72,
+  RL_AM_BLAST         = 48,
+  RL_BANISHING_BUSTER = 31,
+  RL_SLUGSHOT         = 23,
   RL_FIREDANCE        = 12,
   RL_R_TRIP           = 31,
   RL_FIRE_RAIN        = 40,
   RL_S_STORM          = 30,
-  RL_D_TAIL           = 31,
+  RL_D_TAIL           = 33,
 }
 
 for name, percent in pairs(FACTOR) do

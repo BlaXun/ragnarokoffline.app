@@ -1,5 +1,5 @@
 {
- "_about": "Rebellion vs Sniper (single target) and the best transcendent area skill (Meteor Assault), a little below. Damage per second on one target; for an area skill, on each target.",
+ "_about": "Rebellion vs Sniper: each gun's single-target rotation 0.85-1.0 of Double Strafe; area skills, per target, 0.4-0.6 of its rifle rotation (the third classes' area rule). Damage per second on one target; for an area skill, on each target.",
  "load": [
   "registry/mods/rebellion"
  ],
@@ -14,13 +14,6 @@
    "levels": "10"
   },
   {
-   "id": "AX_MeteorAssault_area",
-   "class": 4013,
-   "weapon": 59001,
-   "skills": "406s",
-   "levels": "10"
-  },
-  {
    "id": "RL_Rifle_MassSpiral_AMBlast",
    "class": 4215,
    "weapon": 59006,
@@ -30,8 +23,8 @@
    "method": "best",
    "versus": "SN_DoubleStrafe",
    "aim": [
-    0.8,
-    0.95
+    0.85,
+    1.0
    ]
   },
   {
@@ -44,8 +37,8 @@
    "method": "best",
    "versus": "SN_DoubleStrafe",
    "aim": [
-    0.8,
-    0.95
+    0.85,
+    1.0
    ]
   },
   {
@@ -59,8 +52,8 @@
    "method": "best",
    "versus": "SN_DoubleStrafe",
    "aim": [
-    0.8,
-    0.95
+    0.85,
+    1.0
    ]
   },
   {
@@ -70,10 +63,10 @@
    "ammo": 13201,
    "skills": "2561s",
    "levels": "10",
-   "versus": "AX_MeteorAssault_area",
+   "versus": "RL_Rifle_MassSpiral_AMBlast",
    "aim": [
-    0.75,
-    0.95
+    0.4,
+    0.6
    ]
   },
   {
@@ -85,10 +78,10 @@
    "levels": "10",
    "step": 0.3,
    "dummy": "normal",
-   "versus": "AX_MeteorAssault_area",
+   "versus": "RL_Rifle_MassSpiral_AMBlast",
    "aim": [
-    0.75,
-    0.95
+    0.4,
+    0.6
    ]
   },
   {
@@ -101,10 +94,10 @@
    "how": "pos",
    "step": 0.5,
    "dummy": "normal",
-   "versus": "AX_MeteorAssault_area",
+   "versus": "RL_Rifle_MassSpiral_AMBlast",
    "aim": [
-    0.75,
-    0.95
+    0.4,
+    0.6
    ],
    "method": "best"
   },
@@ -117,10 +110,10 @@
    "levels": "5",
    "method": "best",
    "step": 0.4,
-   "versus": "AX_MeteorAssault_area",
+   "versus": "RL_Rifle_MassSpiral_AMBlast",
    "aim": [
-    0.75,
-    0.95
+    0.4,
+    0.6
    ]
   }
  ]
