@@ -8,7 +8,8 @@ Run it after the roBrowserLegacy pin moves, or for a newer client. For each row
 it reads what the client's own hat effect tables say about that number
 (`luafiles514/lua files/hateffectinfo/` in the GRF: hateffectids.lub,
 hateffectinfo.lub, footprinteffectinfo.lub) and whether roBrowser at the pinned
-commit draws it (src/DB/Effects/EffectTable.js and LevelAuraEffects.js). With
+commit draws it (src/DB/Effects/EffectTable.js and the tables spread into it,
+and src/Renderer/Effects/Footprints.js for the footprints). With
 both clients, the column is iRO's and a row where kRO differs says so in
 brackets; with one, it is that client's.
 
@@ -139,13 +140,18 @@ for id, v in pairs(hatEffectTable) do
 end
 if arg[3] then
 	dofile(arg[3])
-	for id in pairs(FootPrintEffectTable or {}) do io.write("F\t", id, "\n") end
+	for id, v in pairs(FootPrintEffectTable or {}) do
+		-- Some STR footprints have only the top animation.
+		local str = v.StrFile_Bottom_Left
+		if str == nil or str == "" then str = v.StrFile_Top_Left end
+		io.write("F\t", id, "\t", v.Type or "", "\t", v.PngFile_Left or "", "\t", str or "", "\n")
+	end
 end
 """
 
 
 def client_tables(grf, work):
-    """({hat effect: (file, effect number)}, {footprint ids}) for one client."""
+    """({hat effect: (file, effect number)}, {footprint id: (type, file)}) for one client."""
     files = grf_files(grf, {TABLES + n for n in ("hateffectids.lub", "hateffectinfo.lub", "footprinteffectinfo.lub")})
     for need in ("hateffectids.lub", "hateffectinfo.lub"):
         if need not in files:
@@ -160,18 +166,20 @@ def client_tables(grf, work):
     script = work / "dump.lua"
     script.write_text(DUMP)
     out = subprocess.run(["lua5.1", str(script), *paths], capture_output=True, check=True).stdout
-    hats, feet = {}, set()
+    hats, feet = {}, {}
     for line in out.decode("cp949", "replace").splitlines():
         cols = line.split("\t")
         if cols[0] == "H":
             hats[int(cols[1])] = (cols[2], int(float(cols[3])) if cols[3] else None)
         elif cols[0] == "F":
-            feet.add(int(cols[1]))
+            # Type 3 is a PNG on the ground, type 4 STR animations.
+            kind = int(float(cols[2])) if cols[2] else None
+            feet[int(cols[1])] = (kind, cols[3] if kind == 3 else cols[4])
     return hats, feet
 
 
 def robrowser_effects(source, work):
-    """({effect number: EF_ name}, {numbers roBrowser's effect table has})."""
+    """({effect number: EF_ name}, {numbers roBrowser's effect table has}, {footprint types it draws})."""
     def read(rel):
         if isinstance(source, Path):
             return (source / rel).read_text(encoding="utf-8", errors="replace")
@@ -180,7 +188,13 @@ def robrowser_effects(source, work):
 
     names = {int(n): k for k, n in re.findall(r"^\s*(EF_\w+):\s*(\d+)", read("src/DB/Effects/EffectConst.js"), re.M)}
     # Top-level entries, one tab in.
-    have = {int(n) for n in re.findall(r"^\t(\d+):\s*[\[{]", read("src/DB/Effects/EffectTable.js"), re.M)}
+    table = read("src/DB/Effects/EffectTable.js")
+    have = {int(n) for n in re.findall(r"^\t(\d+):\s*[\[{]", table, re.M)}
+    # Tables spread into it from files of their own, written the same way.
+    spread = set(re.findall(r"^\t\.\.\.(\w+)", table, re.M))
+    for name, rel in re.findall(r"^import (\w+) from '(DB/Effects/\w+)\.js'", table, re.M):
+        if name in spread and name != "LevelAuraEffects":
+            have |= {int(n) for n in re.findall(r"^\t(\d+):", read(f"src/{rel}.js"), re.M)}
     # LevelAuraEffects.js builds part of its table in loops, so run it, with
     # its renderers stubbed out.
     mod = work / "aura"
@@ -196,12 +210,22 @@ def robrowser_effects(source, work):
          (mod / "LevelAuraEffects.mjs").as_uri()],
         capture_output=True, check=True, text=True).stdout
     have |= {int(k) for k in json.loads(keys)}
-    return names, have
+    # Footprints.js draws a footprint type when FootprintTrail.drop handles it.
+    try:
+        footprints = read("src/Renderer/Effects/Footprints.js")
+    except (OSError, subprocess.CalledProcessError):
+        footprints = ""
+    feet = {int(n) for n in re.findall(r"info\.type [!=]== (\d)", footprints)}
+    return names, have, feet
 
 
-def draws(hats, feet, names, have, i):
+def draws(hats, feet, names, have, drawn_feet, i):
     if i not in hats and i in feet:
-        return "nothing: a footprint, which roBrowser does not draw yet"
+        kind, file = feet[i]
+        what = {3: "a PNG footprint", 4: "a STR footprint"}.get(kind, "a footprint")
+        if kind in drawn_feet and file:
+            return f"{what}, `" + file.replace("\\", "/") + "`"
+        return f"nothing: {what}, which roBrowser does not draw yet"
     if i not in hats:
         return "nothing: no entry in the client's table"
     res, eff = hats[i]
@@ -241,7 +265,7 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
-        names, have = robrowser_effects(source, work)
+        names, have, drawn_feet = robrowser_effects(source, work)
         tables = [(tag, *client_tables(grf, work)) for tag, grf in clients]
 
     lines = args.doc.read_text(encoding="utf-8").split("\n")
@@ -252,10 +276,10 @@ def main():
             continue
         rows += 1
         i = int(m.group(1))
-        first = draws(*tables[0][1:], names, have, i)
+        first = draws(*tables[0][1:], names, have, drawn_feet, i)
         new = first
         for tag, hats, feet in tables[1:]:
-            other = draws(hats, feet, names, have, i)
+            other = draws(hats, feet, names, have, drawn_feet, i)
             if other != first:
                 new = f"{first} ({tag}: {other})"
         drawn += not first.startswith("nothing")
