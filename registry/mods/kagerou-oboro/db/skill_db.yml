@@ -219,7 +219,7 @@ Body:
         Area: 4
       - Level: 5
         Area: 5
-    AfterCastActDelay: 2000    # this mod's balance; renewal's is different
+    AfterCastActDelay: 3500    # this mod's balance; renewal's is different
     Requires:
       SpCost:
         - Level: 1

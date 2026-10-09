@@ -47,23 +47,33 @@ A little below the transcendent classes:
   Izayoi reduce, as renewal's fixed-cast reductions did.
 - **Skill damage**: scaled in `lua/kagerou_oboro.lua`, and Kunai Splash
   slowed in `db/skill_db.yml`, then measured on a pre-renewal server against
-  an Assassin Cross with the same level, stats and weapon ATK, on the same
-  target:
+  an Assassin Cross (physical) and a High Wizard (magic) with the same
+  level and weapon ATK, on the same target. Like the transcendent third
+  classes, a fighter's area damage is held to about half of what it deals
+  one target:
 
-  | | Kagerou | Assassin Cross |
+  | | Kagerou / Oboro | Transcendent class |
   |---|---|---|
-  | Cross Slash + Soul Cutter | 875 dmg/s | Sonic Blow 1020 |
-  | Swirling Petal (area) | 975 | Meteor Assault 1180 |
-  | Kunai Splash (area) | 813 | Meteor Assault 1180 |
-  | Kunai Explosion (area, ranged) | 830 | Meteor Assault 1180 |
+  | Cross Slash + Soul Cutter | 872 dmg/s | Sonic Blow 1016 |
+  | Swirling Petal (area, each target) | 440 | |
+  | Kunai Splash (area, each target) | 488 | |
+  | Kunai Explosion (area, ranged, each target) | 430 | |
+  | Ice Spear, INT build, Oboro with Distorted Crescent | 2036 | Jupitel Thunder with Mystical Amplification 2197 |
+  | Ice Spear, INT build, Kagerou | 1752 | |
+  | Kamaitachi, INT build (area, each target) | 1545 | Meteor Storm with Mystical Amplification 1390 |
+
+  A magical build casts the Ninja's spells, which are pre-renewal's and not
+  changed here; as a caster's, its area spells are not held to half. The
+  Oboro is the stronger caster and the Kagerou the stronger fighter, as in
+  renewal: Shadow Warrior raises only physical damage, Distorted Crescent
+  magic too.
 
   The Kagerou dual-wields daggers. Cross Slash leaves a Cross Wound, and a
   Cross Slash on a wounded target hits much harder (about 2,100 instead of
   754 per cast). Renewal means that for a Kagerou and an Oboro taking turns,
   but in rAthena your own wound counts too, so the 875 already includes it:
-  without it, against a fresh target, the pair would do about 440. Buffs on
-  either side (Kagemusya, Distorted Crescent, Enchant Deadly Poison) are not
-  counted. The runs behind the table are in
+  without it, against a fresh target, the pair would do about 440. Other
+  buffs (Shadow Warrior, Enchant Deadly Poison) are not counted. The runs behind the table are in
   `registry/tools/kagerou-oboro/balance.json`; to measure them again, see
   `registry/tools/expanded_class/balance/README.md`.
 

@@ -1,5 +1,5 @@
 {
- "_about": "Kagerou vs Assassin Cross, a little below. Damage per second on one target; for an area skill, on each target. Cross Slash's Cross Wound bonus (meant for a Kagerou and an Oboro alternating) is already in the solo figure: in rAthena a Cross Slash lands on its own caster's wound too, so a pair gets no more per player.",
+ "_about": "Kagerou and Oboro against the transcendent classes. Physical (a Kagerou with a dagger in each hand) against an Assassin Cross's Sonic Blow, 0.85-1.0; its area skills, per target, at 0.4-0.6 of its own single-target rotation, the area rule the third classes follow. Magical (an INT/DEX build casting the Ninja's spells, with Ninja Aura; the Oboro also with Distorted Crescent) against a High Wizard's amplified Jupitel Thunder, 0.85-1.0; as casters their area spells may match an amplified Meteor Storm. Cross Slash's Cross Wound bonus (meant for a Kagerou and an Oboro alternating) is already in the physical figure: in rAthena a Cross Slash lands on its own caster's wound too. The Oboro is the stronger caster and the Kagerou the stronger fighter, as in renewal: Shadow Warrior (Kagerou) raises only physical damage, Distorted Crescent (Oboro) raises magic too, so a magical Kagerou is aimed lower (0.75-0.95).",
  "load": [
   "registry/mods/kagerou-oboro"
  ],
@@ -13,13 +13,6 @@
    "levels": "10"
   },
   {
-   "id": "AX_MeteorAssault_area",
-   "class": 4013,
-   "weapon": 59001,
-   "skills": "406s",
-   "levels": "10"
-  },
-  {
    "id": "KG_CrossSlash_SoulCutter_dual",
    "class": 4211,
    "weapon": 59002,
@@ -27,8 +20,8 @@
    "levels": "10,5",
    "versus": "AX_SonicBlow",
    "aim": [
-    0.8,
-    0.95
+    0.85,
+    1.0
    ],
    "left": 59002
   },
@@ -40,10 +33,10 @@
    "levels": "10",
    "method": "best",
    "step": 0.5,
-   "versus": "AX_MeteorAssault_area",
+   "versus": "KG_CrossSlash_SoulCutter_dual",
    "aim": [
-    0.75,
-    0.95
+    0.4,
+    0.6
    ]
   },
   {
@@ -53,10 +46,10 @@
    "skills": "3007s",
    "levels": "5",
    "step": 0.3,
-   "versus": "AX_MeteorAssault_area",
+   "versus": "KG_CrossSlash_SoulCutter_dual",
    "aim": [
-    0.6,
-    0.95
+    0.4,
+    0.6
    ]
   },
   {
@@ -67,10 +60,98 @@
    "levels": "5",
    "method": "best",
    "step": 0.5,
-   "versus": "AX_MeteorAssault_area",
+   "versus": "KG_CrossSlash_SoulCutter_dual",
    "aim": [
-    0.6,
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "HW_Amp_Jupitel",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "366s,84",
+   "levels": "10,10",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
+  },
+  {
+   "id": "HW_Amp_MeteorStorm",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "366s,83",
+   "levels": "10,10",
+   "how": "pos",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
+  },
+  {
+   "id": "KG_magic_IceSpear",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "stats": "int",
+   "weapon": 59002,
+   "levels": "10",
+   "class": 4211,
+   "skills": "537",
+   "pre": "543:5:self",
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    0.75,
     0.95
+   ]
+  },
+  {
+   "id": "OB_magic_IceSpear",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "stats": "int",
+   "weapon": 59002,
+   "levels": "10",
+   "class": 4212,
+   "user": "fem",
+   "skills": "537",
+   "pre": "543:5:self,3026:5:self",
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "KG_magic_Kamaitachi_area",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "stats": "int",
+   "weapon": 59002,
+   "levels": "5",
+   "class": 4211,
+   "skills": "542",
+   "pre": "543:5:self",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.75,
+    1.15
    ]
   }
  ]

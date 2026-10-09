@@ -35,9 +35,10 @@ ec.run(ec.config(
     # Kunai Splash's damage is added outside the skill's percentage
     # (battle.cpp, KO_HAPPOKUNAI), so the Lua ratio hook cannot scale it; with
     # renewal's 0.5 s delay it did about four times Sonic Blow's damage per
-    # second, to everything around. Sonic Blow's 2 s delay brings it below
-    # Meteor Assault.
-    SKILL_OVERRIDES={"KO_HAPPOKUNAI": {"AfterCastActDelay": "2000"}},
+    # second, to everything around. A 3.5 s delay brings it to about half of
+    # the Kagerou's single-target damage per target, the area rule the third
+    # classes follow.
+    SKILL_OVERRIDES={"KO_HAPPOKUNAI": {"AfterCastActDelay": "3500"}},
     # Pre-renewal has no fixed cast time and DEX shortens every cast to
     # nothing at 150; 75% of renewal's fixed cast becomes after-cast delay,
     # which DEX does not touch, and the rest is added to the cast time. Skills
