@@ -560,7 +560,7 @@ the rows that would change, and with `--write` as well it rewrites them.
 | 223 | `HAT_EF_C_BABY_GLOOM` | Costume Baby Gloom Under Night | `efst_C_Baby_Gloom/gloom.str` |
 | 224 | `HAT_EF_WINTERNIGHTBELLS` | Costume Winter Night Bells | `efst_WinterNightBells/christmasx4.str` |
 | 225 | `HAT_EF_NIGHTSKYOFRUTIE` | Costume Night Sky of Lutie | `efst_NightSkyOfRutie/christmasx3.str` |
-| 226 | `FOOTPRINT_EF_BASE` | Footprint Effect | nothing: a PNG footprint, which roBrowser does not draw yet |
+| 226 | `FOOTPRINT_EF_BASE` | Footprint Effect | a PNG footprint, `footprint0.png` |
 | 227 | `FOOTPRINT_EF_STR_BASE` | Whirlwind Footprint | a STR footprint, `footprint/bottom_crack.str` |
 | 228 | `FOOTPRINT_EF_PURPLESTAR` | Purple Star Footprint | a STR footprint, `footprint_purplestar/footprint_bottom_purplestar/footprint_bottom_purple.str` |
 | 229 | `FOOTPRINT_EF_YELLOWSTAR` | Yellow Star Footprint | a STR footprint, `footprint_yellowstar/footprint_bottom_yellowstar/footprint_bottom_yellow.str` |
