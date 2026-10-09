@@ -1,0 +1,18 @@
+{
+  "name": "pre-renewal-spawns",
+  "version": "1.0.0",
+  "author": "BlaXun",
+  "description": "Play renewal with the pre-renewal monster spawns. Every map that pre-renewal had gets its pre-renewal monsters, in their pre-renewal numbers and respawn times. Maps that only renewal has keep their renewal spawns.",
+  "requires": {
+    "app": ">=1.5.4",
+    "era": "renewal"
+  },
+  "tags": [
+    "monsters",
+    "spawns",
+    "maps",
+    "renewal",
+    "pre-renewal"
+  ],
+  "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/pre-renewal-spawns"
+}

@@ -341,9 +341,13 @@ files are split between `npc/warps/` and `npc/<era>/warps/`, which overlap.
   folder in it".** Settings can list and toggle mods and open the folder, but
   cannot accept a dragged-in folder or a zip. That is a product decision, not a
   missing capability.
-- **A mod cannot remove anything.** Stock spawns, stock NPCs and stock warps are
-  loaded before any mod and there is no way to unload a script a mod did not
-  add. Adding is the whole vocabulary.
+- **A mod can remove little.** Stock NPCs and warps can only be switched off
+  with `disablenpc`. A stock spawn file can be unloaded whole, once the server
+  is up, with `atcommand "@unloadnpcfile <path>"`; what it should still
+  spawn has to be shipped again ([pre-renewal-spawns](../registry/mods/pre-renewal-spawns)).
+  Nothing stops a stock script from loading in the first place: a mod's
+  `npc:` lines are read before the stock list, so a `delnpc:` there is too
+  early.
 - **No generator for palettes.** A mod can ship any `.pal` under its Korean or
   ASCII name, but there is no `mkpal` beside `mkmap.py` and `mkloginbg.py` to
   derive colours from a job's existing ones, and the stylist cannot offer more
