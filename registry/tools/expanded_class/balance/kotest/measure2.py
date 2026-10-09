@@ -17,7 +17,7 @@ if ammo != "0": head += [f"whisper npc:KoTest gun#{weapon}#{ammo}", "wait 1"]
 if os.environ.get("LEFT"):   # LEFT=<item id>: a second weapon in the left hand (dual wielding)
     head += [f"whisper npc:KoTest give#{os.environ['LEFT']}", "wait 2", "wear-given 0x20", "wait 1"]
 import os
-MOBT = "mob:25503" if os.environ.get("DUMMY") == "dummy#4" else "mob:25500"   # the target
+MOBT = {"dummy#4": "mob:25503", "dummy#5": "mob:25504"}.get(os.environ.get("DUMMY"), "mob:25500")   # the target
 head += [c for c in os.environ.get("EXTRA", "").split(";") if c]   # EXTRA="whisper npc:KoTest mount#2;wait 1"
 head += ["whisper npc:KoTest " + os.environ.get("DUMMY", "dummy"), "wait 2", "mobs"]   # DUMMY=dummy#2: other side
 hpcheck = os.environ.get("HPCHECK") == "1"   # also read the dummy's HP before and after: hp_dps, what it really lost
@@ -32,7 +32,7 @@ while pos is None:
     buf.append(l)
     try: e = json.loads(l)
     except Exception: continue
-    if e.get("ev") == "mob" and e.get("class") in (25500, 25503): pos = f"{e['x']} {e['y']}"
+    if e.get("ev") == "mob" and e.get("class") in (25500, 25503, 25504): pos = f"{e['x']} {e['y']}"
 step = float(a[10]) if len(a) > 10 else 0.1; body = []   # STEP: pace long casts
 paced = len(a) > 11 and a[11] == "paced"   # one cast at a time: the next only once the last has landed
 noheal = os.environ.get("NOHEAL") == "1"   # SP is not refilled: read before and after
@@ -99,6 +99,6 @@ for e in evs:
         else: other[k] = other.get(k, 0) + max(0, e.get("damage", 0))
     if e.get("ev") == "skill_fail" and str(e.get("skill")) in sids:
         fails[e.get("cause")] = fails.get(e.get("cause"), 0) + 1
-hps = [int(x) for x in __import__("re").findall(r"KoTest: mobhp (\d+) /", out)]
+hps = [int(h) for h, m in __import__("re").findall(r"KoTest: mobhp (\d+) / (\d+)", out) if int(m) > 0]   # 0 / 0: no such unit
 print(json.dumps({"hp_dps": round((hps[0] - hps[-1]) / secs) if len(hps) >= 2 else None, "job": job, "skill": ",".join(sids), "lv": ",".join(lvs), "dps": round(total / secs), "casts": casts,
                   "per_cast": round(total / casts) if casts else 0, "other_dps": {k: round(v / secs) for k, v in other.items()}, "fails": fails, "per_skill": {k: [round(v / secs), per_n[k]] for k, v in per.items()}, "sp_net_per_s": round((sps[0] - sps[-1]) / secs, 1) if len(sps) >= 2 else None, "sp_start": sps[0] if sps else None}))
