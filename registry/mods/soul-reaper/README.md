@@ -106,3 +106,11 @@ pinned rAthena and the three CSV files beside it:
 python3 registry/tools/soul-reaper/build.py --rathena ../rathena
 python3 registry/tools/soul-reaper/build.py --rathena ../rathena --check
 ```
+
+The damage figures above come from the runs in
+`registry/tools/soul-reaper/balance.json`; to measure them again, see
+`registry/tools/expanded_class/balance/README.md`:
+
+```
+python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/soul-reaper/balance.json
+```

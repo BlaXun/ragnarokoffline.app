@@ -1,0 +1,7 @@
+// rig: MariaDB container on 127.0.0.1:13306
+login_server_port: 13306
+ipban_db_port: 13306
+char_server_port: 13306
+map_server_port: 13306
+web_server_port: 13306
+log_db_port: 13306
