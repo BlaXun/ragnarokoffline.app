@@ -554,7 +554,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "54e71156a550d76a43586e6fcfb01c3377142a75247371f4387389c3911ca067"
+          "sha256": "41793279a9867bb5f85b1e23a7385a46a403a5dc764ceab00bdbaf7f3852611e"
         },
         {
           "path": "System/itemInfo.lua",
@@ -586,7 +586,7 @@
         },
         {
           "path": "lua/kagerou_oboro.lua",
-          "sha256": "8d7eb2fa3afccf25190c23d6c745b9c34770ce2c05edc863d23e95728c7952e3"
+          "sha256": "e3903b0bf146786a66982422c8afd2106f83519373481f01c2ce185c9f67b9d8"
         },
         {
           "path": "mod.json",
