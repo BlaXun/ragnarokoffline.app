@@ -891,7 +891,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "9410b4cb4c16cacc5e7ff96113d00151ca98c3401b9299a05556b878c94ab1d5"
+          "sha256": "3c72833f8c0926d11ef5daa09b733602eec0a2503d3a389a561243753e1526e0"
         },
         {
           "path": "System/itemInfo.lua",
@@ -923,7 +923,7 @@
         },
         {
           "path": "lua/rebellion.lua",
-          "sha256": "85acc51126ba25d3c481bd6061e6e522aefbb4d903af0645b26303663ffd64dc"
+          "sha256": "baba498e7e0e3e785c41e053da303f769faa9bced2c2506f8ccd807f5c2913b9"
         },
         {
           "path": "mod.json",
