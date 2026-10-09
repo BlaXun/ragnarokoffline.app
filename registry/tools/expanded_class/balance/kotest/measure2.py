@@ -11,7 +11,8 @@ pre = [x.split(":") for x in a[9].split(",")] if len(a) > 9 and a[9] not in ("",
 sids = sids.split(","); lvs = lvs.split(",")
 selfs = {x.rstrip("s") for x in sids if x.endswith("s")}   # "2592s": cast on yourself
 sids = [x.rstrip("s") for x in sids]
-head = [f"whisper npc:KoTest build#{job}#{weapon}", "wait 3", "whisper npc:KoTest rlkit"]
+stats = os.environ.get("STATS", "")   # STATS=int: an INT/DEX build whatever the class
+head = [f"whisper npc:KoTest build#{job}#{weapon}" + (f"#{stats}" if stats else ""), "wait 3", "whisper npc:KoTest rlkit"]
 if ammo != "0": head += [f"whisper npc:KoTest gun#{weapon}#{ammo}", "wait 1"]
 if os.environ.get("LEFT"):   # LEFT=<item id>: a second weapon in the left hand (dual wielding)
     head += [f"whisper npc:KoTest give#{os.environ['LEFT']}", "wait 2", "wear-given 0x20", "wait 1"]

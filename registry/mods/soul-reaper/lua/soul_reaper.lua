@@ -7,21 +7,24 @@
 -- per second. After it, Espa still did 11 times.
 --
 -- Each factor scales the skill's own percentage, after everything the server
--- adds to it. The aim is a little below a transcendent class. Measured on a
+-- adds to it. The aim is 0.85-1.0 of a transcendent class. Measured on a
 -- pre-renewal server, damage per second over 40 s against one MDEF 10 target
 -- that neither hits back nor moves, both characters base 99 with the same
 -- INT/DEX build and a +15% MATK staff:
 --
 --                                           Soul Reaper   High Wizard
---   Espa (costs no soul energy at Lv 10)       1570       1867 Jupitel Thunder
---   Espa + Eswhoo, soul energy unlimited       ~1500      (1659-2203 a run),
---   Soul Curse + Curse Explosion, unlimited    2755       1104 Cold Bolt
+--   Espa (costs no soul energy at Lv 10)       1587       1829 Jupitel Thunder
+--   Espa + Eswhoo, soul energy unlimited        1567        986 Cold Bolt
+--   Soul Curse + Curse Explosion, unlimited    ~5900
+--
+-- The runs behind these are in registry/tools/soul-reaper/balance.json.
 --
 -- The first measurement put the High Wizard at about 850: the test dummy hit
 -- back and every hit interrupted a cast, and a repeated request restarted
 -- one. The Soul Reaper's Espa measured right then (734); Jupitel Thunder and
--- Curse Explosion, with long casts, did not. Espa and Eswhoo were raised to
--- keep the Soul Reaper a little below.
+-- Curse Explosion, with long casts, did not. Espa and Eswhoo were raised, and
+-- Eswhoo again so that spending soul energy on it pays (it had measured below
+-- Espa alone).
 --
 -- Against monsters soul energy comes only from Soul Collect (one every 20 s
 -- at Lv 5): the Soul Reaper buff gains it only from hitting players. So Espa
@@ -34,7 +37,7 @@
 
 local FACTOR = {
   SP_SPA            = 15,
-  SP_SWHOO          = 17,
+  SP_SWHOO          = 21,
   SP_CURSEEXPLOSION = 50,
 }
 

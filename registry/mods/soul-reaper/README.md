@@ -55,9 +55,13 @@ A little below the transcendent classes:
 
   | | Soul Reaper | High Wizard |
   |---|---|---|
-  | Espa | 1570 dmg/s | 1867 Jupitel Thunder (1659-2203 a run), 1104 Cold Bolt |
-  | Espa + Eswhoo | about 1500 | |
-  | Soul Curse + Curse Explosion, soul energy refilled | 2755 | |
+  | Espa | 1587 dmg/s | 1829 Jupitel Thunder, 986 Cold Bolt |
+  | Espa + Eswhoo, soul energy refilled | 1567 | |
+  | Soul Curse + Curse Explosion, soul energy refilled | about 5900 | |
+
+  The aim is 0.85-1.0 of a transcendent class on one target, as for the
+  transcendent third classes. As a caster's, the Soul Reaper's area spells
+  are not held to half of that.
 
   Soul energy comes from Soul Collect (one every 20 s at level 5); the Soul
   Reaper buff only gains it against players. Espa costs none at level 10 and
