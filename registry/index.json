@@ -355,6 +355,60 @@
       ]
     },
     {
+      "name": "eden-rework-2021",
+      "version": "",
+      "author": "akreao",
+      "description": "The Eden Group as kRO reworked it in April 2021. Instructors Ur and Boya and four new Administrators hand out the Paradise gear quests, six mission boards bring champion hunts and deliveries, and the update adds cave shortcuts, Odin's Past and English quest text. The old Eden gear and mission NPCs are hidden while it is on. Renewal only.",
+      "homepage": "https://github.com/akreao/eden-rework-2021",
+      "tags": [
+        "eden",
+        "gear",
+        "kro",
+        "missions",
+        "npc",
+        "quest",
+        "renewal"
+      ],
+      "icon": "images/icon.png",
+      "screenshots": [
+        "images/administrators.jpg",
+        "images/mission-board.jpg",
+        "images/champion-hunt.jpg",
+        "images/quest-window.jpg"
+      ],
+      "requires": {
+        "mods": [],
+        "era": "renewal",
+        "app": ""
+      },
+      "source": {
+        "github": "akreao/eden-rework-2021",
+        "asset": "eden-rework-2021-*.zip"
+      },
+      "files": [
+        {
+          "path": "images/administrators.jpg",
+          "sha256": "0e1eff732d4e1e1fdadfcde1136361cdc2ccab997befe3d671c1ad894b518244"
+        },
+        {
+          "path": "images/champion-hunt.jpg",
+          "sha256": "2e4c65484382f092cb208afa8f595b81b72979df927dfede79a3ea66ce4e0900"
+        },
+        {
+          "path": "images/icon.png",
+          "sha256": "4be96bdf205c0a74919c87d05ddc4164d25c7230b1adf63761fa9df96203833d"
+        },
+        {
+          "path": "images/mission-board.jpg",
+          "sha256": "9667c7e52d9e7b7ad1cfba6a030a6031e4c4ea379495908fff856eff776416bc"
+        },
+        {
+          "path": "images/quest-window.jpg",
+          "sha256": "0ffe4208d0bb862628c81524bb131b00acde9d89fbc2c80a466492e5d9ded035"
+        }
+      ]
+    },
+    {
       "name": "exp-card",
       "version": "1.2.0",
       "author": "BlaXun",
@@ -624,363 +678,32 @@
       ]
     },
     {
-      "name": "pre-renewal-spawns",
-      "version": "1.0.0",
-      "author": "BlaXun",
-      "description": "Play renewal with the pre-renewal monster spawns. Every map that pre-renewal had gets its pre-renewal monsters, in their pre-renewal numbers and respawn times. Maps that only renewal has keep their renewal spawns.",
-      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/pre-renewal-spawns",
+      "name": "path-of-ragnarok",
+      "version": "",
+      "author": "rhewid",
+      "description": "A Path-of-Exile style passive skill tree. Your first class gives you an origin in the centre of a 695-node tree, every job level earns a point (50 max), and you grow outward through stats, resistances, damage against races and elements, skill boosts, auto-casts and free recasts, card sockets, masteries, job-line and rebirth branches, keystones and teleport rifts. Balanced around pre-renewal; it also loads on renewal but is not balanced for it.",
+      "homepage": "https://github.com/rhewid/path-of-ragnarok",
       "tags": [
-        "maps",
-        "monsters",
+        "cards",
+        "client",
+        "passive-tree",
         "pre-renewal",
-        "renewal",
-        "spawns"
+        "progression",
+        "skills",
+        "stats"
       ],
       "icon": "",
       "screenshots": [],
       "requires": {
         "mods": [],
-        "era": "renewal",
-        "app": ">=1.5.4"
+        "era": "",
+        "app": ""
       },
-      "files": [
-        {
-          "path": "README.md",
-          "sha256": "49416747ff78da30c7709f820c48e5804e40554aed8a77d3387a3b20d5a337dd"
-        },
-        {
-          "path": "mod.json",
-          "sha256": "d03e22710332e105e648ca5d9e78a6c3157bc4e20ccc09e27d1b333c36fe88e1"
-        },
-        {
-          "path": "npc/pre-re/citycleaners.txt",
-          "sha256": "badf3cc2f13cbb31130692ca091ac61255c8347e5f2c10e968334d378dd23b93"
-        },
-        {
-          "path": "npc/pre-re/dungeons/abbey.txt",
-          "sha256": "a2e983336b047a3a5cc3948c016ca66697b9cbd0385871e944da48a73362030a"
-        },
-        {
-          "path": "npc/pre-re/dungeons/abyss.txt",
-          "sha256": "b877c53bc1cad393066a3caee43ac82655f0725d67abb6766b561c8e49aead9e"
-        },
-        {
-          "path": "npc/pre-re/dungeons/alde_dun.txt",
-          "sha256": "170eacb4706d8d7aa033ca5a782008872b918a85cbf720505fd4d134dc3ae1e4"
-        },
-        {
-          "path": "npc/pre-re/dungeons/ama_dun.txt",
-          "sha256": "9308146dd3d879988011bf17654718e3dee1cd4c048e6e8aea791078c6cec49d"
-        },
-        {
-          "path": "npc/pre-re/dungeons/anthell.txt",
-          "sha256": "0689500058ecd19e417e1ff7620062594e39892d2925f3528a662b0986b36707"
-        },
-        {
-          "path": "npc/pre-re/dungeons/ayo_dun.txt",
-          "sha256": "280f356da0a31704ad06fc2ed932c4cca6907aa7d203c0968f362af3dbf42cf1"
-        },
-        {
-          "path": "npc/pre-re/dungeons/beach_dun.txt",
-          "sha256": "629a1c7da0dec32082724c6636f8413efa702a228e8e2656cd2d44451510e35e"
-        },
-        {
-          "path": "npc/pre-re/dungeons/c_tower.txt",
-          "sha256": "11fa1441a674361eeae6ad4956c9ac71f335326d9c4420f708461af4c7390fa7"
-        },
-        {
-          "path": "npc/pre-re/dungeons/ein_dun.txt",
-          "sha256": "b9477b12596e73f679485d0a3fee4bbb39ded535d0a4fd1348c73fd686152f32"
-        },
-        {
-          "path": "npc/pre-re/dungeons/gef_dun.txt",
-          "sha256": "19f93b8e3c2b0b79ef9464982acaa42b5f55f89d4888bba3836d862bbec3d913"
-        },
-        {
-          "path": "npc/pre-re/dungeons/gefenia.txt",
-          "sha256": "cb34e25f051a1694de356e1e72216e7273b5a0af892ba02318ba0e5d6f536cc8"
-        },
-        {
-          "path": "npc/pre-re/dungeons/glastheim.txt",
-          "sha256": "c315f0f31d9ee626e258860da765e7a01baa25ffb76ec8588683d462108f8054"
-        },
-        {
-          "path": "npc/pre-re/dungeons/gld_dun.txt",
-          "sha256": "cda07c8249ed9615e06e2d6c794f20b2f51468804e1310e1b93f2bf4333d4e33"
-        },
-        {
-          "path": "npc/pre-re/dungeons/gld_dunSE.txt",
-          "sha256": "501150ab1e079a75e1e65378df6e59794af00e056f5dcb668bb4589065cfd942"
-        },
-        {
-          "path": "npc/pre-re/dungeons/gon_dun.txt",
-          "sha256": "14c7631469afca9131ceaf50587878ce4c5a2d4c565c7952ba3c23f2e45b4f78"
-        },
-        {
-          "path": "npc/pre-re/dungeons/ice_dun.txt",
-          "sha256": "5e4baed51664df875d21f3c3be8620d95ff73a288f4b5c5355248c447702df56"
-        },
-        {
-          "path": "npc/pre-re/dungeons/in_sphinx.txt",
-          "sha256": "d4cc6e8d6aa7c5c10c09c7e8dc540714412c2788e562abc554e93b1eaaed9b4c"
-        },
-        {
-          "path": "npc/pre-re/dungeons/iz_dun.txt",
-          "sha256": "73846c6edd67cd27b0f82a2bfde5a52a2b01210cf367ae4cbdbf98fa282f25f3"
-        },
-        {
-          "path": "npc/pre-re/dungeons/juperos.txt",
-          "sha256": "f41650cee72666e856482f8c14022259f1a05502263059798f57403b65f6ca78"
-        },
-        {
-          "path": "npc/pre-re/dungeons/kh_dun.txt",
-          "sha256": "d8fe832bbf22f721c1c703d116ec53384e00121cab3b674c80979ea824b816f5"
-        },
-        {
-          "path": "npc/pre-re/dungeons/lhz_dun.txt",
-          "sha256": "1db7e6b61fc1bf11a6feb5722263240c179cd9297622dcb6e6fbf04fb7b1c0ee"
-        },
-        {
-          "path": "npc/pre-re/dungeons/lou_dun.txt",
-          "sha256": "2f17e8301d1910f3d2490a2f2271cd669000724529af705867c112c5c5ab8054"
-        },
-        {
-          "path": "npc/pre-re/dungeons/mag_dun.txt",
-          "sha256": "184be6326bed5c2892e054132c414229be5ceb666ea31838bb0b9cf03a8d860f"
-        },
-        {
-          "path": "npc/pre-re/dungeons/mjo_dun.txt",
-          "sha256": "9425d38ea0a6a4b575c20a6bdb79a5969efa976dd8628baa9be0228202ce4d7b"
-        },
-        {
-          "path": "npc/pre-re/dungeons/moc_pryd.txt",
-          "sha256": "e097dcc95356b98b196966402490ed88b798b8dc38711cf714eec8dcfffcb7d6"
-        },
-        {
-          "path": "npc/pre-re/dungeons/mosk_dun.txt",
-          "sha256": "61506d22ebaa104710f7d44d8a6f5391d2051ce4759bf5f7955f2f584e76a85b"
-        },
-        {
-          "path": "npc/pre-re/dungeons/nyd_dun.txt",
-          "sha256": "a418661baeca014d7a9e89e07f0ed04d09678b9d539aaf164895680867eeb979"
-        },
-        {
-          "path": "npc/pre-re/dungeons/odin.txt",
-          "sha256": "618c789add0a9609b6df1ef84ef2f0fba49516842cbf9cc4e3cef884038198b6"
-        },
-        {
-          "path": "npc/pre-re/dungeons/orcsdun.txt",
-          "sha256": "3f6685828985e6fc44309f84b8c6da80b0476c20385541ad3a2e9ec6b4b502b7"
-        },
-        {
-          "path": "npc/pre-re/dungeons/pay_dun.txt",
-          "sha256": "b8d1efbc6f06686234c5db18ee7203aac006fe9eeb5def3b343e4dc29daa1590"
-        },
-        {
-          "path": "npc/pre-re/dungeons/prt_maze.txt",
-          "sha256": "34d48a3add55286b7b44b4a24cc6d5724f9033971a2622bf26fa7ca2b11bcbbc"
-        },
-        {
-          "path": "npc/pre-re/dungeons/prt_sew.txt",
-          "sha256": "0a4fb331619b9a210c4c8818e28c357a8e43232b680466f61264d0691a0f04ba"
-        },
-        {
-          "path": "npc/pre-re/dungeons/ra_san.txt",
-          "sha256": "455c0492104e62b0615673fd85e00208605fc864b18d3305964debeea93f3ff5"
-        },
-        {
-          "path": "npc/pre-re/dungeons/tha_t.txt",
-          "sha256": "d72d81ee11daf3050d19a018ad9b56bb90aa6f6adf945b3a2363d6f712c10672"
-        },
-        {
-          "path": "npc/pre-re/dungeons/thor_v.txt",
-          "sha256": "c61e6bd83740e7dfca3634ebdbabeda8ce4d47143bb3d34bc7568699148fcec5"
-        },
-        {
-          "path": "npc/pre-re/dungeons/treasure.txt",
-          "sha256": "a881fc0ee5727adeef31e73972feb719e0c3a13826b5758cc5e32fdcd722a1c5"
-        },
-        {
-          "path": "npc/pre-re/dungeons/tur_dun.txt",
-          "sha256": "e3ac54114f6fa757116cc86a553fd5d0b23f7134cbbfd45b16fdd9a04d78cd98"
-        },
-        {
-          "path": "npc/pre-re/dungeons/um_dun.txt",
-          "sha256": "51b0cb8c45ada0d07d36a2a186e5633cf77f2fae4bf6fbc2643cc5fa8eb7da5b"
-        },
-        {
-          "path": "npc/pre-re/dungeons/xmas_dun.txt",
-          "sha256": "5d2577f419893c44ac50c71ec03cc9c9d8794e8de13fdaf584ca6acc84bdbab5"
-        },
-        {
-          "path": "npc/pre-re/dungeons/yggdrasil.txt",
-          "sha256": "9e622cccbae63d1535b5bd9cf2daabae6a6a30d7b99cbc49c3b5668e9da32bf1"
-        },
-        {
-          "path": "npc/pre-re/fields/amatsu.txt",
-          "sha256": "f5277a8fb81566944882a40c600a44b62e460a5d6fe4fac25d0894f980667c44"
-        },
-        {
-          "path": "npc/pre-re/fields/ayothaya.txt",
-          "sha256": "15115001f8bb519b47b74372595c542b1a9294c080c9d0430cf3ab24678f390a"
-        },
-        {
-          "path": "npc/pre-re/fields/comodo.txt",
-          "sha256": "b70452614fa6e1141f560376b1e28c6aa4b12a09756dafead50bfb740ddf5760"
-        },
-        {
-          "path": "npc/pre-re/fields/einbroch.txt",
-          "sha256": "996a6c379094713101c15fb70cc196b03f4e4aa2d2b070c04cbb425e4c03d49f"
-        },
-        {
-          "path": "npc/pre-re/fields/geffen.txt",
-          "sha256": "a3dc0ad58746f01501ad86043be23af5ca1c3e6fe848f195c1917fa49580e8c5"
-        },
-        {
-          "path": "npc/pre-re/fields/gonryun.txt",
-          "sha256": "502774745685aefbc3183f6d69345c0b6d22f900615e3de731d1053e41246491"
-        },
-        {
-          "path": "npc/pre-re/fields/hugel.txt",
-          "sha256": "716b5168efd7c53cffd4d2d28498537f350adaec3a2ae6c3eaa164b64b37c58f"
-        },
-        {
-          "path": "npc/pre-re/fields/lighthalzen.txt",
-          "sha256": "f133409740271d7b4ab69189ad4de67c6e9785444a78a13a8052c634663fb002"
-        },
-        {
-          "path": "npc/pre-re/fields/louyang.txt",
-          "sha256": "2a77ce6744fe652dba8b6f6901b175b3789c39a1559eec9229a8cfdb0f18bee8"
-        },
-        {
-          "path": "npc/pre-re/fields/lutie.txt",
-          "sha256": "eb8b689b8c9e3950cc80af296cc03d7771394c0eed7a600825877884024f3579"
-        },
-        {
-          "path": "npc/pre-re/fields/manuk.txt",
-          "sha256": "0dedfcfcde6da4ec64cb9c46ef57ee2a707cbbcc5dba20f8792296c979f60bfd"
-        },
-        {
-          "path": "npc/pre-re/fields/mjolnir.txt",
-          "sha256": "12e1e2690eb076605c6101542eb3919077e454d6c8c5a6a353f4a69749cbbb0a"
-        },
-        {
-          "path": "npc/pre-re/fields/morocc.txt",
-          "sha256": "2f758b0d5b51b7ae78126878caa8ffaa55c4596eb044635668602cdee919908b"
-        },
-        {
-          "path": "npc/pre-re/fields/moscovia.txt",
-          "sha256": "beaf0a4de1dcff89d53ee1f88af5a4b69bc2a1bb0100d35f32dd14f410efaf7b"
-        },
-        {
-          "path": "npc/pre-re/fields/niflheim.txt",
-          "sha256": "d1bd301685f5dc96eb38ae87ad4a9ffa7c9cdac70acfc71db655d8c5f16879b0"
-        },
-        {
-          "path": "npc/pre-re/fields/payon.txt",
-          "sha256": "1111b348f1449d6f021417ac3dc5eaf97b82e5231bb684970c1cec4d9078de59"
-        },
-        {
-          "path": "npc/pre-re/fields/prontera.txt",
-          "sha256": "e454258c0fc139233a235890ffd6d4e30fbc3a931d4dca58c97aa32514979e46"
-        },
-        {
-          "path": "npc/pre-re/fields/rachel.txt",
-          "sha256": "c206d23b9b5cdcf1b2ee270801b9d77edfe6a33d11640e735b0f0f7853853623"
-        },
-        {
-          "path": "npc/pre-re/fields/splendide.txt",
-          "sha256": "336bc64b75eaf590719f37dd5056cb84148b6bc4ef60f8f096e350403305a964"
-        },
-        {
-          "path": "npc/pre-re/fields/umbala.txt",
-          "sha256": "3195b43db9d6c91b8ef6a80d83ec6bedbf2ac63dfb3e7ec9b08562de3599093b"
-        },
-        {
-          "path": "npc/pre-re/fields/veins.txt",
-          "sha256": "72b4c75ad8fcf5cff3c1417f1dc21332fd921940def65f920e846329251b98c5"
-        },
-        {
-          "path": "npc/pre-re/fields/yuno.txt",
-          "sha256": "a07176f756cb66033c36cad735b03478424e736b7f93195be4d83ae854952777"
-        },
-        {
-          "path": "npc/pre_renewal_spawns.txt",
-          "sha256": "5ed9546183ce0b0814a6055c20f61348f162c2d53fc7394c473b3196b662380c"
-        },
-        {
-          "path": "npc/re/championmobs.txt",
-          "sha256": "211df0822d096d7214a892787ef8f4bb158c274d36bec58f51bd941f6051659e"
-        },
-        {
-          "path": "npc/re/dungeons/abyss.txt",
-          "sha256": "1d485fabc15f39530f3cd2354aefbf268e1c0a93fe98f80494c8ba78c27fdc79"
-        },
-        {
-          "path": "npc/re/dungeons/anthell.txt",
-          "sha256": "eea17813ebebe4a4c8cd5081a1552c42bf06fac1c5b5fc5ff618087f1eb83b82"
-        },
-        {
-          "path": "npc/re/dungeons/beach_dun.txt",
-          "sha256": "2fdd2555a67684c3f2fb4f43115bcf4a674a5856d9ba8e553374c14a5e57fc0b"
-        },
-        {
-          "path": "npc/re/dungeons/c_tower.txt",
-          "sha256": "752b311bf447216aa16c3215bb486803c5565486a4c5504b605bafff39d52499"
-        },
-        {
-          "path": "npc/re/dungeons/ein_dun.txt",
-          "sha256": "35af2346b7f05bf283a9200e97e5a225c39c1e8c52c2a7c94d563def135660c7"
-        },
-        {
-          "path": "npc/re/dungeons/gef_dun.txt",
-          "sha256": "109374e9b1abfa870d04ccfc8f7a2e924cf0276e6c53d723b0cbcdac26e7d0d4"
-        },
-        {
-          "path": "npc/re/dungeons/glastheim.txt",
-          "sha256": "4ef86314c5507e704892f76705707170262e33d86d4e6f5a37531cfb77f2a6f2"
-        },
-        {
-          "path": "npc/re/dungeons/gld_re.txt",
-          "sha256": "d6b1755abacc1e47807de2a565b2db4a8653de32e3473923fab37b7df4ac4d6d"
-        },
-        {
-          "path": "npc/re/dungeons/ice_dun.txt",
-          "sha256": "26a47e2d5c833b761b723c6f00c1b78b467ba61b8208c05f8c4e6dbf848c0e98"
-        },
-        {
-          "path": "npc/re/dungeons/iz_dun.txt",
-          "sha256": "530ce6ae963d4862ac15e70365bfb605e75196d1fcd416b3a866c9765dc147c5"
-        },
-        {
-          "path": "npc/re/dungeons/lhz_dun.txt",
-          "sha256": "450f3e1b74ba7c8c88816db8bcab295d1c96b4f001b9d445ec4fb93fb7bb95d5"
-        },
-        {
-          "path": "npc/re/dungeons/mag_dun.txt",
-          "sha256": "fd97f20e646ca1d74f866cdb551dbc0129b3fd2ad9d9da1594994ec7be35832f"
-        },
-        {
-          "path": "npc/re/dungeons/moc_pryd.txt",
-          "sha256": "7a7f5af06b8ac68057c74d95da9a45cee83926c7438a4b2342121a292c909adf"
-        },
-        {
-          "path": "npc/re/dungeons/pay_dun.txt",
-          "sha256": "d087ff7279824496fc7899f5e5ec80de7bed647133675c0fc888eac9f233be47"
-        },
-        {
-          "path": "npc/re/dungeons/prt_maze.txt",
-          "sha256": "54d975fc7839d3f5873268ea829825ef3c2a3280de85b9f63d5e25a1261abd11"
-        },
-        {
-          "path": "npc/re/dungeons/treasure.txt",
-          "sha256": "1db5bb109afcd746704b48f5b76ec2bc776028cb9c04d3d6772a3dae3bd1f0e9"
-        },
-        {
-          "path": "npc/re/dungeons/tur_dun.txt",
-          "sha256": "2fafe7d063d955fb86b9e33300d0643caf5d2d7d8e09387fbf1520ce0e1e1eaa"
-        }
-      ]
+      "source": {
+        "github": "rhewid/path-of-ragnarok",
+        "asset": "path-of-ragnarok-*.zip"
+      },
+      "files": []
     },
     {
       "name": "prontera-vendors",

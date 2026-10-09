@@ -1021,6 +1021,9 @@ const SETTINGS_DEFAULTS = {
 	// every start after, once it has been); off closes them and keeps them
 	// closed, editor or not.
 	map_editor_agent: true,
+	// Mods the player starred in Settings -> Mods, by folder name: the Favorites
+	// tab lists them. Installed or not; nothing about the server reads it.
+	mod_favorites: [],
 	// How long a friends invitation stays valid, in days. Nothing to do with
 	// Cloudflare -- the tunnel runs as long as the app shares; this is only how
 	// long the invite token is accepted. A link posted in Discord should still
@@ -1057,6 +1060,10 @@ const SETTINGS_DEFAULTS = {
 	// consumed. Off leaves stock behavior; on writes `arrow_decrement: no`.
 	// Read at map-server boot, so Apply restarts the map server for it.
 	unlimited_arrows: false,
+	// Issue #533: Teleport Lv 1 learned or granted by a card (Creamy) asks
+	// Random / Cancel; on, it warps at once, as a Fly Wing does. Maps to
+	// rAthena's skip_teleport_lv1_menu (conf/battle/skill.conf), stock `no`.
+	skip_teleport_lv1_menu: false,
 	population_enable: false,
 	// A ceiling, not a target. Demand-driven spawning builds only the maps
 	// somebody is on, and a map holds 20-40 by the spawn tables, so this binds
@@ -1090,6 +1097,10 @@ const SETTINGS_DEFAULTS = {
 	// is saved with it. Off keeps the historic free supply of potions, arrows
 	// and gemstones.
 	population_companion_inventory: false,
+	// Whether a player may set a companion to roam the map on its own, from the
+	// Companions window, instead of following. Off: every companion follows, and
+	// the window offers no Roam control.
+	population_companion_roam: false,
 	// Whether ambient shells pick up the drops of their own kills, the way a
 	// player would, and how (see population-conf.js shellLoot). Off keeps the
 	// historic behaviour: every drop stays on the ground until it expires.
@@ -1147,6 +1158,8 @@ function getSettings() {
 // only names set_app_preference will write. Everything else in that file
 // changes how the server runs and has to go through Apply.
 const APP_PREFERENCES = new Set(['open_settings_first']);
+// Settings -> Mods -> Favorites: how many mods can be starred (settings-store checks the same).
+const MOD_FAVORITES_MAX = 500;
 
 // The AI agent's bearer token, for redaction. Read from its connection file
 // rather than from the agent: it outlives the session that made it, and it is
@@ -1348,6 +1361,7 @@ function toBattleConf(s) {
 		// battle_config.arrow_decrement). Default 'yes' == the shipped
 		// battle.conf, so an untouched install writes nothing surprising.
 		`arrow_decrement: ${s.unlimited_arrows ? 'no' : 'yes'}\n` +
+		`skip_teleport_lv1_menu: ${s.skip_teleport_lv1_menu ? 'yes' : 'no'}\n` +
 		// One cap in the UI, several keys here, because rAthena caps third,
 		// baby, extended and summoner classes separately and a player who
 		// raises "the" limit means all of them -- setting only max_parameter
@@ -3136,6 +3150,21 @@ const handlers = {
 		return next.vm_ram_mib;
 	},
 	save_settings: ({ settings }) => saveSettings(settings),
+	// Star or unstar a mod for Settings -> Mods -> Favorites. One name at a
+	// time, so two windows starring different mods don't overwrite each other.
+	mod_favorites_set: ({ name, favorite }) => {
+		name = String(name || '');
+		if (!/^[A-Za-z0-9_-]{1,64}$/.test(name)) throw new Error(`${name} is not a mod name`);
+		const list = (getSettings().mod_favorites || []).filter(n => n !== name);
+		if (favorite) {
+			// settings-store holds the list to the same 500, but its message is for a damaged file.
+			if (list.length >= MOD_FAVORITES_MAX) throw new Error(`You can star at most ${MOD_FAVORITES_MAX} mods. Unstar one first.`);
+			list.push(name);
+		}
+		const settings = require('./settings-store').write(path.join(stateDir(), 'settings.json'),
+			{ mod_favorites: list.sort() }, SETTINGS_DEFAULTS);
+		return settings.mod_favorites;
+	},
 	// The preferences the app acts on itself. Written straight to
 	// settings.json, and deliberately not server operations: nothing the
 	// supervisor reads is involved, and going the usual way would restart the
@@ -3742,7 +3771,7 @@ const HEADLESS_PAGE_HANDLERS = new Set([
 	'get_settings', 'get_vm_ram_mib', 'host_facts', 'host_ram_mib', 'hosting_check', 'install_mod',
 	'install_registry_mod', 'install_skin', 'list_mods', 'list_registry_mods', 'mod_data_reset', 'mod_host_list', 'mod_host_set',
 	'open_data_folder', 'open_mods_folder', 'packetvers', 'registry_image', 'registry_release', 'remove_mod',
-	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'set_client_paths',
+	'report_issue', 'save_settings', 'secure_services', 'set_app_preference', 'mod_favorites_set', 'set_client_paths',
 	'set_mod_enabled', 'set_mod_settings', 'set_mode', 'set_vm_ram_mib', 'sharing_status', 'sharing_token_help',
 	'sign_in_status', 'stack_down', 'stack_repair', 'stack_status', 'stack_up', 'start_stack', 'tools_list',
 	'accounts', 'save_diagnostics', 'sharing_connect', 'sharing_start', 'sharing_forget', 'sharing_stop',
