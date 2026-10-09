@@ -256,8 +256,8 @@ In a party of five, buffs kept up and Magnificat doubling SP recovery:
 
 Its Holy magic hits an area (Adoramus 7x7, Judex 3x3) for about half of
 what a High Wizard's amplified Meteor Storm deals to each target (1255
-to 1588 dmg/s, measured two ways): Adoramus 614 (it also costs a Blue
-Gemstone), Judex 722.
+to 1588 dmg/s, measured two ways): Adoramus 658 (it also costs a Blue
+Gemstone), Judex 656.
 Duple Light's magic strikes on a staff come to about 490 a second with
 auto-attacks, below casting; its melee strike, for a STR battle priest,
 is as in renewal.
@@ -463,7 +463,7 @@ staff, on the same target, one cast at a time, without consumables:
 | | Warlock | High Wizard |
 |---|---|---|
 | One target | Hell Inferno 1926 dmg/s, Tetra Vortex (with its four spheres) 1995, Soul Expansion 1836 | Jupitel Thunder 1750, with Mystical Amplification 2032 |
-| Area, per target | Jack Frost 1390, Crimson Rock 1280, Chain Lightning 1259, Frost Misty 1249, Comet 1409 | Meteor Storm 960, with Mystical Amplification 1255 |
+| Area, per target | Jack Frost 1390, Crimson Rock 1280, Chain Lightning 1259, Frost Misty about 1300, Comet 1409 | Meteor Storm 960, with Mystical Amplification 1255 |
 
 - **SP.** A Warlock has no Soul Drain: about a sixth less SP and nothing
   back for a kill. At renewal's prices its area spells ran a full bar dry
@@ -524,4 +524,12 @@ and each class's three CSV files, in its own directory beside it
 ```
 python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena
 python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena --check
+```
+
+The damage figures above come from the runs in
+`registry/tools/transcendent-third-classes/balance.json`; to measure them
+again, see `registry/tools/expanded_class/balance/README.md`:
+
+```
+python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/transcendent-third-classes/balance.json
 ```

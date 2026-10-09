@@ -1,0 +1,365 @@
+{
+ "_about": "Balance runs for transcendent-third-classes: python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/transcendent-third-classes/balance.json (rig: registry/tools/expanded_class/balance/README.md).",
+ "load": [
+  "registry/mods/transcendent-third-classes"
+ ],
+ "seconds": 40,
+ "runs": [
+  {
+   "id": "AX_SonicBlow",
+   "class": 4013,
+   "weapon": 59001,
+   "skills": "136",
+   "levels": "10"
+  },
+  {
+   "id": "GX_CrossImpact",
+   "class": 4065,
+   "weapon": 59001,
+   "skills": "2022",
+   "levels": "5",
+   "versus": "AX_SonicBlow",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "GX_RollingCutter_CRS",
+   "class": 4065,
+   "weapon": 59001,
+   "skills": "2036s,2037",
+   "levels": "5,5",
+   "step": 0.35,
+   "seq": true,
+   "versus": "AX_SonicBlow",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "GX_RollingCutter_area",
+   "class": 4065,
+   "weapon": 59001,
+   "skills": "2036s",
+   "levels": "5",
+   "versus": "GX_RollingCutter_CRS",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "ST_DoubleStrafe",
+   "class": 4018,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "46",
+   "levels": "10"
+  },
+  {
+   "id": "SC_TriangleShot",
+   "class": 4079,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "2288",
+   "levels": "10",
+   "versus": "ST_DoubleStrafe",
+   "aim": [
+    0.9,
+    1.05
+   ]
+  },
+  {
+   "id": "SC_FatalMenace_area",
+   "class": 4079,
+   "weapon": 59002,
+   "skills": "2284",
+   "levels": "10",
+   "versus": "SC_TriangleShot",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "HW_Amp_Jupitel",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "366s,84",
+   "levels": "10,10",
+   "method": "paced"
+  },
+  {
+   "id": "HW_Amp_MeteorStorm",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "366s,83",
+   "levels": "10,10",
+   "how": "pos",
+   "method": "paced"
+  },
+  {
+   "id": "AB_Adoramus_area",
+   "class": 4063,
+   "weapon": 59011,
+   "skills": "2040",
+   "levels": "10",
+   "method": "paced",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.4,
+    0.65
+   ]
+  },
+  {
+   "id": "AB_Judex_area",
+   "class": 4063,
+   "weapon": 59011,
+   "skills": "2038",
+   "levels": "10",
+   "method": "paced",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.4,
+    0.65
+   ]
+  },
+  {
+   "id": "LK_SpiralPierce",
+   "class": 4008,
+   "weapon": 59014,
+   "skills": "397",
+   "levels": "5"
+  },
+  {
+   "id": "RK_SonicWave",
+   "class": 4060,
+   "weapon": 59012,
+   "skills": "2002",
+   "levels": "10",
+   "versus": "LK_SpiralPierce",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "RK_HundredSpear",
+   "class": 4060,
+   "weapon": 59013,
+   "skills": "2004",
+   "levels": "10",
+   "method": "best",
+   "versus": "LK_SpiralPierce",
+   "aim": [
+    0.75,
+    1.0
+   ]
+  },
+  {
+   "id": "RK_WindCutter_area",
+   "class": 4060,
+   "weapon": 59012,
+   "skills": "2005",
+   "levels": "5",
+   "versus": "RK_SonicWave",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "RK_IgnitionBreak_area",
+   "class": 4060,
+   "weapon": 59012,
+   "skills": "2006s",
+   "levels": "5",
+   "versus": "RK_SonicWave",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "RK_DragonBreath_area",
+   "class": 4060,
+   "weapon": 59012,
+   "skills": "2008",
+   "levels": "10",
+   "how": "pos",
+   "extra": "whisper npc:KoTest mount#2;wait 1",
+   "versus": "RK_SonicWave",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "PA_RapidSmiting",
+   "class": 4015,
+   "weapon": 59015,
+   "skills": "480",
+   "levels": "5",
+   "extra": "whisper npc:KoTest eq#59016;wait 1"
+  },
+  {
+   "id": "RG_BanishingPoint",
+   "class": 4073,
+   "weapon": 59015,
+   "skills": "2308",
+   "levels": "10",
+   "extra": "whisper npc:KoTest eq#59016;wait 1",
+   "versus": "PA_RapidSmiting",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "RG_Overbrand_area",
+   "class": 4073,
+   "weapon": 59015,
+   "skills": "2317s",
+   "levels": "5",
+   "extra": "whisper npc:KoTest eq#59016;wait 1",
+   "versus": "RG_BanishingPoint",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "RG_EarthDrive_area",
+   "class": 4073,
+   "weapon": 59015,
+   "skills": "2323s",
+   "levels": "5",
+   "extra": "whisper npc:KoTest eq#59016;wait 1",
+   "versus": "RG_BanishingPoint",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "RG_CannonSpear_area",
+   "class": 4073,
+   "weapon": 59015,
+   "skills": "2307",
+   "levels": "5",
+   "extra": "whisper npc:KoTest eq#59016;wait 1",
+   "versus": "RG_BanishingPoint",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "RG_MoonSlasher_area",
+   "class": 4073,
+   "weapon": 59015,
+   "skills": "2320s",
+   "levels": "5",
+   "extra": "whisper npc:KoTest eq#59016;wait 1",
+   "versus": "RG_BanishingPoint",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "WL_HellInferno",
+   "class": 4061,
+   "weapon": 59011,
+   "skills": "2212",
+   "levels": "5",
+   "method": "paced",
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "WL_SoulExpansion",
+   "class": 4061,
+   "weapon": 59011,
+   "skills": "2202",
+   "levels": "5",
+   "method": "paced",
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "WL_TetraVortex",
+   "class": 4061,
+   "weapon": 59011,
+   "skills": "2222s,2223s,2224s,2229s,2217",
+   "levels": "5,5,5,5,10",
+   "method": "paced",
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    0.85,
+    1.05
+   ]
+  },
+  {
+   "id": "WL_CrimsonRock_area",
+   "class": 4061,
+   "weapon": 59011,
+   "skills": "2211",
+   "levels": "5",
+   "method": "paced",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.9,
+    1.15
+   ]
+  },
+  {
+   "id": "WL_JackFrost_area",
+   "class": 4061,
+   "weapon": 59011,
+   "skills": "2204",
+   "levels": "5",
+   "method": "paced",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.9,
+    1.15
+   ]
+  },
+  {
+   "id": "WL_FrostMisty_area",
+   "class": 4061,
+   "weapon": 59011,
+   "skills": "2203",
+   "levels": "5",
+   "how": "pos",
+   "method": "paced",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.9,
+    1.15
+   ]
+  },
+  {
+   "id": "WL_ChainLightning_area",
+   "class": 4061,
+   "weapon": 59011,
+   "skills": "2214",
+   "levels": "5",
+   "method": "paced",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.9,
+    1.15
+   ]
+  }
+ ]
+}

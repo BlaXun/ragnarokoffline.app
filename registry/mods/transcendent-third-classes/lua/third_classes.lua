@@ -1,6 +1,7 @@
 -- transcendent-third-classes: third-class skill damage, at parity with the transcendent classes.
 -- Percent of each skill's damage, measured against the transcendent class
--- with the same level, stats and weapon (README.md has the table). A
+-- with the same level, stats and weapon (README.md has the table; to re-measure,
+-- registry/tools/transcendent-third-classes/balance.json). A
 -- fighting class's area attacks deal about half its best single target to
 -- each target; the Warlock, a caster whose job area damage is, is exempt:
 --   Guillotine Cross vs Assassin Cross (Sonic Blow 1010 dmg/s): Cross Impact
@@ -9,7 +10,7 @@
 --   Shadow Chaser vs Stalker (Double Strafe 2280): Triangle Shot 2243, Fatal
 --     Menace 1076 a target, Feint Bomb about 2200 a blast every 5 s.
 --   Arch Bishop vs High Wizard (Mystical Amplification + Meteor Storm 1255-
---     1588 a target): Adoramus 614 and Judex 722 a target, about half, as a
+--     1588 a target): Adoramus 658 and Judex 656 a target, about half, as a
 --     support caster's; Duple Light's magic strikes about 490 with auto-attacks. Its heals are
 --     balanced by SP cost instead (build.py, SKILL_OVERRIDES).
 --   Rune Knight vs Lord Knight (Spiral Pierce 1562): Sonic Wave 1497, Hundred
@@ -20,7 +21,7 @@
 --   Warlock vs High Wizard (Mystical Amplification + Jupitel 2032, + Meteor
 --     Storm 1255 a target): Hell Inferno 1926, Tetra Vortex 1995, Soul
 --     Expansion 1836; a target Jack Frost 1390, Crimson Rock 1280, Chain
---     Lightning 1259, Frost Misty 1249, Comet 1409. SP costs: build.py.
+--     Lightning 1259, Frost Misty about 1300, Comet 1409. SP costs: build.py.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -30,7 +31,7 @@ local FACTOR = {
   SC_TRIANGLESHOT       = 15,
   SC_FATALMENACE        = 10,
   SC_FEINTBOMB          = 25,
-  AB_ADORAMUS           = 15,
+  AB_ADORAMUS           = 17,
   AB_JUDEX              = 25,
   AB_DUPLELIGHT_MAGIC   = 50,
   RK_SONICWAVE          = 17,
@@ -50,7 +51,7 @@ local FACTOR = {
   WL_TETRAVORTEX_GROUND = 40,
   WL_CRIMSONROCK        = 47,
   WL_JACKFROST          = 61,
-  WL_FROSTMISTY         = 56,
+  WL_FROSTMISTY         = 62,
   WL_CHAINLIGHTNING_ATK = 72,
   WL_COMET              = 85,
 }

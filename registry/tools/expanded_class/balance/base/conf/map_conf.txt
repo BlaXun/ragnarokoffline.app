@@ -1,0 +1,6 @@
+// rig
+char_ip: 127.0.0.1
+char_port: 16121
+map_ip: 127.0.0.1
+map_port: 15121
+bind_ip: 127.0.0.1
