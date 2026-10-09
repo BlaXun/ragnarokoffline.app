@@ -1,0 +1,185 @@
+//===== kagerou-oboro test helper (rig only) ====================
+//   whisper npc:KoTest <cmd>[#arg]
+-	script	KoTest	-1,{
+OnWhisperGlobal:
+	.@c$ = @whispervar0$;
+	.@a = atoi(@whispervar1$);
+	if (.@c$ == "reset") {            // fresh character: novice 1/1, no reborn flag
+		kagerou_oboro_reborn = 0;
+		jobchange Job_Novice;
+		resetlvl(1);
+		StatusPoint = 48;
+	} else if (.@c$ == "ninja") {     // Ninja at base 99 / job 70, every point spent elsewhere
+		jobchange Job_Ninja;
+		atcommand "@blvl 98";
+		atcommand "@joblvl 69";
+	} else if (.@c$ == "class") {     // class#job: that job at base 99 / max job
+		jobchange .@a;
+		atcommand "@blvl 98";
+		atcommand "@joblvl 69";
+	} else if (.@c$ == "strip") {     // nothing carried, no zeny, no free skill points
+		clearitem;
+		Zeny = 0;
+		SkillPoint = 0;
+	} else if (.@c$ == "zeny") {
+		Zeny = .@a;
+	} else if (.@c$ == "joblvl") {
+		atcommand "@joblvl " + .@a;
+	} else if (.@c$ == "blvl") {
+		atcommand "@blvl " + .@a;
+	} else if (.@c$ == "warp") {
+		if (.@a == 2) warp "que_ng", 152, 164; else if (.@a == 3) warp "payon", 158, 139; else if (.@a == 4) warp "payon", 155, 139; else if (.@a == 5) warp "valkyrie", 48, 56; else if (.@a == 6) warp "prontera", 153, 190; else if (.@a == 7) warp "valkyrie", 46, 41; else if (.@a == 8) warp "prontera", 57, 352; else if (.@a == 9) warp "valkyrie", 51, 41; else if (.@a == 10) warp "valkyrie", 46, 47; else if (.@a == 11) warp "geffen_in", 175, 109; else warp "que_ng", 31, 62;
+	} else if (.@c$ == "setjob") {
+		jobchange .@a;
+	} else if (.@c$ == "item") {
+		getitem .@a, 1;
+	} else if (.@c$ == "eq") {
+		getitem .@a, 1;
+		equip .@a;
+		dispbottom "KoTest: eq " + .@a + " -> R=" + getequipid(EQI_HAND_R) + " L=" + getequipid(EQI_HAND_L) + " top=" + getequipid(EQI_HEAD_TOP) + " mid=" + getequipid(EQI_HEAD_MID) + " low=" + getequipid(EQI_HEAD_LOW) + " armor=" + getequipid(EQI_ARMOR) + " garment=" + getequipid(EQI_GARMENT) + " shoes=" + getequipid(EQI_SHOES) + " accL=" + getequipid(EQI_ACC_L) + " accR=" + getequipid(EQI_ACC_R);
+		dispbottom "KoTest: stats flee=" + readparam(bFlee) + " flee2=" + readparam(bFlee2) + " aspd=" + readparam(bAspd) + " maxhp=" + readparam(bMaxHP) + " maxsp=" + readparam(bMaxSP) + " atk=" + readparam(bAtk) + " atk2=" + readparam(bAtk2) + " def=" + readparam(bDef) + " crit=" + readparam(bCritical);
+		end;
+	} else if (.@c$ == "give") {          // give#id: one more, and print its inventory indexes
+		getitem .@a, 1;
+		getinventorylist;
+		for (.@i = 0; .@i < @inventorylist_count; .@i++)
+			if (@inventorylist_id[.@i] == .@a) dispbottom "KoTest: idx " + @inventorylist_idx[.@i] + " id " + .@a + " equip=" + @inventorylist_equip[.@i];
+		end;
+	} else if (.@c$ == "slots") {
+		dispbottom "KoTest: R=" + getequipid(EQI_HAND_R) + " L=" + getequipid(EQI_HAND_L) + " accL=" + getequipid(EQI_ACC_L) + " accR=" + getequipid(EQI_ACC_R) + " aspd=" + readparam(bAspd);
+		end;
+	} else if (.@c$ == "build") {          // build#job#weapon: the measurement template
+		jobchange .@a;
+		atcommand "@blvl 98";
+		atcommand "@joblvl 69";
+		clearitem;
+		resetstatus;
+		if (.@a == 4240 || .@a == 4049 || .@a == 4010 || .@a == 4009 || .@a == 4063 || .@a == 8 || .@a == 4061)  // casters (and priests): INT/DEX builds
+			{ statusup2 bInt,98; statusup2 bDex,79; statusup2 bVit,29; statusup2 bAgi,19; }
+		else if (.@a == 4215 || .@a == 24 || .@a == 4012 || getiteminfo(atoi(@whispervar2$), ITEMINFO_SUBTYPE) == W_BOW)  // gunners, the Sniper and bows are DEX builds
+			{ statusup2 bDex,89; statusup2 bAgi,79; statusup2 bStr,29; statusup2 bLuk,19; statusup2 bVit,29; }
+		else
+			{ statusup2 bStr,79; statusup2 bAgi,89; statusup2 bDex,59; statusup2 bLuk,19; statusup2 bVit,29; }
+		atcommand "@allskill";
+		.@w = atoi(@whispervar2$);
+		getitem .@w, 1;
+		equip .@w;
+		if (.@a == 4211 || .@a == 4212) {
+			getitem 13294, 500;              // Explosive_Kunai
+			getitem 13255, 500; equip 13255; // Icicle Kunai (ammo)
+			getitem 6493, 200;               // Makibishi
+			getitem 6512, 50; getitem 6513, 50; getitem 6514, 50; getitem 6515, 50;
+			getitem 7524, 50;                // Shadow_Orb
+		}
+		Zeny = 10000000;
+		sc_end SC_ALL;
+		percentheal 100,100;
+		warp "prontera", 150, 150;
+	} else if (.@c$ == "gun") {            // gun#weapon#ammo: equip a gun and its ammo, refill coins
+		if (countitem(.@a) == 0) getitem .@a, 1;
+		equip .@a;
+		.@m = atoi(@whispervar2$);
+		if (countitem(.@m) < 100) getitem .@m, 300;
+		equip .@m;
+		dispbottom "KoTest: gun R=" + getequipid(EQI_HAND_R) + " ammo=" + getequipid(EQI_AMMO);
+		end;
+	} else if (.@c$ == "rlkit") {          // the Rebellion consumables
+		getitem 7663, 100; getitem 7664, 100; getitem 7665, 100; getitem 25187, 10; getitem 7940, 50;
+		getitem 6122, 100; getitem 6123, 100; getitem 717, 200; getitem 523, 100; getitem 716, 200;   // + Blue Gemstone, Holy Water, Red Gemstone   // Paint Brush, Surface Paint (Feint Bomb, Body Painting)
+		end;
+	} else if (.@c$ == "count") {
+		dispbottom "KoTest: count " + .@a + " = " + countitem(.@a) + " sp=" + SP + " coins=" + (getequipid(EQI_HAND_R));
+		end;
+	} else if (.@c$ == "spirit") {          // a Soul Linker's spirit on yourself (SL_STAR = 461)
+		sc_start4 SC_SPIRIT, 600000, 5, .@a, 0, 0;
+		end;
+	} else if (.@c$ == "soulrefill") {      // soulrefill#1: refill soul energy on every heal
+		$@ko_soulrefill = .@a;
+		end;
+	} else if (.@c$ == "advjob") {          // advjob#id: the Valkyrie's rebirth target
+		ADVJOB = .@a;
+	} else if (.@c$ == "sp") {             // sp#n: set SP to n; sp#-1 just prints it
+		if (.@a >= 0) heal 0, .@a - SP;
+		dispbottom "KoTest: sp " + SP + "/" + MaxSP + " hp " + Hp + "/" + MaxHp + " int " + readparam(bInt) + " dex " + readparam(bDex) + " matk " + readparam(bMatk);
+		end;
+	} else if (.@c$ == "hp") {             // hp#n: set HP to n
+		heal .@a - Hp, 0;
+		end;
+	} else if (.@c$ == "berserk") {        // berserk#0: is SC_BERSERK on?
+		if (.@a == 1) sc_start SC_BERSERK, 300000, 1;
+		dispbottom "KoTest: berserk " + getstatus(SC_BERSERK) + " maxhp " + MaxHp + " sp " + SP;
+		end;
+	} else if (.@c$ == "learn") {          // learn#skill_id: a temporary level 1 of a skill, to cast it directly
+		skill .@a, 1, 1;
+		end;
+	} else if (.@c$ == "mobhp") {          // mobhp#0: HP of the last dummy spawned
+		getunitdata $@mobid[0], .@d;
+		dispbottom "KoTest: mobhp " + .@d[UMOB_HP] + " / " + .@d[UMOB_MAXHP];
+		end;
+	} else if (.@c$ == "rune") {           // rune#skill_id: what a rune stone does (unitskilluseid on yourself)
+		unitskilluseid getcharid(3), .@a, 1;
+		end;
+	} else if (.@c$ == "mount") {          // mount#1 Peco Peco, mount#2 dragon, mount#0 off
+		if (.@a == 1) setriding; else if (.@a == 2) { if (!checkdragon()) setdragon; } else if (.@a == 0) { setriding 0; if (checkdragon()) setdragon; }
+		dispbottom "KoTest: mount riding=" + checkriding() + " dragon=" + checkdragon();
+		end;
+	} else if (.@c$ == "pcells") {         // pcells#y: walkable cells x 48..62 on prontera row y
+		.@s$ = "";
+		for (.@x = 48; .@x <= 62; .@x++) .@s$ += (checkcell("prontera", .@x, .@a, cell_chkpass) ? "." : "#");
+		dispbottom "KoTest: pcells y=" + .@a + " x48-62 " + .@s$;
+		end;
+	} else if (.@c$ == "cells") {          // cells#y: walkable cells x 40..57 on valkyrie row y
+		.@s$ = "";
+		for (.@x = 40; .@x <= 57; .@x++) .@s$ += (checkcell("valkyrie", .@x, .@a, cell_chkpass) ? "." : "#");
+		dispbottom "KoTest: cells y=" + .@a + " x40-57 " + .@s$;
+		end;
+	} else if (.@c$ == "spawn") {          // spawn#id: a monster three cells east
+		getmapxy(.@m$, .@x, .@y, BL_PC);
+		monster .@m$, .@x + 3, .@y, "--ja--", .@a, 1;
+		dispbottom "KoTest: spawned " + .@a;
+		end;
+	} else if (.@c$ == "dummy") {
+		killmonster "prontera", "All";
+		getmapxy(.@m$, .@x, .@y, BL_PC);
+		if (.@a == 2) monster .@m$, .@x, .@y + 1, "--ja--", 25500, 1;   // dummy#2: north of you
+		else if (.@a == 3) monster .@m$, .@x, .@y - 1, "--ja--", 25500, 1;   // dummy#3: south of you
+		else if (.@a == 4) monster .@m$, .@x + 1, .@y, "--ja--", 25503, 1;   // dummy#4: cannot be knocked back
+		else monster .@m$, .@x + 1, .@y, "--ja--", 25500, 1;
+		if (.@a == 9) sc_start SC_BERSERK, 300000, 1;   // dummy#9: and Frenzy, which then blocks whispers
+		dispbottom "KoTest: dummy gid " + $@mobid[0];
+		end;
+	} else if (.@c$ == "heal") {
+		percentheal 100,100;
+		if (Class == Job_Rebellion || Class == Job_Gunslinger) atcommand "@spiritball 10";
+		if (Class == Job_Soul_Reaper && $@ko_soulrefill) atcommand "@soulball 20";
+		end;
+	} else if (.@c$ == "drops") {
+		if (getmobdrops(.@a)) {
+			.@s$ = "";
+			for (.@i = 0; .@i < $@MobDrop_count; .@i++)
+				if ($@MobDrop_item[.@i] >= 63100 && $@MobDrop_item[.@i] < 64000) .@s$ += " " + $@MobDrop_item[.@i] + "@" + $@MobDrop_rate[.@i];
+			dispbottom "KoTest: drops " + .@a + " count=" + $@MobDrop_count + .@s$;
+		}
+		end;
+	} else if (.@c$ == "unequipall") {
+		for (.@i = 0; .@i < 10; .@i++) unequip .@i + 1;
+	} else if (.@c$ == "skill") {
+		dispbottom "KoTest: skill " + @whispervar1$ + " lv " + getskilllv(@whispervar1$);
+		end;
+	}
+	getskilllist;
+	.@ko = .@nj = 0;
+	for (.@i = 0; .@i < @skilllist_count; .@i++) {
+		if (@skilllist_id[.@i] >= 3001 && @skilllist_id[.@i] <= 3029) .@ko += @skilllist_lv[.@i];
+		else if (@skilllist_id[.@i] >= 522 && @skilllist_id[.@i] <= 545) .@nj += @skilllist_lv[.@i];
+		else if (@skilllist_id[.@i] >= 500 && @skilllist_id[.@i] <= 521) .@gs += @skilllist_lv[.@i];
+		else if (@skilllist_id[.@i] >= 2552 && @skilllist_id[.@i] <= 2572) .@rl += @skilllist_lv[.@i];
+		else if ((@skilllist_id[.@i] >= 411 && @skilllist_id[.@i] <= 426) || @skilllist_id[.@i] == 493) .@tk += @skilllist_lv[.@i];
+		else if (@skilllist_id[.@i] >= 427 && @skilllist_id[.@i] <= 444) .@sg += @skilllist_lv[.@i];
+		else if (@skilllist_id[.@i] >= 2574 && @skilllist_id[.@i] <= 2593) .@sj += @skilllist_lv[.@i];
+		else if ((@skilllist_id[.@i] >= 445 && @skilllist_id[.@i] <= 472) || @skilllist_id[.@i] == 494) .@sl += @skilllist_lv[.@i];
+		else if (@skilllist_id[.@i] >= 2596 && @skilllist_id[.@i] <= 2612) .@sp += @skilllist_lv[.@i];
+	}
+	dispbottom "KoTest: " + .@c$ + " -> class=" + Class + " base=" + BaseLevel + " job=" + JobLevel + " skillpoints=" + SkillPoint + " statpoints=" + StatusPoint + " reborn=" + kagerou_oboro_reborn + " zeny=" + Zeny + " weight=" + Weight + " nj_lv=" + .@nj + " ko_lv=" + .@ko + " gs_lv=" + .@gs + " rl_lv=" + .@rl + " tk=" + .@tk + " sg=" + .@sg + " sj=" + .@sj + " sl=" + .@sl + " sp=" + .@sp + " advjob=" + ADVJOB + " upper=" + Upper + " basic=" + getskilllv("NV_BASIC");
+	end;
+}
