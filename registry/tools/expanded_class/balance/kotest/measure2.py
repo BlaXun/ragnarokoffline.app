@@ -19,6 +19,8 @@ import os
 MOBT = "mob:25503" if os.environ.get("DUMMY") == "dummy#4" else "mob:25500"   # the target
 head += [c for c in os.environ.get("EXTRA", "").split(";") if c]   # EXTRA="whisper npc:KoTest mount#2;wait 1"
 head += ["whisper npc:KoTest " + os.environ.get("DUMMY", "dummy"), "wait 2", "mobs"]   # DUMMY=dummy#2: other side
+hpcheck = os.environ.get("HPCHECK") == "1"   # also read the dummy's HP before and after: hp_dps, what it really lost
+if hpcheck: head += ["whisper npc:KoTest mobhp#0", "wait 1"]
 p = subprocess.Popen(["python3", "roclient.py", "--user", user, "--pass", pw, "run", "-"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
 for l in head: p.stdin.write(l + "\n")
 p.stdin.flush()
@@ -64,6 +66,7 @@ for i in range(0 if paced else int(secs / step)):
         body.append({"mob": f"skill {s} {l} {MOBT}", "self": f"skill {s} {l} self", "pos": f"skill-pos {s} {l} {pos}"}[h])
     body.append(f"dump-damage {step}")
 body.append("dump-damage 2")
+if hpcheck: body += ["whisper npc:KoTest mobhp#0", "wait 1"]
 if paced and noheal:
     body += ["whisper npc:KoTest sp#-1", "wait 3"]
 if os.environ.get("DUMPBODY"): open(os.environ["DUMPBODY"], "w").write("\n".join(body) + "\n")
@@ -95,5 +98,6 @@ for e in evs:
         else: other[k] = other.get(k, 0) + max(0, e.get("damage", 0))
     if e.get("ev") == "skill_fail" and str(e.get("skill")) in sids:
         fails[e.get("cause")] = fails.get(e.get("cause"), 0) + 1
-print(json.dumps({"job": job, "skill": ",".join(sids), "lv": ",".join(lvs), "dps": round(total / secs), "casts": casts,
+hps = [int(x) for x in __import__("re").findall(r"KoTest: mobhp (\d+) /", out)]
+print(json.dumps({"hp_dps": round((hps[0] - hps[-1]) / secs) if len(hps) >= 2 else None, "job": job, "skill": ",".join(sids), "lv": ",".join(lvs), "dps": round(total / secs), "casts": casts,
                   "per_cast": round(total / casts) if casts else 0, "other_dps": {k: round(v / secs) for k, v in other.items()}, "fails": fails, "per_skill": {k: [round(v / secs), per_n[k]] for k, v in per.items()}, "sp_net_per_s": round((sps[0] - sps[-1]) / secs, 1) if len(sps) >= 2 else None, "sp_start": sps[0] if sps else None}))
