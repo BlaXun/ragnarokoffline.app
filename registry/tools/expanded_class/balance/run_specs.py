@@ -17,6 +17,8 @@ Run fields (only id, class, weapon, skills and levels are required):
     weapon    item id, usually a test weapon from kotest/db/item_db.yml
     ammo      ammunition item id (arrows, bullets), 0 for none
     left      item id of a second weapon worn in the left hand (dual wielding)
+    stats     "int", "dex" or "str": that stat build instead of the class's usual one
+    user      the test account to play (default "player"; "fem" for female-only classes)
     skills    comma-separated skill ids cast in turn; "attack" for auto-attacks;
               a trailing "s" casts on yourself (2036s)
     levels    their levels, comma-separated
@@ -58,10 +60,11 @@ def measure(run, seconds):
             tail = ["1", "paced"]
         else:
             tail = [str(step)] + (["seq"] if run.get("seq") else [])
-        args = ["python3", "kotest/measure2.py", "player", "player123", str(run["class"]), str(run["weapon"]),
+        user = run.get("user", "player")
+        args = ["python3", "kotest/measure2.py", user, user + "123", str(run["class"]), str(run["weapon"]),
                 str(run.get("ammo", 0)), str(run["skills"]), str(run["levels"]), str(seconds),
                 run.get("how", "mob"), run.get("pre") or "-"] + tail
-        env = {**os.environ, "EXTRA": run.get("extra", ""), "LEFT": str(run.get("left", "")),
+        env = {**os.environ, "EXTRA": run.get("extra", ""), "LEFT": str(run.get("left", "")), "STATS": run.get("stats", ""),
                "DUMMY": "dummy#4" if run.get("dummy", "anchored") == "anchored" else "dummy"}
         for _ in range(int(run.get("repeat", 2))):
             try:
