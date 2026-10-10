@@ -1050,7 +1050,7 @@
       "name": "transcendent-third-classes",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Renewal's third and expanded classes in pre-renewal, at the transcendent classes' strength. Third classes are sidegrades: after the Valkyrie's rebirth, a reborn first class chooses the stock transcendent class or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera), Royal Guard (Crusader) and Warlock (Wizard, with spellbooks sold in Geffen). Expanded classes come by rebirth of their base class: Kagerou and Oboro (Ninja), Rebellion (Gunslinger), Star Emperor (Star Gladiator) and Soul Reaper (Soul Linker). Every class has its own gear, dropped by monsters, and damage measured against the transcendent classes.",
+      "description": "Renewal's third and expanded classes in pre-renewal, at the transcendent classes' strength. Third classes are sidegrades: after the Valkyrie's rebirth, a reborn first class chooses the stock transcendent class or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera), Royal Guard (Crusader), Warlock (Wizard, with spellbooks sold in Geffen) and Sorcerer (Sage, with elemental spirits). Expanded classes come by rebirth of their base class: Kagerou and Oboro (Ninja), Rebellion (Gunslinger), Star Emperor (Star Gladiator) and Soul Reaper (Soul Linker). Every class has its own gear, dropped by monsters, and damage measured against the transcendent classes.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/transcendent-third-classes",
       "tags": [
         "equipment",
@@ -1072,35 +1072,39 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "7e5119a99693d315a434dc453979046898a8f2035dd2de41851558f6c73e1eeb"
+          "sha256": "2b5f34a931ad3d88eed805fce11d4c89739b9295a7a85e8233ddf538ce19b5d4"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "848a4b9d0ba8a75f8c4a643d89a4d45c46ae684b80408e7d9e5b1f8cf8600ab5"
+          "sha256": "0591b2cb8043faeacc45a2a344c959f04c81c7a7f786b37eca7f8eae993db482"
+        },
+        {
+          "path": "db/elemental_db.yml",
+          "sha256": "2dee42632d51f7e761549949a41b9a73d7085dc9b8214cc00045c3dd954aed33"
         },
         {
           "path": "db/item_combos.yml",
-          "sha256": "fa665eba154c9dc7e48a736caa0b6d0421d16882ebb43e2b5ffb8d40a29cf0a2"
+          "sha256": "414ceab487ddce3d12fc1f7a765d24ead221095324fed83cdedf04a7e449ba24"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "af505f80a2175151dc6d3b9eb1bd2d8ae3893f7151743da0909ec41e5c2dc98d"
+          "sha256": "f11379f1cc8ec13fc30c328a9bad74d143da29dc8b98d56ccbeb0b7b2bb9d5f0"
         },
         {
           "path": "db/job_stats.yml",
-          "sha256": "bd87b994f4e9109440c3e840880c7ed3cb2de9af3f055edf0b8d1ba92d53cb51"
+          "sha256": "91101d4ed15afb137d3c715515ba39ae98dbb2bc77f12a64f0ae909a04b026f4"
         },
         {
           "path": "db/mob_db.yml",
-          "sha256": "ed19f5c352e713fb65daa8294e5942633b2281bc4ab0149faa3c43cc64753e35"
+          "sha256": "115190565f72cbd73f1f3e6dfe44c90f5e5ca2ff82e7aa72036cf37688ed96df"
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "98e5531bac679cabbd3e02a22dad99919195daee1234a5de56d8bd028eebf08f"
+          "sha256": "6156957f87d3ba1c8c08fd44bef410f67c1ea7b2bd5a0b1f25af0670c3798df5"
         },
         {
           "path": "db/skill_tree.yml",
-          "sha256": "57edcdd4820b2589ae86fc062c8d49f994cfa1b4e746d4e8e122409bda7e695e"
+          "sha256": "0594528951e61e48641ed07f644be9a00047d88743930f6646951f30a2da2525"
         },
         {
           "path": "db/spellbook_db.yml",
@@ -1124,11 +1128,11 @@
         },
         {
           "path": "lua/third_classes.lua",
-          "sha256": "48efb3b0229f1a0d87bbae8560faab02670836d48ef73b2da00b01135ba4d4b6"
+          "sha256": "1c9403b1775cdb87b423a58b980f5979b4c5c15f04d990cc598da3c80212eff0"
         },
         {
           "path": "mod.json",
-          "sha256": "fdf997d681310ab994219bbab694643a1c807875d72038d39e1d66ac74e007ec"
+          "sha256": "571dc256f50f9e4f090466453da8ca744f65d4fb4bc9ee78c41514b6af3a371b"
         },
         {
           "path": "npc/arch_bishop.txt",
@@ -1161,6 +1165,10 @@
         {
           "path": "npc/shadow_chaser.txt",
           "sha256": "584eee7d2ccdcba6b99f1bab4ac4eb37fbd751d5e296d04e9135508f15cfeba1"
+        },
+        {
+          "path": "npc/sorcerer.txt",
+          "sha256": "eb73b0430e495df90fc18e78c8c7863f7b47d764af4aad334b640b7bfbeacb95"
         },
         {
           "path": "npc/soul_reaper.txt",
