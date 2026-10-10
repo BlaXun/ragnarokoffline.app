@@ -26,6 +26,9 @@ Run fields (only id, class, weapon, skills and levels are required):
               (on a free cell two to its east: traps, which cannot go beside it)
     pre       "id:lv[:self][:once]" casts before the rotation and every 10 s
     extra     kotest commands before the dummy, ";"-separated (a shield, a dragon)
+    cartload  "item:n": n of an item moved into the cart before the run (cart skills
+              grow with its weight; "989:79", Emperium Anvils, fills it to 7900; a
+              full 8000 is refused)
     count     comma-separated skill ids whose hits also count (a skill that hits
               under another id, as Crazy Weed's units do as GN_CRAZYWEED_ATK)
     charge    "id:lv:n": cast a self skill n times before the dummy (charms:
@@ -74,7 +77,7 @@ def measure(run, seconds):
         if run.get("charge"):
             sid, lv, n = run["charge"].split(":")
             extra = ";".join([f"skill {sid} {lv} self;wait 0.8"] * int(n) + ([extra] if extra else []))
-        env = {**os.environ, "EXTRA": extra, "LEFT": str(run.get("left", "")), "STATS": run.get("stats", ""), "COUNT": str(run.get("count", "")),
+        env = {**os.environ, "EXTRA": extra, "LEFT": str(run.get("left", "")), "STATS": run.get("stats", ""), "COUNT": str(run.get("count", "")), "CARTLOAD": run.get("cartload", ""),
                "DUMMY": {"anchored": "dummy#4", "mdef": "dummy#5"}.get(run.get("dummy", "anchored"), "dummy")}
         for _ in range(int(run.get("repeat", 2))):
             try:

@@ -680,6 +680,12 @@ class Client:
 				self.out({"ev": "error", "wear-given": "no give# seen"})
 			else:
 				self.send(struct.pack("<HHI", 0x998, self.given + 2, int(rest, 0)))
+		elif cmd == "tocart-given":
+			# tocart-given <amount>: move the item the test helper's give# last handed out into the cart
+			if getattr(self, "given", None) is None:
+				self.out({"ev": "error", "tocart-given": "no give# seen"})
+			else:
+				self.send(struct.pack("<HHi", 0x126, self.given + 2, int(rest or 1)))
 		elif cmd == "use":
 			# use <server inventory idx>: use an item, as the client does (CZ_USE_ITEM2)
 			self.send(struct.pack("<HHI", 0x439, int(rest.split()[0]) + 2, self.aid))
