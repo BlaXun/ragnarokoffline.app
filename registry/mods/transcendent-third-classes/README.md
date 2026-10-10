@@ -535,6 +535,10 @@ job levels and skill points. They keep every Bard or Dancer skill
 learn Arrow Vulcan, Tarot Card of Fate, Marionette Control or Longing
 for Freedom.
 
+Great Echo takes **Protect Neck Candy** and the sorrowful songs
+**Regrettable Tears**, which no pre-renewal shop sells: renewal's candy
+seller **Harive** is added where renewal has her (`comodo 196 162`).
+
 ### Clown/Gypsy or Minstrel/Wanderer
 
 - **Clown, Gypsy**: the old performers with the Clown's own tricks (Arrow
@@ -974,6 +978,7 @@ Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
 | `npc/warlock.txt` | the Warlock changer |
 | `npc/spellbook_seller.txt` | the Spellbook Seller in Geffen |
 | `npc/minstrel.txt`, `npc/wanderer.txt` | the Minstrel and Wanderer changers |
+| `npc/candy_seller.txt` | Harive, the candy seller in Comodo |
 | `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the third classes' skill damage scaling |
 | `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |

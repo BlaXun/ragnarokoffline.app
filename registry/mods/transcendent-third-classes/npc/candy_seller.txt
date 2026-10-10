@@ -1,0 +1,8 @@
+//===== transcendent-third-classes: Harive =====================
+//= Renewal's Comodo candy seller, which pre-renewal lacks: Great
+//= Echo takes two Protect Neck Candy, and Regrettable Tears go
+//= into the Minstrel's and Wanderer's sorrowful songs. Same
+//= place and goods as renewal's; stock prices.
+//==============================================================
+
+comodo,196,162,3	shop	Harive#tc	479,11513:-1,6144:-1
