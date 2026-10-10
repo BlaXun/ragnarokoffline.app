@@ -29,6 +29,8 @@ The mod grows class by class. So far:
 | Warlock | High Wizard | `valkyrie 42 47` |
 | Sura | Champion | `valkyrie 55 42` |
 | Ranger | Sniper | `valkyrie 42 55` |
+| Minstrel (male) | Clown | `valkyrie 55 54` (the Wandering Minstrel) |
+| Wanderer (female) | Gypsy | `valkyrie 55 56` |
 
 The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
@@ -633,6 +635,69 @@ only.
 | Pack Leader Bow | 70 | Mini Demon |
 | Wildheart Longbow | 90 | Atroce |
 | Garm Fang Bow | 90 | Garm |
+## Minstrel and Wanderer
+
+### The path
+
+1. Bard or Dancer, base 99 / job 50 → the Valkyrie's rebirth → High
+   Novice → High Archer. The rebirth remembers Clown or Gypsy as the
+   target, as usual.
+2. **High Archer, job 40 or later**, no unspent skill points: talk to the
+   **Wandering Minstrel** beside the Clown changer, or the **Wanderer**
+   beside the Gypsy changer, instead of the stock changer, which stays as
+   it was. (rAthena's own Clown changer is called "Minstrel", the class's
+   Korean name; the new one is the *Wandering* Minstrel.) You are asked
+   to confirm twice.
+
+Each class's tree is renewal's: Novice, Archer, Bard or Dancer, the
+shared Minstrel/Wanderer skills and its own, with a Clown's or Gypsy's 69
+job levels and skill points. They keep every Bard or Dancer skill
+(Musical Strike, Slinging Arrow, the old songs and ensembles) and never
+learn Arrow Vulcan, Tarot Card of Fate, Marionette Control or Longing
+for Freedom.
+
+Great Echo takes **Protect Neck Candy** and the sorrowful songs
+**Regrettable Tears**, which no pre-renewal shop sells: renewal's candy
+seller **Harive** is added where renewal has her (`comodo 196 162`).
+
+### Clown/Gypsy or Minstrel/Wanderer
+
+- **Clown, Gypsy**: the old performers with the Clown's own tricks (Arrow
+  Vulcan, Tarot Card of Fate, Marionette Control, Longing for Freedom).
+- **Minstrel, Wanderer**: the party's performers. Renewal's songs and
+  dances, alone (Echo Song, Swing Dance, ...) or as a duet, three-minute
+  buffs and debuffs for the party; and damage when the song must hurt:
+  Reverberation and Metallic Sound (magic, with an INT build), Severe
+  Rainstorm and Great Echo over an area.
+
+### How strong
+
+A Clown's best single-target damage is the Bard's own Musical Strike,
+which both paths keep (1800 dmg/s with a DEX build; Arrow Vulcan does
+886). The new skills are measured against it, with the same instrument
+or whip, on the same target, without consumables:
+
+| | Minstrel / Wanderer | Clown |
+|---|---|---|
+| One target (INT build) | Reverberation 1588 dmg/s (a Wanderer's with a whip 1557), Metallic Sound about 1650 | Musical Strike 1800 |
+| Area, per target | Severe Rainstorm 711, Great Echo 782 (it costs two Protect Neck Candy) | |
+
+Renewal's Reverberation did 7300 a second here, Metallic Sound 3900 and
+Severe Rainstorm 2600; they are scaled in `lua/third_classes.lua`.
+
+### Equipment
+
+Two tiers, an instrument (Bards: Clown or Minstrel) and a whip (Dancers:
+Gypsy or Wanderer) each. Each raises Reverberation and a Minstrel or
+Wanderer skill, and Musical Strike or Slinging Arrow and Arrow Vulcan.
+Transcendent classes only.
+
+| Item | Level | Drops from |
+|---|---|---|
+| Serenade Lute | 70 | Alice |
+| Gypsy Lash | 70 | Headless Mule |
+| Siren's Harp | 90 | Lady Tanee |
+| Moonlit Whip | 90 | Mistress |
 
 ## Kagerou and Oboro
 
@@ -1036,6 +1101,8 @@ Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
 | `npc/sura.txt` | the Sura changer |
 | `npc/ranger.txt` | the Ranger changer |
 | `npc/trap_seller.txt` | the Trap Seller in Payon |
+| `npc/minstrel.txt`, `npc/wanderer.txt` | the Minstrel and Wanderer changers |
+| `npc/candy_seller.txt` | Harive, the candy seller in Comodo |
 | `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the third classes' skill damage scaling |
 | `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |
@@ -1061,6 +1128,7 @@ and each class's three CSV files, in its own directory beside it
 (`guillotine_cross/`, `shadow_chaser/`, `arch_bishop/`, `rune_knight/`,
 `royal_guard/`, `warlock/`, `sura/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `royal_guard/`, `warlock/`, `ranger/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
+`royal_guard/`, `warlock/`, `minstrel/`, `wanderer/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `soul_reaper/`):
 
 ```

@@ -664,6 +664,7 @@ Minstrel/Wanderer (Clown/Gypsy), Genetic (Creator), Mechanic
 project notes); the summons and mounts (Warg, Madogear, elemental
 spirits) need testing in pre-renewal before anything is promised.
 | Ranger | Sniper | `valkyrie 42 55` |
+| Minstrel / Wanderer | Clown / Gypsy | `valkyrie 55 54` / `55 56` |
 
 ### Decided with the human (do not re-ask)
 
@@ -910,6 +911,16 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   only its weapon part scales.
 - **A summon kept between runs** (a warg) is dismissed by the next run's
   summon, since the skill toggles it: the helper's build clears it.
+- **Some skills deal their damage through another skill id** (Severe
+  Rainstorm's hits are WM_SEVERE_RAINSTORM_MELEE): when a factor changes
+  nothing, scale the sub-skill.
+- **Item job keys are rAthena's, not the class names**: Bards and Dancers
+  share `BardDancer` (the server reads an unknown key as every job and
+  says so in map.log). Instruments must be `Gender: Male` and whips
+  `Female` (the generator's weapon kinds carry it).
+- **Measure each build a class is played with**: a performer's
+  Reverberation and Metallic Sound are magic (an INT build), Severe
+  Rainstorm physical (DEX).
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

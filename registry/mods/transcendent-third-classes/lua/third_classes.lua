@@ -31,6 +31,10 @@
 --   Ranger vs Sniper (Double Strafe 2443): Aimed Bolt 2212, Warg Strike 2393;
 --     per target Arrow Storm 1139, Cluster Bomb 954, Firing Trap 1291 (traps:
 --     only their weapon part is in reach). Unlimit lasts 30 s: build.py.
+--   Minstrel/Wanderer vs Clown (Musical Strike, which both keep, 1800):
+--     Reverberation 1588, Metallic Sound about 1650 (INT build); per target
+--     Severe Rainstorm 711 (its hits are WM_SEVERE_RAINSTORM_MELEE), Great
+--     Echo 782.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -73,6 +77,10 @@ local FACTOR = {
   RA_ARROWSTORM         = 65,
   RA_CLUSTERBOMB        = 70,
   RA_FIRINGTRAP         = 10,   -- its weapon part; the DEX/INT part and the burn are out of reach
+  WM_REVERBERATION      = 23,
+  WM_METALICSOUND       = 43,
+  WM_SEVERE_RAINSTORM_MELEE = 30,
+  WM_GREAT_ECHO         = 50,
 }
 
 for name, percent in pairs(FACTOR) do

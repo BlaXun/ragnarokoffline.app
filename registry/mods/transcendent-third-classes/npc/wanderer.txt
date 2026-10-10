@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Wanderer ======================================
+//= The Dancer's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Archer of job 40 or more
+//= whose rebirth target is Gypsy (ADVJOB) may become a
+//= Wanderer here instead, beside the stock Gypsy changer,
+//= which is untouched. The choice is permanent.
+//=
+//= Wanderer is a third class in rAthena. The change goes
+//= through Gypsy and at once on to Wanderer, so
+//= rAthena's third-class skill lock records Gypsy job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Wanderer tree (Novice, Archer, Dancer and
+//= its own skills), with the same 69 job levels a Gypsy
+//= has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,55,56,3	script	Wanderer#Valkyrie	101,{
+	.@n$ = "[Wanderer]";
+	if (Class == Job_Wanderer_T) {
+		mes .@n$;
+		mes "You chose the dance. A whip for it is carried by the headless steed of the old roads, and the queen of the bees braids another under the full moon.";
+		close;
+	}
+	if (ADVJOB != Job_Gypsy || Class != Job_Archer_High) {
+		mes .@n$;
+		mes "A Dancer who has been reborn chooses here: the Gypsy's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Gypsy dances for the kill: Arrow Vulcan, Tarot Card of Fate, Marionette Control. A ^0000FFWanderer^000000 leaves those behind to dance for the party: renewal's dances, alone or with a Minstrel, and Reverberation, Metallic Sound and Severe Rainstorm when the dance must hurt.";
+	next;
+	mes .@n$;
+	mes "You keep every Dancer skill, Slinging Arrow among them. You will never learn a Gypsy skill: no Arrow Vulcan, no Tarot Card of Fate, no Marionette Control, no Longing for Freedom.";
+	mes "Your job levels, your body and your gear are the same as a Gypsy's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take up the dance.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Gypsy, at job 1: see the header.
+	jobchange Job_Gypsy;
+	jobchange Job_Wanderer_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Wanderer.";
+	close;
+}
