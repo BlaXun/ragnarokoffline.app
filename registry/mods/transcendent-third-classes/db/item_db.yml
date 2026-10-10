@@ -45,6 +45,42 @@
 # 3. The Sura's knuckles, from sura/equipment.csv.
 #
 # _______________________
+# Ranger_T:
+# 1. No job flags: rAthena already lets the class wear a Sniper's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Ranger's bows, from ranger/equipment.csv.
+#
+# _______________________
+# Minstrel_T:
+# 1. No job flags: rAthena already lets the class wear a Clown's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Minstrel's instruments, from minstrel/equipment.csv.
+#
+# _______________________
+# Wanderer_T:
+# 1. No job flags: rAthena already lets the class wear a Gypsy's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Wanderer's whips, from wanderer/equipment.csv.
+#
+# _______________________
+# Genetic_T:
+# 1. No job flags: rAthena already lets the class wear a Creator's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Genetic's axes, from genetic/equipment.csv.
+#
+# _______________________
+# Mechanic_T:
+# 1. No job flags: rAthena already lets the class wear a Whitesmith's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Mechanic's axes, from mechanic/equipment.csv.
+#
+# _______________________
+# Sorcerer_T:
+# 1. No job flags: rAthena already lets the class wear a Professor's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Sorcerer's books, from sorcerer/equipment.csv.
+#
+# _______________________
 # Kagerou, Oboro:
 # 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
@@ -759,6 +795,430 @@ Body:
     Refineable: true
     Script: |
       bonus bAgi,3; bonus bDex,2; bonus2 bSkillAtk,"SR_DRAGONCOMBO",20; bonus2 bSkillAtk,"SR_SKYNETBLOW",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"CH_CHAINCRUSH",20; bonus2 bSkillAtk,"CH_TIGERFIST",15;
+  - Id: 63641
+    AegisName: Warden_Bow
+    Name: Warden Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1300
+    Attack: 145
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"RA_AIMEDBOLT",10; bonus2 bSkillAtk,"RA_ARROWSTORM",10; bonus2 bSkillAtk,"AC_DOUBLE",10; bonus2 bSkillAtk,"SN_SHARPSHOOTING",10;
+  - Id: 63642
+    AegisName: Pack_Leader_Bow
+    Name: Pack Leader Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1200
+    Attack: 135
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus2 bSkillAtk,"RA_WUGSTRIKE",10; bonus2 bSkillAtk,"RA_CLUSTERBOMB",10; bonus2 bSkillAtk,"SN_FALCONASSAULT",10; bonus2 bSkillAtk,"HT_BLITZBEAT",10;
+  - Id: 63651
+    AegisName: Wildheart_Longbow
+    Name: Wildheart Longbow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1500
+    Attack: 160
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bAgi,2; bonus2 bSkillAtk,"RA_AIMEDBOLT",20; bonus2 bSkillAtk,"RA_ARROWSTORM",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"AC_DOUBLE",20; bonus2 bSkillAtk,"SN_SHARPSHOOTING",15;
+  - Id: 63652
+    AegisName: Garm_Fang_Bow
+    Name: Garm Fang Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1400
+    Attack: 150
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bAgi,3; bonus bDex,2; bonus2 bSkillAtk,"RA_WUGSTRIKE",20; bonus2 bSkillAtk,"RA_FIRINGTRAP",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"SN_FALCONASSAULT",20; bonus2 bSkillAtk,"HT_BLITZBEAT",15;
+  - Id: 63661
+    AegisName: Serenade_Lute
+    Name: Serenade Lute
+    Type: Weapon
+    SubType: Musical
+    Buy: 20
+    Weight: 800
+    Attack: 135
+    Range: 1
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Male
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"WM_REVERBERATION",10; bonus2 bSkillAtk,"WM_METALICSOUND",10; bonus2 bSkillAtk,"BA_MUSICALSTRIKE",10; bonus2 bSkillAtk,"CG_ARROWVULCAN",10;
+  - Id: 63671
+    AegisName: Sirens_Harp
+    Name: Siren's Harp
+    Type: Weapon
+    SubType: Musical
+    Buy: 20
+    Weight: 900
+    Attack: 150
+    Range: 1
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Male
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus2 bSkillAtk,"WM_REVERBERATION",20; bonus2 bSkillAtk,"WM_SEVERE_RAINSTORM_MELEE",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"BA_MUSICALSTRIKE",20; bonus2 bSkillAtk,"CG_ARROWVULCAN",15;
+  - Id: 63662
+    AegisName: Gypsy_Lash
+    Name: Gypsy Lash
+    Type: Weapon
+    SubType: Whip
+    Buy: 20
+    Weight: 700
+    Attack: 130
+    Range: 2
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Female
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"WM_REVERBERATION",10; bonus2 bSkillAtk,"WM_METALICSOUND",10; bonus2 bSkillAtk,"DC_THROWARROW",10; bonus2 bSkillAtk,"CG_ARROWVULCAN",10;
+  - Id: 63672
+    AegisName: Moonlit_Whip
+    Name: Moonlit Whip
+    Type: Weapon
+    SubType: Whip
+    Buy: 20
+    Weight: 800
+    Attack: 145
+    Range: 2
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Female
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus2 bSkillAtk,"WM_REVERBERATION",20; bonus2 bSkillAtk,"WM_SEVERE_RAINSTORM_MELEE",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"DC_THROWARROW",20; bonus2 bSkillAtk,"CG_ARROWVULCAN",15;
+  - Id: 63681
+    AegisName: Greenhouse_Axe
+    Name: Greenhouse Axe
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1000
+    Attack: 140
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"GN_CARTCANNON",10; bonus2 bSkillAtk,"GN_SPORE_EXPLOSION",10; bonus2 bSkillAtk,"AM_ACIDTERROR",10; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",10;
+  - Id: 63682
+    AegisName: Cart_Breaker
+    Name: Cart Breaker
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1100
+    Attack: 145
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"GN_CART_TORNADO",10; bonus2 bSkillAtk,"GN_CRAZYWEED_ATK",10; bonus2 bSkillAtk,"AM_ACIDTERROR",10; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",10;
+  - Id: 63691
+    AegisName: Philosophers_Edge
+    Name: Philosopher's Edge
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1200
+    Attack: 160
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bStr,2; bonus2 bSkillAtk,"GN_CARTCANNON",20; bonus2 bSkillAtk,"GN_SPORE_EXPLOSION",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"AM_ACIDTERROR",20; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",15;
+  - Id: 63692
+    AegisName: Chimera_Splitter
+    Name: Chimera Splitter
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1300
+    Attack: 165
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"GN_CART_TORNADO",20; bonus2 bSkillAtk,"GN_CRAZYWEED_ATK",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"AM_ACIDTERROR",20; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",15;
+  - Id: 63701
+    AegisName: Piston_Axe
+    Name: Piston Axe
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2200
+    Attack: 165
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"NC_POWERSWING",10; bonus2 bSkillAtk,"NC_AXETORNADO",10; bonus2 bSkillAtk,"WS_CARTTERMINATION",10; bonus2 bSkillAtk,"MC_MAMMONITE",10;
+  - Id: 63702
+    AegisName: Boiler_Axe
+    Name: Boiler Axe
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2000
+    Attack: 155
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"NC_BOOSTKNUCKLE",10; bonus2 bSkillAtk,"NC_FLAMELAUNCHER",10; bonus2 bSkillAtk,"WS_CARTTERMINATION",10; bonus2 bSkillAtk,"MC_MAMMONITE",10;
+  - Id: 63711
+    AegisName: Drill_Breaker
+    Name: Drill Breaker
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2400
+    Attack: 185
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"NC_POWERSWING",20; bonus2 bSkillAtk,"NC_ARMSCANNON",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"WS_CARTTERMINATION",20; bonus2 bSkillAtk,"MC_MAMMONITE",15;
+  - Id: 63712
+    AegisName: Dragon_Forge_Axe
+    Name: Dragon Forge Axe
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2300
+    Attack: 175
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bStr,2; bonus2 bSkillAtk,"NC_BOOSTKNUCKLE",20; bonus2 bSkillAtk,"NC_VULCANARM",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"WS_CARTTERMINATION",20; bonus2 bSkillAtk,"MC_MAMMONITE",15;
+  - Id: 63721
+    AegisName: Grimoire_Of_Spirits
+    Name: Grimoire of Spirits
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 800
+    Attack: 120
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"SO_PSYCHIC_WAVE",10; bonus2 bSkillAtk,"SO_VARETYR_SPEAR",10; bonus2 bSkillAtk,"MG_FIREBOLT",10; bonus2 bSkillAtk,"WZ_HEAVENDRIVE",10;
+  - Id: 63722
+    AegisName: Codex_Of_Elements
+    Name: Codex of Elements
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 750
+    Attack: 115
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"SO_EARTHGRAVE",10; bonus2 bSkillAtk,"SO_DIAMONDDUST",10; bonus2 bSkillAtk,"MG_COLDBOLT",10; bonus2 bSkillAtk,"WZ_EARTHSPIKE",10;
+  - Id: 63731
+    AegisName: Tome_Of_Varetyr
+    Name: Tome of Varetyr
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 900
+    Attack: 135
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus2 bSkillAtk,"SO_VARETYR_SPEAR",20; bonus2 bSkillAtk,"SO_PSYCHIC_WAVE",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"MG_LIGHTNINGBOLT",20; bonus2 bSkillAtk,"WZ_HEAVENDRIVE",15;
+  - Id: 63732
+    AegisName: Shell_Of_The_Sage
+    Name: Shell of the Sage
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 850
+    Attack: 130
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bVit,2; bonus2 bSkillAtk,"SO_EARTHGRAVE",20; bonus2 bSkillAtk,"SO_CLOUD_KILL",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"MG_COLDBOLT",20; bonus2 bSkillAtk,"WZ_EARTHSPIKE",15;
   - Id: 1201    # Knife
     Jobs:
       Alchemist: true

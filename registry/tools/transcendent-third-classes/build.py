@@ -15,17 +15,12 @@ class's own skills and what came before the second class, never the
 transcendent class's skills. Tables are the transcendent class's own, so
 the two differ only in their skills; damage is measured to parity.
 
-Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
-(instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Sura (instead of Champion).
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Ranger (instead of Sniper).
-Each class keeps its CSV files in its own directory.
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Minstrel and Wanderer
-(instead of Clown and Gypsy). Each class keeps its CSV files in its own directory.
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Genetic (instead of Creator).
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Mechanic (instead of Whitesmith).
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Sorcerer (instead of Professor).
-Each class keeps its CSV files in its own directory.
+Classes so far, each instead of its transcendent class: Guillotine Cross
+(Assassin Cross), Shadow Chaser (Stalker), Arch Bishop (High Priest), Rune
+Knight (Lord Knight), Royal Guard (Paladin), Warlock (High Wizard), Sura
+(Champion), Ranger (Sniper), Minstrel and Wanderer (Clown and Gypsy),
+Genetic (Creator), Mechanic (Whitesmith), Sorcerer (Professor). Each class
+keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
 class rather than a sidegrade: Kagerou and Oboro (Ninja), Rebellion
@@ -283,6 +278,8 @@ sura = ec.config(
     # percentage, so a Lua factor barely moves it: a longer cooldown does.
     SKILL_OVERRIDES={"SR_GATEOFHELL": {"Cooldown": "10000"},
                      "SR_TIGERCANNON": {"Cooldown": "7000"}},
+)
+
 ranger = ec.config(
     __file__, **COMMON,
     JOBS=("Ranger_T",),
@@ -305,6 +302,8 @@ ranger = ec.config(
     # Unlimit more than triples ranged damage; renewal kept it up for 150 s
     # of every 300. Here it is a 30 s burst window.
     SKILL_OVERRIDES={"RA_UNLIMIT": {"Duration1": "30000"}},
+)
+
 minstrel = ec.config(
     __file__, **COMMON,
     JOBS=("Minstrel_T",),
@@ -345,6 +344,8 @@ wanderer = ec.config(
     EQUIP_LABEL="Gypsy or Wanderer",
     ITEMS_ABOUT="The Wanderer's whips, from wanderer/equipment.csv.",
     CSV_DIR="wanderer",
+)
+
 genetic = ec.config(
     __file__, **COMMON,
     JOBS=("Genetic_T",),
@@ -366,6 +367,8 @@ genetic = ec.config(
     # Pre-renewal's Hell's Plant was a ground unit; renewal's is a status on
     # the caster that sets off GN_HELLS_PLANT_ATK, and places none.
     UNIT_KEPT=["GN_HELLS_PLANT"],
+)
+
 mechanic = ec.config(
     __file__, **COMMON,
     JOBS=("Mechanic_T",),
@@ -385,6 +388,8 @@ mechanic = ec.config(
     EQUIP_LABEL="Whitesmith or Mechanic",
     ITEMS_ABOUT="The Mechanic's axes, from mechanic/equipment.csv.",
     CSV_DIR="mechanic",
+)
+
 sorcerer = ec.config(
     __file__, **COMMON,
     JOBS=("Sorcerer_T",),
@@ -557,10 +562,6 @@ soul_reaper = ec.config(
     CSV_DIR="soul_reaper",
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, sura,
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, ranger,
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, minstrel, wanderer,
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, genetic,
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, mechanic,
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, sorcerer,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock,
+        sura, ranger, minstrel, wanderer, genetic, mechanic, sorcerer,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])

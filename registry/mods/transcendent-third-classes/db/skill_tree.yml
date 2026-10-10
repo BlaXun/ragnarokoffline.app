@@ -38,6 +38,36 @@
 # the class gets that job's skills and what it inherits, nothing more.
 #
 # _______________________
+# Ranger_T:
+# Renewal's trees for Ranger_T, taken from Ranger for Ranger_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Minstrel_T:
+# Renewal's trees for Minstrel_T, taken from Minstrel for Minstrel_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Wanderer_T:
+# Renewal's trees for Wanderer_T, taken from Wanderer for Wanderer_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Genetic_T:
+# Renewal's trees for Genetic_T, taken from Genetic for Genetic_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Mechanic_T:
+# Renewal's trees for Mechanic_T, taken from Mechanic for Mechanic_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Sorcerer_T:
+# Renewal's trees for Sorcerer_T, taken from Sorcerer for Sorcerer_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's Kagerou, Oboro tree, unchanged. It inherits Novice and
 # Ninja, so every point earned after the change can also go into Ninja skills.
@@ -877,6 +907,840 @@ Body:
             Level: 5
           - Name: SR_SKYNETBLOW
             Level: 1
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Ranger_T    # renewal's Ranger tree
+    Inherit:
+      Novice: true
+      Archer: true
+      Hunter: true
+    Tree:
+      - Name: RA_ARROWSTORM
+        MaxLevel: 10
+        Requires:
+          - Name: RA_AIMEDBOLT
+            Level: 5
+      - Name: RA_FEARBREEZE
+        MaxLevel: 5
+        Requires:
+          - Name: RA_ARROWSTORM
+            Level: 5
+          - Name: RA_CAMOUFLAGE
+            Level: 1
+      - Name: RA_RANGERMAIN
+        MaxLevel: 10
+      - Name: RA_AIMEDBOLT
+        MaxLevel: 10
+        Requires:
+          - Name: HT_ANKLESNARE
+            Level: 5
+      - Name: RA_DETONATOR
+        MaxLevel: 1
+        Requires:
+          - Name: RA_CLUSTERBOMB
+            Level: 3
+      - Name: RA_ELECTRICSHOCKER
+        MaxLevel: 5
+        Requires:
+          - Name: HT_SHOCKWAVE
+            Level: 5
+      - Name: RA_CLUSTERBOMB
+        MaxLevel: 5
+        Requires:
+          - Name: RA_RESEARCHTRAP
+            Level: 3
+      - Name: RA_WUGMASTERY
+        MaxLevel: 1
+      - Name: RA_WUGRIDER
+        MaxLevel: 3
+        Requires:
+          - Name: RA_WUGMASTERY
+            Level: 1
+      - Name: RA_WUGDASH
+        MaxLevel: 1
+        Requires:
+          - Name: RA_WUGRIDER
+            Level: 1
+      - Name: RA_WUGSTRIKE
+        MaxLevel: 5
+        Requires:
+          - Name: RA_TOOTHOFWUG
+            Level: 1
+      - Name: RA_WUGBITE
+        MaxLevel: 5
+        Requires:
+          - Name: RA_WUGSTRIKE
+            Level: 1
+      - Name: RA_TOOTHOFWUG
+        MaxLevel: 10
+        Requires:
+          - Name: RA_WUGMASTERY
+            Level: 1
+      - Name: RA_SENSITIVEKEEN
+        MaxLevel: 5
+        Requires:
+          - Name: RA_TOOTHOFWUG
+            Level: 3
+      - Name: RA_CAMOUFLAGE
+        MaxLevel: 5
+        Requires:
+          - Name: RA_RANGERMAIN
+            Level: 1
+      - Name: RA_RESEARCHTRAP
+        MaxLevel: 10
+        Requires:
+          - Name: HT_CLAYMORETRAP
+            Level: 1
+          - Name: HT_REMOVETRAP
+            Level: 1
+      - Name: RA_MAGENTATRAP
+        MaxLevel: 1
+        Requires:
+          - Name: RA_RESEARCHTRAP
+            Level: 1
+      - Name: RA_COBALTTRAP
+        MaxLevel: 1
+        Requires:
+          - Name: RA_RESEARCHTRAP
+            Level: 1
+      - Name: RA_MAIZETRAP
+        MaxLevel: 1
+        Requires:
+          - Name: RA_RESEARCHTRAP
+            Level: 1
+      - Name: RA_VERDURETRAP
+        MaxLevel: 1
+        Requires:
+          - Name: RA_RESEARCHTRAP
+            Level: 1
+      - Name: RA_FIRINGTRAP
+        MaxLevel: 5
+        Requires:
+          - Name: RA_DETONATOR
+            Level: 1
+      - Name: RA_ICEBOUNDTRAP
+        MaxLevel: 5
+        Requires:
+          - Name: RA_DETONATOR
+            Level: 1
+      - Name: RA_UNLIMIT
+        MaxLevel: 5
+        Requires:
+          - Name: RA_FEARBREEZE
+            Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Minstrel_T    # renewal's Minstrel tree
+    Inherit:
+      Novice: true
+      Archer: true
+      Bard: true
+    Tree:
+      - Name: MI_RUSH_WINDMILL
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: MI_ECHOSONG
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: MI_HARMONIZE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WM_LESSON
+        MaxLevel: 10
+      - Name: WM_METALICSOUND
+        MaxLevel: 10
+        Requires:
+          - Name: WM_REVERBERATION
+            Level: 5
+      - Name: WM_REVERBERATION
+        MaxLevel: 5
+        Requires:
+          - Name: BA_DISSONANCE
+            Level: 5
+     # - Name: WM_DOMINION_IMPULSE
+       # MaxLevel: 1
+       # Requires:
+         # - Name: WM_REVERBERATION
+           # Level: 1
+      - Name: WM_SEVERE_RAINSTORM
+        MaxLevel: 5
+        Requires:
+          - Name: BA_MUSICALSTRIKE
+            Level: 5
+      - Name: WM_POEMOFNETHERWORLD
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_VOICEOFSIREN
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 3
+      - Name: WM_DEADHILLHERE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SIRCLEOFNATURE
+            Level: 3
+      - Name: WM_LULLABY_DEEPSLEEP
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_SIRCLEOFNATURE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_RANDOMIZESPELL
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 1
+      - Name: WM_GLOOMYDAY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_RANDOMIZESPELL
+            Level: 1
+      - Name: WM_GREAT_ECHO
+        MaxLevel: 5
+        Requires:
+          - Name: WM_METALICSOUND
+            Level: 1
+      - Name: WM_SONG_OF_MANA
+        MaxLevel: 5
+        Requires:
+          - Name: MI_RUSH_WINDMILL
+            Level: 1
+          - Name: MI_ECHOSONG
+            Level: 1
+          - Name: MI_HARMONIZE
+            Level: 1
+      - Name: WM_DANCE_WITH_WUG
+        MaxLevel: 5
+        Requires:
+          - Name: MI_RUSH_WINDMILL
+            Level: 1
+          - Name: MI_ECHOSONG
+            Level: 1
+          - Name: MI_HARMONIZE
+            Level: 1
+      - Name: WM_SOUND_OF_DESTRUCTION
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SATURDAY_NIGHT_FEVER
+            Level: 3
+          - Name: WM_MELODYOFSINK
+            Level: 3
+      - Name: WM_SATURDAY_NIGHT_FEVER
+        MaxLevel: 5
+        Requires:
+          - Name: WM_DANCE_WITH_WUG
+            Level: 1
+      - Name: WM_LERADS_DEW
+        MaxLevel: 5
+        Requires:
+          - Name: MI_RUSH_WINDMILL
+            Level: 1
+          - Name: MI_ECHOSONG
+            Level: 1
+          - Name: MI_HARMONIZE
+            Level: 1
+      - Name: WM_MELODYOFSINK
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SONG_OF_MANA
+            Level: 1
+      - Name: WM_BEYOND_OF_WARCRY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LERADS_DEW
+            Level: 1
+      - Name: WM_UNLIMITED_HUMMING_VOICE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SOUND_OF_DESTRUCTION
+            Level: 1
+          - Name: WM_BEYOND_OF_WARCRY
+            Level: 1
+      - Name: WM_FRIGG_SONG
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 2
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Wanderer_T    # renewal's Wanderer tree
+    Inherit:
+      Novice: true
+      Archer: true
+      Dancer: true
+    Tree:
+      - Name: WA_SWING_DANCE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WA_SYMPHONY_OF_LOVER
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WA_MOONLIT_SERENADE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WM_LESSON
+        MaxLevel: 10
+      - Name: WM_METALICSOUND
+        MaxLevel: 10
+        Requires:
+          - Name: WM_REVERBERATION
+            Level: 5
+      - Name: WM_REVERBERATION
+        MaxLevel: 5
+        Requires:
+          - Name: DC_UGLYDANCE
+            Level: 5
+     # - Name: WM_DOMINION_IMPULSE
+       # MaxLevel: 1
+       # Requires:
+         # - Name: WM_REVERBERATION
+           # Level: 1
+      - Name: WM_SEVERE_RAINSTORM
+        MaxLevel: 5
+        Requires:
+          - Name: DC_THROWARROW
+            Level: 5
+      - Name: WM_POEMOFNETHERWORLD
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_VOICEOFSIREN
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 3
+      - Name: WM_DEADHILLHERE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SIRCLEOFNATURE
+            Level: 3
+      - Name: WM_LULLABY_DEEPSLEEP
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_SIRCLEOFNATURE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_RANDOMIZESPELL
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 1
+      - Name: WM_GLOOMYDAY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_RANDOMIZESPELL
+            Level: 1
+      - Name: WM_GREAT_ECHO
+        MaxLevel: 5
+        Requires:
+          - Name: WM_METALICSOUND
+            Level: 1
+      - Name: WM_SONG_OF_MANA
+        MaxLevel: 5
+        Requires:
+          - Name: WA_SWING_DANCE
+            Level: 1
+          - Name: WA_SYMPHONY_OF_LOVER
+            Level: 1
+          - Name: WA_MOONLIT_SERENADE
+            Level: 1
+      - Name: WM_DANCE_WITH_WUG
+        MaxLevel: 5
+        Requires:
+          - Name: WA_SWING_DANCE
+            Level: 1
+          - Name: WA_SYMPHONY_OF_LOVER
+            Level: 1
+          - Name: WA_MOONLIT_SERENADE
+            Level: 1
+      - Name: WM_SOUND_OF_DESTRUCTION
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SATURDAY_NIGHT_FEVER
+            Level: 3
+          - Name: WM_MELODYOFSINK
+            Level: 3
+      - Name: WM_SATURDAY_NIGHT_FEVER
+        MaxLevel: 5
+        Requires:
+          - Name: WM_DANCE_WITH_WUG
+            Level: 1
+      - Name: WM_LERADS_DEW
+        MaxLevel: 5
+        Requires:
+          - Name: WA_SWING_DANCE
+            Level: 1
+          - Name: WA_SYMPHONY_OF_LOVER
+            Level: 1
+          - Name: WA_MOONLIT_SERENADE
+            Level: 1
+      - Name: WM_MELODYOFSINK
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SONG_OF_MANA
+            Level: 1
+      - Name: WM_BEYOND_OF_WARCRY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LERADS_DEW
+            Level: 1
+      - Name: WM_UNLIMITED_HUMMING_VOICE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SOUND_OF_DESTRUCTION
+            Level: 1
+          - Name: WM_BEYOND_OF_WARCRY
+            Level: 1
+      - Name: WM_FRIGG_SONG
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 2
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Genetic_T    # renewal's Genetic tree
+    Inherit:
+      Novice: true
+      Merchant: true
+      Alchemist: true
+    Tree:
+     # - Name: AM_TWILIGHT4
+       # MaxLevel: 1
+       # Requires:
+         # - Name: AM_PHARMACY
+           # Level: 10
+      - Name: GN_TRAINING_SWORD
+        MaxLevel: 5
+      - Name: GN_REMODELING_CART
+        MaxLevel: 5
+      - Name: GN_CART_TORNADO
+        MaxLevel: 10
+        Requires:
+          - Name: GN_REMODELING_CART
+            Level: 1
+      - Name: GN_CARTCANNON
+        MaxLevel: 5
+        Requires:
+          - Name: GN_REMODELING_CART
+            Level: 2
+      - Name: GN_CARTBOOST
+        MaxLevel: 5
+        Requires:
+          - Name: GN_REMODELING_CART
+            Level: 3
+      - Name: GN_THORNS_TRAP
+        MaxLevel: 5
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 2
+      - Name: GN_BLOOD_SUCKER
+        MaxLevel: 5
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 3
+      - Name: GN_SPORE_EXPLOSION
+        MaxLevel: 10
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 4
+      - Name: GN_WALLOFTHORN
+        MaxLevel: 5
+        Requires:
+          - Name: GN_THORNS_TRAP
+            Level: 3
+      - Name: GN_CRAZYWEED
+        MaxLevel: 10
+        Requires:
+          - Name: GN_WALLOFTHORN
+            Level: 3
+      - Name: GN_DEMONIC_FIRE
+        MaxLevel: 5
+        Requires:
+          - Name: GN_SPORE_EXPLOSION
+            Level: 3
+      - Name: GN_FIRE_EXPANSION
+        MaxLevel: 5
+        Requires:
+          - Name: GN_DEMONIC_FIRE
+            Level: 3
+      - Name: GN_HELLS_PLANT
+        MaxLevel: 5
+        Requires:
+          - Name: GN_BLOOD_SUCKER
+            Level: 3
+      - Name: GN_MANDRAGORA
+        MaxLevel: 5
+        Requires:
+          - Name: GN_HELLS_PLANT
+            Level: 3
+     # - Name: GN_SLINGITEM
+       # MaxLevel: 1
+       # Requires:
+         # - Name: GN_CHANGEMATERIAL
+           # Level: 1
+      - Name: GN_CHANGEMATERIAL
+        MaxLevel: 1
+      - Name: GN_MIX_COOKING
+        MaxLevel: 2
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 1
+     # - Name: GN_MAKEBOMB
+       # MaxLevel: 2
+       # Requires:
+         # - Name: GN_MIX_COOKING
+           # Level: 1
+      - Name: GN_S_PHARMACY
+        MaxLevel: 10
+      - Name: GN_ILLUSIONDOPING
+        MaxLevel: 5
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 1
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Mechanic_T    # renewal's Mechanic tree
+    Inherit:
+      Novice: true
+      Merchant: true
+      Blacksmith: true
+    Tree:
+      - Name: NC_MADOLICENCE
+        MaxLevel: 5
+      - Name: NC_BOOSTKNUCKLE
+        MaxLevel: 5
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 1
+      - Name: NC_PILEBUNKER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_BOOSTKNUCKLE
+            Level: 2
+      - Name: NC_VULCANARM
+        MaxLevel: 3
+        Requires:
+          - Name: NC_BOOSTKNUCKLE
+            Level: 2
+      - Name: NC_FLAMELAUNCHER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_VULCANARM
+            Level: 1
+      - Name: NC_COLDSLOWER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_VULCANARM
+            Level: 3
+      - Name: NC_ARMSCANNON
+        MaxLevel: 5
+        Requires:
+          - Name: NC_FLAMELAUNCHER
+            Level: 2
+          - Name: NC_COLDSLOWER
+            Level: 2
+      - Name: NC_ACCELERATION
+        MaxLevel: 3
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 1
+      - Name: NC_HOVERING
+        MaxLevel: 1
+        Requires:
+          - Name: NC_ACCELERATION
+            Level: 1
+      - Name: NC_F_SIDESLIDE
+        MaxLevel: 1
+        Requires:
+          - Name: NC_HOVERING
+            Level: 1
+      - Name: NC_B_SIDESLIDE
+        MaxLevel: 1
+        Requires:
+          - Name: NC_HOVERING
+            Level: 1
+      - Name: NC_MAINFRAME
+        MaxLevel: 4
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 4
+      - Name: NC_SELFDESTRUCTION
+        MaxLevel: 3
+        Requires:
+          - Name: NC_MAINFRAME
+            Level: 2
+      - Name: NC_SHAPESHIFT
+        MaxLevel: 4
+        Requires:
+          - Name: NC_MAINFRAME
+            Level: 2
+      - Name: NC_EMERGENCYCOOL
+        MaxLevel: 1
+        Requires:
+          - Name: NC_SELFDESTRUCTION
+            Level: 2
+      - Name: NC_INFRAREDSCAN
+        MaxLevel: 1
+        Requires:
+          - Name: NC_SHAPESHIFT
+            Level: 2
+      - Name: NC_ANALYZE
+        MaxLevel: 3
+        Requires:
+          - Name: NC_INFRAREDSCAN
+            Level: 1
+      - Name: NC_MAGNETICFIELD
+        MaxLevel: 3
+        Requires:
+          - Name: NC_EMERGENCYCOOL
+            Level: 1
+      - Name: NC_NEUTRALBARRIER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_MAGNETICFIELD
+            Level: 2
+      - Name: NC_STEALTHFIELD
+        MaxLevel: 3
+        Requires:
+          - Name: NC_ANALYZE
+            Level: 3
+          - Name: NC_NEUTRALBARRIER
+            Level: 2
+      - Name: NC_REPAIR
+        MaxLevel: 5
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 2
+      - Name: NC_TRAININGAXE
+        MaxLevel: 10
+      - Name: NC_RESEARCHFE
+        MaxLevel: 5
+      - Name: NC_AXEBOOMERANG
+        MaxLevel: 5
+        Requires:
+          - Name: NC_TRAININGAXE
+            Level: 1
+      - Name: NC_POWERSWING
+        MaxLevel: 10
+        Requires:
+          - Name: NC_AXEBOOMERANG
+            Level: 3
+      - Name: NC_AXETORNADO
+        MaxLevel: 5
+        Requires:
+          - Name: NC_TRAININGAXE
+            Level: 1
+      - Name: NC_SILVERSNIPER
+        MaxLevel: 5
+        Requires:
+          - Name: NC_RESEARCHFE
+            Level: 2
+      - Name: NC_MAGICDECOY
+        MaxLevel: 5
+        Requires:
+          - Name: NC_SILVERSNIPER
+            Level: 2
+      - Name: NC_DISJOINT
+        MaxLevel: 1
+        Requires:
+          - Name: NC_SILVERSNIPER
+            Level: 1
+      - Name: NC_MAGMA_ERUPTION
+        MaxLevel: 5
+        Requires:
+          - Name: NC_RESEARCHFE
+            Level: 1
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Sorcerer_T    # renewal's Sorcerer tree
+    Inherit:
+      Novice: true
+      Mage: true
+      Sage: true
+    Tree:
+      - Name: SO_FIREWALK
+        MaxLevel: 5
+        Requires:
+          - Name: SA_VOLCANO
+            Level: 1
+      - Name: SO_ELECTRICWALK
+        MaxLevel: 5
+        Requires:
+          - Name: SA_VIOLENTGALE
+            Level: 1
+      - Name: SO_SPELLFIST
+        MaxLevel: 10
+        Requires:
+          - Name: SA_AUTOSPELL
+            Level: 4
+      - Name: SO_EARTHGRAVE
+        MaxLevel: 5
+        Requires:
+          - Name: WZ_EARTHSPIKE
+            Level: 5
+      - Name: SO_DIAMONDDUST
+        MaxLevel: 5
+        Requires:
+          - Name: SA_DELUGE
+            Level: 3
+      - Name: SO_POISON_BUSTER
+        MaxLevel: 5
+        Requires:
+          - Name: SO_CLOUD_KILL
+            Level: 2
+      - Name: SO_PSYCHIC_WAVE
+        MaxLevel: 5
+        Requires:
+          - Name: SA_DISPELL
+            Level: 2
+      - Name: SO_CLOUD_KILL
+        MaxLevel: 5
+        Requires:
+          - Name: WZ_HEAVENDRIVE
+            Level: 5
+      - Name: SO_STRIKING
+        MaxLevel: 5
+        Requires:
+          - Name: SA_FLAMELAUNCHER
+            Level: 1
+          - Name: SA_FROSTWEAPON
+            Level: 1
+          - Name: SA_LIGHTNINGLOADER
+            Level: 1
+          - Name: SA_SEISMICWEAPON
+            Level: 1
+      - Name: SO_WARMER
+        MaxLevel: 5
+        Requires:
+          - Name: SA_VOLCANO
+            Level: 1
+          - Name: SA_VIOLENTGALE
+            Level: 1
+      - Name: SO_VACUUM_EXTREME
+        MaxLevel: 5
+        Requires:
+          - Name: SA_LANDPROTECTOR
+            Level: 2
+      - Name: SO_VARETYR_SPEAR
+        MaxLevel: 10
+        Requires:
+          - Name: SA_SEISMICWEAPON
+            Level: 1
+          - Name: SA_VIOLENTGALE
+            Level: 4
+      - Name: SO_ARRULLO
+        MaxLevel: 5
+        Requires:
+          - Name: SO_WARMER
+            Level: 2
+      - Name: SO_EL_CONTROL
+        MaxLevel: 4
+        Requires:
+          - Name: SO_EL_ANALYSIS
+            Level: 1
+      - Name: SO_SUMMON_AGNI
+        MaxLevel: 3
+        Requires:
+          - Name: SO_WARMER
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_SUMMON_AQUA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_DIAMONDDUST
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_SUMMON_VENTUS
+        MaxLevel: 3
+        Requires:
+          - Name: SO_VARETYR_SPEAR
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_SUMMON_TERA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_EARTHGRAVE
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_EL_ACTION
+        MaxLevel: 1
+        Requires:
+          - Name: SO_EL_CONTROL
+            Level: 3
+      - Name: SO_EL_ANALYSIS
+        MaxLevel: 2
+        Requires:
+          - Name: SA_FLAMELAUNCHER
+            Level: 1
+          - Name: SA_FROSTWEAPON
+            Level: 1
+          - Name: SA_LIGHTNINGLOADER
+            Level: 1
+          - Name: SA_SEISMICWEAPON
+            Level: 1
+      - Name: SO_EL_SYMPATHY
+        MaxLevel: 5
+        Requires:
+          - Name: SO_EL_CONTROL
+            Level: 3
+      - Name: SO_EL_CURE
+        MaxLevel: 1
+        Requires:
+          - Name: SO_EL_SYMPATHY
+            Level: 1
+      - Name: SO_FIRE_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_AGNI
+            Level: 3
+      - Name: SO_WATER_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_AQUA
+            Level: 3
+      - Name: SO_WIND_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_VENTUS
+            Level: 3
+      - Name: SO_EARTH_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_TERA
+            Level: 3
+      - Name: SO_ELEMENTAL_SHIELD
+        MaxLevel: 5
+        Requires:
+          - Name: SO_EL_CONTROL
+            Level: 3
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5
   - Job: Kagerou

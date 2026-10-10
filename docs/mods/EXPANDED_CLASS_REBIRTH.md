@@ -657,12 +657,6 @@ them go into one mod, `registry/mods/transcendent-third-classes` (branch
 | Royal Guard | Paladin | `valkyrie 55 39` |
 | Warlock | High Wizard | `valkyrie 42 47` |
 | Sura | Champion | `valkyrie 55 42` |
-
-Still to come, each on its own branch, in this order: Ranger (Sniper),
-Minstrel/Wanderer (Clown/Gypsy), Genetic (Creator), Mechanic
-(Whitesmith), Sorcerer (Professor). Their identities are agreed (see the
-project notes); the summons and mounts (Warg, Madogear, elemental
-spirits) need testing in pre-renewal before anything is promised.
 | Ranger | Sniper | `valkyrie 42 55` |
 | Minstrel / Wanderer | Clown / Gypsy | `valkyrie 55 54` / `55 56` |
 | Genetic | Creator | `valkyrie 55 50` |
