@@ -1072,7 +1072,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "5bcd778e59e121ec67c07654af1bdfb5466a3ad9d60908eba908ff7b88c31cfa"
+          "sha256": "9bb86a8de92a20850c3d5b5d30138e5b52693877e7b9a60fd69233554ce337cb"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1133,6 +1133,10 @@
         {
           "path": "npc/arch_bishop.txt",
           "sha256": "56f99ebcda93386f127da589c7732dbb5091b51f385592423496182f29ae9342"
+        },
+        {
+          "path": "npc/candy_seller.txt",
+          "sha256": "b7e2725f9a114da343d7282d968a03dd9bb52996c950fc542bddc33ffd10ba3e"
         },
         {
           "path": "npc/dragon_breeder.txt",
