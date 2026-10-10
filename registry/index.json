@@ -1072,7 +1072,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "e01f77c687d8abec7fa5bdf17f047f17b55fea681f3483b30b6972e6aca2ecc5"
+          "sha256": "569dbb740d0aa25d096889ea477e8d81fe69dd8f55924942be8d7007c2d9cc98"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1177,6 +1177,10 @@
         {
           "path": "npc/star_emperor.txt",
           "sha256": "0221c7054ceafdeaa7b9123386da35f1605c6a2cc0b991c162a9bcf1de0e5427"
+        },
+        {
+          "path": "npc/trap_seller.txt",
+          "sha256": "545c804d5b88dd1fc9d8e95b6f28cccb3c940cf2c357e336b9ff426c8f103466"
         },
         {
           "path": "npc/warlock.txt",
