@@ -466,6 +466,8 @@ def override_field(name, entry, key, value):
             fail(f"{name}: no {'.'.join(parents[:i + 1])} to override")
         start, end = m.start(1), m.end(1)
     m = re.compile(r"^" + pad + field + r":.*\n(?:" + pad + r"  .*\n)*", re.M).search(body, start, end)
+    if not m and not parents:                # a field the skill does not have: add it
+        return (body.rstrip("\n") + "\n" + text).rstrip("\n")
     if not m:
         fail(f"{name}: no {key} to override")
     return (body[:m.start()] + text + body[m.end():]).rstrip("\n")

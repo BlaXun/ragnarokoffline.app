@@ -179,3 +179,14 @@ Body:
     Locations:
       Left_Hand: true
     ArmorLevel: 1
+  - Id: 59017
+    AegisName: Test_Knuckle
+    Name: Test Knuckle
+    Type: Weapon
+    SubType: Knuckle
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
