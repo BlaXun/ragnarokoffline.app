@@ -1080,6 +1080,76 @@
       ]
     },
     {
+      "name": "soul-reaper",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Soul Reaper in pre-renewal, as the Soul Linker's rebirth. A Soul Linker at 99/50 is reborn as a Novice, becomes a Taekwon again with transcendent stat points, and from Taekwon job 40 becomes a Soul Reaper, to job 70: the same skill points and gear rules as any transcendent class. The skills are scaled to sit a little below the transcendent classes, and four tiers of Soul Reaper gear (levels 50 to 95) drop from monsters.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/soul-reaper",
+      "tags": [
+        "equipment",
+        "jobs",
+        "lua",
+        "pre-renewal",
+        "rebirth",
+        "soul-linker",
+        "soul-reaper",
+        "taekwon"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "pre-renewal",
+        "app": ">=1.5.4"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "5489474f2217a2075ae025a38af86583a044ee0ea0472f4cee9a3ae4fe7928bc"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "e2bb1b85591ccbc28ce4c39b3e5c96ed10af305ef8420c771e26f2bf12e5655d"
+        },
+        {
+          "path": "db/item_combos.yml",
+          "sha256": "b8f4d7eae5d35dc1ae0e6bcbc547aabc632ab4a97288c8159149fe2e924ef9c3"
+        },
+        {
+          "path": "db/item_db.yml",
+          "sha256": "438e552280026af16b06dade0865998037473c9819a0df2e222f4c0afd236d17"
+        },
+        {
+          "path": "db/job_stats.yml",
+          "sha256": "a9cd6297b4c5bf32116ae9f6864dcde2210ff66f97d81c42a06ae066ad006bfd"
+        },
+        {
+          "path": "db/mob_db.yml",
+          "sha256": "6359059d611ec88ccfa10a041cde67b1333f7517c661392081a4e08ed5e5a469"
+        },
+        {
+          "path": "db/skill_db.yml",
+          "sha256": "6a4adddcfbf1701743cc209ea3b3a5e43c48b4bb8a72395e4073b3d82513fedb"
+        },
+        {
+          "path": "db/skill_tree.yml",
+          "sha256": "dd4da1670b600829bd71fad330c210f2aef075ce2f4507114fada2937bb4924e"
+        },
+        {
+          "path": "lua/soul_reaper.lua",
+          "sha256": "50c899c9e5e74a91af9b4c8f1d529723f106561c59a3912e2e1ddc1a08112135"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "3f36eed50177c330659a8e01a06496eb3035f455b16bffeb53ff1b80e99f2827"
+        },
+        {
+          "path": "npc/soul_reaper.txt",
+          "sha256": "67afee83cd717874edd935d40c4a89773b93cba4a45739ec64738eb78abae191"
+        }
+      ]
+    },
+    {
       "name": "standart-npc",
       "version": "",
       "author": "MondoTruth and the Ragnarok Offline community",

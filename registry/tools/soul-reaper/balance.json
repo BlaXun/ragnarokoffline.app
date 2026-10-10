@@ -1,0 +1,88 @@
+{
+ "_about": "Soul Reaper vs High Wizard: single target 0.85-1.0 of Jupitel Thunder; a caster, so its area spells are not held to the third classes' area rule. Soul energy is refilled every 3 s, so the Eswhoo and Curse Explosion runs are what the skills do with energy to spare, not a rate a player keeps up. Damage per second on one target; for an area skill, on each target.",
+ "load": [
+  "registry/mods/soul-reaper"
+ ],
+ "seconds": 40,
+ "runs": [
+  {
+   "id": "HW_Jupitel",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "84",
+   "levels": "10",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
+  },
+  {
+   "id": "HW_ColdBolt",
+   "class": 4010,
+   "weapon": 59011,
+   "skills": "14",
+   "levels": "10",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2
+  },
+  {
+   "id": "SR_Espa",
+   "class": 4240,
+   "weapon": 59011,
+   "skills": "2602",
+   "levels": "10",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "extra": "whisper npc:KoTest soulrefill#1;wait 1",
+   "versus": "HW_Jupitel",
+   "aim": [
+    0.85,
+    1.0
+   ],
+   "method": "best",
+   "repeat": 2
+  },
+  {
+   "id": "SR_Espa_Eswhoo",
+   "class": 4240,
+   "weapon": 59011,
+   "skills": "2602,2604",
+   "levels": "10,5",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "extra": "whisper npc:KoTest soulrefill#1;wait 1",
+   "versus": "HW_Jupitel",
+   "aim": [
+    0.85,
+    1.0
+   ],
+   "method": "best",
+   "repeat": 2
+  },
+  {
+   "id": "SR_SoulCurse_CurseExplosion",
+   "class": 4240,
+   "weapon": 59011,
+   "skills": "2601,2600",
+   "levels": "5,10",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "extra": "whisper npc:KoTest soulrefill#1;wait 1",
+   "versus": "HW_Jupitel",
+   "method": "best",
+   "repeat": 2
+  }
+ ]
+}

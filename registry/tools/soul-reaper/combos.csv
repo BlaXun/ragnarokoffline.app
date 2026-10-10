@@ -1,0 +1,5 @@
+tier,items,script,desc
+1,Wisp_Hood Wisp_Robe Wisp_Shawl Wisp_Shoes,"bonus bMatkRate,3; bonus bCastrate,-3;","MATK +3%|Reduces cast time by 3%."
+2,Shade_Mask Shade_Robe Shade_Shawl Shade_Shoes,"bonus bMatkRate,5; bonus bCastrate,-5; bonus bMaxHPrate,5;","MATK +5%|Reduces cast time by 5%.|MaxHP +5%"
+3,Revenant_Hood Revenant_Robe Revenant_Shawl Revenant_Shoes,"bonus bMatkRate,7; bonus bCastrate,-7; bonus bMaxHPrate,5;","MATK +7%|Reduces cast time by 7%.|MaxHP +5%"
+4,Reapers_Hood Reapers_Robe Reapers_Shawl Reapers_Shoes,"bonus bMatkRate,10; bonus bCastrate,-10; bonus bMaxHPrate,5; bonus bMaxSPrate,5;","MATK +10%|Reduces cast time by 10%.|MaxHP +5%|MaxSP +5%"
