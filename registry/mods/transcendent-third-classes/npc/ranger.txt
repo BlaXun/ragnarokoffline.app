@@ -1,0 +1,68 @@
+//===== transcendent-third-classes: Ranger =====================
+//= The Hunter's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Archer of job 40 or more
+//= whose rebirth target is Sniper (ADVJOB) may become a
+//= Ranger here instead, beside the stock Sniper changer,
+//= which is untouched. The choice is permanent.
+//=
+//= Ranger is a third class in rAthena. The change goes
+//= through Sniper and at once on to Ranger, so
+//= rAthena's third-class skill lock records Sniper job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Ranger tree (Novice, Archer, Hunter and
+//= its own skills), with the same 69 job levels a Sniper
+//= has: a sidegrade, not an upgrade. The new Ranger gets a
+//= Wolf's Flute, which Warg Mastery needs held, as renewal's
+//= Ranger gets one from its job change.
+//==============================================================
+
+valkyrie,42,55,5	script	Ranger#Valkyrie	727,{
+	.@n$ = "[Ranger]";
+	if (Class == Job_Ranger_T) {
+		mes .@n$;
+		if (!countitem(6124)) {
+			getitem 6124, 1;
+			mes "Lost your flute? Here is another. Your warg will not come while a falcon rides your arm.";
+			close;
+		}
+		mes "You chose the wild. Bows for it hang in the lairs of the worms and demons of the old places, and in the dens of the wolf king and his kind.";
+		close;
+	}
+	if (ADVJOB != Job_Sniper || Class != Job_Archer_High) {
+		mes .@n$;
+		mes "A Hunter who has been reborn chooses here: the Sniper's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Sniper strikes from afar with bow and falcon: Falcon Assault, Sharp Shooting, True Sight, Wind Walk. A ^0000FFRanger^000000 leaves those behind for the wild: Aimed Bolt and Arrow Storm, a warg to fight and ride, and traps of fire, ice and steel.";
+	next;
+	mes .@n$;
+	mes "You keep every Hunter skill, your falcon too, though your warg will not come while it rides your arm. You will never learn a Sniper skill: no Falcon Assault, no Sharp Shooting, no True Sight, no Wind Walk.";
+	mes "Your job levels, your body and your gear are the same as a Sniper's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the wild.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Sniper, at job 1: see the header.
+	jobchange Job_Sniper;
+	jobchange Job_Ranger_T;
+	set ADVJOB, 0;
+	getitem 6124, 1;   // Wolf's Flute
+	mes .@n$;
+	mes "Welcome, Ranger. Take this flute: blow it, and your warg will come.";
+	close;
+}

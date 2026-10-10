@@ -539,6 +539,96 @@
     0.3,
     0.6
    ]
+  },
+  {
+   "id": "SN_DoubleStrafe",
+   "class": 4012,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "46",
+   "levels": "10"
+  },
+  {
+   "id": "RA_AimedBolt",
+   "class": 4062,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "2236",
+   "levels": "10",
+   "versus": "SN_DoubleStrafe",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "RA_WargStrike",
+   "class": 4062,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "2243",
+   "levels": "5",
+   "pre": "2240:1:self:once",
+   "versus": "SN_DoubleStrafe",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "RA_Unlimit_AimedBolt",
+   "class": 4062,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "2236",
+   "levels": "10",
+   "pre": "5002:5:self:once",
+   "versus": "RA_AimedBolt"
+  },
+  {
+   "id": "RA_ArrowStorm_area",
+   "class": 4062,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "2233",
+   "levels": "10",
+   "versus": "RA_AimedBolt",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "RA_ClusterBomb_area",
+   "class": 4062,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "2239,2237",
+   "levels": "5,1",
+   "how": "near",
+   "seq": true,
+   "step": 0.5,
+   "versus": "RA_AimedBolt",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "RA_FiringTrap_area",
+   "class": 4062,
+   "weapon": 59004,
+   "ammo": 1750,
+   "skills": "2253,2237",
+   "levels": "5,1",
+   "how": "near",
+   "seq": true,
+   "step": 0.5,
+   "versus": "RA_AimedBolt",
+   "aim": [
+    0.4,
+    0.6
+   ]
   }
  ]
 }

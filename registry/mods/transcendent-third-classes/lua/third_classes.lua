@@ -28,6 +28,9 @@
 --     with Raising Dragon 1070 (its cooldown, not a factor: build.py);
 --     Gates of Hell about 12,700 a hit every 10 s; per target Earth Shaker
 --     510, Sky Net Blow 480, Lightning Ride 575, Rampage Blast 563.
+--   Ranger vs Sniper (Double Strafe 2443): Aimed Bolt 2212, Warg Strike 2393;
+--     per target Arrow Storm 1139, Cluster Bomb 954, Firing Trap 1291 (traps:
+--     only their weapon part is in reach). Unlimit lasts 30 s: build.py.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -65,6 +68,11 @@ local FACTOR = {
   SR_EARTHSHAKER        = 32,
   SR_SKYNETBLOW         = 12,
   SR_RIDEINLIGHTNING    = 10,
+  RA_AIMEDBOLT          = 67,
+  RA_WUGSTRIKE          = 27,
+  RA_ARROWSTORM         = 65,
+  RA_CLUSTERBOMB        = 70,
+  RA_FIRINGTRAP         = 10,   -- its weapon part; the DEX/INT part and the burn are out of reach
 }
 
 for name, percent in pairs(FACTOR) do
