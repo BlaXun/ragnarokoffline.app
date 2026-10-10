@@ -27,6 +27,10 @@
 # No set bonuses.
 #
 # _______________________
+# Sorcerer_T:
+# No set bonuses.
+#
+# _______________________
 # Kagerou, Oboro:
 # The equipment's set bonuses, from combos.csv: mask, garb, scarf and
 # tabi of one tier.
@@ -50,6 +54,7 @@ Header:
   Version: 1
 
 Body:
+
 
 
 

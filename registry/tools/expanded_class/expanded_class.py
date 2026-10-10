@@ -84,8 +84,9 @@ def config(build_file, **kw):
         ITEM_FIELDS={},
         # Skills pre-renewal's skill_db lacks, copied whole from renewal's.
         NEW_SKILLS_FROM_RENEWAL=[],
-        # {mod table: (renewal table, header type, version)}: renewal's rows
-        # of a table pre-renewal has no rows in, e.g. the spellbook_db.
+        # {mod table: (renewal table, header type, version[, skip])}: renewal's
+        # rows of a table pre-renewal has no rows in, e.g. the spellbook_db;
+        # rows matching the regex skip are left out (what pre-renewal lacks).
         COPY_TABLES={},
         # {stock item aegis: [lines]}: lines added to a stock item's
         # description (before its Type/Weight block), for an item whose
@@ -843,10 +844,14 @@ def build_class(src, iteminfo, lua):
     lua += entries
     out["db/item_combos.yml"] = build_combos(combos)
     out["db/mob_db.yml"] = build_drops(src, rows)
-    for rel, (source, _, _) in C.COPY_TABLES.items():
+    for rel, (source, _, _, *skip) in C.COPY_TABLES.items():
         rows_ = body_entries(src[source], source_key(src[source]))
-        out[rel] = ([f"Renewal's {source}, which pre-renewal has no rows in."],
-                    "\n".join(rows_) + "\n")
+        about = [f"Renewal's {source}, which pre-renewal has no rows in."]
+        if skip:
+            left = [r for r in rows_ if re.search(skip[0], r)]
+            rows_ = [r for r in rows_ if not re.search(skip[0], r)]
+            about.append(f"Left out: {len(left)} rows naming {skip[0]}, which pre-renewal lacks.")
+        out[rel] = (about, "\n".join(rows_) + "\n")
     return out
 
 
@@ -909,7 +914,7 @@ def run(cfg):
              "db/re/job_stats.yml", "db/re/skill_tree.yml", "db/pre-re/skill_db.yml", "db/re/skill_db.yml",
              "db/pre-re/item_db_equip.yml", "db/pre-re/item_db_usable.yml", "db/pre-re/item_db_etc.yml",
              "db/pre-re/mob_db.yml", "db/pre-re/job_aspd.yml", "db/re/item_db_etc.yml", "db/re/item_db_usable.yml"]
-    paths += [s for c in cfgs for s, _, _ in c.COPY_TABLES.values() if s not in paths]
+    paths += [v[0] for c in cfgs for v in c.COPY_TABLES.values() if v[0] not in paths]
     src = {p: git_show(args.rathena, commit, p) for p in paths}
     source = f"rathena {commit}"
     iteminfo = lua_items(C.ITEMINFO)
@@ -928,7 +933,7 @@ def run(cfg):
              "db/skill_db.yml": ("SKILL_DB", 4), "db/item_db.yml": ("ITEM_DB", 3),
              "db/item_combos.yml": ("COMBO_DB", 1), "db/mob_db.yml": ("MOB_DB", 5)}
     for c in cfgs:
-        for rel, (_, kind, version) in c.COPY_TABLES.items():
+        for rel, (_, kind, version, *_skip) in c.COPY_TABLES.items():
             kinds.setdefault(rel, (kind, version))
     if len(cfgs) > 1:
         merge_job_flags(parts["db/item_db.yml"])

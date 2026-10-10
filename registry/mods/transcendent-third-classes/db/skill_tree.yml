@@ -33,6 +33,11 @@
 # the class gets that job's skills and what it inherits, nothing more.
 #
 # _______________________
+# Sorcerer_T:
+# Renewal's trees for Sorcerer_T, taken from Sorcerer for Sorcerer_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's Kagerou, Oboro tree, unchanged. It inherits Novice and
 # Ninja, so every point earned after the change can also go into Ninja skills.
@@ -730,6 +735,173 @@ Body:
         Requires:
           - Name: WL_SOULEXPANSION
             Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Sorcerer_T    # renewal's Sorcerer tree
+    Inherit:
+      Novice: true
+      Mage: true
+      Sage: true
+    Tree:
+      - Name: SO_FIREWALK
+        MaxLevel: 5
+        Requires:
+          - Name: SA_VOLCANO
+            Level: 1
+      - Name: SO_ELECTRICWALK
+        MaxLevel: 5
+        Requires:
+          - Name: SA_VIOLENTGALE
+            Level: 1
+      - Name: SO_SPELLFIST
+        MaxLevel: 10
+        Requires:
+          - Name: SA_AUTOSPELL
+            Level: 4
+      - Name: SO_EARTHGRAVE
+        MaxLevel: 5
+        Requires:
+          - Name: WZ_EARTHSPIKE
+            Level: 5
+      - Name: SO_DIAMONDDUST
+        MaxLevel: 5
+        Requires:
+          - Name: SA_DELUGE
+            Level: 3
+      - Name: SO_POISON_BUSTER
+        MaxLevel: 5
+        Requires:
+          - Name: SO_CLOUD_KILL
+            Level: 2
+      - Name: SO_PSYCHIC_WAVE
+        MaxLevel: 5
+        Requires:
+          - Name: SA_DISPELL
+            Level: 2
+      - Name: SO_CLOUD_KILL
+        MaxLevel: 5
+        Requires:
+          - Name: WZ_HEAVENDRIVE
+            Level: 5
+      - Name: SO_STRIKING
+        MaxLevel: 5
+        Requires:
+          - Name: SA_FLAMELAUNCHER
+            Level: 1
+          - Name: SA_FROSTWEAPON
+            Level: 1
+          - Name: SA_LIGHTNINGLOADER
+            Level: 1
+          - Name: SA_SEISMICWEAPON
+            Level: 1
+      - Name: SO_WARMER
+        MaxLevel: 5
+        Requires:
+          - Name: SA_VOLCANO
+            Level: 1
+          - Name: SA_VIOLENTGALE
+            Level: 1
+      - Name: SO_VACUUM_EXTREME
+        MaxLevel: 5
+        Requires:
+          - Name: SA_LANDPROTECTOR
+            Level: 2
+      - Name: SO_VARETYR_SPEAR
+        MaxLevel: 10
+        Requires:
+          - Name: SA_SEISMICWEAPON
+            Level: 1
+          - Name: SA_VIOLENTGALE
+            Level: 4
+      - Name: SO_ARRULLO
+        MaxLevel: 5
+        Requires:
+          - Name: SO_WARMER
+            Level: 2
+      - Name: SO_EL_CONTROL
+        MaxLevel: 4
+        Requires:
+          - Name: SO_EL_ANALYSIS
+            Level: 1
+      - Name: SO_SUMMON_AGNI
+        MaxLevel: 3
+        Requires:
+          - Name: SO_WARMER
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_SUMMON_AQUA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_DIAMONDDUST
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_SUMMON_VENTUS
+        MaxLevel: 3
+        Requires:
+          - Name: SO_VARETYR_SPEAR
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_SUMMON_TERA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_EARTHGRAVE
+            Level: 3
+          - Name: SO_EL_CONTROL
+            Level: 1
+      - Name: SO_EL_ACTION
+        MaxLevel: 1
+        Requires:
+          - Name: SO_EL_CONTROL
+            Level: 3
+      - Name: SO_EL_ANALYSIS
+        MaxLevel: 2
+        Requires:
+          - Name: SA_FLAMELAUNCHER
+            Level: 1
+          - Name: SA_FROSTWEAPON
+            Level: 1
+          - Name: SA_LIGHTNINGLOADER
+            Level: 1
+          - Name: SA_SEISMICWEAPON
+            Level: 1
+      - Name: SO_EL_SYMPATHY
+        MaxLevel: 5
+        Requires:
+          - Name: SO_EL_CONTROL
+            Level: 3
+      - Name: SO_EL_CURE
+        MaxLevel: 1
+        Requires:
+          - Name: SO_EL_SYMPATHY
+            Level: 1
+      - Name: SO_FIRE_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_AGNI
+            Level: 3
+      - Name: SO_WATER_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_AQUA
+            Level: 3
+      - Name: SO_WIND_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_VENTUS
+            Level: 3
+      - Name: SO_EARTH_INSIGNIA
+        MaxLevel: 3
+        Requires:
+          - Name: SO_SUMMON_TERA
+            Level: 3
+      - Name: SO_ELEMENTAL_SHIELD
+        MaxLevel: 5
+        Requires:
+          - Name: SO_EL_CONTROL
+            Level: 3
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5
   - Job: Kagerou

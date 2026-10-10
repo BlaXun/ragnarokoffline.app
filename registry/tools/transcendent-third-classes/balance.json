@@ -415,6 +415,98 @@
     1.5
    ],
    "repeat": 2
+  },
+  {
+   "id": "SO_VaretyrSpear",
+   "class": 4074,
+   "weapon": 59011,
+   "stats": "int",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "skills": "2454",
+   "levels": "10",
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "SO_SpellFist",
+   "class": 4074,
+   "weapon": 59011,
+   "stats": "int",
+   "skills": "attack",
+   "levels": "1",
+   "pre": "19:10,2445:10:self",
+   "versus": "HW_Amp_Jupitel",
+   "aim": [
+    0.85,
+    1.05
+   ]
+  },
+  {
+   "id": "SO_PsychicWave_area",
+   "class": 4074,
+   "weapon": 59011,
+   "stats": "int",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "skills": "2449",
+   "levels": "5",
+   "how": "pos",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.9,
+    1.15
+   ]
+  },
+  {
+   "id": "SO_PoisonBuster_area",
+   "class": 4074,
+   "weapon": 59011,
+   "stats": "int",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "skills": "2448",
+   "levels": "5",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.9,
+    1.15
+   ]
+  },
+  {
+   "id": "SO_CloudKill_area",
+   "class": 4074,
+   "weapon": 59011,
+   "stats": "int",
+   "method": "best",
+   "step": [
+    1.0,
+    1.5
+   ],
+   "repeat": 2,
+   "skills": "2450",
+   "levels": "5",
+   "how": "pos",
+   "versus": "HW_Amp_MeteorStorm",
+   "aim": [
+    0.9,
+    1.15
+   ]
   }
  ]
 }

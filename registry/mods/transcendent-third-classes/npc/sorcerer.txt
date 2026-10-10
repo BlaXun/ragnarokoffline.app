@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Sorcerer ===================
+//= The Sage's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Mage of job 40 or more
+//= whose rebirth target is Professor (ADVJOB) may become a
+//= Sorcerer here instead, beside the stock Professor changer,
+//= which is untouched. The choice is permanent.
+//=
+//= Sorcerer is a third class in rAthena. The change goes
+//= through Professor and at once on to Sorcerer, so
+//= rAthena's third-class skill lock records Professor job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Sorcerer tree (Novice, Mage, Sage and its
+//= own skills), with the same 69 job levels a Professor has:
+//= a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,55,47,3	script	Sorcerer#Valkyrie	743,{
+	.@n$ = "[Sorcerer]";
+	if (Class == Job_Sorcerer_T) {
+		mes .@n$;
+		mes "You chose the spirits. Books for it are kept by the books that walk, and by the ice lord and the turtle general, who hoard what scholars lost. Your spirits answer to the stones of their element: Red Blood and a Flame Heart, Crystal Blue and Mystic Frozen, and so on.";
+		close;
+	}
+	if (ADVJOB != Job_Professor || Class != Job_Mage_High) {
+		mes .@n$;
+		mes "A Sage who has been reborn chooses here: the Professor's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Professor bends magic itself: Soul Change, Spider Web, Double Casting, Memorize. A ^0000FFSorcerer^000000 leaves those behind to call the spirits of fire, water, wind and earth, and to strike with the elements: Varetyr Spear, Psychic Wave, Diamond Dust, Earth Grave, and Spell Fist, a bolt held in the fist.";
+	next;
+	mes .@n$;
+	mes "You keep every Sage skill. You will never learn a Professor skill: no Soul Change, no Spider Web, no Double Casting, no Memorize.";
+	mes "Your job levels, your body and your gear are the same as a Professor's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I call the spirits.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Professor, at job 1: see the header.
+	jobchange Job_Professor;
+	jobchange Job_Sorcerer_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Sorcerer.";
+	close;
+}

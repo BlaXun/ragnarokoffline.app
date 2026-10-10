@@ -33,6 +33,11 @@
 # appended to the monster's own drops; every monster here has room.
 #
 # _______________________
+# Sorcerer_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
+#
+# _______________________
 # Kagerou, Oboro:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
@@ -152,6 +157,22 @@ Body:
     Drops:
       - Item: Staff_Of_Starfall
         Rate: 5
+  - Id: 1195    # Rideword (RIDEWORD), 8 stock drops
+    Drops:
+      - Item: Grimoire_Of_Spirits
+        Rate: 10
+  - Id: 1698    # Death Word (DEATHWORD), 8 stock drops
+    Drops:
+      - Item: Codex_Of_Elements
+        Rate: 10
+  - Id: 1779    # Ktullanux (KTULLANUX), 7 stock drops
+    Drops:
+      - Item: Tome_Of_Varetyr
+        Rate: 300
+  - Id: 1312    # Turtle General (TURTLE_GENERAL), 8 stock drops
+    Drops:
+      - Item: Shell_Of_The_Sage
+        Rate: 300
   - Id: 1406    # Kapha (KAPHA), 8 stock drops
     Drops:
       - Item: Kagemaru_Tabi

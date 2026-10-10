@@ -654,6 +654,7 @@ them go into one mod, `registry/mods/transcendent-third-classes` (branch
 | Rune Knight | Lord Knight | `valkyrie 42 39` |
 | Royal Guard | Paladin | `valkyrie 55 39` |
 | Warlock | High Wizard | `valkyrie 42 47` |
+| Sorcerer | Professor | `valkyrie 55 47` |
 
 ### Decided with the human (do not re-ask)
 
@@ -893,6 +894,15 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   casts, and a fixed pace can fall out of step with a caster's rhythm and
   lose a fifth. A spec run can list several paces (`"step": [1.0, 1.5]`)
   with `"method": "best"`; give every caster that.
+- **A skill that borrows another skill's damage** (Spell Fist turns every
+  blow into the bolt it held) is scaled through that skill, but only when
+  it should be: a hook can test the caster's job and status
+  (`c.caster:has_status("SC_SPELLFIST")`) and leave everyone else's bolts
+  alone.
+- **A copied table may name what pre-renewal lacks**: renewal's
+  elemental_db holds the fourth class's spirits, whose EM_ skills
+  pre-renewal does not have; COPY_TABLES takes a pattern of rows to leave
+  out.
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

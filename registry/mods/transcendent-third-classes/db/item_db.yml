@@ -39,6 +39,12 @@
 # 3. The Warlock's weapons, from warlock/equipment.csv.
 #
 # _______________________
+# Sorcerer_T:
+# 1. No job flags: rAthena already lets the class wear a Professor's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Sorcerer's books, from sorcerer/equipment.csv.
+#
+# _______________________
 # Kagerou, Oboro:
 # 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
@@ -669,6 +675,90 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;
+  - Id: 63721
+    AegisName: Grimoire_Of_Spirits
+    Name: Grimoire of Spirits
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 800
+    Attack: 120
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"SO_PSYCHIC_WAVE",10; bonus2 bSkillAtk,"SO_VARETYR_SPEAR",10; bonus2 bSkillAtk,"MG_FIREBOLT",10; bonus2 bSkillAtk,"WZ_HEAVENDRIVE",10;
+  - Id: 63722
+    AegisName: Codex_Of_Elements
+    Name: Codex of Elements
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 750
+    Attack: 115
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"SO_EARTHGRAVE",10; bonus2 bSkillAtk,"SO_DIAMONDDUST",10; bonus2 bSkillAtk,"MG_COLDBOLT",10; bonus2 bSkillAtk,"WZ_EARTHSPIKE",10;
+  - Id: 63731
+    AegisName: Tome_Of_Varetyr
+    Name: Tome of Varetyr
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 900
+    Attack: 135
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus2 bSkillAtk,"SO_VARETYR_SPEAR",20; bonus2 bSkillAtk,"SO_PSYCHIC_WAVE",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"MG_LIGHTNINGBOLT",20; bonus2 bSkillAtk,"WZ_HEAVENDRIVE",15;
+  - Id: 63732
+    AegisName: Shell_Of_The_Sage
+    Name: Shell of the Sage
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 850
+    Attack: 130
+    Range: 1
+    Slots: 1
+    Jobs:
+      Sage: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bVit,2; bonus2 bSkillAtk,"SO_EARTHGRAVE",20; bonus2 bSkillAtk,"SO_CLOUD_KILL",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"MG_COLDBOLT",20; bonus2 bSkillAtk,"WZ_EARTHSPIKE",15;
   - Id: 1201    # Knife
     Jobs:
       Alchemist: true
