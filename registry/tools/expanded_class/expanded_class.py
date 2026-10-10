@@ -95,7 +95,11 @@ def config(build_file, **kw):
         ITEM_DESCRIPTIONS={},
         # Skills whose pre-renewal item cost stays although renewal's has
         # fewer: an import entry cannot remove an ItemCost (see nested_resets).
-        ITEMCOST_KEPT=[])
+        ITEMCOST_KEPT=[],
+        # Skills whose pre-renewal Unit block stays although renewal's has
+        # none: an import entry cannot remove a block. Only for a skill the
+        # code casts at a target and never places as a unit (say why).
+        UNIT_KEPT=[])
     c.__dict__.update(kw)
     c.MOD = root / "registry" / "mods" / c.MOD_NAME
     c.KINDS = {**c.WEAPON_KINDS, **ARMOR_KINDS}
@@ -511,6 +515,9 @@ def build_skill_db(src):
                 # only changes how the hit is shown, so pre-renewal's stays.
                 entry += "\n    # Hit: pre-renewal's value stays (renewal's default, Normal, cannot be written)"
                 continue
+            if k == "Unit" and n in C.UNIT_KEPT:
+                entry += "\n    # Unit: pre-renewal's block stays (it cannot be removed); renewal's skill is cast at a target and places none"
+                continue
             if k not in SKILL_DEFAULTS:
                 fail(f"{n}: pre-renewal sets {k}, renewal does not, and there is no reset value for it")
             entry += f"\n    {k}: {SKILL_DEFAULTS[k]}    # pre-renewal's entry sets this; renewal's does not"
@@ -664,6 +671,8 @@ def build_items(src, iteminfo):
         e += ["    Jobs:"] + [f"      {j}: true" for j in C.EQUIP_JOBS]
         if C.EQUIP_CLASSES:
             e += ["    Classes:"] + [f"      {k}: true" for k in C.EQUIP_CLASSES]
+        if kind.get("gender"):                       # instruments are male-only, whips female-only
+            e.append(f"    Gender: {kind['gender']}")
         e += ["    Locations:"] + [f"      {l}: true" for l in locs]
         if weapon:
             e.append(f"    WeaponLevel: {r['wlv']}")
