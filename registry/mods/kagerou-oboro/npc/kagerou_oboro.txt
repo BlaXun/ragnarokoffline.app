@@ -1,0 +1,147 @@
+//===== kagerou-oboro ==========================================
+//= Kagerou and Oboro for pre-renewal, by rebirth.
+//=
+//= A Ninja at base 99 / job 70 is reborn as a Novice. At job 10
+//= the Novice becomes a Ninja again, with the transcendent
+//= class's 100 starting status points. From Ninja job 50 the
+//= reborn Ninja may become a Kagerou (male) or an Oboro (female).
+//= Every Ninja job level past 50 is one more skill point, which
+//= rAthena makes the player spend on Ninja skills before any
+//= Kagerou skill: a change at Ninja job 70 gives 137 (69 Ninja,
+//= 59 Kagerou, 9 Novice), ten below renewal's 147.
+//=
+//= The character variable kagerou_oboro_reborn marks the path:
+//=   1  reborn as a Novice
+//=   2  a Ninja again
+//=   3  a Kagerou or Oboro
+//==============================================================
+
+que_ng,33,62,3	script	Kirikage#ko_prere	730,{
+	.@n$ = "[Kirikage]";
+	if (Class == Job_Kagerou || Class == Job_Oboro) {
+		mes .@n$;
+		mes "Shadow and haze. You walk the path most Ninja never find.";
+		mes "Hunt in the far east and the old ruins: the gear made for your kind is out there.";
+		close;
+	}
+	if (Upper != 0) {
+		mes .@n$;
+		mes "This path is not one I can show you.";
+		close;
+	}
+	switch (kagerou_oboro_reborn) {
+	case 0:
+		if (Class != Job_Ninja) {
+			mes .@n$;
+			mes "A Ninja who has learned all a Ninja can learn may be born again, and rise as a Kagerou or an Oboro.";
+			mes "Come back as a Ninja of base level 99 and job level 70.";
+			close;
+		}
+		if (BaseLevel < 99 || JobLevel < 70) {
+			mes .@n$;
+			mes "You are not ready. Come back at base level 99 and job level 70.";
+			close;
+		}
+		mes .@n$;
+		mes "You have learned all a Ninja can learn.";
+		mes "If you are reborn, you begin again as a Novice: level 1, no skills, no stats.";
+		next;
+		mes .@n$;
+		mes "At job level 10 you come back to me and become a Ninja again, stronger in body than before.";
+		mes "From Ninja job level 50 you may become a ^0000FF" + (Sex == SEX_MALE ? "Kagerou" : "Oboro") + "^000000.";
+		mes "The longer you stay a Ninja, up to job level 70, the more Ninja skills you will have.";
+		mes "Your own skills as a " + (Sex == SEX_MALE ? "Kagerou" : "Oboro") + " come from your 59 job levels after that.";
+		next;
+		mes .@n$;
+		mes "Come with nothing: no items, no zeny, and no skill points left to spend.";
+		if (select("I am ready to be reborn.:Not yet.") == 2) {
+			mes .@n$;
+			mes "The shadows will wait.";
+			close;
+		}
+		if (Weight > 0 || Zeny > 0 || SkillPoint > 0) {
+			mes .@n$;
+			mes "You still carry something: items, zeny or unspent skill points. Come back without them.";
+			close;
+		}
+		callfunc "F_ClearJobVar";
+		kagerou_oboro_reborn = 1;
+		jobchange Job_Novice;
+		resetlvl(1);
+		StatusPoint = 48;
+		skill "NV_FIRSTAID",1,SKILL_PERM;
+		skill "NV_TRICKDEAD",1,SKILL_PERM;
+		getitem 1202,1; // Knife_
+		getitem 2302,1; // Cotton_Shirt_
+		mes .@n$;
+		mes "Begin again. Come back at job level 10.";
+		close;
+
+	case 1:
+		if (Class != Job_Novice) {
+			mes .@n$;
+			mes "You were reborn to walk my path, and took another. I cannot help you now.";
+			close;
+		}
+		if (JobLevel < 10 || getskilllv("NV_BASIC") < 9) {
+			mes .@n$;
+			mes "Come back at job level 10, with your Basic Skill learned.";
+			close;
+		}
+		mes .@n$;
+		mes "Become a Ninja once more.";
+		if (select("I am ready.:Not yet.") == 2)
+			close;
+		kagerou_oboro_reborn = 2;
+		jobchange Job_Ninja;
+		StatusPoint += 52;
+		mes .@n$;
+		mes "Your body remembers. Come back at Ninja job level 50 or later.";
+		mes "Each level past 50, up to 70, is one more point for Ninja skills.";
+		close;
+
+	case 2:
+		if (Class != Job_Ninja) {
+			mes .@n$;
+			mes "You were reborn to walk my path, and took another. I cannot help you now.";
+			close;
+		}
+		.@job = (Sex == SEX_MALE) ? Job_Kagerou : Job_Oboro;
+		.@name$ = (Sex == SEX_MALE) ? "Kagerou" : "Oboro";
+		if (JobLevel < 50) {
+			mes .@n$;
+			mes "Come back at Ninja job level 50 or later.";
+			close;
+		}
+		if (SkillPoint > 0) {
+			mes .@n$;
+			mes "Spend your skill points first.";
+			close;
+		}
+		mes .@n$;
+		mes "You may become a ^0000FF" + .@name$ + "^000000 now.";
+		if (JobLevel < 70) {
+			mes "If you wait until job level 70 you will have " + (70 - JobLevel) + " more point" + (70 - JobLevel == 1 ? "" : "s") + " for Ninja skills.";
+		}
+		if (select("Make me a " + .@name$ + ".:Not yet.") == 2)
+			close;
+		kagerou_oboro_reborn = 3;
+		jobchange .@job;
+		mes .@n$;
+		mes "Go, " + .@name$ + ".";
+		close;
+	}
+	end;
+}
+
+que_ng,27,62,5	script	Shadow Supplier#ko_prere	83,{
+	if (Class != Job_Kagerou && Class != Job_Oboro) {
+		mes "[Shadow Supplier]";
+		mes "My wares are for Kagerou and Oboro.";
+		close;
+	}
+	callshop "kagerou_oboro_shop",1;
+	end;
+}
+
+-	shop	kagerou_oboro_shop	-1,6512:-1,6513:-1,6514:-1,6515:-1,6493:-1,13294:-1,7524:-1

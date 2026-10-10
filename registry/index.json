@@ -584,6 +584,75 @@
       ]
     },
     {
+      "name": "kagerou-oboro",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Kagerou and Oboro in pre-renewal. A Ninja at 99/70 is reborn as a Novice, becomes a Ninja again with transcendent stat points, and from Ninja job 50 becomes a Kagerou or Oboro. The skills are scaled to sit a little below the transcendent classes, and four tiers of Kagerou/Oboro equipment (levels 50 to 95) drop from monsters.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/kagerou-oboro",
+      "tags": [
+        "equipment",
+        "jobs",
+        "kagerou",
+        "lua",
+        "ninja",
+        "oboro",
+        "pre-renewal"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "pre-renewal",
+        "app": ">=1.5.4"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "41793279a9867bb5f85b1e23a7385a46a403a5dc764ceab00bdbaf7f3852611e"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "0611969108d23ec87c2ac9d6ceb8643585b70f35897a65a56682a408e6bbbf67"
+        },
+        {
+          "path": "db/item_combos.yml",
+          "sha256": "d70d51902b28b485e5c246fe4018851f98fbd2307da7edb3459573388c06a2e9"
+        },
+        {
+          "path": "db/item_db.yml",
+          "sha256": "bbff024a1f7000646310c11e2fa2bf57aa025cc7410a60e3aec914b171357970"
+        },
+        {
+          "path": "db/job_stats.yml",
+          "sha256": "e50e4fe2e2794e7ad17bfcb4b6866cb80daa59ada19221e4d3c0753eb5ade110"
+        },
+        {
+          "path": "db/mob_db.yml",
+          "sha256": "7bb917f2ed98f8f10ce2da0b7a890b55cecfc022fc20fa1250185fe535184e48"
+        },
+        {
+          "path": "db/skill_db.yml",
+          "sha256": "fed96cd0357bb662edd692ed5963b054b5bf2ac1882363ffdea5ca715f8a8bd4"
+        },
+        {
+          "path": "db/skill_tree.yml",
+          "sha256": "96d81267e335923e945a4ace0f3d451ae75a55e6056aeb314c7b19f7a9bc6358"
+        },
+        {
+          "path": "lua/kagerou_oboro.lua",
+          "sha256": "e3903b0bf146786a66982422c8afd2106f83519373481f01c2ce185c9f67b9d8"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "4f47d1be87b8313ed1f91b51c07ee75cc9ff00e05ece1607d6b098cdc9b099e9"
+        },
+        {
+          "path": "npc/kagerou_oboro.txt",
+          "sha256": "e78a7caab830e8229c56e9403c5899f26c64efd37de90917e1cbda459e4805a2"
+        }
+      ]
+    },
+    {
       "name": "map-spawn-rate",
       "version": "1.0.0",
       "author": "BlaXun",
