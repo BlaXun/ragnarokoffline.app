@@ -32,6 +32,7 @@ The mod grows class by class. So far:
 | Minstrel (male) | Clown | `valkyrie 55 54` (the Wandering Minstrel) |
 | Wanderer (female) | Gypsy | `valkyrie 55 56` |
 | Genetic | Creator | `valkyrie 55 50` |
+| Mechanic | Whitesmith | `valkyrie 42 50` |
 
 The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
@@ -765,6 +766,72 @@ Transcendent classes only.
 | Cart Breaker | 70 | High Orc |
 | Philosopher's Edge | 90 | Falling Bishop |
 | Chimera Splitter | 90 | Dark Lord |
+## Mechanic
+
+### The path
+
+1. Blacksmith, base 99 / job 50 → the Valkyrie's rebirth → High Novice →
+   High Merchant. The rebirth remembers Whitesmith as the target, as
+   usual.
+2. **High Merchant, job 40 or later**, no unspent skill points: talk to
+   the **Mechanic** beside the Whitesmith changer instead of the
+   Whitesmith changer, which stays as it was. You are asked to confirm
+   twice.
+
+The class's skill tree is renewal's Mechanic tree: Novice, Merchant,
+Blacksmith and the Mechanic's own skills, with a Whitesmith's 69 job
+levels and skill points. It keeps every Blacksmith skill, the forge
+among them, and never learns Cart Termination, Meltdown, Maximum
+Power-Thrust or Upgrade Weapon.
+
+Most of its skills need a **Madogear**. Pre-renewal has no one who gives
+one, so two NPCs are added in Einbroch, where renewal has its Black
+Marketeer:
+- the **Mado Engineer** (`einbroch 124 250`) puts a Mechanic who has
+  learnt Madogear License into a Madogear, or takes it back;
+- the **Black Marketeer** beside him (`einbroch 122 250`) sells Magic
+  Gear Fuel, which the Madogear's skills burn, cannonballs for Arms
+  Cannon, Vulcan Bullets and the Madogear's parts and repair kits.
+
+### Whitesmith or Mechanic
+
+- **Whitesmith**, the cart and the forge: Cart Termination with a laden
+  cart, Meltdown, Maximum Power-Thrust, Upgrade Weapon.
+- **Mechanic**, the machine: in the Madogear it swings axes (Power
+  Swing, Axe Tornado, Axe Boomerang), punches (Boost Knuckle, Pile
+  Bunker), fires (Vulcan Arm, Arms Cannon, Flame Launcher, Cold Slower),
+  shields itself and its party (Neutral Barrier, Stealth Field), and
+  builds turrets (Silver Sniper, Magic Decoy). Everything it fires costs
+  fuel.
+
+### How strong
+
+Measured against a Whitesmith of the same level and stats, with the same
+axe and a full cart (Cart Termination grows with the cart's weight), on
+the same target, without consumables beyond the fuel and ammunition the
+skills need:
+
+| | Mechanic | Whitesmith |
+|---|---|---|
+| One target | Power Swing 2416 dmg/s, Boost Knuckle 2457, Vulcan Arm 2390 | Cart Termination 2535, Mammonite 2286 (both have it) |
+| Area, per target | Arms Cannon (it splashes over 5x5) 1152, Axe Tornado 1259, Flame Launcher 1184 | |
+
+Renewal's Power Swing and Boost Knuckle did 5800 a second here, Vulcan
+Arm 3300 and Arms Cannon 2400 to each target; they are scaled in
+`lua/third_classes.lua`.
+
+### Equipment
+
+Two tiers, two two-handed axes each, for both of the Blacksmith's
+transcendent paths. Each raises Mechanic skills, Cart Termination and
+Mammonite. Transcendent classes only.
+
+| Item | Level | Drops from |
+|---|---|---|
+| Piston Axe | 70 | Explosion |
+| Boiler Axe | 70 | Magmaring |
+| Drill Breaker | 90 | Maya |
+| Dragon Forge Axe | 90 | Detale |
 
 ## Kagerou and Oboro
 
@@ -1173,6 +1240,9 @@ Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
 | `npc/genetic.txt` | the Genetic changer |
 | `npc/genetic_books.txt` | the Genetic Bookseller in the Alchemist guild |
 | `npc/black_marketeer.txt` | the Black Marketeer in Einbroch (cannonballs, Magic Gear Fuel) |
+| `npc/mechanic.txt` | the Mechanic changer |
+| `npc/mado_engineer.txt` | the Mado Engineer in Einbroch |
+| `npc/black_marketeer.txt` | the Black Marketeer in Einbroch (Magic Gear Fuel, cannonballs) |
 | `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the third classes' skill damage scaling |
 | `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |
@@ -1200,6 +1270,7 @@ and each class's three CSV files, in its own directory beside it
 `royal_guard/`, `warlock/`, `ranger/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `royal_guard/`, `warlock/`, `minstrel/`, `wanderer/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `royal_guard/`, `warlock/`, `genetic/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
+`royal_guard/`, `warlock/`, `mechanic/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `soul_reaper/`):
 
 ```

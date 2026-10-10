@@ -39,6 +39,9 @@
 --     Demonstration, about 12,500, stays the Creator's): per target, with a
 --     full cart, Cart Cannon (7x7 splash) 580, Cart Tornado 569, Spore
 --     Explosion 533, Crazy Weed 539 (its hits are GN_CRAZYWEED_ATK).
+--   Mechanic vs Whitesmith (Cart Termination with a full cart 2519): Power
+--     Swing 2414, Boost Knuckle 2440, Vulcan Arm 2389; per target Arms Cannon
+--     (5x5 splash) about 1150, Axe Tornado 1244, Flame Launcher 1167.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -89,6 +92,11 @@ local FACTOR = {
   GN_CARTCANNON         = 55,   -- it splashes over 7x7: an area skill
   GN_SPORE_EXPLOSION    = 68,
   GN_CRAZYWEED_ATK      = 38,
+  NC_POWERSWING         = 39,
+  NC_BOOSTKNUCKLE       = 40,
+  NC_VULCANARM          = 70,
+  NC_FLAMELAUNCHER      = 80,
+  NC_ARMSCANNON         = 48,   -- it splashes over 5x5: an area skill
 }
 
 for name, percent in pairs(FACTOR) do

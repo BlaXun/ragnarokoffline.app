@@ -23,6 +23,7 @@ Each class keeps its CSV files in its own directory.
 Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Minstrel and Wanderer
 (instead of Clown and Gypsy). Each class keeps its CSV files in its own directory.
 Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Genetic (instead of Creator).
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Mechanic (instead of Whitesmith).
 Each class keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
@@ -50,6 +51,7 @@ WEAPONS = {
     "musical": dict(type="Weapon", sub="Musical", loc=["Right_Hand"], label="Instrument", unid="Instrument", gender="Male"),
     "whip":   dict(type="Weapon", sub="Whip",    loc=["Right_Hand"], label="Whip", unid="Whip", gender="Female"),
     "axe1":   dict(type="Weapon", sub="1hAxe",   loc=["Right_Hand"], label="Axe", unid="Axe"),
+    "axe2":   dict(type="Weapon", sub="2hAxe",   loc=["Both_Hand"],  label="Two-Handed Axe", unid="Axe"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -362,6 +364,25 @@ genetic = ec.config(
     # Pre-renewal's Hell's Plant was a ground unit; renewal's is a status on
     # the caster that sets off GN_HELLS_PLANT_ATK, and places none.
     UNIT_KEPT=["GN_HELLS_PLANT"],
+mechanic = ec.config(
+    __file__, **COMMON,
+    JOBS=("Mechanic_T",),
+    # Renewal's Mechanic tree: Novice, Merchant, Blacksmith and the NC
+    # skills; renewal's transcendent one also inherits Whitesmith (Cart
+    # Termination, Meltdown, Maximum Power-Thrust, Upgrade Weapon). The
+    # Madogear comes from the Mado Engineer (npc/mado_engineer.txt).
+    TREE_FROM={"Mechanic_T": "Mechanic"},
+    BASE="Whitesmith",
+    SKILL_PREFIX="NC_",
+    HP_FROM="Whitesmith", HP_SCALE=1.0,
+    SP_FROM="Whitesmith", SP_SCALE=1.0,
+    EXP_FROM="Whitesmith",
+    # Renewal's Mechanic bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Str"), (70, "Dex")],
+    EQUIP_JOBS=["Blacksmith"],
+    EQUIP_LABEL="Whitesmith or Mechanic",
+    ITEMS_ABOUT="The Mechanic's axes, from mechanic/equipment.csv.",
+    CSV_DIR="mechanic",
 )
 
 # The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
@@ -512,4 +533,5 @@ ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, 
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, ranger,
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, minstrel, wanderer,
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, genetic,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, mechanic,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])
