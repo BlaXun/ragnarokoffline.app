@@ -100,6 +100,9 @@ OnWhisperGlobal:
 	} else if (.@c$ == "spirit") {          // a Soul Linker's spirit on yourself (SL_STAR = 461)
 		sc_start4 SC_SPIRIT, 600000, 5, .@a, 0, 0;
 		end;
+	} else if (.@c$ == "cart") {           // cart#n: a pushcart of type n (0 takes it away)
+		setcart .@a;
+		end;
 	} else if (.@c$ == "sphererefill") {    // sphererefill#n: top spirit spheres up to n on every heal (Monk, Champion, Sura)
 		$@ko_sphererefill = .@a;
 		end;

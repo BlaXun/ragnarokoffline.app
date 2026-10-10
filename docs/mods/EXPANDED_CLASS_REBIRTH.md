@@ -654,6 +654,7 @@ them go into one mod, `registry/mods/transcendent-third-classes` (branch
 | Rune Knight | Lord Knight | `valkyrie 42 39` |
 | Royal Guard | Paladin | `valkyrie 55 39` |
 | Warlock | High Wizard | `valkyrie 42 47` |
+| Genetic | Creator | `valkyrie 55 50` |
 
 ### Decided with the human (do not re-ask)
 
@@ -893,6 +894,15 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   casts, and a fixed pace can fall out of step with a caster's rhythm and
   lose a fifth. A spec run can list several paces (`"step": [1.0, 1.5]`)
   with `"method": "best"`; give every caster that.
+- **A crown that spends consumables** (the Creator's Acid Demonstration,
+  a Fire Bottle and an Acid Bottle a throw, about 12,700 a second) is not
+  what the sidegrade is aimed at: aim at the transcendent class's
+  everyday damage (Acid Terror) and leave the crown its own.
+- **Ground units hit under another id** (Crazy Weed as GN_CRAZYWEED_ATK):
+  list it in the run's `"count"`. Generator: `UNIT_KEPT` for a skill that
+  was a ground unit in pre-renewal and is a status in renewal (Hell's
+  Plant); pre-renewal's `ActiveInstance` limit stays when renewal's entry
+  sets none.
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

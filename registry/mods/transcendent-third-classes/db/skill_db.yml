@@ -116,6 +116,24 @@
 # Skills: WL_CHAINLIGHTNING, WL_COMET, WL_CRIMSONROCK, WL_DRAINLIFE, WL_EARTHSTRAIN, WL_FROSTMISTY, WL_HELLINFERNO, WL_JACKFROST, WL_MARSHOFABYSS, WL_READING_SB, WL_RECOGNIZEDSPELL, WL_SIENNAEXECRATE, WL_SOULEXPANSION, WL_STASIS, WL_SUMMONBL, WL_SUMMONFB, WL_SUMMONSTONE, WL_SUMMONWB, WL_TELEKINESIS_INTENSE, WL_TETRAVORTEX, WL_WHITEIMPRISON, WL_READING_SB_READING (new)
 #
 # _______________________
+# Genetic_T:
+# Renewal's entries for the GN_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: GN_BLOOD_SUCKER, GN_CARTBOOST, GN_CARTCANNON, GN_CART_TORNADO, GN_CRAZYWEED_ATK, GN_FIRE_EXPANSION_ACID, GN_FIRE_EXPANSION_SMOKE_POWDER, GN_FIRE_EXPANSION_TEAR_GAS, GN_HELLS_PLANT, GN_HELLS_PLANT_ATK, GN_ILLUSIONDOPING, GN_MANDRAGORA, GN_SLINGITEM, GN_SPORE_EXPLOSION, GN_THORNS_TRAP
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's entries for the KO_/OB_/KG_ skills whose pre-renewal entry
 # differs. Pre-renewal's are an older revision: no Status: (so the buffs
@@ -4643,6 +4661,631 @@ Body:
     CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+  - Id: 2480
+    Name: GN_BLOOD_SUCKER
+    Description: Blood Sucker
+    MaxLevel: 5
+    Type: Misc
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      PartyOnly: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    ActiveInstance: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 3000
+    AfterCastActDelay: 500
+    Duration1:
+      - Level: 1
+        Time: 40000
+      - Level: 2
+        Time: 100000
+      - Level: 3
+        Time: 160000
+      - Level: 4
+        Time: 220000
+      - Level: 5
+        Time: 280000
+    Cooldown: 1000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 50
+        - Level: 2
+          Amount: 55
+        - Level: 3
+          Amount: 60
+        - Level: 4
+          Amount: 65
+        - Level: 5
+          Amount: 70
+      ItemCost:
+        - Item: Bloodsuck_Plant_Seed
+          Amount: 5
+    Status: BloodSucker
+  - Id: 2478
+    Name: GN_CARTBOOST
+    Description: Cart Boost
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    CastTime: 1500
+    AfterCastActDelay: 500
+    Duration1: 90000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 24
+        - Level: 3
+          Amount: 28
+        - Level: 4
+          Amount: 32
+        - Level: 5
+          Amount: 36
+      State: Cart
+    Status: Gn_CartBoost
+  - Id: 2477
+    Name: GN_CARTCANNON
+    Description: Cart Cannon
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+      IgnoreFlee: true
+      SimpleDefense: true
+    Range:
+      - Level: 1
+        Size: 7
+      - Level: 2
+        Size: 8
+      - Level: 3
+        Size: 9
+      - Level: 4
+        Size: 10
+      - Level: 5
+        Size: 11
+    Hit: Multi_Hit
+    HitCount: 1
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 3
+    CastTime:
+      - Level: 1
+        Time: 1000
+      - Level: 2
+        Time: 1500
+      - Level: 3
+        Time: 2000
+      - Level: 4
+        Time: 2500
+      - Level: 5
+        Time: 3000
+    AfterCastActDelay: 500
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 42
+        - Level: 3
+          Amount: 46
+        - Level: 4
+          Amount: 48
+        - Level: 5
+          Amount: 50
+      Ammo:
+        Cannonball: true
+      AmmoAmount: 1
+      State: Cart
+  - Id: 2476
+    Name: GN_CART_TORNADO
+    Description: Cart Tornado
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Range: 1
+    Hit: Single
+    HitCount: 3
+    Element: Weapon
+    SplashArea: 2
+    Knockback: 2
+    AfterCastActDelay: 1000
+    Duration1: 5000
+    Cooldown: 2000
+    Requires:
+      SpCost: 30
+      State: Cart
+  - Id: 2484
+    Name: GN_CRAZYWEED_ATK
+    Description: Crazy Weed Attack
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Ground
+    DamageFlags:
+      Splash: true
+    Flags:
+      TargetTrap: true
+      IgnoreLandProtector: true
+    Range: 5
+    Hit: Multi_Hit
+    HitCount: 2
+    Element: Weapon
+    SplashArea: 2
+    ActiveInstance:
+      - Level: 1
+        Max: 5
+      - Level: 2
+        Max: 6
+      - Level: 3
+        Max: 6
+      - Level: 4
+        Max: 7
+      - Level: 5
+        Max: 7
+      - Level: 6
+        Max: 8
+      - Level: 7
+        Max: 8
+      - Level: 8
+        Max: 9
+      - Level: 9
+        Max: 9
+      - Level: 10
+        Max: 10
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Duration1: 100
+    Requires:
+      SpCost: 1
+    Unit:
+      Id: Dummyskill
+      Range: 1
+      Interval: 100
+      Target: Enemy
+      Flag:
+        Skill: true
+  - Id: 2489
+    Name: GN_FIRE_EXPANSION_ACID
+    Description: Fire Expansion Acid
+    MaxLevel: 10
+    Type: Misc
+    TargetType: Attack
+    DamageFlags:
+      IgnoreDefense: true
+      IgnoreFlee: true
+    Flags:
+      IgnoreBgReduction: true
+      IgnoreGvgReduction: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount:
+      - Level: 1
+        Count: 1
+      - Level: 2
+        Count: 2
+      - Level: 3
+        Count: 3
+      - Level: 4
+        Count: 4
+      - Level: 5
+        Count: 5
+      - Level: 6
+        Count: 6
+      - Level: 7
+        Count: 7
+      - Level: 8
+        Count: 8
+      - Level: 9
+        Count: 9
+      - Level: 10
+        Count: 10
+    Requires:
+      SpCost: 1
+  - Id: 2487
+    Name: GN_FIRE_EXPANSION_SMOKE_POWDER
+    Description: Fire Expansion Smoke Powder
+    MaxLevel: 1
+    TargetType: Ground
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    Duration1: 4000
+    Requires:
+      SpCost: 1
+    Unit:
+      Id: Fire_Expansion_Smoke_Powder
+      Layout: 2
+      Interval: -1
+      Flag:
+        RangedSingleUnit: true
+    Status: SmokePowder
+  - Id: 2488
+    Name: GN_FIRE_EXPANSION_TEAR_GAS
+    Description: Fire Expansion Tear Gas
+    MaxLevel: 1
+    TargetType: Ground
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    Duration1: 5000
+    Requires:
+      SpCost: 1
+    Unit:
+      Id: Fire_Expansion_Tear_Gas
+      Layout: 2
+      Interval: -1
+      Flag:
+        RangedSingleUnit: true
+    Status: TearGas
+  - Id: 2490
+    Name: GN_HELLS_PLANT
+    Description: Hell's Plant
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: false    # set in pre-renewal's entry; renewal's leaves it out
+    Hit: Single
+    HitCount: 1
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:
+      - Level: 1
+        Time: 3000
+      - Level: 2
+        Time: 3500
+      - Level: 3
+        Time: 4000
+      - Level: 4
+        Time: 4500
+      - Level: 5
+        Time: 5000
+    AfterCastActDelay: 500
+    Duration1:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 120000
+      - Level: 4
+        Time: 150000
+      - Level: 5
+        Time: 180000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 45
+        - Level: 3
+          Amount: 50
+        - Level: 4
+          Amount: 55
+        - Level: 5
+          Amount: 60
+      ItemCost:
+        - Item: MenEater_Plant_Bottle
+          Amount: 1
+    Status: Hells_Plant
+    # ActiveInstance: pre-renewal's limit stays (renewal's entry sets none)
+    Range: 0    # pre-renewal's entry sets this; renewal's does not
+    SplashArea: 0    # pre-renewal's entry sets this; renewal's does not
+    Type: None    # pre-renewal's entry sets this; renewal's does not
+    # Unit: pre-renewal's block stays (it cannot be removed); renewal's skill is cast at a target and places none
+    Flags:
+      IsTrap: false    # set in pre-renewal's entry; renewal's leaves it out
+  - Id: 2491
+    Name: GN_HELLS_PLANT_ATK
+    Description: Hell's Plant Attack
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+      IgnoreDefCard: false    # set in pre-renewal's entry; renewal's leaves it out
+      IgnoreElement: false    # set in pre-renewal's entry; renewal's leaves it out
+    Hit: Single
+    HitCount: 1
+    SplashArea: 2
+    Element: Weapon
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Duration1: 20000
+    Requires:    # pre-renewal's entry has costs; renewal's has none
+      SpCost: 0
+  - Id: 5003
+    Name: GN_ILLUSIONDOPING
+    Description: Illusion Doping
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Range: 7
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 4
+      - Level: 2
+        Area: 5
+      - Level: 3
+        Area: 6
+      - Level: 4
+        Area: 7
+      - Level: 5
+        Area: -1
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    AfterCastActDelay:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 1250
+      - Level: 2
+        Time: 1250
+      - Level: 3
+        Time: 1250
+      - Level: 4
+        Time: 1250
+      - Level: 5
+        Time: 500
+    Duration1: 10000
+    Cooldown:
+      - Level: 1
+        Time: 5000
+      - Level: 2
+        Time: 4000
+      - Level: 3
+        Time: 3000
+      - Level: 4
+        Time: 2000
+      - Level: 5
+        Time: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 60
+        - Level: 2
+          Amount: 70
+        - Level: 3
+          Amount: 80
+        - Level: 4
+          Amount: 90
+        - Level: 5
+          Amount: 100
+      ItemCost:
+        - Item: Alchol
+          Amount: 1
+    Status: IllusionDoping
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 250
+      - Level: 2
+        Time: 250
+      - Level: 3
+        Time: 250
+      - Level: 4
+        Time: 250
+      - Level: 5
+        Time: 0
+  - Id: 2492
+    Name: GN_MANDRAGORA
+    Description: Howling of Mandragora
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 6
+      - Level: 3
+        Area: 6
+      - Level: 4
+        Area: 7
+      - Level: 5
+        Area: 7
+    CastTime: 1000
+    AfterCastActDelay: 500
+    Duration1:
+      - Level: 1
+        Time: 10000
+      - Level: 2
+        Time: 15000
+      - Level: 3
+        Time: 20000
+      - Level: 4
+        Time: 25000
+      - Level: 5
+        Time: 30000
+    Cooldown: 10000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 45
+        - Level: 3
+          Amount: 50
+        - Level: 4
+          Amount: 55
+        - Level: 5
+          Amount: 60
+      ItemCost:
+        - Item: Mandragora_Flowerpot
+          Amount: 1
+    Status: Mandragora
+  - Id: 2493 # Removed on kRO
+    Name: GN_SLINGITEM
+    Description: Sling Item
+    MaxLevel: 1
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      NoTargetSelf: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    Cooldown: 1000
+    Requires:
+      SpCost: 4
+      Ammo:
+        Throwweapon: true
+      AmmoAmount: 1
+    FixedCastTime: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2481
+    Name: GN_SPORE_EXPLOSION
+    Description: Spore Explosion
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Range: 11
+    Hit: Multi_Hit
+    HitCount: 2
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 3
+      - Level: 6
+        Area: 3
+      - Level: 7
+        Area: 4
+      - Level: 8
+        Area: 4
+      - Level: 9
+        Area: 5
+      - Level: 10
+        Area: 5
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1500
+    AfterCastActDelay: 500
+    Duration1: 5000
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 48
+        - Level: 2
+          Amount: 52
+        - Level: 3
+          Amount: 56
+        - Level: 4
+          Amount: 60
+        - Level: 5
+          Amount: 64
+        - Level: 6
+          Amount: 68
+        - Level: 7
+          Amount: 72
+        - Level: 8
+          Amount: 76
+        - Level: 9
+          Amount: 80
+        - Level: 10
+          Amount: 84
+      ItemCost:
+        - Item: Bomb_Mushroom_Spore
+          Amount: 1
+    Status: Spore_Explosion
+  - Id: 2479
+    Name: GN_THORNS_TRAP
+    Description: Thorn Trap
+    MaxLevel: 5
+    Type: Misc
+    TargetType: Ground
+    Flags:
+      IsTrap: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    ActiveInstance: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1500
+    AfterCastActDelay: 500
+    Duration1:
+      - Level: 1
+        Time: 10000
+      - Level: 2
+        Time: 12000
+      - Level: 3
+        Time: 14000
+      - Level: 4
+        Time: 16000
+      - Level: 5
+        Time: 18000
+    Duration2: 20000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 22
+        - Level: 2
+          Amount: 26
+        - Level: 3
+          Amount: 30
+        - Level: 4
+          Amount: 34
+        - Level: 5
+          Amount: 38
+      ItemCost:
+        - Item: Seed_Of_Horny_Plant
+          Amount: 1
+    Unit:
+      Id: Thorns_Trap
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        NoFootSet: true
+        RemovedByFireRain: true
+    Status: ThornsTrap
   - Id: 3023
     Name: KG_KAGEHUMI
     Description: Shadow Trampling

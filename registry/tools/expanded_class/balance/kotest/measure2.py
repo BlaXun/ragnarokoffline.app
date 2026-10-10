@@ -11,6 +11,7 @@ pre = [x.split(":") for x in a[9].split(",")] if len(a) > 9 and a[9] not in ("",
 sids = sids.split(","); lvs = lvs.split(",")
 selfs = {x.rstrip("s") for x in sids if x.endswith("s")}   # "2592s": cast on yourself
 sids = [x.rstrip("s") for x in sids]
+counted = sids + [x for x in os.environ.get("COUNT", "").split(",") if x]   # COUNT=2484: also count hits under these ids
 stats = os.environ.get("STATS", "")   # STATS=int: an INT/DEX build whatever the class
 head = [f"whisper npc:KoTest build#{job}#{weapon}" + (f"#{stats}" if stats else ""), "wait 3", "whisper npc:KoTest rlkit"]
 if ammo != "0": head += [f"whisper npc:KoTest gun#{weapon}#{ammo}", "wait 1"]
@@ -91,10 +92,10 @@ def echoed(e):
     return e.get("src") != aid and any(abs(t - e.get("t", 0)) < 0.05 for t in mine.get((e.get("skill"), e.get("target"), e.get("damage")), []))
 for e in evs:
     # ground skills report from their skill unit, not the caster: count by skill id
-    if e.get("ev") in ("skill_damage", "damage") and e.get("target") != aid and (e.get("src") == aid or str(e.get("skill", 0)) in sids) and not echoed(e):
+    if e.get("ev") in ("skill_damage", "damage") and e.get("target") != aid and (e.get("src") == aid or str(e.get("skill", 0)) in counted) and not echoed(e):
         k = str(e.get("skill", 0))
         if k == "0" and "attack" in sids: k = "attack"
-        if k in sids:
+        if k in counted:
             total += max(0, e.get("damage", 0)); casts += 1
             per[k] = per.get(k, 0) + max(0, e.get("damage", 0)); per_n[k] = per_n.get(k, 0) + 1
         else: other[k] = other.get(k, 0) + max(0, e.get("damage", 0))

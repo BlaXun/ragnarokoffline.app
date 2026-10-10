@@ -33,6 +33,11 @@
 # appended to the monster's own drops; every monster here has room.
 #
 # _______________________
+# Genetic_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
+#
+# _______________________
 # Kagerou, Oboro:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
@@ -152,6 +157,22 @@ Body:
     Drops:
       - Item: Staff_Of_Starfall
         Rate: 5
+  - Id: 1368    # Geographer (GEOGRAPHER), 6 stock drops
+    Drops:
+      - Item: Greenhouse_Axe
+        Rate: 10
+  - Id: 1213    # High Orc (HIGH_ORC), 8 stock drops
+    Drops:
+      - Item: Cart_Breaker
+        Rate: 10
+  - Id: 1871    # Fallen Bishop Hibram (FALLINGBISHOP), 7 stock drops
+    Drops:
+      - Item: Philosophers_Edge
+        Rate: 300
+  - Id: 1272    # Dark Lord (DARK_LORD), 8 stock drops
+    Drops:
+      - Item: Chimera_Splitter
+        Rate: 300
   - Id: 1406    # Kapha (KAPHA), 8 stock drops
     Drops:
       - Item: Kagemaru_Tabi

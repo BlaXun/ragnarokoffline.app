@@ -39,6 +39,12 @@
 # 3. The Warlock's weapons, from warlock/equipment.csv.
 #
 # _______________________
+# Genetic_T:
+# 1. No job flags: rAthena already lets the class wear a Creator's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Genetic's axes, from genetic/equipment.csv.
+#
+# _______________________
 # Kagerou, Oboro:
 # 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
@@ -669,6 +675,90 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;
+  - Id: 63681
+    AegisName: Greenhouse_Axe
+    Name: Greenhouse Axe
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1000
+    Attack: 140
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"GN_CARTCANNON",10; bonus2 bSkillAtk,"GN_SPORE_EXPLOSION",10; bonus2 bSkillAtk,"AM_ACIDTERROR",10; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",10;
+  - Id: 63682
+    AegisName: Cart_Breaker
+    Name: Cart Breaker
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1100
+    Attack: 145
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"GN_CART_TORNADO",10; bonus2 bSkillAtk,"GN_CRAZYWEED_ATK",10; bonus2 bSkillAtk,"AM_ACIDTERROR",10; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",10;
+  - Id: 63691
+    AegisName: Philosophers_Edge
+    Name: Philosopher's Edge
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1200
+    Attack: 160
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bStr,2; bonus2 bSkillAtk,"GN_CARTCANNON",20; bonus2 bSkillAtk,"GN_SPORE_EXPLOSION",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"AM_ACIDTERROR",20; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",15;
+  - Id: 63692
+    AegisName: Chimera_Splitter
+    Name: Chimera Splitter
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20
+    Weight: 1300
+    Attack: 165
+    Range: 1
+    Slots: 1
+    Jobs:
+      Alchemist: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"GN_CART_TORNADO",20; bonus2 bSkillAtk,"GN_CRAZYWEED_ATK",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"AM_ACIDTERROR",20; bonus2 bSkillAtk,"CR_ACIDDEMONSTRATION",15;
   - Id: 1201    # Knife
     Jobs:
       Alchemist: true

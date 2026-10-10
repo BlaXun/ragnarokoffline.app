@@ -23,6 +23,9 @@
 --     Soul Expansion 1904, Chain Lightning 1886 (all four strikes on a lone
 --     target); a target Jack Frost 1512, Crimson Rock 1363, Frost Misty 1411,
 --     Comet 1409. SP costs: build.py.
+--   Genetic vs Creator (Acid Terror 1197; Acid Demonstration, about 12,500,
+--     stays the Creator's): Cart Cannon 1058; per target Cart Tornado 611,
+--     Spore Explosion 533, Crazy Weed 572 (its hits are GN_CRAZYWEED_ATK).
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -55,6 +58,9 @@ local FACTOR = {
   WL_FROSTMISTY         = 62,
   WL_CHAINLIGHTNING_ATK = 36,
   WL_COMET              = 85,
+  GN_CART_TORNADO       = 11,
+  GN_SPORE_EXPLOSION    = 68,
+  GN_CRAZYWEED_ATK      = 38,
 }
 
 for name, percent in pairs(FACTOR) do

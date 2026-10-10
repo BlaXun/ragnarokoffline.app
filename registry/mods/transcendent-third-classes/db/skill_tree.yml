@@ -33,6 +33,11 @@
 # the class gets that job's skills and what it inherits, nothing more.
 #
 # _______________________
+# Genetic_T:
+# Renewal's trees for Genetic_T, taken from Genetic for Genetic_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's Kagerou, Oboro tree, unchanged. It inherits Novice and
 # Ninja, so every point earned after the change can also go into Ninja skills.
@@ -730,6 +735,107 @@ Body:
         Requires:
           - Name: WL_SOULEXPANSION
             Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Genetic_T    # renewal's Genetic tree
+    Inherit:
+      Novice: true
+      Merchant: true
+      Alchemist: true
+    Tree:
+     # - Name: AM_TWILIGHT4
+       # MaxLevel: 1
+       # Requires:
+         # - Name: AM_PHARMACY
+           # Level: 10
+      - Name: GN_TRAINING_SWORD
+        MaxLevel: 5
+      - Name: GN_REMODELING_CART
+        MaxLevel: 5
+      - Name: GN_CART_TORNADO
+        MaxLevel: 10
+        Requires:
+          - Name: GN_REMODELING_CART
+            Level: 1
+      - Name: GN_CARTCANNON
+        MaxLevel: 5
+        Requires:
+          - Name: GN_REMODELING_CART
+            Level: 2
+      - Name: GN_CARTBOOST
+        MaxLevel: 5
+        Requires:
+          - Name: GN_REMODELING_CART
+            Level: 3
+      - Name: GN_THORNS_TRAP
+        MaxLevel: 5
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 2
+      - Name: GN_BLOOD_SUCKER
+        MaxLevel: 5
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 3
+      - Name: GN_SPORE_EXPLOSION
+        MaxLevel: 10
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 4
+      - Name: GN_WALLOFTHORN
+        MaxLevel: 5
+        Requires:
+          - Name: GN_THORNS_TRAP
+            Level: 3
+      - Name: GN_CRAZYWEED
+        MaxLevel: 10
+        Requires:
+          - Name: GN_WALLOFTHORN
+            Level: 3
+      - Name: GN_DEMONIC_FIRE
+        MaxLevel: 5
+        Requires:
+          - Name: GN_SPORE_EXPLOSION
+            Level: 3
+      - Name: GN_FIRE_EXPANSION
+        MaxLevel: 5
+        Requires:
+          - Name: GN_DEMONIC_FIRE
+            Level: 3
+      - Name: GN_HELLS_PLANT
+        MaxLevel: 5
+        Requires:
+          - Name: GN_BLOOD_SUCKER
+            Level: 3
+      - Name: GN_MANDRAGORA
+        MaxLevel: 5
+        Requires:
+          - Name: GN_HELLS_PLANT
+            Level: 3
+     # - Name: GN_SLINGITEM
+       # MaxLevel: 1
+       # Requires:
+         # - Name: GN_CHANGEMATERIAL
+           # Level: 1
+      - Name: GN_CHANGEMATERIAL
+        MaxLevel: 1
+      - Name: GN_MIX_COOKING
+        MaxLevel: 2
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 1
+     # - Name: GN_MAKEBOMB
+       # MaxLevel: 2
+       # Requires:
+         # - Name: GN_MIX_COOKING
+           # Level: 1
+      - Name: GN_S_PHARMACY
+        MaxLevel: 10
+      - Name: GN_ILLUSIONDOPING
+        MaxLevel: 5
+        Requires:
+          - Name: GN_S_PHARMACY
+            Level: 1
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5
   - Job: Kagerou
