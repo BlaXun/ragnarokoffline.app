@@ -1,0 +1,55 @@
+{
+ "_about": "Star Emperor vs Assassin Cross: single target 0.85-1.0 of Sonic Blow; area skills, per target, 0.4-0.6 of its own single-target rotation (the third classes' area rule). Universe Stance and Falling Star cast once. Damage per second on one target; for an area skill, on each target.",
+ "load": [
+  "registry/mods/star-emperor"
+ ],
+ "seconds": 45,
+ "runs": [
+  {
+   "id": "AX_SonicBlow",
+   "class": 4013,
+   "weapon": 59001,
+   "skills": "136",
+   "levels": "10"
+  },
+  {
+   "id": "SE_ProminenceKick_SolarBurst",
+   "class": 4239,
+   "weapon": 59010,
+   "skills": "2593,2592s",
+   "levels": "7,10",
+   "pre": "2583:3:self:once",
+   "versus": "AX_SonicBlow",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "SE_FallingStar_attacks",
+   "class": 4239,
+   "weapon": 59010,
+   "skills": "attack",
+   "levels": "1",
+   "pre": "2583:3:self:once,2584:10:self:once,2580:7",
+   "versus": "AX_SonicBlow",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "SE_NewMoon_FullMoon_area",
+   "class": 4239,
+   "weapon": 59010,
+   "skills": "2579s,2576s",
+   "levels": "7,10",
+   "pre": "2583:3:self:once",
+   "versus": "SE_ProminenceKick_SolarBurst",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  }
+ ]
+}

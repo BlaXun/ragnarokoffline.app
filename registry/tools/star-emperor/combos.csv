@@ -1,0 +1,5 @@
+tier,items,script,desc
+1,Dawn_Hat Dawn_Dobok Dawn_Mantle Dawn_Shoes,"bonus bAspdRate,3; bonus bFlee,5;","ASPD +3%|FLEE +5"
+2,Zenith_Helm Zenith_Dobok Zenith_Mantle Zenith_Shoes,"bonus bAspdRate,5; bonus bFlee,10; bonus bMaxHPrate,5;","ASPD +5%|FLEE +10|MaxHP +5%"
+3,Eclipse_Hat Eclipse_Dobok Eclipse_Mantle Eclipse_Shoes,"bonus bAspdRate,7; bonus bFlee,12; bonus bMaxHPrate,5; bonus bCritAtkRate,10;","ASPD +7%|FLEE +12|MaxHP +5%|Critical damage +10%"
+4,Celestial_Crown Celestial_Dobok Celestial_Mantle Celestial_Shoes,"bonus bAspdRate,10; bonus bFlee,15; bonus bMaxHPrate,5; bonus bCritAtkRate,15;","ASPD +10%|FLEE +15|MaxHP +5%|Critical damage +15%"
