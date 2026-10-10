@@ -17,7 +17,8 @@ the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
 (instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard). Each class keeps its CSV files in its own directory.
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Sura (instead of Champion).
+Each class keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
 class rather than a sidegrade: Kagerou and Oboro (Ninja), Rebellion
@@ -40,6 +41,7 @@ WEAPONS = {
     "spear1": dict(type="Weapon", sub="1hSpear", loc=["Right_Hand"], label="Spear", unid="Spear"),
     "staff2": dict(type="Weapon", sub="2hStaff", loc=["Both_Hand"], label="Two-Handed Staff", unid="Rod"),
     "shield": dict(type="Armor",  sub=None,      loc=["Left_Hand"],  label="Shield", unid="Shield", view=True),
+    "knuckle": dict(type="Weapon", sub="Knuckle", loc=["Right_Hand"], label="Knuckle", unid="Knuckle"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -246,6 +248,31 @@ warlock = ec.config(
     },
 )
 
+sura = ec.config(
+    __file__, **COMMON,
+    JOBS=("Sura_T",),
+    # Renewal's Sura tree: Novice, Acolyte, Monk and the SR skills; renewal's
+    # transcendent one also inherits Champion (Zen, the Champion combos).
+    TREE_FROM={"Sura_T": "Sura"},
+    BASE="Champion",
+    SKILL_PREFIX="SR_",
+    HP_FROM="Champion", HP_SCALE=1.0,
+    SP_FROM="Champion", SP_SCALE=1.0,
+    EXP_FROM="Champion",
+    # Renewal's Sura bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Str"), (70, "Agi")],
+    EQUIP_JOBS=["Monk"],
+    EQUIP_LABEL="Champion or Sura",
+    ITEMS_ABOUT="The Sura's knuckles, from sura/equipment.csv.",
+    CSV_DIR="sura",
+    # Gates of Hell is the Sura's burst, as Asura Strike is the Champion's;
+    # with no cooldown it could be cast every 2.5 s.
+    # Tiger Cannon's damage comes mostly from HP and SP, outside the skill's
+    # percentage, so a Lua factor barely moves it: a longer cooldown does.
+    SKILL_OVERRIDES={"SR_GATEOFHELL": {"Cooldown": "10000"},
+                     "SR_TIGERCANNON": {"Cooldown": "7000"}},
+)
+
 # The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
 # or Oboro, a reborn Gunslinger a Rebellion, a reborn Star Gladiator a Star
 # Emperor, a reborn Soul Linker a Soul Reaper. Their NPCs and Lua are in the
@@ -390,5 +417,5 @@ soul_reaper = ec.config(
     CSV_DIR="soul_reaper",
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, sura,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])

@@ -33,6 +33,11 @@
 # the class gets that job's skills and what it inherits, nothing more.
 #
 # _______________________
+# Sura_T:
+# Renewal's trees for Sura_T, taken from Sura for Sura_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's Kagerou, Oboro tree, unchanged. It inherits Novice and
 # Ninja, so every point earned after the change can also go into Ninja skills.
@@ -730,6 +735,148 @@ Body:
         Requires:
           - Name: WL_SOULEXPANSION
             Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Sura_T    # renewal's Sura tree
+    Inherit:
+      Novice: true
+      Acolyte: true
+      Monk: true
+    Tree:
+      - Name: SR_DRAGONCOMBO
+        MaxLevel: 10
+        Requires:
+          - Name: MO_TRIPLEATTACK
+            Level: 5
+      - Name: SR_SKYNETBLOW
+        MaxLevel: 5
+        Requires:
+          - Name: SR_DRAGONCOMBO
+            Level: 3
+      - Name: SR_EARTHSHAKER
+        MaxLevel: 5
+        Requires:
+          - Name: SR_DRAGONCOMBO
+            Level: 3
+      - Name: SR_FALLENEMPIRE
+        MaxLevel: 10
+        Requires:
+          - Name: SR_DRAGONCOMBO
+            Level: 3
+      - Name: SR_TIGERCANNON
+        MaxLevel: 10
+        Requires:
+          - Name: SR_FALLENEMPIRE
+            Level: 3
+      - Name: SR_RAMPAGEBLASTER
+        MaxLevel: 5
+        Requires:
+          - Name: SR_EARTHSHAKER
+            Level: 2
+      - Name: SR_CRESCENTELBOW
+        MaxLevel: 5
+        Requires:
+          - Name: SR_WINDMILL
+            Level: 1
+      - Name: SR_CURSEDCIRCLE
+        MaxLevel: 5
+        Requires:
+          - Name: MO_BLADESTOP
+            Level: 2
+      - Name: SR_LIGHTNINGWALK
+        MaxLevel: 5
+        Requires:
+          - Name: SR_WINDMILL
+            Level: 1
+      - Name: SR_KNUCKLEARROW
+        MaxLevel: 10
+        Requires:
+          - Name: SR_LIGHTNINGWALK
+            Level: 1
+      - Name: SR_WINDMILL
+        MaxLevel: 1
+        Requires:
+          - Name: SR_CURSEDCIRCLE
+            Level: 1
+      - Name: SR_RAISINGDRAGON
+        MaxLevel: 10
+        Requires:
+          - Name: MO_CALLSPIRITS
+            Level: 5
+          - Name: SR_POWERVELOCITY
+            Level: 1
+      - Name: SR_ASSIMILATEPOWER
+        MaxLevel: 1
+        Requires:
+          - Name: MO_ABSORBSPIRITS
+            Level: 1
+          - Name: SR_POWERVELOCITY
+            Level: 1
+      - Name: SR_POWERVELOCITY
+        MaxLevel: 1
+        Requires:
+          - Name: MO_CALLSPIRITS
+            Level: 5
+      - Name: SR_GATEOFHELL
+        MaxLevel: 10
+        Requires:
+          - Name: SR_RAMPAGEBLASTER
+            Level: 1
+          - Name: SR_TIGERCANNON
+            Level: 5
+      - Name: SR_GENTLETOUCH_QUIET
+        MaxLevel: 5
+      - Name: SR_GENTLETOUCH_CURE
+        MaxLevel: 5
+        Requires:
+          - Name: SR_GENTLETOUCH_QUIET
+            Level: 1
+      - Name: SR_GENTLETOUCH_ENERGYGAIN
+        MaxLevel: 5
+        Requires:
+          - Name: SR_GENTLETOUCH_CURE
+            Level: 1
+      - Name: SR_GENTLETOUCH_CHANGE
+        MaxLevel: 5
+        Requires:
+          - Name: SR_GENTLETOUCH_QUIET
+            Level: 1
+          - Name: SR_GENTLETOUCH_CURE
+            Level: 1
+          - Name: SR_GENTLETOUCH_ENERGYGAIN
+            Level: 3
+      - Name: SR_GENTLETOUCH_REVITALIZE
+        MaxLevel: 5
+        Requires:
+          - Name: SR_GENTLETOUCH_QUIET
+            Level: 1
+          - Name: SR_GENTLETOUCH_CURE
+            Level: 1
+          - Name: SR_GENTLETOUCH_ENERGYGAIN
+            Level: 3
+      - Name: SR_HOWLINGOFLION
+        MaxLevel: 5
+        Requires:
+          - Name: SR_ASSIMILATEPOWER
+            Level: 1
+          - Name: SR_RIDEINLIGHTNING
+            Level: 3
+      - Name: SR_RIDEINLIGHTNING
+        MaxLevel: 5
+        Requires:
+          - Name: MO_FINGEROFFENSIVE
+            Level: 3
+      - Name: SR_FLASHCOMBO
+        MaxLevel: 5
+        Requires:
+          - Name: SR_DRAGONCOMBO
+            Level: 3
+          - Name: SR_FALLENEMPIRE
+            Level: 3
+          - Name: SR_TIGERCANNON
+            Level: 5
+          - Name: SR_SKYNETBLOW
+            Level: 1
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5
   - Job: Kagerou

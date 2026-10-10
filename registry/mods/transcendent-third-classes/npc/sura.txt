@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Sura =======================
+//= The Monk's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Acolyte of job 40 or more
+//= whose rebirth target is Champion (ADVJOB) may become a
+//= Sura here instead, beside the stock Champion changer,
+//= which is untouched. The choice is permanent.
+//=
+//= Sura is a third class in rAthena. The change goes
+//= through Champion and at once on to Sura, so
+//= rAthena's third-class skill lock records Champion job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Sura tree (Novice, Acolyte, Monk and
+//= its own skills), with the same 69 job levels a Champion
+//= has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,55,42,3	script	Sura#Valkyrie	52,{
+	.@n$ = "[Sura]";
+	if (Class == Job_Sura_T) {
+		mes .@n$;
+		mes "You chose the unbroken chain. Claws and knuckles made for it were carried by the owls of the old forest and by the tiger lords; take them from those who still keep them.";
+		close;
+	}
+	if (ADVJOB != Job_Champion || Class != Job_Acolyte_High) {
+		mes .@n$;
+		mes "A Monk who has been reborn chooses here: the Champion's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Champion gathers everything into one blow: Zen fills its spheres at once, and its combos end in Asura Strike. A ^0000FFSura^000000 leaves those behind and never stops: Dragon Combo, Knuckle Arrow, Tiger Cannon, and Gates of Hell when the fight must end.";
+	next;
+	mes .@n$;
+	mes "You keep every Monk skill, Asura Strike among them. You will never learn a Champion skill: no Zen, no Raging Palm Strike, no Glacier Fist, no Chain Crush Combo.";
+	mes "Your job levels, your body and your gear are the same as a Champion's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the endless chain.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Champion, at job 1: see the header.
+	jobchange Job_Champion;
+	jobchange Job_Sura_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Sura.";
+	close;
+}

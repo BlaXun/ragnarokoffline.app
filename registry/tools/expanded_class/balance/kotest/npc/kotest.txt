@@ -49,6 +49,7 @@ OnWhisperGlobal:
 		dispbottom "KoTest: R=" + getequipid(EQI_HAND_R) + " L=" + getequipid(EQI_HAND_L) + " accL=" + getequipid(EQI_ACC_L) + " accR=" + getequipid(EQI_ACC_R) + " aspd=" + readparam(bAspd);
 		end;
 	} else if (.@c$ == "build") {          // build#job#weapon[#int|#dex|#str]: the measurement template
+		$@ko_sphererefill = 0;
 		.@s$ = @whispervar3$;            // the stat build, when the class's usual one is not wanted
 		jobchange .@a;
 		atcommand "@blvl 98";
@@ -96,6 +97,9 @@ OnWhisperGlobal:
 		end;
 	} else if (.@c$ == "spirit") {          // a Soul Linker's spirit on yourself (SL_STAR = 461)
 		sc_start4 SC_SPIRIT, 600000, 5, .@a, 0, 0;
+		end;
+	} else if (.@c$ == "sphererefill") {    // sphererefill#n: top spirit spheres up to n on every heal (Monk, Champion, Sura)
+		$@ko_sphererefill = .@a;
 		end;
 	} else if (.@c$ == "soulrefill") {      // soulrefill#1: refill soul energy on every heal
 		$@ko_soulrefill = .@a;
@@ -157,6 +161,7 @@ OnWhisperGlobal:
 		percentheal 100,100;
 		if (Class == Job_Rebellion || Class == Job_Gunslinger) atcommand "@spiritball 10";
 		if (Class == Job_Soul_Reaper && $@ko_soulrefill) atcommand "@soulball 20";
+		if ($@ko_sphererefill && (Class == Job_Monk || Class == Job_Champion || Class == Job_Sura_T || Class == Job_Sura)) atcommand "@spiritball " + $@ko_sphererefill;
 		end;
 	} else if (.@c$ == "drops") {
 		if (getmobdrops(.@a)) {

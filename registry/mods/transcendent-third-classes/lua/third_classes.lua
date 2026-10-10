@@ -23,6 +23,11 @@
 --     Soul Expansion 1904, Chain Lightning 1886 (all four strikes on a lone
 --     target); a target Jack Frost 1512, Crimson Rock 1363, Frost Misty 1411,
 --     Comet 1409. SP costs: build.py.
+--   Sura vs Champion (Occult Impaction with Zen 1151, Asura Strike about
+--     19,500 a hit): Knuckle Arrow 1024, Dragon Combo 1000, Tiger Cannon
+--     with Raising Dragon 1070 (its cooldown, not a factor: build.py);
+--     Gates of Hell about 12,700 a hit every 10 s; per target Earth Shaker
+--     510, Sky Net Blow 480, Lightning Ride 575, Rampage Blast 563.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -55,6 +60,11 @@ local FACTOR = {
   WL_FROSTMISTY         = 62,
   WL_CHAINLIGHTNING_ATK = 36,
   WL_COMET              = 85,
+  SR_DRAGONCOMBO        = 25,
+  SR_KNUCKLEARROW       = 34,
+  SR_EARTHSHAKER        = 32,
+  SR_SKYNETBLOW         = 12,
+  SR_RIDEINLIGHTNING    = 10,
 }
 
 for name, percent in pairs(FACTOR) do
