@@ -1097,6 +1097,11 @@ const SETTINGS_DEFAULTS = {
 	// is saved with it. Off keeps the historic free supply of potions, arrows
 	// and gemstones.
 	population_companion_inventory: false,
+	// Whether a drafted companion starts with nothing on, and is given no gear by
+	// the engine afterwards: it wears what its owner gives it. Off keeps the
+	// engine dressing it from its job's gear set. Kept per companion from its
+	// draft on, so this changes none that already exists.
+	population_companion_start_unequipped: false,
 	// Whether ambient shells pick up the drops of their own kills, the way a
 	// player would, and how (see population-conf.js shellLoot). Off keeps the
 	// historic behaviour: every drop stays on the ground until it expires.
