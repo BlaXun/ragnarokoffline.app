@@ -584,75 +584,6 @@
       ]
     },
     {
-      "name": "kagerou-oboro",
-      "version": "1.0.0",
-      "author": "BlaXun",
-      "description": "Kagerou and Oboro in pre-renewal. A Ninja at 99/70 is reborn as a Novice, becomes a Ninja again with transcendent stat points, and from Ninja job 50 becomes a Kagerou or Oboro. The skills are scaled to sit a little below the transcendent classes, and four tiers of Kagerou/Oboro equipment (levels 50 to 95) drop from monsters.",
-      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/kagerou-oboro",
-      "tags": [
-        "equipment",
-        "jobs",
-        "kagerou",
-        "lua",
-        "ninja",
-        "oboro",
-        "pre-renewal"
-      ],
-      "icon": "",
-      "screenshots": [],
-      "requires": {
-        "mods": [],
-        "era": "pre-renewal",
-        "app": ">=1.5.4"
-      },
-      "files": [
-        {
-          "path": "README.md",
-          "sha256": "41793279a9867bb5f85b1e23a7385a46a403a5dc764ceab00bdbaf7f3852611e"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "0611969108d23ec87c2ac9d6ceb8643585b70f35897a65a56682a408e6bbbf67"
-        },
-        {
-          "path": "db/item_combos.yml",
-          "sha256": "d70d51902b28b485e5c246fe4018851f98fbd2307da7edb3459573388c06a2e9"
-        },
-        {
-          "path": "db/item_db.yml",
-          "sha256": "bbff024a1f7000646310c11e2fa2bf57aa025cc7410a60e3aec914b171357970"
-        },
-        {
-          "path": "db/job_stats.yml",
-          "sha256": "e50e4fe2e2794e7ad17bfcb4b6866cb80daa59ada19221e4d3c0753eb5ade110"
-        },
-        {
-          "path": "db/mob_db.yml",
-          "sha256": "7bb917f2ed98f8f10ce2da0b7a890b55cecfc022fc20fa1250185fe535184e48"
-        },
-        {
-          "path": "db/skill_db.yml",
-          "sha256": "fed96cd0357bb662edd692ed5963b054b5bf2ac1882363ffdea5ca715f8a8bd4"
-        },
-        {
-          "path": "db/skill_tree.yml",
-          "sha256": "96d81267e335923e945a4ace0f3d451ae75a55e6056aeb314c7b19f7a9bc6358"
-        },
-        {
-          "path": "lua/kagerou_oboro.lua",
-          "sha256": "e3903b0bf146786a66982422c8afd2106f83519373481f01c2ce185c9f67b9d8"
-        },
-        {
-          "path": "mod.json",
-          "sha256": "4f47d1be87b8313ed1f91b51c07ee75cc9ff00e05ece1607d6b098cdc9b099e9"
-        },
-        {
-          "path": "npc/kagerou_oboro.txt",
-          "sha256": "e78a7caab830e8229c56e9403c5899f26c64efd37de90917e1cbda459e4805a2"
-        }
-      ]
-    },
-    {
       "name": "map-spawn-rate",
       "version": "1.0.0",
       "author": "BlaXun",
@@ -937,74 +868,6 @@
       "files": []
     },
     {
-      "name": "rebellion",
-      "version": "1.0.0",
-      "author": "BlaXun",
-      "description": "Rebellion in pre-renewal. A Gunslinger at 99/70 is reborn as a Novice, becomes a Gunslinger again with transcendent stat points, and from Gunslinger job 50 becomes a Rebellion. The skills are scaled to sit a little below the transcendent classes, and four tiers of Rebellion guns and gear (levels 50 to 95) drop from monsters.",
-      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/rebellion",
-      "tags": [
-        "equipment",
-        "gunslinger",
-        "jobs",
-        "lua",
-        "pre-renewal",
-        "rebellion"
-      ],
-      "icon": "",
-      "screenshots": [],
-      "requires": {
-        "mods": [],
-        "era": "pre-renewal",
-        "app": ">=1.5.4"
-      },
-      "files": [
-        {
-          "path": "README.md",
-          "sha256": "3c72833f8c0926d11ef5daa09b733602eec0a2503d3a389a561243753e1526e0"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "6d21954a7a58636991a193e7a8410f72281942b52060d8fc83c46fcc0962f0f6"
-        },
-        {
-          "path": "db/item_combos.yml",
-          "sha256": "3c52ad22c6cf8f18d171a47f0d69853caae587a42d2fc125b2e28ffeeec4a1ca"
-        },
-        {
-          "path": "db/item_db.yml",
-          "sha256": "799b72ba6ca2dcf19bb1396a652fd28cb74ddbe0b9eff57db04c15abe21138b2"
-        },
-        {
-          "path": "db/job_stats.yml",
-          "sha256": "9cb4d9661880ae0bba0e670999e229273a27e82bb7353d199d5ef79907cd995e"
-        },
-        {
-          "path": "db/mob_db.yml",
-          "sha256": "7bed0cfeaa353a70e930d4a860fb5d181fe4f817e69f00bc0ac2d8e4f9145552"
-        },
-        {
-          "path": "db/skill_db.yml",
-          "sha256": "2fcee8772ca94fe722a153c81fea1be9299f4a7467c70d07d20c681088a724a4"
-        },
-        {
-          "path": "db/skill_tree.yml",
-          "sha256": "13fd1c8c173afea091184f1b445e4aa8c183295cf98645b7097bc92b15497c86"
-        },
-        {
-          "path": "lua/rebellion.lua",
-          "sha256": "baba498e7e0e3e785c41e053da303f769faa9bced2c2506f8ccd807f5c2913b9"
-        },
-        {
-          "path": "mod.json",
-          "sha256": "7d8f393f93deab013b457b78366568f76e79f621efa3386218ca92b653bae0d8"
-        },
-        {
-          "path": "npc/rebellion.txt",
-          "sha256": "13f66e72662d1bd48a0e9bfe37212dabd2888a336f1263d74f25d2c4f65dca0f"
-        }
-      ]
-    },
-    {
       "name": "refine-matk",
       "version": "1.0.0",
       "author": "BlaXun",
@@ -1080,76 +943,6 @@
       ]
     },
     {
-      "name": "soul-reaper",
-      "version": "1.0.0",
-      "author": "BlaXun",
-      "description": "Soul Reaper in pre-renewal, as the Soul Linker's rebirth. A Soul Linker at 99/50 is reborn as a Novice, becomes a Taekwon again with transcendent stat points, and from Taekwon job 40 becomes a Soul Reaper, to job 70: the same skill points and gear rules as any transcendent class. The skills are scaled to sit a little below the transcendent classes, and four tiers of Soul Reaper gear (levels 50 to 95) drop from monsters.",
-      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/soul-reaper",
-      "tags": [
-        "equipment",
-        "jobs",
-        "lua",
-        "pre-renewal",
-        "rebirth",
-        "soul-linker",
-        "soul-reaper",
-        "taekwon"
-      ],
-      "icon": "",
-      "screenshots": [],
-      "requires": {
-        "mods": [],
-        "era": "pre-renewal",
-        "app": ">=1.5.4"
-      },
-      "files": [
-        {
-          "path": "README.md",
-          "sha256": "5489474f2217a2075ae025a38af86583a044ee0ea0472f4cee9a3ae4fe7928bc"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "e2bb1b85591ccbc28ce4c39b3e5c96ed10af305ef8420c771e26f2bf12e5655d"
-        },
-        {
-          "path": "db/item_combos.yml",
-          "sha256": "b8f4d7eae5d35dc1ae0e6bcbc547aabc632ab4a97288c8159149fe2e924ef9c3"
-        },
-        {
-          "path": "db/item_db.yml",
-          "sha256": "438e552280026af16b06dade0865998037473c9819a0df2e222f4c0afd236d17"
-        },
-        {
-          "path": "db/job_stats.yml",
-          "sha256": "a9cd6297b4c5bf32116ae9f6864dcde2210ff66f97d81c42a06ae066ad006bfd"
-        },
-        {
-          "path": "db/mob_db.yml",
-          "sha256": "6359059d611ec88ccfa10a041cde67b1333f7517c661392081a4e08ed5e5a469"
-        },
-        {
-          "path": "db/skill_db.yml",
-          "sha256": "6a4adddcfbf1701743cc209ea3b3a5e43c48b4bb8a72395e4073b3d82513fedb"
-        },
-        {
-          "path": "db/skill_tree.yml",
-          "sha256": "dd4da1670b600829bd71fad330c210f2aef075ce2f4507114fada2937bb4924e"
-        },
-        {
-          "path": "lua/soul_reaper.lua",
-          "sha256": "50c899c9e5e74a91af9b4c8f1d529723f106561c59a3912e2e1ddc1a08112135"
-        },
-        {
-          "path": "mod.json",
-          "sha256": "3f36eed50177c330659a8e01a06496eb3035f455b16bffeb53ff1b80e99f2827"
-        },
-        {
-          "path": "npc/soul_reaper.txt",
-          "sha256": "67afee83cd717874edd935d40c4a89773b93cba4a45739ec64738eb78abae191"
-        }
-      ]
-    },
-    {
       "name": "standart-npc",
       "version": "",
       "author": "MondoTruth and the Ragnarok Offline community",
@@ -1201,76 +994,6 @@
         {
           "path": "images/settings.png",
           "sha256": "3c406adc5cf60d554d2b5e3d3a0e3815002bbc2144c718e9d84cb4b52eb0051a"
-        }
-      ]
-    },
-    {
-      "name": "star-emperor",
-      "version": "1.0.0",
-      "author": "BlaXun",
-      "description": "Star Emperor in pre-renewal, as the Star Gladiator's rebirth. A Star Gladiator at 99/50 is reborn as a Novice, becomes a Taekwon again with transcendent stat points, and from Taekwon job 40 becomes a Star Emperor, to job 70: the same skill points and gear rules as any transcendent class. The skills are scaled to sit a little below the transcendent classes, and four tiers of Star Emperor gear (levels 50 to 95) drop from monsters.",
-      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/star-emperor",
-      "tags": [
-        "equipment",
-        "jobs",
-        "lua",
-        "pre-renewal",
-        "rebirth",
-        "star-emperor",
-        "star-gladiator",
-        "taekwon"
-      ],
-      "icon": "",
-      "screenshots": [],
-      "requires": {
-        "mods": [],
-        "era": "pre-renewal",
-        "app": ">=1.5.4"
-      },
-      "files": [
-        {
-          "path": "README.md",
-          "sha256": "f041ded9250df54abf3cedcb7d95f739d301b1334f0d5aed28c333723ffd6ce7"
-        },
-        {
-          "path": "System/itemInfo.lua",
-          "sha256": "fc0352bdb4524dea81fd15ac45122e424cec0482ef7cc8927697be0b99167188"
-        },
-        {
-          "path": "db/item_combos.yml",
-          "sha256": "bf4a06106b4a7a9c1656a4554e57bc0beb2cc0de93f7d86a6b9b0f8f5126a0b8"
-        },
-        {
-          "path": "db/item_db.yml",
-          "sha256": "6506a57d137969f2d7460a7ad93c26867e867eec086a77349e9a706b1382bc7f"
-        },
-        {
-          "path": "db/job_stats.yml",
-          "sha256": "36b456604b649bd230cf12d027362af2c87dc2414327b03f8b61daa7b2923b15"
-        },
-        {
-          "path": "db/mob_db.yml",
-          "sha256": "149189c423510c5ed330eec2cc282a3a99fabab97fdf8380e903c4603de266de"
-        },
-        {
-          "path": "db/skill_db.yml",
-          "sha256": "5e3bce2ce9072d4dbd6de7108223cefcda180a7923588089d10479628e27edc2"
-        },
-        {
-          "path": "db/skill_tree.yml",
-          "sha256": "75de95f550b33148f660de1187cb35ccd860694402e22987a985dff8e3d1be39"
-        },
-        {
-          "path": "lua/star_emperor.lua",
-          "sha256": "e5639c1b522229078090c59c3805793cdf91cba361cfd2ef62252b943bf3bd2c"
-        },
-        {
-          "path": "mod.json",
-          "sha256": "c79156d766adfabe15a5cc5f0b37b38a95840ba094aee5fb00f66304a6b4eb22"
-        },
-        {
-          "path": "npc/star_emperor.txt",
-          "sha256": "0221c7054ceafdeaa7b9123386da35f1605c6a2cc0b991c162a9bcf1de0e5427"
         }
       ]
     },
@@ -1327,9 +1050,11 @@
       "name": "transcendent-third-classes",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Renewal's third classes in pre-renewal, as sidegrades of the transcendent classes. After the Valkyrie's rebirth, a reborn first class chooses: the stock transcendent class, or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear, and damage measured to parity. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera) Royal Guard (Crusader) and Warlock (Wizard, with spellbooks sold in Geffen), each with a few weapons that both paths can use.",
+      "description": "Renewal's third and expanded classes in pre-renewal, at the transcendent classes' strength. Third classes are sidegrades: after the Valkyrie's rebirth, a reborn first class chooses the stock transcendent class or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera), Royal Guard (Crusader) and Warlock (Wizard, with spellbooks sold in Geffen). Expanded classes come by rebirth of their base class: Kagerou and Oboro (Ninja), Rebellion (Gunslinger), Star Emperor (Star Gladiator) and Soul Reaper (Soul Linker). Every class has its own gear, dropped by monsters, and damage measured against the transcendent classes.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/transcendent-third-classes",
       "tags": [
+        "equipment",
+        "expanded-class",
         "jobs",
         "lua",
         "pre-renewal",
@@ -1347,39 +1072,55 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "34b0935e85753e670ce19093213693c50a29cb53a7ee0612c5c78aa8cf1f4ec6"
+          "sha256": "7e5119a99693d315a434dc453979046898a8f2035dd2de41851558f6c73e1eeb"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "585d19c48709d1f5ac78f9f1c6c81f8566fac49dcb36e4da5956acc3fc4c9312"
+          "sha256": "848a4b9d0ba8a75f8c4a643d89a4d45c46ae684b80408e7d9e5b1f8cf8600ab5"
         },
         {
           "path": "db/item_combos.yml",
-          "sha256": "7378dd3d7ed710d582e145ef2e6d668533c432354d69e978e7101f7ec5edad6a"
+          "sha256": "fa665eba154c9dc7e48a736caa0b6d0421d16882ebb43e2b5ffb8d40a29cf0a2"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "d92edf656aa84a687a49c110a62e8d1afe49571cc96755eda2b78049dbd50709"
+          "sha256": "af505f80a2175151dc6d3b9eb1bd2d8ae3893f7151743da0909ec41e5c2dc98d"
         },
         {
           "path": "db/job_stats.yml",
-          "sha256": "1b89a6533068c4d208fff338c239f72f24896befbf2c80d26bb2af5ea7375ee0"
+          "sha256": "bd87b994f4e9109440c3e840880c7ed3cb2de9af3f055edf0b8d1ba92d53cb51"
         },
         {
           "path": "db/mob_db.yml",
-          "sha256": "d994e0e26d22a7e1d2dbd037a7ed962567d9ec1d5fafb2f6b0ca9afccd17a1d0"
+          "sha256": "ed19f5c352e713fb65daa8294e5942633b2281bc4ab0149faa3c43cc64753e35"
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "011b0fcacf5673d919e46e1d8e05498d1e97b39c72302edefa4a4ec4fd213545"
+          "sha256": "98e5531bac679cabbd3e02a22dad99919195daee1234a5de56d8bd028eebf08f"
         },
         {
           "path": "db/skill_tree.yml",
-          "sha256": "dd95391171167b47a7c56ed8416a01b9177ff7bdef7b248057f189a88eca458d"
+          "sha256": "57edcdd4820b2589ae86fc062c8d49f994cfa1b4e746d4e8e122409bda7e695e"
         },
         {
           "path": "db/spellbook_db.yml",
           "sha256": "0730214a684bbaf27ca26bb9274eb518d402bd3d941055be5e460d071a4c9fed"
+        },
+        {
+          "path": "lua/kagerou_oboro.lua",
+          "sha256": "fe402427f6fd636d09bb9d011207dd2af223296e05f1501ff354caa141afae36"
+        },
+        {
+          "path": "lua/rebellion.lua",
+          "sha256": "b587c2bbd6b30e7cf9c42aa86e312803d003a2bed32cb7666d720e005a40a8e6"
+        },
+        {
+          "path": "lua/soul_reaper.lua",
+          "sha256": "c2dd3bd23b6e48111703ad9bd099209deedf3fb755d3c3b6253974792564bfe1"
+        },
+        {
+          "path": "lua/star_emperor.lua",
+          "sha256": "89ead09e0a3c02f91645f59a7424e8a4f258413a1c0c5fe9b49897537d4c895b"
         },
         {
           "path": "lua/third_classes.lua",
@@ -1387,7 +1128,7 @@
         },
         {
           "path": "mod.json",
-          "sha256": "210e2373f8488deba4a7242e0ac82024c970fb48b2b8e2738fc280e552450674"
+          "sha256": "fdf997d681310ab994219bbab694643a1c807875d72038d39e1d66ac74e007ec"
         },
         {
           "path": "npc/arch_bishop.txt",
@@ -1402,6 +1143,14 @@
           "sha256": "aab513bc583e783b9f3cd726cf13b3f98457824f223ca843c663423e57865327"
         },
         {
+          "path": "npc/kagerou_oboro.txt",
+          "sha256": "e78a7caab830e8229c56e9403c5899f26c64efd37de90917e1cbda459e4805a2"
+        },
+        {
+          "path": "npc/rebellion.txt",
+          "sha256": "13f66e72662d1bd48a0e9bfe37212dabd2888a336f1263d74f25d2c4f65dca0f"
+        },
+        {
           "path": "npc/royal_guard.txt",
           "sha256": "39cf969615ff902d445e1e22ceb968abdef2fbbf43db72cefa783fb92f520048"
         },
@@ -1414,8 +1163,16 @@
           "sha256": "584eee7d2ccdcba6b99f1bab4ac4eb37fbd751d5e296d04e9135508f15cfeba1"
         },
         {
+          "path": "npc/soul_reaper.txt",
+          "sha256": "67afee83cd717874edd935d40c4a89773b93cba4a45739ec64738eb78abae191"
+        },
+        {
           "path": "npc/spellbook_seller.txt",
           "sha256": "5423c375527fd22db23ea9ad7ac236f2299151c81fe8972c26569a56352dc11f"
+        },
+        {
+          "path": "npc/star_emperor.txt",
+          "sha256": "0221c7054ceafdeaa7b9123386da35f1605c6a2cc0b991c162a9bcf1de0e5427"
         },
         {
           "path": "npc/warlock.txt",

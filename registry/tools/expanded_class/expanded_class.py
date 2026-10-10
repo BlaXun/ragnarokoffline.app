@@ -834,6 +834,39 @@ def build_class(src, iteminfo, lua):
     return out
 
 
+def merge_job_flags(parts):
+    """Two classes of one mod may both add their Jobs: key to the same stock
+    item (an Awakening Potion). rAthena takes an import entry's Jobs as a
+    whole, so the later entry would take the earlier class's key away: keep
+    one entry, with every class's key. Anything else twice is an error."""
+    seen = {}
+    for i, (cfg, about, body) in enumerate(parts):
+        kept = []
+        for e in re.split(r"(?m)^(?=  - Id: )", body):
+            m = re.match(r"  - Id: (\d+)", e)
+            if not m:
+                kept.append(e)
+                continue
+            if m.group(1) not in seen:
+                seen[m.group(1)] = (i, len(kept))
+                kept.append(e)
+                continue
+            j, k = seen[m.group(1)]
+            prev = (kept if j == i else parts[j][3])[k]
+            only_jobs = re.compile(r"\A  - Id: \d+[^\n]*\n    Jobs:\n(?:      \w+: \w+\n?)+\Z")
+            if not (only_jobs.match(prev) and only_jobs.match(e)):
+                fail(f"item {m.group(1)} is set by two classes: give it to one")
+            have = set(re.findall(r"^      (\w+): ", prev, re.M))
+            extra = "".join(l + "\n" for l in re.findall(r"^      \w+: \w+$", e, re.M) if l.split(":")[0].strip() not in have)
+            merged = prev.rstrip("\n") + "\n" + extra
+            if not prev.endswith("\n"):
+                merged = merged.rstrip("\n")
+            (kept if j == i else parts[j][3])[k] = merged
+        parts[i] = (cfg, about, body, kept)
+    for i, (cfg, about, body, kept) in enumerate(parts):
+        parts[i] = (cfg, about, "".join(kept))
+
+
 def source_key(text):
     """The key every Body entry of a table starts with."""
     m = re.search(r"\nBody:\n  - (\w+):", text)
@@ -881,6 +914,8 @@ def run(cfg):
     for c in cfgs:
         for rel, (_, kind, version) in c.COPY_TABLES.items():
             kinds.setdefault(rel, (kind, version))
+    if len(cfgs) > 1:
+        merge_job_flags(parts["db/item_db.yml"])
     outputs = {}
     for rel, (kind, version) in kinds.items():
         if len(cfgs) == 1:

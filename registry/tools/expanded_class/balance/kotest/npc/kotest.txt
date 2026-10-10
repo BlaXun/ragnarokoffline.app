@@ -86,8 +86,9 @@ OnWhisperGlobal:
 		equip .@m;
 		dispbottom "KoTest: gun R=" + getequipid(EQI_HAND_R) + " ammo=" + getequipid(EQI_AMMO);
 		end;
-	} else if (.@c$ == "rlkit") {          // the Rebellion consumables
-		getitem 7663, 100; getitem 7664, 100; getitem 7665, 100; getitem 25187, 10; getitem 7940, 50;
+	} else if (.@c$ == "rlkit") {          // the consumables skills need; the Rebellion's ammunition only for gunners
+		if (Class == Job_Rebellion || Class == Job_Gunslinger) { getitem 7663, 100; getitem 7664, 100; getitem 7665, 100; getitem 25187, 10; }
+		getitem 7940, 50;
 		getitem 6122, 100; getitem 6123, 100; getitem 717, 200; getitem 523, 100; getitem 716, 200;   // + Blue Gemstone, Holy Water, Red Gemstone   // Paint Brush, Surface Paint (Feint Bomb, Body Painting)
 		end;
 	} else if (.@c$ == "count") {
@@ -184,6 +185,6 @@ OnWhisperGlobal:
 		else if ((@skilllist_id[.@i] >= 445 && @skilllist_id[.@i] <= 472) || @skilllist_id[.@i] == 494) .@sl += @skilllist_lv[.@i];
 		else if (@skilllist_id[.@i] >= 2596 && @skilllist_id[.@i] <= 2612) .@sp += @skilllist_lv[.@i];
 	}
-	dispbottom "KoTest: " + .@c$ + " -> class=" + Class + " base=" + BaseLevel + " job=" + JobLevel + " skillpoints=" + SkillPoint + " statpoints=" + StatusPoint + " reborn=" + kagerou_oboro_reborn + " zeny=" + Zeny + " weight=" + Weight + " nj_lv=" + .@nj + " ko_lv=" + .@ko + " gs_lv=" + .@gs + " rl_lv=" + .@rl + " tk=" + .@tk + " sg=" + .@sg + " sj=" + .@sj + " sl=" + .@sl + " sp=" + .@sp + " advjob=" + ADVJOB + " upper=" + Upper + " basic=" + getskilllv("NV_BASIC");
+	dispbottom "KoTest: " + .@c$ + " -> class=" + Class + " base=" + BaseLevel + " job=" + JobLevel + " skillpoints=" + SkillPoint + " statpoints=" + StatusPoint + " reborn=" + kagerou_oboro_reborn + " zeny=" + Zeny + " weight=" + Weight + "/" + MaxWeight + " str=" + readparam(bStr) + " nj_lv=" + .@nj + " ko_lv=" + .@ko + " gs_lv=" + .@gs + " rl_lv=" + .@rl + " tk=" + .@tk + " sg=" + .@sg + " sj=" + .@sj + " sl=" + .@sl + " sp=" + .@sp + " advjob=" + ADVJOB + " upper=" + Upper + " basic=" + getskilllv("NV_BASIC");
 	end;
 }

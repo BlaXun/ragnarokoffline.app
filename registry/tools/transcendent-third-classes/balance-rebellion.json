@@ -1,7 +1,7 @@
 {
  "_about": "Rebellion vs Sniper: each gun's single-target rotation 0.85-1.0 of Double Strafe; area skills, per target, 0.4-0.6 of its rifle rotation (the third classes' area rule). Damage per second on one target; for an area skill, on each target.",
  "load": [
-  "registry/mods/rebellion"
+  "registry/mods/transcendent-third-classes"
  ],
  "seconds": 40,
  "runs": [

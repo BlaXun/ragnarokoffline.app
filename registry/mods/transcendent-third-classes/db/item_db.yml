@@ -37,6 +37,32 @@
 # 1. No job flags: rAthena already lets the class wear a High_Wizard's items.
 # 2. Renewal's WL_MB_SG, WL_MB_LOV, WL_MB_MS, WL_MB_DL, WL_MB_JF, WL_MB_ES, WL_MB_CR, WL_MB_CL, WL_MB_CM, WL_MB_TV, which the skills need.
 # 3. The Warlock's weapons, from warlock/equipment.csv.
+#
+# _______________________
+# Kagerou, Oboro:
+# 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
+#    with the item's other jobs restated (an import entry's Jobs replaces them).
+# 2. No renewal-only items: the skills need none.
+# 3. The Kagerou's and Oboro's gear, from kagerou_oboro/equipment.csv.
+#
+# _______________________
+# Rebellion:
+# 1. Rebellion: true on every pre-renewal item a Gunslinger can equip or use,
+#    with the item's other jobs restated (an import entry's Jobs replaces them).
+# 2. Renewal's Full_Metal_Jacket, Shooting_Mine, Dragon_Tail_Missile, Slug_Bullet, Sanctified_Bullet, Silver_Bullet_, which the skills need.
+# 3. The Rebellion's gear, from rebellion/equipment.csv.
+#
+# _______________________
+# Star_Emperor, Star_Emperor2:
+# 1. No job flags: rAthena already lets the class wear a Star_Gladiator's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Star Emperor's gear, from star_emperor/equipment.csv.
+#
+# _______________________
+# Soul_Reaper:
+# 1. No job flags: rAthena already lets the class wear a Soul_Linker's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Soul Reaper's gear, from soul_reaper/equipment.csv.
 Header:
   Type: ITEM_DB
   Version: 3
@@ -643,3 +669,4229 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;
+  - Id: 1201    # Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1202    # Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1203    # Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1204    # Cutter
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1205    # Cutter
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1206    # Cutter
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1207    # Main Gauche
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1208    # Main Gauche
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1209    # Main Gauche
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1210    # Dirk
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1211    # Dirk
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1212    # Dirk
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1213    # Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1214    # Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1215    # Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1216    # Stiletto
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1217    # Stiletto
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1218    # Stiletto
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1219    # Gladius
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1220    # Gladius
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1221    # Gladius
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1222    # Damascus
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1223    # Fortune Sword
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1224    # Swordbreaker
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1225    # Mailbreaker
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1226    # Damascus
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1227    # Weeder Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1228    # Combat Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1229    # Kitchen Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1230    # Ice Pick
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1231    # Bazerald
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1233    # Exorciser
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1234    # Moonlight Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1236    # Sucsamad
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1237    # Grimtooth
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1238    # Zeny Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1239    # Poison Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1240    # Princess Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1244    # Holy Dagger
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 1247    # Kindle Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1248    # Obsidian Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 1249    # Fisherman's Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 2117    # Arm Guard
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 2118    # Arm Guard
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 2119    # Advanced Arm Guard
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 2120    # Advanced Arm Guard
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 2335    # Thief Clothes
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2336    # Thief Clothes
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2337    # Ninja Suit
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2359    # Ninja Suit
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2378    # Assassin Robe
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2435    # Battle Greaves
+    Jobs:
+      Alchemist: true
+      Assassin: true
+      Blacksmith: true
+      Crusader: true
+      Knight: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      StarGladiator: true
+      Swordman: true
+      Taekwon: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2538    # Captain's Manteau
+    Jobs:
+      Alchemist: true
+      Assassin: true
+      Blacksmith: true
+      Crusader: true
+      Knight: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      StarGladiator: true
+      Swordman: true
+      Taekwon: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2620    # Rogue's Treasure
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2645    # Moonlight Ring
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2654    # Shinobi Sash
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 2721    # Medal of Honor
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 13000    # Jujube Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13001    # Dragon Killer
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13002    # Ginnungagap
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13003    # Cowardice Blade
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 13004    # Cowardice Blade
+    Jobs:
+      Assassin: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+      KagerouOboro: true
+  - Id: 13006    # Khukri
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13007    # Jitte
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13008    # Jitte
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13009    # Kamaitachi
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13010    # Asura
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13011    # Asura
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13012    # Murasame
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13013    # Murasame
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13014    # Hakujin
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13015    # Hakujin
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13016    # Poison Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13017    # Ice Pick
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13018    # Sucsamad
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13019    # Ginnungagap
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13021    # Combat Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13023    # Ashura
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13024    # Refined Swordbreaker
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13025    # Refined Mailbreaker
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13026    # Moonlight Dagger
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13027    # Scalpel
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13028    # Tooth Blade
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13029    # Prinsense Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13030    # Dragon Killer
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13031    # Swordbreaker
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13032    # Mailbreaker
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13036    # Brave Assassin's Damascus
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13037    # Valorous Assassin's Damascus
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13039    # Ivory Knife
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13040    # Novice Cutter
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13041    # Novice Main Gauche
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13042    # Glorious Gladius
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      SuperNovice: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13043    # Fortune Sword
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13044    # Ice Pick
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13045    # Kamaitachi
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13048    # Damascus
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+  - Id: 13300    # Huuma Wing Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13301    # Huuma Giant Wheel Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13302    # Huuma Giant Wheel Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13303    # Huuma Blaze Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13304    # Huuma Calm Mind
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13305    # Brave Huuma Front Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13306    # Valorous Huuma Front Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13307    # Glorious Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13308    # Huuma Blaze Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13309    # Huuma Giant Wheel Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 656    # Awakening Potion
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      Blacksmith: true
+      Crusader: true
+      Gunslinger: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Monk: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      StarGladiator: true
+      SuperNovice: true
+      Swordman: true
+      Taekwon: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+      Rebellion: true
+  - Id: 14510    # Light Awakening Potion
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      Blacksmith: true
+      Crusader: true
+      Gunslinger: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Monk: true
+      Ninja: true
+      Novice: true
+      Rogue: true
+      Sage: true
+      SoulLinker: true
+      StarGladiator: true
+      SuperNovice: true
+      Swordman: true
+      Taekwon: true
+      Thief: true
+      Wizard: true
+      KagerouOboro: true
+      Rebellion: true
+  - Id: 13250    # Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13251    # Nimbus Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13252    # Flash Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13253    # Sharp Leaf Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13254    # Thorn Needle Shuriken
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13255    # Icicle Kunai
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13256    # Black Earth Kunai
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13257    # High Wind Kunai
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13258    # Heat Wave Kunai
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13259    # Fell Poison Kunai
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 13294    # Explosive Kunai
+    Jobs:
+      Ninja: true
+      KagerouOboro: true
+  - Id: 63101
+    AegisName: Kagemaru_Huuma
+    Name: Kagemaru Huuma Shuriken
+    Type: Weapon
+    SubType: Huuma
+    Buy: 20
+    Weight: 1500
+    Attack: 155
+    Range: 1
+    Slots: 2
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bDex,1; bonus2 bSkillAtk,"KO_HUUMARANKA",10;
+  - Id: 63102
+    AegisName: Kagemaru_Kodachi
+    Name: Kagemaru Kodachi
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20
+    Weight: 700
+    Attack: 110
+    Range: 1
+    Slots: 2
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bAgi,1; bonus2 bSkillAtk,"KO_JYUMONJIKIRI",10;
+  - Id: 63103
+    AegisName: Kagemaru_Mask
+    Name: Kagemaru Mask
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    View: 153
+    Script: |
+      bonus bAgi,1; bonus bFlee,3;
+  - Id: 63104
+    AegisName: Kagemaru_Garb
+    Name: Kagemaru Garb
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 5
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bMaxHP,200; bonus bFlee,5;
+  - Id: 63105
+    AegisName: Kagemaru_Scarf
+    Name: Kagemaru Scarf
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bFlee2,2;
+  - Id: 63106
+    AegisName: Kagemaru_Tabi
+    Name: Kagemaru Tabi
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bAgi,1; bonus bMaxSP,30;
+  - Id: 63107
+    AegisName: Kagemaru_Charm
+    Name: Kagemaru Charm
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bDex,1; bonus bLuk,1;
+  - Id: 63111
+    AegisName: Tsukikage_Huuma
+    Name: Tsukikage Huuma Shuriken
+    Type: Weapon
+    SubType: Huuma
+    Buy: 20
+    Weight: 1600
+    Attack: 175
+    Range: 1
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"KO_HUUMARANKA",15; bonus2 bSkillAtk,"KO_BAKURETSU",10;
+  - Id: 63112
+    AegisName: Tsukikage_Kodachi
+    Name: Tsukikage Kodachi
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20
+    Weight: 700
+    Attack: 125
+    Range: 1
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus bCritical,5; bonus2 bSkillAtk,"KO_JYUMONJIKIRI",15;
+  - Id: 63113
+    AegisName: Tsukikage_Mask
+    Name: Tsukikage Mask
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    View: 180
+    Script: |
+      bonus bAgi,2; bonus bFlee,5;
+  - Id: 63114
+    AegisName: Tsukikage_Garb
+    Name: Tsukikage Garb
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 6
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,5; bonus bFlee,7;
+  - Id: 63115
+    AegisName: Tsukikage_Scarf
+    Name: Tsukikage Scarf
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bFlee2,3; bonus2 bSubEle,Ele_Neutral,5;
+  - Id: 63116
+    AegisName: Tsukikage_Tabi
+    Name: Tsukikage Tabi
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus bMaxSPrate,5;
+  - Id: 63117
+    AegisName: Tsukikage_Charm
+    Name: Tsukikage Charm
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus bLuk,2; bonus bCritical,2;
+  - Id: 63121
+    AegisName: Yamigarasu_Huuma
+    Name: Yamigarasu Huuma Shuriken
+    Type: Weapon
+    SubType: Huuma
+    Buy: 20
+    Weight: 1700
+    Attack: 195
+    Range: 1
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus bDex,2; bonus2 bSkillAtk,"KO_HUUMARANKA",20; bonus2 bSkillAtk,"KO_BAKURETSU",15;
+  - Id: 63122
+    AegisName: Yamigarasu_Kodachi
+    Name: Yamigarasu Kodachi
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20
+    Weight: 700
+    Attack: 140
+    Range: 2
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bStr,1; bonus bAgi,2; bonus bCritical,7; bonus2 bSkillAtk,"KO_JYUMONJIKIRI",20; bonus2 bSkillAtk,"KO_SETSUDAN",15;
+  - Id: 63123
+    AegisName: Yamigarasu_Mask
+    Name: Yamigarasu Mask
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Head_Low: true
+      Head_Mid: true
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    View: 214
+    Script: |
+      bonus bAgi,3; bonus bFlee,7;
+  - Id: 63124
+    AegisName: Yamigarasu_Garb
+    Name: Yamigarasu Garb
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 7
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,7; bonus bFlee,10;
+  - Id: 63125
+    AegisName: Yamigarasu_Scarf
+    Name: Yamigarasu Scarf
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bFlee2,4; bonus2 bSubEle,Ele_Neutral,10;
+  - Id: 63126
+    AegisName: Yamigarasu_Tabi
+    Name: Yamigarasu Tabi
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bAgi,3; bonus bMaxSPrate,7; bonus bMaxHP,300;
+  - Id: 63127
+    AegisName: Yamigarasu_Charm
+    Name: Yamigarasu Charm
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bLuk,2; bonus bCritical,3;
+  - Id: 63131
+    AegisName: Oborozuki_Huuma
+    Name: Oborozuki Huuma Shuriken
+    Type: Weapon
+    SubType: Huuma
+    Buy: 20
+    Weight: 1800
+    Attack: 215
+    Range: 1
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bDex,3; bonus2 bSkillAtk,"KO_HUUMARANKA",25; bonus2 bSkillAtk,"KO_BAKURETSU",20; bonus bUnbreakableWeapon;
+  - Id: 63132
+    AegisName: Oborozuki_Kodachi
+    Name: Oborozuki Kodachi
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20
+    Weight: 700
+    Attack: 155
+    Range: 1
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus bAgi,3; bonus bCritical,10; bonus2 bSkillAtk,"KO_JYUMONJIKIRI",25; bonus2 bSkillAtk,"KO_SETSUDAN",20; bonus bUnbreakableWeapon;
+  - Id: 63133
+    AegisName: Oborozuki_Mask
+    Name: Oborozuki Mask
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 6
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Head_Low: true
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    View: 545
+    Script: |
+      bonus bAgi,4; bonus bFlee,10;
+  - Id: 63134
+    AegisName: Oborozuki_Garb
+    Name: Oborozuki Garb
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 8
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,10; bonus bFlee,12;
+  - Id: 63135
+    AegisName: Oborozuki_Scarf
+    Name: Oborozuki Scarf
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bFlee2,5; bonus2 bSubEle,Ele_Neutral,12;
+  - Id: 63136
+    AegisName: Oborozuki_Tabi
+    Name: Oborozuki Tabi
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bAgi,4; bonus bMaxSPrate,10; bonus bMaxHPrate,5;
+  - Id: 63137
+    AegisName: Oborozuki_Charm
+    Name: Oborozuki Charm
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      KagerouOboro: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bDex,4; bonus bLuk,3; bonus bCritical,4;
+  - Id: 2382    # Elite Shooter Suit
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 2405    # Boots
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Gunslinger: true
+      Hunter: true
+      Knight: true
+      Merchant: true
+      Rogue: true
+      StarGladiator: true
+      Swordman: true
+      Taekwon: true
+      Thief: true
+      Rebellion: true
+  - Id: 2406    # Boots
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Gunslinger: true
+      Hunter: true
+      Knight: true
+      Merchant: true
+      Rogue: true
+      StarGladiator: true
+      Swordman: true
+      Taekwon: true
+      Thief: true
+      Rebellion: true
+  - Id: 2437    # Battle Boots
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 2540    # Sheriff's Manteau
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 2733    # Sheriff Badge
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13100    # Six Shooter
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13101    # Six Shooter
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13102    # Crimson Bolt
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13103    # Crimson Bolt
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13104    # Garrison
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13105    # Garrison
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13106    # Gold Lux
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13107    # Wasteland's Outlaw
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13108    # Soldier Revolver
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13109    # Wasteland Outlaw
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13110    # Glorious Pistol
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13112    # Eden Revlover I
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13113    # Eden Revlover II
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13150    # Branch
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13151    # Cyclone
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13152    # Cyclone
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13153    # Dusk
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13154    # Rolling Stone
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13155    # Black Rose
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13156    # Gate Keeper
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13157    # Drifter
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13158    # Butcher
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13159    # Butcher
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13160    # Destroyer
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13161    # Destroyer
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13162    # Inferno
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13163    # Long Barrel
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13164    # Long Barrel
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13165    # Jungle Carbine
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13166    # Jungle Carbine
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13167    # Gate Keeper-DD
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13168    # Thunder P
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13169    # Thunder P
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13170    # Lever Action Rifle
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13171    # Soldier Rifle
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13172    # Soldier Gatling Gun
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13173    # Soldier Shotgun
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13174    # Soldier Grenade Launcher
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13175    # Lever Action Rifle
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13176    # Glorious Rifle
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13177    # Glorious Gatling Gun
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13178    # Glorious Shotgun
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13179    # Glorious Grenade Launcher
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 657    # Berserk Potion
+    Jobs:
+      Alchemist: true
+      Blacksmith: true
+      Crusader: true
+      Gunslinger: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Rogue: true
+      SoulLinker: true
+      StarGladiator: true
+      Swordman: true
+      Taekwon: true
+      Wizard: true
+      Rebellion: true
+  - Id: 14511    # Light Berserk Potion
+    Jobs:
+      Alchemist: true
+      Blacksmith: true
+      Crusader: true
+      Gunslinger: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Rogue: true
+      SoulLinker: true
+      StarGladiator: true
+      Swordman: true
+      Taekwon: true
+      Wizard: true
+      Rebellion: true
+  - Id: 13200    # Bullet
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13201    # Silver Bullet
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13202    # Bloody Shell
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13203    # Flare Sphere
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13204    # Lightning Sphere
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13205    # Poison Sphere
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13206    # Blind Sphere
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 13207    # Freezing Sphere
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+  - Id: 7663
+    AegisName: Full_Metal_Jacket
+    Name: Full Metal Jacket
+    Type: Etc
+    Buy: 15
+    Weight: 1
+  - Id: 7664
+    AegisName: Shooting_Mine
+    Name: Grenade Launcher
+    Type: Etc
+    Buy: 30
+    Weight: 1
+  - Id: 7665
+    AegisName: Dragon_Tail_Missile
+    Name: Dragon Tail Missile
+    Type: Etc
+    Buy: 15
+    Weight: 1
+  - Id: 25187
+    AegisName: Slug_Bullet
+    Name: Slug Bullet
+    Type: Etc
+    Buy: 1000
+    Weight: 1200
+  - Id: 13220
+    AegisName: Sanctified_Bullet
+    Name: Purifying Bullet
+    Type: Ammo
+    SubType: Bullet
+    Buy: 5
+    Weight: 1
+    Attack: 40
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+    Locations:
+      Ammo: true
+    EquipLevelMin: 100
+    Script: |
+      bonus bAtkEle,Ele_Holy;
+  - Id: 13221
+    AegisName: Silver_Bullet_
+    Name: Silver Bullet
+    Type: Ammo
+    SubType: Bullet
+    Buy: 5
+    Weight: 1
+    Attack: 15
+    Jobs:
+      Gunslinger: true
+      Rebellion: true
+    Locations:
+      Ammo: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bAtkEle,Ele_Holy;
+  - Id: 63201
+    AegisName: Dustwalker_Revolver
+    Name: Dustwalker Revolver
+    Type: Weapon
+    SubType: Revolver
+    Buy: 20
+    Weight: 500
+    Attack: 60
+    Range: 7
+    Slots: 2
+    Jobs:
+      Rebellion: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bDex,1; bonus2 bSkillAtk,"RL_FIREDANCE",10;
+  - Id: 63202
+    AegisName: Dustwalker_Rifle
+    Name: Dustwalker Rifle
+    Type: Weapon
+    SubType: Rifle
+    Buy: 20
+    Weight: 750
+    Attack: 140
+    Range: 9
+    Slots: 2
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bDex,1; bonus2 bSkillAtk,"RL_MASS_SPIRAL",10;
+  - Id: 63203
+    AegisName: Dustwalker_Gatling
+    Name: Dustwalker Gatling Gun
+    Type: Weapon
+    SubType: Gatling
+    Buy: 20
+    Weight: 2300
+    Attack: 50
+    Range: 9
+    Slots: 2
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bAgi,1; bonus2 bSkillAtk,"RL_R_TRIP",10;
+  - Id: 63204
+    AegisName: Dustwalker_Shotgun
+    Name: Dustwalker Shotgun
+    Type: Weapon
+    SubType: Shotgun
+    Buy: 20
+    Weight: 900
+    Attack: 170
+    Range: 9
+    Slots: 2
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bSplashRange,1; bonus bStr,1; bonus2 bSkillAtk,"RL_BANISHING_BUSTER",10;
+  - Id: 63205
+    AegisName: Dustwalker_Grenade
+    Name: Dustwalker Grenade Launcher
+    Type: Weapon
+    SubType: Grenade
+    Buy: 20
+    Weight: 1200
+    Attack: 210
+    Range: 9
+    Slots: 2
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bStr,1; bonus2 bSkillAtk,"RL_D_TAIL",10;
+  - Id: 63206
+    AegisName: Dustwalker_Hat
+    Name: Dustwalker Hat
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    View: 32
+    Script: |
+      bonus bDex,1; bonus bHit,3;
+  - Id: 63207
+    AegisName: Dustwalker_Coat
+    Name: Dustwalker Coat
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 5
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bMaxHP,200; bonus bFlee,5;
+  - Id: 63208
+    AegisName: Dustwalker_Poncho
+    Name: Dustwalker Poncho
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bLongAtkDef,5;
+  - Id: 63209
+    AegisName: Dustwalker_Boots
+    Name: Dustwalker Boots
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bAgi,1; bonus bMaxSP,30;
+  - Id: 63210
+    AegisName: Dustwalker_Badge
+    Name: Dustwalker Badge
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bDex,1; bonus bLuk,1;
+  - Id: 63211
+    AegisName: Bounty_Revolver
+    Name: Bounty Hunter's Revolver
+    Type: Weapon
+    SubType: Revolver
+    Buy: 20
+    Weight: 500
+    Attack: 75
+    Range: 7
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"RL_FIREDANCE",15;
+  - Id: 63212
+    AegisName: Bounty_Rifle
+    Name: Bounty Hunter's Rifle
+    Type: Weapon
+    SubType: Rifle
+    Buy: 20
+    Weight: 750
+    Attack: 160
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"RL_MASS_SPIRAL",15; bonus2 bSkillAtk,"RL_AM_BLAST",10;
+  - Id: 63213
+    AegisName: Bounty_Gatling
+    Name: Bounty Hunter's Gatling Gun
+    Type: Weapon
+    SubType: Gatling
+    Buy: 20
+    Weight: 2300
+    Attack: 65
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus2 bSkillAtk,"RL_R_TRIP",15; bonus2 bSkillAtk,"RL_FIRE_RAIN",10;
+  - Id: 63214
+    AegisName: Bounty_Shotgun
+    Name: Bounty Hunter's Shotgun
+    Type: Weapon
+    SubType: Shotgun
+    Buy: 20
+    Weight: 900
+    Attack: 190
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bSplashRange,1; bonus bStr,2; bonus2 bSkillAtk,"RL_BANISHING_BUSTER",15; bonus2 bSkillAtk,"RL_S_STORM",10;
+  - Id: 63215
+    AegisName: Bounty_Grenade
+    Name: Bounty Hunter's Grenade Launcher
+    Type: Weapon
+    SubType: Grenade
+    Buy: 20
+    Weight: 1200
+    Attack: 240
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"RL_D_TAIL",15; bonus2 bSkillAtk,"RL_H_MINE",10;
+  - Id: 63216
+    AegisName: Bounty_Hat
+    Name: Bounty Hunter's Hat
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    View: 159
+    Script: |
+      bonus bDex,2; bonus bHit,5;
+  - Id: 63217
+    AegisName: Bounty_Coat
+    Name: Bounty Hunter's Coat
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 6
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,5; bonus bFlee,7;
+  - Id: 63218
+    AegisName: Bounty_Poncho
+    Name: Bounty Hunter's Poncho
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bLongAtkDef,7; bonus2 bSubEle,Ele_Neutral,5;
+  - Id: 63219
+    AegisName: Bounty_Boots
+    Name: Bounty Hunter's Boots
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus bMaxSPrate,5;
+  - Id: 63220
+    AegisName: Bounty_Badge
+    Name: Bounty Hunter's Badge
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus bLuk,2; bonus bCritical,2;
+  - Id: 63221
+    AegisName: Outlaw_Revolver
+    Name: Outlaw's Revolver
+    Type: Weapon
+    SubType: Revolver
+    Buy: 20
+    Weight: 500
+    Attack: 90
+    Range: 7
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bAgi,1; bonus2 bSkillAtk,"RL_FIREDANCE",20; bonus2 bSkillAtk,"RL_QD_SHOT",15;
+  - Id: 63222
+    AegisName: Outlaw_Rifle
+    Name: Outlaw's Rifle
+    Type: Weapon
+    SubType: Rifle
+    Buy: 20
+    Weight: 750
+    Attack: 180
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus2 bSkillAtk,"RL_MASS_SPIRAL",20; bonus2 bSkillAtk,"RL_AM_BLAST",15;
+  - Id: 63223
+    AegisName: Outlaw_Gatling
+    Name: Outlaw's Gatling Gun
+    Type: Weapon
+    SubType: Gatling
+    Buy: 20
+    Weight: 2300
+    Attack: 80
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bAgi,3; bonus2 bSkillAtk,"RL_R_TRIP",20; bonus2 bSkillAtk,"RL_FIRE_RAIN",15;
+  - Id: 63224
+    AegisName: Outlaw_Shotgun
+    Name: Outlaw's Shotgun
+    Type: Weapon
+    SubType: Shotgun
+    Buy: 20
+    Weight: 900
+    Attack: 210
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bSplashRange,1; bonus bStr,3; bonus2 bSkillAtk,"RL_BANISHING_BUSTER",20; bonus2 bSkillAtk,"RL_S_STORM",15;
+  - Id: 63225
+    AegisName: Outlaw_Grenade
+    Name: Outlaw's Grenade Launcher
+    Type: Weapon
+    SubType: Grenade
+    Buy: 20
+    Weight: 1200
+    Attack: 270
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus2 bSkillAtk,"RL_D_TAIL",20; bonus2 bSkillAtk,"RL_H_MINE",15;
+  - Id: 63226
+    AegisName: Outlaw_Hat
+    Name: Outlaw's Hat
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    View: 74
+    Script: |
+      bonus bDex,3; bonus bHit,7;
+  - Id: 63227
+    AegisName: Outlaw_Coat
+    Name: Outlaw's Coat
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 7
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,7; bonus bFlee,10;
+  - Id: 63228
+    AegisName: Outlaw_Poncho
+    Name: Outlaw's Poncho
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bLongAtkDef,10; bonus2 bSubEle,Ele_Neutral,10;
+  - Id: 63229
+    AegisName: Outlaw_Boots
+    Name: Outlaw's Boots
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bAgi,3; bonus bMaxSPrate,7; bonus bMaxHP,300;
+  - Id: 63230
+    AegisName: Outlaw_Badge
+    Name: Outlaw's Badge
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bLuk,2; bonus bCritical,3;
+  - Id: 63231
+    AegisName: Hellfire_Revolver
+    Name: Hellfire Revolver
+    Type: Weapon
+    SubType: Revolver
+    Buy: 20
+    Weight: 500
+    Attack: 105
+    Range: 7
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bDex,4; bonus bAgi,2; bonus2 bSkillAtk,"RL_FIREDANCE",25; bonus2 bSkillAtk,"RL_QD_SHOT",20; bonus bUnbreakableWeapon;
+  - Id: 63232
+    AegisName: Hellfire_Rifle
+    Name: Hellfire Rifle
+    Type: Weapon
+    SubType: Rifle
+    Buy: 20
+    Weight: 750
+    Attack: 200
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bDex,4; bonus2 bSkillAtk,"RL_MASS_SPIRAL",25; bonus2 bSkillAtk,"RL_AM_BLAST",20; bonus2 bSkillAtk,"RL_HAMMER_OF_GOD",15; bonus bUnbreakableWeapon;
+  - Id: 63233
+    AegisName: Hellfire_Gatling
+    Name: Hellfire Gatling Gun
+    Type: Weapon
+    SubType: Gatling
+    Buy: 20
+    Weight: 2300
+    Attack: 95
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bAgi,4; bonus2 bSkillAtk,"RL_R_TRIP",25; bonus2 bSkillAtk,"RL_FIRE_RAIN",20; bonus bUnbreakableWeapon;
+  - Id: 63234
+    AegisName: Hellfire_Shotgun
+    Name: Hellfire Shotgun
+    Type: Weapon
+    SubType: Shotgun
+    Buy: 20
+    Weight: 900
+    Attack: 230
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bSplashRange,1; bonus bStr,4; bonus2 bSkillAtk,"RL_BANISHING_BUSTER",25; bonus2 bSkillAtk,"RL_S_STORM",20; bonus bUnbreakableWeapon;
+  - Id: 63235
+    AegisName: Hellfire_Grenade
+    Name: Hellfire Grenade Launcher
+    Type: Weapon
+    SubType: Grenade
+    Buy: 20
+    Weight: 1200
+    Attack: 300
+    Range: 9
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bStr,4; bonus2 bSkillAtk,"RL_D_TAIL",25; bonus2 bSkillAtk,"RL_H_MINE",20; bonus bUnbreakableWeapon;
+  - Id: 63236
+    AegisName: Hellfire_Hat
+    Name: Hellfire Hat
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 6
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    View: 159
+    Script: |
+      bonus bDex,4; bonus bHit,10;
+  - Id: 63237
+    AegisName: Hellfire_Coat
+    Name: Hellfire Coat
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 8
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,10; bonus bFlee,12;
+  - Id: 63238
+    AegisName: Hellfire_Poncho
+    Name: Hellfire Poncho
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bLongAtkDef,12; bonus2 bSubEle,Ele_Neutral,12;
+  - Id: 63239
+    AegisName: Hellfire_Boots
+    Name: Hellfire Boots
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bAgi,4; bonus bMaxSPrate,10; bonus bMaxHPrate,5;
+  - Id: 63240
+    AegisName: Hellfire_Badge
+    Name: Hellfire Badge
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      Rebellion: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bDex,4; bonus bLuk,3; bonus bCritical,4;
+  - Id: 63301
+    AegisName: Dawn_Tome
+    Name: Dawn Tome
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 800
+    Attack: 125
+    Range: 1
+    Slots: 2
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bStr,1; bonus2 bSkillAtk,"SJ_FLASHKICK",10;
+  - Id: 63302
+    AegisName: Dawn_Hat
+    Name: Dawn Hat
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    View: 451
+    Script: |
+      bonus bStr,1; bonus bHit,3;
+  - Id: 63303
+    AegisName: Dawn_Dobok
+    Name: Dawn Dobok
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 5
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bMaxHP,200; bonus bFlee,5;
+  - Id: 63304
+    AegisName: Dawn_Mantle
+    Name: Dawn Mantle
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bFlee2,2;
+  - Id: 63305
+    AegisName: Dawn_Shoes
+    Name: Dawn Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bAgi,1; bonus bMaxSP,30;
+  - Id: 63306
+    AegisName: Dawn_Talisman
+    Name: Dawn Talisman
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bStr,1; bonus bDex,1;
+  - Id: 63311
+    AegisName: Zenith_Tome
+    Name: Zenith Tome
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 800
+    Attack: 140
+    Range: 1
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"SJ_FLASHKICK",15; bonus2 bSkillAtk,"SJ_FULLMOONKICK",10;
+  - Id: 63312
+    AegisName: Zenith_Helm
+    Name: Zenith Helm
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Mid: true
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    View: 213
+    Script: |
+      bonus bStr,2; bonus bHit,5;
+  - Id: 63313
+    AegisName: Zenith_Dobok
+    Name: Zenith Dobok
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 6
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,5; bonus bFlee,7;
+  - Id: 63314
+    AegisName: Zenith_Mantle
+    Name: Zenith Mantle
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bFlee2,3; bonus2 bSubEle,Ele_Neutral,5;
+  - Id: 63315
+    AegisName: Zenith_Shoes
+    Name: Zenith Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus bMaxSPrate,5;
+  - Id: 63316
+    AegisName: Zenith_Talisman
+    Name: Zenith Talisman
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus bDex,2; bonus bCritical,2;
+  - Id: 63321
+    AegisName: Eclipse_Tome
+    Name: Eclipse Tome
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 800
+    Attack: 155
+    Range: 1
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus2 bSkillAtk,"SJ_FULLMOONKICK",20; bonus2 bSkillAtk,"SJ_SOLARBURST",15;
+  - Id: 63322
+    AegisName: Eclipse_Hat
+    Name: Eclipse Hat
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Mid: true
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    View: 268
+    Script: |
+      bonus bStr,3; bonus bHit,7;
+  - Id: 63323
+    AegisName: Eclipse_Dobok
+    Name: Eclipse Dobok
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 7
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,7; bonus bFlee,10;
+  - Id: 63324
+    AegisName: Eclipse_Mantle
+    Name: Eclipse Mantle
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bFlee2,4; bonus2 bSubEle,Ele_Neutral,10;
+  - Id: 63325
+    AegisName: Eclipse_Shoes
+    Name: Eclipse Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bAgi,3; bonus bMaxSPrate,7; bonus bMaxHP,300;
+  - Id: 63326
+    AegisName: Eclipse_Talisman
+    Name: Eclipse Talisman
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bDex,2; bonus bCritical,3;
+  - Id: 63331
+    AegisName: Celestial_Tome
+    Name: Celestial Tome
+    Type: Weapon
+    SubType: Book
+    Buy: 20
+    Weight: 800
+    Attack: 170
+    Range: 1
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bStr,4; bonus bAgi,2; bonus2 bSkillAtk,"SJ_FULLMOONKICK",25; bonus2 bSkillAtk,"SJ_SOLARBURST",20; bonus2 bSkillAtk,"SJ_PROMINENCEKICK",15; bonus bUnbreakableWeapon;
+  - Id: 63332
+    AegisName: Celestial_Crown
+    Name: Celestial Crown
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 6
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Mid: true
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    View: 138
+    Script: |
+      bonus bStr,4; bonus bHit,10;
+  - Id: 63333
+    AegisName: Celestial_Dobok
+    Name: Celestial Dobok
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Defense: 8
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,10; bonus bFlee,12;
+  - Id: 63334
+    AegisName: Celestial_Mantle
+    Name: Celestial Mantle
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bFlee2,5; bonus2 bSubEle,Ele_Neutral,12;
+  - Id: 63335
+    AegisName: Celestial_Shoes
+    Name: Celestial Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bAgi,4; bonus bMaxSPrate,10; bonus bMaxHPrate,5;
+  - Id: 63336
+    AegisName: Celestial_Talisman
+    Name: Celestial Talisman
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      StarGladiator: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bStr,4; bonus bDex,3; bonus bCritical,4;
+  - Id: 63401
+    AegisName: Wisp_Staff
+    Name: Wisp Staff
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 500
+    Attack: 60
+    Range: 1
+    Slots: 2
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus bMatkRate,15; bonus2 bSkillAtk,"SP_SPA",10;
+  - Id: 63402
+    AegisName: Wisp_Hood
+    Name: Wisp Hood
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    View: 256
+    Script: |
+      bonus bInt,1; bonus bMaxSP,50;
+  - Id: 63403
+    AegisName: Wisp_Robe
+    Name: Wisp Robe
+    Type: Armor
+    Buy: 20
+    Weight: 400
+    Defense: 4
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bMaxHP,200; bonus bMdef,3;
+  - Id: 63404
+    AegisName: Wisp_Shawl
+    Name: Wisp Shawl
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus2 bSubEle,Ele_Ghost,5;
+  - Id: 63405
+    AegisName: Wisp_Shoes
+    Name: Wisp Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 2
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bDex,1; bonus bMaxSP,30;
+  - Id: 63406
+    AegisName: Wisp_Bell
+    Name: Wisp Bell
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    Script: |
+      bonus bInt,1; bonus bDex,1;
+  - Id: 63411
+    AegisName: Shade_Staff
+    Name: Shade Staff
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 500
+    Attack: 70
+    Range: 1
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bMatkRate,15; bonus2 bSkillAtk,"SP_SPA",15; bonus2 bSkillAtk,"SP_SWHOO",10;
+  - Id: 63412
+    AegisName: Shade_Mask
+    Name: Shade Mask
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Low: true
+      Head_Mid: true
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    View: 321
+    Script: |
+      bonus bInt,2; bonus bMaxSPrate,5;
+  - Id: 63413
+    AegisName: Shade_Robe
+    Name: Shade Robe
+    Type: Armor
+    Buy: 20
+    Weight: 400
+    Defense: 5
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,5; bonus bMdef,5;
+  - Id: 63414
+    AegisName: Shade_Shawl
+    Name: Shade Shawl
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus2 bSubEle,Ele_Ghost,10; bonus2 bSubEle,Ele_Neutral,5;
+  - Id: 63415
+    AegisName: Shade_Shoes
+    Name: Shade Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 3
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus bMaxSPrate,5;
+  - Id: 63416
+    AegisName: Shade_Bell
+    Name: Shade Bell
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus bDex,2; bonus bCastrate,-3;
+  - Id: 63421
+    AegisName: Revenant_Staff
+    Name: Revenant Staff
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 500
+    Attack: 80
+    Range: 1
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bInt,4; bonus bMatkRate,18; bonus2 bSkillAtk,"SP_SPA",20; bonus2 bSkillAtk,"SP_SWHOO",15; bonus2 bSkillAtk,"SP_CURSEEXPLOSION",10;
+  - Id: 63422
+    AegisName: Revenant_Hood
+    Name: Revenant Hood
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Mid: true
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    View: 491
+    Script: |
+      bonus bInt,3; bonus bMaxSPrate,7;
+  - Id: 63423
+    AegisName: Revenant_Robe
+    Name: Revenant Robe
+    Type: Armor
+    Buy: 20
+    Weight: 400
+    Defense: 6
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,7; bonus bMdef,7;
+  - Id: 63424
+    AegisName: Revenant_Shawl
+    Name: Revenant Shawl
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus2 bSubEle,Ele_Ghost,15; bonus2 bSubEle,Ele_Neutral,10;
+  - Id: 63425
+    AegisName: Revenant_Shoes
+    Name: Revenant Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bMaxSPrate,7; bonus bMaxHP,300;
+  - Id: 63426
+    AegisName: Revenant_Bell
+    Name: Revenant Bell
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 80
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus bCastrate,-5;
+  - Id: 63431
+    AegisName: Reapers_Staff
+    Name: Reaper's Staff
+    Type: Weapon
+    SubType: Staff
+    Buy: 20
+    Weight: 500
+    Attack: 90
+    Range: 1
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bInt,5; bonus bDex,2; bonus bMatkRate,20; bonus2 bSkillAtk,"SP_SPA",25; bonus2 bSkillAtk,"SP_SWHOO",20; bonus2 bSkillAtk,"SP_CURSEEXPLOSION",15; bonus bUnbreakableWeapon;
+  - Id: 63432
+    AegisName: Reapers_Hood
+    Name: Reaper's Hood
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Head_Mid: true
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    View: 598
+    Script: |
+      bonus bInt,4; bonus bMaxSPrate,10;
+  - Id: 63433
+    AegisName: Reapers_Robe
+    Name: Reaper's Robe
+    Type: Armor
+    Buy: 20
+    Weight: 400
+    Defense: 7
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bMaxHPrate,10; bonus bMdef,10;
+  - Id: 63434
+    AegisName: Reapers_Shawl
+    Name: Reaper's Shawl
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus2 bSubEle,Ele_Ghost,20; bonus2 bSubEle,Ele_Neutral,12;
+  - Id: 63435
+    AegisName: Reapers_Shoes
+    Name: Reaper's Shoes
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Defense: 5
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bDex,4; bonus bMaxSPrate,10; bonus bMaxHPrate,5;
+  - Id: 63436
+    AegisName: Reapers_Bell
+    Name: Reaper's Bell
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 0
+    Slots: 1
+    Jobs:
+      SoulLinker: true
+    Classes:
+      Third: true
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    EquipLevelMin: 95
+    Refineable: true
+    Script: |
+      bonus bInt,4; bonus bDex,3; bonus bCastrate,-7;

@@ -23,7 +23,7 @@
 --   Attacks with Falling Star, targets Flash-Kicked   907     1044
 --   New Moon Kick + Full Moon Kick (area, a target)   459
 --
--- The runs behind these are in registry/tools/star-emperor/balance.json.
+-- The runs behind these are in registry/tools/transcendent-third-classes/balance-star-emperor.json.
 --
 -- Universe Stance is a toggle and Falling Star lasts minutes: both were cast
 -- once at the start. (An earlier measurement recast the stance every 10 s,

@@ -1,7 +1,7 @@
 {
  "_about": "Star Emperor vs Assassin Cross: single target 0.85-1.0 of Sonic Blow; area skills, per target, 0.4-0.6 of its own single-target rotation (the third classes' area rule). Universe Stance and Falling Star cast once. Damage per second on one target; for an area skill, on each target.",
  "load": [
-  "registry/mods/star-emperor"
+  "registry/mods/transcendent-third-classes"
  ],
  "seconds": 45,
  "runs": [

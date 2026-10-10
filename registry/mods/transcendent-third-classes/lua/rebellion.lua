@@ -12,7 +12,7 @@
 --
 -- Each factor scales the skill's own percentage, after everything the server
 -- adds to it (Desperado's bonus to Fire Dance, coins), so those keep their
--- share. The aim is a little below a transcendent class. Measured on a
+-- share. The aim is 0.85-1.0 of a transcendent class. Measured on a
 -- pre-renewal server, damage per second over 30 s against one DEF 30 / VIT 30
 -- target, all characters base 99 with the same DEX build and a 150 ATK weapon
 -- of their kind:
@@ -26,7 +26,7 @@
 --     Round Trip, Fire Rain (gatling)                 1088, 1011
 --     Shatter Storm (shotgun)                                999
 --
--- The runs behind these are in registry/tools/rebellion/balance.json.
+-- The runs behind these are in registry/tools/transcendent-third-classes/balance-rebellion.json.
 --
 -- Each gun aims at 0.85-1.0 of the Sniper on one target, and the area skills
 -- at about half of the rifle on each target (0.43-0.47), the third classes'

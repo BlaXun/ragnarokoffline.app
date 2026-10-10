@@ -1,7 +1,7 @@
 {
  "_about": "Soul Reaper vs High Wizard: single target 0.85-1.0 of Jupitel Thunder; a caster, so its area spells are not held to the third classes' area rule. Soul energy is refilled every 3 s, so the Eswhoo and Curse Explosion runs are what the skills do with energy to spare, not a rate a player keeps up. Damage per second on one target; for an area skill, on each target.",
  "load": [
-  "registry/mods/soul-reaper"
+  "registry/mods/transcendent-third-classes"
  ],
  "seconds": 40,
  "runs": [

@@ -6,16 +6,21 @@ transcendent class is: by rebirth. It is written for an AI agent doing the
 work, and says where the person it works for has to decide or check
 something.
 
-The worked example is [`registry/mods/kagerou-oboro`](../../registry/mods/kagerou-oboro),
-with its generator in [`registry/tools/kagerou-oboro`](../../registry/tools/kagerou-oboro).
-Read both before starting. Most of what follows is what that mod ran into.
+Every class, expanded or third, lives in one mod,
+[`registry/mods/transcendent-third-classes`](../../registry/mods/transcendent-third-classes),
+with one generator script,
+[`registry/tools/transcendent-third-classes/build.py`](../../registry/tools/transcendent-third-classes/build.py),
+holding a config per class. The worked example is the Kagerou and Oboro
+(`npc/kagerou_oboro.txt`, `lua/kagerou_oboro.lua`, the `kagerou_oboro` config
+and its CSVs in `kagerou_oboro/`); they were a mod of their own at first.
+Read those before starting. Most of what follows is what they ran into.
 
 ---
 
 ## 0. The shape of the work
 
-The result is **one registry mod, era `pre-renewal`**, that changes nothing in
-rAthena, the population engine or the app. rAthena already compiles every
+The result is **a class added to the one registry mod, era `pre-renewal`**,
+that changes nothing in rAthena, the population engine or the app. rAthena already compiles every
 expanded class and its skills into a pre-renewal build. What pre-renewal lacks
 is data, and data is what a mod ships:
 
@@ -30,9 +35,10 @@ is data, and data is what a mod ships:
 | class gear at pre-re levels | `db/item_db.yml`, `db/item_combos.yml`, `db/mob_db.yml`, `System/itemInfo.lua` |
 | consumables pre-re has no source for | a shop in `npc/` |
 
-Everything under `db/` and `System/` is **generated** by a script in
-`registry/tools/<mod>/`, from the pinned rAthena plus CSV files a person
-edits. The NPC and the Lua are written by hand. The generator never ships with
+Everything under `db/` and `System/` is **generated** by
+`registry/tools/transcendent-third-classes/build.py` (a config per class),
+from the pinned rAthena plus each class's CSV files, in a directory of its
+own beside the script, that a person edits. The NPC and the Lua are written by hand. The generator never ships with
 the mod.
 
 If you find yourself wanting to edit rAthena, stop and ask: the point of this
@@ -390,7 +396,7 @@ window, so check every combo after converting.
    1,150 per cast on one character and 3,570 on the other.
 7. Set factors as `old × target / measured`, then measure again. Record the
    final table in the Lua file's header and in the README, and the runs
-   behind it in the mod's `registry/tools/<mod>/balance.json` (§8), so the
+   behind it in a spec beside `build.py` (`balance-<class>.json`, §8), so the
    next person can measure the same thing again.
 8. **Ground skills report their damage from their skill unit**, not from the
    caster (the packet's source is the unit's id). Count them by skill id, or
@@ -450,12 +456,13 @@ and checks each ratio against its aim:
 
 ```
 registry/tools/expanded_class/balance/setup.sh ../rathena
-python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/kagerou-oboro/balance.json
+python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/transcendent-third-classes/balance-kagerou-oboro.json
 ```
 
 A spec run is one rotation on the §7 template against the test dummy, with
-the run it is compared with and the band its ratio should fall in. Every
-class mod keeps its runs in `registry/tools/<mod>/balance.json`; when a
+the run it is compared with and the band its ratio should fall in. The
+third classes keep their runs in `registry/tools/transcendent-third-classes/balance.json`,
+each expanded class in `balance-<class>.json` beside it; when a
 factor changes, the spec is run again and the README's table follows it.
 
 What the rig is made of, for when it needs changing:
@@ -586,8 +593,8 @@ cannot do the following, so stop and ask:
 Renewal's Star Emperor and Soul Reaper are not expanded second classes like
 Kagerou and Rebellion: rAthena makes them **third** classes (`JOBL_THIRD`) on
 top of Star Gladiator and Soul Linker. That changes the recipe, mostly for
-the better. The worked example is `registry/mods/star-emperor` (branch
-`mods/star-emperor`).
+the better. The worked example is the Star Emperor (`npc/star_emperor.txt`,
+`lua/star_emperor.lua` and the `star_emperor` config).
 
 - **The path is a true rebirth.** Pre-renewal never gave Star Gladiators or
   Soul Linkers one, so the third class becomes their transcendent form:
@@ -939,12 +946,15 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
 
 ### Generator
 
-All class mods' branches carry the same `registry/tools/expanded_class/`
-directory: the generator `expanded_class.py` and the balance rig
-`balance/`. After any change, copy it to every branch and confirm with `--check` that each mod's output does
-not change. If the pinned `vendor/rathena` lacks the pinned commit, pass
-`--rathena ../rathena`. Several classes go into one mod as a list of
-configs, each with its CSVs in its own directory (`CSV_DIR`).
+`registry/tools/expanded_class/` holds the generator `expanded_class.py` and
+the balance rig `balance/`. Every class is a config in the one `build.py`,
+each with its CSVs in its own directory (`CSV_DIR`); after a generator
+change, run `build.py --check` and read the diff. If the pinned
+`vendor/rathena` lacks the pinned commit, pass `--rathena ../rathena`. When
+two classes flag the same stock item for their jobs (the Awakening Potions
+for Kagerou and Rebellion), the generator writes one entry with both keys:
+rAthena takes an import entry's `Jobs:` as a whole, so two entries would
+leave only the last class's. A monster may drop only one class's gear.
 
 ### Per new third class, in short
 
@@ -965,22 +975,25 @@ configs, each with its CSVs in its own directory (`CSV_DIR`).
 
 ---
 
-## Appendix: Kagerou's file list
+## Appendix: the mod's file list
 
 ```
-registry/mods/kagerou-oboro/
-  mod.json                 era pre-renewal
-  README.md                the path, the numbers, the gear, the files
-  npc/kagerou_oboro.txt    Kirikage (rebirth and job change), Shadow Supplier, hidden shop
-  lua/kagerou_oboro.lua    ratio factors and the measured table
-  db/job_stats.yml         generated
-  db/skill_tree.yml        generated
-  db/skill_db.yml          generated: renewal entries, resets, SKILL_OVERRIDES
-  db/item_db.yml           generated: class flags on Ninja items and ammo, 28 items
-  db/item_combos.yml       generated
-  db/mob_db.yml            generated
-  System/itemInfo.lua      generated
-registry/tools/kagerou-oboro/
-  build.py                 [--rathena DIR] [--commit SHA] [--check]
-  equipment.csv  drops.csv  combos.csv
+registry/mods/transcendent-third-classes/
+  mod.json, README.md        every class: the path, the numbers, the gear
+  npc/<class>.txt            each class's changer (and its shops, breeders, sellers)
+  lua/third_classes.lua      the third classes' ratio factors and measured table
+  lua/<class>.lua            each expanded class's (kagerou_oboro, rebellion, ...)
+  db/job_stats.yml           generated, every class
+  db/skill_tree.yml          generated
+  db/skill_db.yml            generated: renewal entries, resets, SKILL_OVERRIDES
+  db/item_db.yml             generated: class flags on base-class items, the gear
+  db/item_combos.yml         generated
+  db/mob_db.yml              generated: the gear's drops
+  db/spellbook_db.yml        generated (COPY_TABLES): the Warlock's
+  System/itemInfo.lua        generated
+registry/tools/transcendent-third-classes/
+  build.py                   a config per class; [--rathena DIR] [--commit SHA] [--check]
+  <class>/                   equipment.csv  drops.csv  combos.csv
+  balance.json               the third classes' measuring runs
+  balance-<class>.json       each expanded class's
 ```

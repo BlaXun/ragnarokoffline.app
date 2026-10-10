@@ -20,8 +20,9 @@
 --   Kunai Splash Lv 5 (area, a target)        488
 --   Kunai Explosion Lv 5 (area, a target)     430
 --
--- The Ninja's spells (a magical build) are not scaled; registry/tools/
--- kagerou-oboro/balance.json has those runs too.
+-- A magical build casts the Ninja's spells; only their charm bonus is scaled,
+-- below. registry/tools/transcendent-third-classes/balance-kagerou-oboro.json
+-- has the runs for both builds.
 --
 -- Cross Slash was measured with a dagger in each hand, on a target carrying
 -- its own Cross Wound (754 per cast without the wound, about 2,100 with it:

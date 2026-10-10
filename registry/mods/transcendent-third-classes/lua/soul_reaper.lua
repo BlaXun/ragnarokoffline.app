@@ -17,7 +17,7 @@
 --   Espa + Eswhoo, soul energy unlimited        1567        986 Cold Bolt
 --   Soul Curse + Curse Explosion, unlimited    ~5900
 --
--- The runs behind these are in registry/tools/soul-reaper/balance.json.
+-- The runs behind these are in registry/tools/transcendent-third-classes/balance-soul-reaper.json.
 --
 -- The first measurement put the High Wizard at about 850: the test dummy hit
 -- back and every hit interrupted a cast, and a repeated request restarted

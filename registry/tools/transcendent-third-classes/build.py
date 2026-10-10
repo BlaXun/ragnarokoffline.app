@@ -18,6 +18,10 @@ the two differ only in their skills; damage is measured to parity.
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
 (instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
 Royal Guard (instead of Paladin), Warlock (instead of High Wizard). Each class keeps its CSV files in its own directory.
+
+The mod also carries the expanded classes, each the rebirth of its base
+class rather than a sidegrade: Kagerou and Oboro (Ninja), Rebellion
+(Gunslinger), Star Emperor (Star Gladiator), Soul Reaper (Soul Linker).
 """
 import sys
 from pathlib import Path
@@ -242,4 +246,149 @@ warlock = ec.config(
     },
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock])
+# The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
+# or Oboro, a reborn Gunslinger a Rebellion, a reborn Star Gladiator a Star
+# Emperor, a reborn Soul Linker a Soul Reaper. Their NPCs and Lua are in the
+# mod beside the third classes'; docs/mods/EXPANDED_CLASS_REBIRTH.md §1-§11.
+
+kagerou_oboro = ec.config(
+    __file__,
+    MOD_NAME="transcendent-third-classes",
+    JOBS=("Kagerou", "Oboro"),
+    ITEM_JOB="KagerouOboro",          # the item_db Jobs: key (EAJ_KAGEROUOBORO)
+    BASE="Ninja",
+    SKILL_PREFIX=("KO_", "OB_", "KG_"),
+    # Kagerou and Oboro sit a little below a transcendent class. Pre-renewal's
+    # Assassin Cross gets the Assassin HP table times 1.25; these get it times
+    # 1.1. SP follows the Ninja's table, which is already the deeper one.
+    HP_FROM="Assassin_Cross", HP_SCALE=1.10,
+    SP_FROM="Ninja", SP_SCALE=1.10,
+    EXP_FROM="Assassin_Cross",
+    # Renewal's job bonuses stop at job level 50; these continue them to 60 and
+    # total +40, five below a transcendent class's +45.
+    EXTRA_BONUS=[(52, "Str"), (54, "Agi"), (56, "Dex"), (58, "Luk"), (60, "Int")],
+    BONUS_TOTAL=40,
+    MAX_JOB_LEVEL=60,
+    ASPD={"Fist": 400, "Dagger": 500, "Huuma": 700},   # the Ninja's, with a quicker Huuma
+    # Kunai Splash's damage is added outside the skill's percentage
+    # (battle.cpp, KO_HAPPOKUNAI), so the Lua ratio hook cannot scale it; with
+    # renewal's 0.5 s delay it did about four times Sonic Blow's damage per
+    # second, to everything around. A 3.5 s delay brings it to about half of
+    # the Kagerou's single-target damage per target, the area rule the third
+    # classes follow.
+    SKILL_OVERRIDES={"KO_HAPPOKUNAI": {"AfterCastActDelay": "3500"}},
+    # Pre-renewal has no fixed cast time and DEX shortens every cast to
+    # nothing at 150; 75% of renewal's fixed cast becomes after-cast delay,
+    # which DEX does not touch, and the rest is added to the cast time. Skills
+    # with a 10 s+ cooldown keep it all as cast time (Izayoi halves it).
+    FIXED_CAST_TO_DELAY=0.75,
+    WEAPON_KINDS={
+        "huuma":  dict(type="Weapon", sub="Huuma",  loc=["Both_Hand"],  label="Huuma Shuriken", unid="Huuma Shuriken"),
+        "dagger": dict(type="Weapon", sub="Dagger", loc=["Right_Hand"], label="Dagger",         unid="Dagger"),
+    },
+    ITEMS_ABOUT="The Kagerou's and Oboro's gear, from kagerou_oboro/equipment.csv.",
+    CSV_DIR="kagerou_oboro",
+)
+
+rebellion = ec.config(
+    __file__,
+    MOD_NAME="transcendent-third-classes",
+    JOBS=("Rebellion",),
+    ITEM_JOB="Rebellion",             # the item_db Jobs: key (EAJ_REBELLION)
+    BASE="Gunslinger",
+    SKILL_PREFIX="RL_",
+    # Rebellion sits a little below a transcendent class. Pre-renewal's Sniper
+    # gets the Hunter HP table times 1.25; Rebellion gets it times 1.1. SP
+    # follows the Gunslinger's table.
+    HP_FROM="Sniper", HP_SCALE=1.10,
+    SP_FROM="Gunslinger", SP_SCALE=1.10,
+    EXP_FROM="Sniper",
+    # Renewal's job bonuses come to +37 by job 60. These three more make +40,
+    # five below a transcendent class's +45.
+    EXTRA_BONUS=[(56, "Dex"), (58, "Agi"), (60, "Luk")],
+    BONUS_TOTAL=40,
+    MAX_JOB_LEVEL=60,
+    # Renewal's skills consume these, and pre-renewal's item tables do not
+    # have them. Sanctified_Bullet and Silver_Bullet_ are bullets Platinum
+    # Alter names as required equipment; one missing item makes rAthena reject
+    # the whole entry.
+    NEW_FROM_RENEWAL=["Full_Metal_Jacket", "Shooting_Mine", "Dragon_Tail_Missile", "Slug_Bullet",
+                      "Sanctified_Bullet", "Silver_Bullet_"],
+    # Pre-renewal has no fixed cast time and DEX shortens every cast to
+    # nothing at 150; 75% of renewal's fixed cast becomes after-cast delay,
+    # which DEX does not touch, and the rest is added to the cast time.
+    FIXED_CAST_TO_DELAY=0.75,
+    WEAPON_KINDS={
+        "revolver": dict(type="Weapon", sub="Revolver", loc=["Right_Hand"], label="Revolver", unid="Gun"),
+        "rifle":    dict(type="Weapon", sub="Rifle",    loc=["Both_Hand"],  label="Rifle", unid="Gun"),
+        "gatling":  dict(type="Weapon", sub="Gatling",  loc=["Both_Hand"],  label="Gatling Gun", unid="Gun"),
+        "shotgun":  dict(type="Weapon", sub="Shotgun",  loc=["Both_Hand"],  label="Shotgun", unid="Gun"),
+        "grenade":  dict(type="Weapon", sub="Grenade",  loc=["Both_Hand"],  label="Grenade Launcher", unid="Gun"),
+    },
+    ITEMS_ABOUT="The Rebellion's gear, from rebellion/equipment.csv.",
+    CSV_DIR="rebellion",
+)
+
+star_emperor = ec.config(
+    __file__,
+    MOD_NAME="transcendent-third-classes",
+    # Star_Emperor2 is the Union (SG_FUSION) form, with its own tree.
+    JOBS=("Star_Emperor", "Star_Emperor2"),
+    BASE="Star_Gladiator",
+    SKILL_PREFIX="SJ_",
+    # A little below a transcendent class: a transcendent class gets its
+    # second class's HP table times 1.25 (its upper flag); this gets the Star
+    # Gladiator's times 1.1.
+    HP_FROM="Star_Gladiator", HP_SCALE=1.10,
+    SP_FROM="Star_Gladiator", SP_SCALE=1.10,
+    EXP_FROM="Sniper",                # the transcendent base and job EXP tables
+    # Renewal's bonuses come to +43 by job 70; its last three are dropped for
+    # +40, five below a transcendent class's +45.
+    BONUS_TOTAL=40,
+    MAX_JOB_LEVEL=70,
+    # The equipment is for Star Emperors only: a Star Gladiator's Jobs: key,
+    # and Classes: Third, which a Star Gladiator is not.
+    EQUIP_JOBS=["StarGladiator"], EQUIP_CLASSES=["Third"],
+    # Pre-renewal has no fixed cast time and DEX shortens every cast to
+    # nothing at 150; 75% of renewal's fixed cast becomes after-cast delay,
+    # which DEX does not touch, and the rest is added to the cast time.
+    FIXED_CAST_TO_DELAY=0.75,
+    WEAPON_KINDS={
+        "book": dict(type="Weapon", sub="Book", loc=["Right_Hand"], label="Book", unid="Book"),
+    },
+    ITEMS_ABOUT="The Star Emperor's gear, from star_emperor/equipment.csv.",
+    CSV_DIR="star_emperor",
+)
+
+soul_reaper = ec.config(
+    __file__,
+    MOD_NAME="transcendent-third-classes",
+    JOBS=("Soul_Reaper",),
+    BASE="Soul_Linker",
+    SKILL_PREFIX="SP_",
+    # A little below a transcendent class: a transcendent class gets its
+    # second class's HP table times 1.25 (its upper flag); this gets the Soul
+    # Linker's times 1.1.
+    HP_FROM="Soul_Linker", HP_SCALE=1.10,
+    SP_FROM="Soul_Linker", SP_SCALE=1.10,
+    EXP_FROM="Sniper",                # the transcendent base and job EXP tables
+    # Renewal's bonuses come to +43 by job 70; its last three are dropped for
+    # +40, five below a transcendent class's +45.
+    BONUS_TOTAL=40,
+    MAX_JOB_LEVEL=70,
+    # The equipment is for Soul Reapers only: a Soul Linker's Jobs: key, and
+    # Classes: Third, which a Soul Linker is not.
+    EQUIP_JOBS=["SoulLinker"], EQUIP_CLASSES=["Third"],
+    # Pre-renewal has no fixed cast time and DEX shortens every cast to
+    # nothing at 150; 75% of renewal's fixed cast becomes after-cast delay,
+    # which DEX does not touch, and the rest is added to the cast time.
+    FIXED_CAST_TO_DELAY=0.75,
+    WEAPON_KINDS={
+        "staff": dict(type="Weapon", sub="Staff", loc=["Right_Hand"], label="Staff", unid="Rod"),
+    },
+    ITEMS_ABOUT="The Soul Reaper's gear, from soul_reaper/equipment.csv.",
+    CSV_DIR="soul_reaper",
+)
+
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock,
+        kagerou_oboro, rebellion, star_emperor, soul_reaper])

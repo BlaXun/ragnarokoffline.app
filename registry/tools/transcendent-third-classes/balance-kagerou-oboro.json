@@ -1,7 +1,7 @@
 {
  "_about": "Kagerou and Oboro against the transcendent classes. Physical (a Kagerou with a dagger in each hand) against an Assassin Cross's Sonic Blow, 0.85-1.0; its area skills, per target, at 0.4-0.6 of its own single-target rotation, the area rule the third classes follow. Magical (an INT/DEX build casting the Ninja's spells with ten charms of the spell's element, as it plays, and Ninja Aura; the Oboro also with Distorted Crescent) against a High Wizard's amplified Jupitel Thunder and Meteor Storm, on the standard dummy and on a warded one (MDEF 40, INT 80, VIT 50): many small hits lose more to magic defence, so the warded runs keep the spells from being cut too far. Charms are their gain over a Ninja (the user's call): without charms the spells are exactly a Ninja's, with ten they keep 48% of the charm bonus, so a charged Kagerou lands about 1.2x and an Oboro about 1.4x an amplified High Wizard; as casters their area spells are not held to half. The Oboro is the stronger caster and the Kagerou the stronger fighter, as in renewal: Shadow Warrior raises only physical damage, Distorted Crescent magic too.",
  "load": [
-  "registry/mods/kagerou-oboro"
+  "registry/mods/transcendent-third-classes"
  ],
  "seconds": 40,
  "runs": [

@@ -31,6 +31,26 @@
 # Warlock_T:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Kagerou, Oboro:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Rebellion:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Star_Emperor, Star_Emperor2:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
+#
+# _______________________
+# Soul_Reaper:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
 Header:
   Type: MOB_DB
   Version: 5
@@ -132,3 +152,381 @@ Body:
     Drops:
       - Item: Staff_Of_Starfall
         Rate: 5
+  - Id: 1406    # Kapha (KAPHA), 8 stock drops
+    Drops:
+      - Item: Kagemaru_Tabi
+        Rate: 50
+      - Item: Kagemaru_Scarf
+        Rate: 50
+  - Id: 1519    # Green Maiden (CHUNG_E), 7 stock drops
+    Drops:
+      - Item: Kagemaru_Mask
+        Rate: 40
+      - Item: Kagemaru_Charm
+        Rate: 30
+  - Id: 1180    # Nine Tail (NINE_TAIL), 8 stock drops
+    Drops:
+      - Item: Kagemaru_Garb
+        Rate: 40
+      - Item: Kagemaru_Kodachi
+        Rate: 20
+  - Id: 1493    # Dryad (DRYAD), 8 stock drops
+    Drops:
+      - Item: Kagemaru_Huuma
+        Rate: 20
+      - Item: Kagemaru_Scarf
+        Rate: 30
+  - Id: 1512    # Yao Jun (HYEGUN), 6 stock drops
+    Drops:
+      - Item: Kagemaru_Kodachi
+        Rate: 20
+      - Item: Kagemaru_Charm
+        Rate: 30
+  - Id: 1401    # Shinobi (SHINOBI), 8 stock drops
+    Drops:
+      - Item: Tsukikage_Huuma
+        Rate: 15
+      - Item: Tsukikage_Kodachi
+        Rate: 15
+  - Id: 1405    # Tengu (TENGU), 8 stock drops
+    Drops:
+      - Item: Tsukikage_Mask
+        Rate: 30
+      - Item: Tsukikage_Garb
+        Rate: 25
+  - Id: 1416    # Evil Nymph (WICKED_NYMPH), 8 stock drops
+    Drops:
+      - Item: Tsukikage_Scarf
+        Rate: 30
+      - Item: Tsukikage_Charm
+        Rate: 20
+  - Id: 1515    # Baby Hatii (GARM_BABY), 6 stock drops
+    Drops:
+      - Item: Tsukikage_Tabi
+        Rate: 30
+      - Item: Tsukikage_Garb
+        Rate: 20
+  - Id: 1200    # Zealotus (ZHERLTHSH), 8 stock drops
+    Drops:
+      - Item: Tsukikage_Charm
+        Rate: 20
+      - Item: Tsukikage_Mask
+        Rate: 20
+  - Id: 1208    # Wanderer (WANDER_MAN), 8 stock drops
+    Drops:
+      - Item: Yamigarasu_Kodachi
+        Rate: 10
+      - Item: Yamigarasu_Scarf
+        Rate: 20
+  - Id: 1307    # Cat o' Nine Tails (CAT_O_NINE_TAIL), 8 stock drops
+    Drops:
+      - Item: Yamigarasu_Mask
+        Rate: 20
+      - Item: Yamigarasu_Charm
+        Rate: 15
+  - Id: 1635    # Eremes Guile (EREMES), 8 stock drops
+    Drops:
+      - Item: Yamigarasu_Huuma
+        Rate: 10
+      - Item: Yamigarasu_Garb
+        Rate: 20
+  - Id: 1302    # Dark Illusion (DARK_ILLUSION), 8 stock drops
+    Drops:
+      - Item: Yamigarasu_Tabi
+        Rate: 20
+      - Item: Yamigarasu_Garb
+        Rate: 15
+  - Id: 1518    # White Lady (BACSOJIN), 7 stock drops
+    Drops:
+      - Item: Yamigarasu_Charm
+        Rate: 15
+      - Item: Yamigarasu_Kodachi
+        Rate: 10
+  - Id: 1492    # Samurai Specter (INCANTATION_SAMURAI), 8 stock drops
+    Drops:
+      - Item: Oborozuki_Kodachi
+        Rate: 300
+      - Item: Oborozuki_Garb
+        Rate: 500
+  - Id: 1418    # Evil Snake Lord (DARK_SNAKE_LORD), 8 stock drops
+    Drops:
+      - Item: Oborozuki_Huuma
+        Rate: 300
+      - Item: Oborozuki_Mask
+        Rate: 500
+  - Id: 1647    # Assassin Cross Eremes (B_EREMES), 8 stock drops
+    Drops:
+      - Item: Oborozuki_Huuma
+        Rate: 200
+      - Item: Oborozuki_Scarf
+        Rate: 500
+  - Id: 1630    # White Lady (BACSOJIN_), 8 stock drops
+    Drops:
+      - Item: Oborozuki_Charm
+        Rate: 400
+      - Item: Oborozuki_Tabi
+        Rate: 500
+  - Id: 1189    # Orc Archer (ORC_ARCHER), 8 stock drops
+    Drops:
+      - Item: Dustwalker_Rifle
+        Rate: 20
+      - Item: Dustwalker_Hat
+        Rate: 40
+  - Id: 1615    # Obsidian (OBSIDIAN), 7 stock drops
+    Drops:
+      - Item: Dustwalker_Grenade
+        Rate: 20
+      - Item: Dustwalker_Coat
+        Rate: 40
+  - Id: 1682    # Remover (REMOVAL), 8 stock drops
+    Drops:
+      - Item: Dustwalker_Shotgun
+        Rate: 20
+      - Item: Dustwalker_Poncho
+        Rate: 40
+  - Id: 1614    # Mineral (MINERAL), 8 stock drops
+    Drops:
+      - Item: Dustwalker_Gatling
+        Rate: 20
+      - Item: Dustwalker_Boots
+        Rate: 40
+  - Id: 1692    # Breeze (BREEZE), 8 stock drops
+    Drops:
+      - Item: Dustwalker_Revolver
+        Rate: 20
+      - Item: Dustwalker_Badge
+        Rate: 40
+  - Id: 1365    # Apocalypse (APOCALIPS), 8 stock drops
+    Drops:
+      - Item: Bounty_Gatling
+        Rate: 15
+      - Item: Bounty_Coat
+        Rate: 25
+  - Id: 1387    # Gig (GIG), 6 stock drops
+    Drops:
+      - Item: Bounty_Grenade
+        Rate: 15
+      - Item: Bounty_Boots
+        Rate: 25
+  - Id: 1299    # Goblin Leader (GOBLIN_LEADER), 8 stock drops
+    Drops:
+      - Item: Bounty_Shotgun
+        Rate: 15
+      - Item: Bounty_Hat
+        Rate: 25
+  - Id: 1753    # Frus (FRUS), 7 stock drops
+    Drops:
+      - Item: Bounty_Revolver
+        Rate: 15
+      - Item: Bounty_Poncho
+        Rate: 25
+  - Id: 1752    # Skogul (SKOGUL), 8 stock drops
+    Drops:
+      - Item: Bounty_Rifle
+        Rate: 15
+      - Item: Bounty_Badge
+        Rate: 25
+  - Id: 1677    # Venatu (VENATU_2), 8 stock drops
+    Drops:
+      - Item: Outlaw_Gatling
+        Rate: 10
+      - Item: Outlaw_Coat
+        Rate: 20
+  - Id: 1672    # Dimik (DIMIK_3), 8 stock drops
+    Drops:
+      - Item: Outlaw_Grenade
+        Rate: 10
+      - Item: Outlaw_Boots
+        Rate: 20
+  - Id: 1668    # Archdam (ARCHDAM), 7 stock drops
+    Drops:
+      - Item: Outlaw_Shotgun
+        Rate: 10
+      - Item: Outlaw_Poncho
+        Rate: 20
+  - Id: 1638    # Cecil Damon (SHECIL), 8 stock drops
+    Drops:
+      - Item: Outlaw_Rifle
+        Rate: 10
+      - Item: Outlaw_Hat
+        Rate: 20
+  - Id: 1636    # Howard Alt-Eisen (HARWORD), 8 stock drops
+    Drops:
+      - Item: Outlaw_Revolver
+        Rate: 10
+      - Item: Outlaw_Badge
+        Rate: 20
+  - Id: 1650    # Sniper Cecil (B_SHECIL), 8 stock drops
+    Drops:
+      - Item: Hellfire_Rifle
+        Rate: 200
+      - Item: Hellfire_Hat
+        Rate: 400
+  - Id: 1734    # Kiel D-01 (KIEL_), 8 stock drops
+    Drops:
+      - Item: Hellfire_Gatling
+        Rate: 200
+      - Item: Hellfire_Coat
+        Rate: 400
+  - Id: 1623    # RSX-0806 (RSX_0806), 8 stock drops
+    Drops:
+      - Item: Hellfire_Grenade
+        Rate: 200
+      - Item: Hellfire_Boots
+        Rate: 400
+  - Id: 1648    # Whitesmith Howard (B_HARWORD), 8 stock drops
+    Drops:
+      - Item: Hellfire_Shotgun
+        Rate: 200
+      - Item: Hellfire_Poncho
+        Rate: 400
+  - Id: 1646    # Lord Knight Seyren (B_SEYREN), 8 stock drops
+    Drops:
+      - Item: Hellfire_Revolver
+        Rate: 200
+      - Item: Hellfire_Badge
+        Rate: 400
+  - Id: 1061    # Nightmare (NIGHTMARE), 8 stock drops
+    Drops:
+      - Item: Dawn_Tome
+        Rate: 20
+      - Item: Dawn_Hat
+        Rate: 40
+  - Id: 1253    # Gargoyle (GARGOYLE), 6 stock drops
+    Drops:
+      - Item: Dawn_Dobok
+        Rate: 40
+      - Item: Dawn_Talisman
+        Rate: 30
+  - Id: 1838    # Knocker (KNOCKER), 8 stock drops
+    Drops:
+      - Item: Dawn_Mantle
+        Rate: 40
+      - Item: Dawn_Shoes
+        Rate: 40
+  - Id: 1371    # False Angel (FAKE_ANGEL), 6 stock drops
+    Drops:
+      - Item: Zenith_Tome
+        Rate: 15
+      - Item: Zenith_Helm
+        Rate: 25
+  - Id: 1388    # Arc Angeling (ARCHANGELING), 8 stock drops
+    Drops:
+      - Item: Zenith_Dobok
+        Rate: 25
+      - Item: Zenith_Talisman
+        Rate: 20
+  - Id: 1376    # Harpy (HARPY), 7 stock drops
+    Drops:
+      - Item: Zenith_Mantle
+        Rate: 25
+      - Item: Zenith_Shoes
+        Rate: 25
+  - Id: 1837    # Fire Imp (IMP), 7 stock drops
+    Drops:
+      - Item: Eclipse_Tome
+        Rate: 10
+      - Item: Eclipse_Hat
+        Rate: 20
+  - Id: 1833    # Kasa (KASA), 8 stock drops
+    Drops:
+      - Item: Eclipse_Dobok
+        Rate: 20
+      - Item: Eclipse_Talisman
+        Rate: 15
+  - Id: 1259    # Gryphon (GRYPHON), 8 stock drops
+    Drops:
+      - Item: Eclipse_Mantle
+        Rate: 20
+      - Item: Eclipse_Shoes
+        Rate: 20
+  - Id: 1832    # Ifrit (IFRIT), 8 stock drops
+    Drops:
+      - Item: Celestial_Tome
+        Rate: 200
+      - Item: Celestial_Crown
+        Rate: 400
+  - Id: 1150    # Moonlight Flower (MOONLIGHT), 8 stock drops
+    Drops:
+      - Item: Celestial_Dobok
+        Rate: 400
+      - Item: Celestial_Talisman
+        Rate: 300
+  - Id: 1751    # Valkyrie Randgris (RANDGRIS), 7 stock drops
+    Drops:
+      - Item: Celestial_Mantle
+        Rate: 400
+      - Item: Celestial_Shoes
+        Rate: 400
+  - Id: 1192    # Wraith (WRAITH), 8 stock drops
+    Drops:
+      - Item: Wisp_Staff
+        Rate: 20
+      - Item: Wisp_Hood
+        Rate: 40
+  - Id: 1263    # Wind Ghost (WIND_GHOST), 8 stock drops
+    Drops:
+      - Item: Wisp_Robe
+        Rate: 40
+      - Item: Wisp_Bell
+        Rate: 30
+  - Id: 1257    # Injustice (INJUSTICE), 8 stock drops
+    Drops:
+      - Item: Wisp_Shawl
+        Rate: 40
+      - Item: Wisp_Shoes
+        Rate: 40
+  - Id: 1503    # Gibbet (GIBBET), 7 stock drops
+    Drops:
+      - Item: Shade_Staff
+        Rate: 15
+      - Item: Shade_Mask
+        Rate: 25
+  - Id: 1504    # Dullahan (DULLAHAN), 6 stock drops
+    Drops:
+      - Item: Shade_Robe
+        Rate: 25
+      - Item: Shade_Bell
+        Rate: 20
+  - Id: 1506    # Disguise (DISGUISE), 8 stock drops
+    Drops:
+      - Item: Shade_Shawl
+        Rate: 25
+      - Item: Shade_Shoes
+        Rate: 25
+  - Id: 1505    # Loli Ruri (LOLI_RURI), 7 stock drops
+    Drops:
+      - Item: Revenant_Staff
+        Rate: 10
+      - Item: Revenant_Hood
+        Rate: 20
+  - Id: 1507    # Bloody Murderer (BLOODY_MURDERER), 8 stock drops
+    Drops:
+      - Item: Revenant_Robe
+        Rate: 20
+      - Item: Revenant_Bell
+        Rate: 15
+  - Id: 1702    # Baroness of Retribution (RETRIBUTION), 8 stock drops
+    Drops:
+      - Item: Revenant_Shawl
+        Rate: 20
+      - Item: Revenant_Shoes
+        Rate: 20
+  - Id: 1373    # Lord of the Dead (LORD_OF_DEATH), 8 stock drops
+    Drops:
+      - Item: Reapers_Staff
+        Rate: 200
+      - Item: Reapers_Hood
+        Rate: 400
+  - Id: 1389    # Dracula (DRACULA), 7 stock drops
+    Drops:
+      - Item: Reapers_Robe
+        Rate: 400
+      - Item: Reapers_Bell
+        Rate: 300
+  - Id: 1708    # Memory of Thanatos (THANATOS), 8 stock drops
+    Drops:
+      - Item: Reapers_Shawl
+        Rate: 400
+      - Item: Reapers_Shoes
+        Rate: 400

@@ -32,6 +32,20 @@ The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
 on the wall side.
 
+The mod also carries renewal's **expanded classes**, which the stock
+transcendent classes never had a counterpart for. Each is reached by
+**rebirth** of its base class, the way a first class reaches its
+transcendent class:
+
+| Expanded class | Rebirth of | Where |
+|---|---|---|
+| Kagerou (male), Oboro (female) | Ninja | Kirikage, Ninja guild (`que_ng 33 62`) |
+| Rebellion | Gunslinger | Old Hand Jesse, Gunslinger guild (`que_ng 156 167`) |
+| Star Emperor | Star Gladiator | Master Haneul, Payon (`payon 160 141`) |
+| Soul Reaper | Soul Linker | Shaman Seol, Payon (`payon 154 141`) |
+
+Their damage follows the same rules as the third classes'.
+
 ### Area damage
 
 Renewal gave almost every third class area attacks it could spam, and
@@ -40,7 +54,8 @@ pre-renewal area damage belongs to a few classes. So here a **fighting
 third class deals at most about half its best single-target damage to
 each target of an area**: an area attack pays from about three targets,
 and against one or two its single-target skills stay better. The casters
-whose job area damage is (the Warlock, like the High Wizard) are exempt.
+whose job area damage is (the Warlock, like the High Wizard; the Soul
+Reaper; a magical Kagerou or Oboro) are exempt.
 
 ### More skills to choose from
 
@@ -497,6 +512,393 @@ Crimson Rock for a Warlock. All give MATK +15%. Transcendent classes only.
 | Arcane Conduit | 90 | Succubus |
 | Staff of Starfall | 90 | Kathryne Keyron |
 
+## Kagerou and Oboro
+
+Kagerou and Oboro in pre-renewal, reached by rebirth.
+
+rAthena's server already knows both classes in a pre-renewal build: the job
+ids, dual-wielding, the charms and every KO/OB skill are compiled in. What
+pre-renewal lacks is the data: no HP, SP, EXP, ASPD or job-bonus tables for
+them, no skill tree, item tables that let no Kagerou equip anything, skill
+entries from an older revision, and no way to become one. This mod supplies
+all of it, and changes nothing in rAthena or the app.
+
+### The path
+
+Talk to **Kirikage** in the Ninja guild (`que_ng`, beside Kuuga Gai):
+
+1. **Ninja, base 99 / job 70** → reborn as a **Novice** at level 1. Like the
+   Valkyrie's rebirth, you come with no items, no zeny and no unspent skill
+   points, and you get First Aid, Play Dead, a Knife and a Cotton Shirt.
+2. **Novice, job 10** with Basic Skill 9 → **Ninja** again, with 52 extra
+   status points: the 100 a transcendent class starts with.
+3. **Ninja, job 50 or later** → **Kagerou** (male) or **Oboro** (female).
+
+Kagerou and Oboro go to job level 60. Their skill tree includes the Ninja's,
+so every point goes wherever you like, and the total depends on when you
+change:
+
+| Change at Ninja job | Skill points (Novice + Ninja + Kagerou) |
+|---|---|
+| 50 | 9 + 49 + 59 = **117** |
+| 60 | 9 + 59 + 59 = **127**, a transcendent class's total |
+| 70 | 9 + 69 + 59 = **137**, ten below renewal's 147 (renewal's Kagerou goes to job 70) |
+
+### How strong
+
+At 0.85-1.0 of a transcendent class on one target, and for a fighter about
+half of that on each target of an area (see *Area damage* above):
+
+- **HP**: the Assassin's table times 1.1. An Assassin Cross gets it times 1.25.
+- **SP**: the Ninja's table times 1.1.
+- **Job bonuses**: renewal's Kagerou bonuses to job 50, then five more, for
+  +40 in all. A transcendent class gets +45.
+- **EXP**: the transcendent tables, base and job.
+- **ASPD**: the Ninja's, with a quicker Huuma Shuriken (700 against 750).
+- **Cast times**: pre-renewal has no fixed cast time, and DEX shortens every
+  cast to nothing at 150. Of the Kagerou/Oboro skills, only Distorted
+  Crescent and Ominous Moonlight had one in renewal (2 s); both have 30 s
+  cooldowns, so the whole 2 s is added to their cast time, which DEX and
+  Izayoi reduce, as renewal's fixed-cast reductions did.
+- **Skill damage**: scaled in `lua/kagerou_oboro.lua`, and Kunai Splash
+  slowed in `db/skill_db.yml`, then measured on a pre-renewal server against
+  an Assassin Cross (physical) and a High Wizard (magic) with the same
+  level and weapon ATK, on the same target. Like the transcendent third
+  classes, a fighter's area damage is held to about half of what it deals
+  one target:
+
+  | | Kagerou / Oboro | Transcendent class |
+  |---|---|---|
+  | Cross Slash + Soul Cutter | 872 dmg/s | Sonic Blow 1016 |
+  | Swirling Petal (area, each target) | 440 | |
+  | Kunai Splash (area, each target) | 488 | |
+  | Kunai Explosion (area, ranged, each target) | 430 | |
+  | Ice Spear, INT build, ten water charms, Oboro with Distorted Crescent | 3184 | Jupitel Thunder with Mystical Amplification 2234 |
+  | Ice Spear, the same, Kagerou | 2810 | |
+  | Kamaitachi, INT build, ten wind charms (area, each target) | 2177 | Meteor Storm with Mystical Amplification 1326 |
+  | The same against a warded monster (MDEF 40, INT 80, VIT 50): Oboro Ice Spear, Kagerou Ice Spear, Kamaitachi | 1677, 1398, 1390 | 1176, 799 |
+
+  A magical build casts the Ninja's spells. Without charms a Kagerou or
+  Oboro casts them exactly as a Ninja does. Charms (ten of one element, for
+  five minutes) add to every ninjutsu of their element; at full strength,
+  as in renewal, ten of them doubled the spells and put a charged Oboro at
+  1.8 times a High Wizard. Here a Kagerou or Oboro keeps 48% of that bonus
+  (`lua/kagerou_oboro.lua`), so ten charms still make Ice Spear about 1.6
+  times as strong: a charged Kagerou casts at about 1.25 and an Oboro at
+  about 1.4 times a High Wizard, also against well-warded monsters, where
+  the Ninja's many small hits lose the most. Charms cost a cast and a charm
+  item each. As a caster's, its area spells are not held to half. The Oboro
+  is the stronger caster and the Kagerou the stronger fighter, as in
+  renewal: Shadow Warrior raises only physical damage, Distorted Crescent
+  magic too.
+
+  The Kagerou dual-wields daggers. Cross Slash leaves a Cross Wound, and a
+  Cross Slash on a wounded target hits much harder (about 2,100 instead of
+  754 per cast). Renewal means that for a Kagerou and an Oboro taking turns,
+  but in rAthena your own wound counts too, so the 875 already includes it:
+  without it, against a fresh target, the pair would do about 440. Other
+  buffs (Shadow Warrior, Enchant Deadly Poison) are not counted. The runs behind the table are in
+  `registry/tools/transcendent-third-classes/balance-kagerou-oboro.json`; to measure them again, see
+  `registry/tools/expanded_class/balance/README.md`.
+
+### Equipment
+
+Four tiers, Kagerou/Oboro only, each a Huuma Shuriken, a Kodachi (a dagger,
+for dual-wielding), a mask, a garb, a scarf, tabi and a charm. Mask, garb,
+scarf and tabi of one tier give a set bonus.
+
+| Tier | Level | Drops from |
+|---|---|---|
+| Kagemaru | 50 | Kapha, Green Maiden, Nine Tail, Dryad, Yao Jun |
+| Tsukikage | 65 | Shinobi, Tengu, Evil Nymph, Baby Hatii, Zealotus |
+| Yamigarasu | 80 | Wanderer, Cat o' Nine Tails, Eremes Guile, Dark Illusion, White Lady |
+| Oborozuki | 95 | Samurai Specter, Evil Snake Lord, Assassin Cross Eremes, White Lady (MVP) |
+
+The items borrow stock art (the Kitsune, Assassin, Kabuki and Dragon Arhat
+masks, stock Huuma and dagger looks), so the mod ships no sprites.
+
+Every item a Ninja can wear or use, a Kagerou and Oboro can too: the
+equipment, shuriken and kunai, and awakening potions.
+
+The **Shadow Supplier** beside Kirikage sells what the skills consume and
+pre-renewal has no other source for: the four charms, Makibishi, Explosive
+Kunai and Shadow Orbs. Kunai for Kunai Splash come from the Kunai Merchant
+as usual.
+
+## Rebellion
+
+The Gunslinger's renewal advancement, **Rebellion**, in pre-renewal, reached
+by rebirth.
+
+rAthena's server already knows the class in a pre-renewal build: the job id
+and every RL skill are compiled in. What pre-renewal lacks is the data: no
+HP, SP, EXP, ASPD or job-bonus tables, no skill tree, item tables that let no
+Rebellion use a gun, skill entries from an older revision, five consumables
+the skills need, and no way to become one. This mod supplies all of it, and
+changes nothing in rAthena or the app.
+
+### The path
+
+Talk to **Old Hand Jesse** beside Master Miller, the Gunslinger job master
+(`que_ng`):
+
+1. **Gunslinger, base 99 / job 70** → reborn as a **Novice** at level 1. Like
+   the Valkyrie's rebirth, you come with no items, no zeny and no unspent
+   skill points, and you get First Aid, Play Dead, a Knife and a Cotton Shirt.
+2. **Novice, job 10** with Basic Skill 9 → **Gunslinger** again, with 52 extra
+   status points: the 100 a transcendent class starts with.
+3. **Gunslinger, job 50 or later** → **Rebellion**, which goes to job 60.
+
+Its skill tree includes the Gunslinger's. rAthena has the extra Gunslinger
+levels spent on Gunslinger skills first, so the Rebellion's own skills always
+get its 59 job levels:
+
+| Change at Gunslinger job | Skill points (Novice + Gunslinger + Rebellion) |
+|---|---|
+| 50 | 9 + 49 + 59 = **117** |
+| 60 | 9 + 59 + 59 = **127**, a transcendent class's total |
+| 70 | 9 + 69 + 59 = **137**, ten below renewal's 147 |
+
+### How strong
+
+At 0.85-1.0 of a transcendent class on one target, and for a fighter about
+half of that on each target of an area (see *Area damage* above):
+
+- **HP**: the Hunter's table times 1.1. A Sniper gets it times 1.25.
+- **SP**: the Gunslinger's table times 1.1.
+- **Job bonuses**: renewal's Rebellion bonuses to job 60, then three more, for
+  +40 in all. A transcendent class gets +45.
+- **EXP**: the transcendent tables, base and job.
+- **ASPD and weight**: the Gunslinger's.
+- **Cast times**: pre-renewal has no fixed cast time, and DEX shortens every
+  cast to nothing at 150. 75% of each skill's renewal fixed cast becomes
+  after-cast delay, which DEX does not reduce, and the rest is added to its
+  cast time: Mass Spiral casts in 1.5 s (before DEX) and then waits 2.5 s.
+- **Skill damage**: scaled in `lua/rebellion.lua`, then measured on a
+  pre-renewal server against a Sniper with the same level, stats and weapon
+  ATK, on the same target:
+
+  | | Rebellion | Sniper |
+  |---|---|---|
+  | Rifle (Mass Spiral + Anti-Material Blast) | 2039-2309 dmg/s | Double Strafe 2448 |
+  | Shotgun (Banishing Buster + Slug Shot + Shatter Storm) | 2203 | Double Strafe 2448 |
+  | Grenade launcher (Howling Mine + Dragon Tail, marked target) | 2105 | Double Strafe 2448 |
+  | Fire Dance, Round Trip, Fire Rain, Shatter Storm (area, each target) | 999-1088 | Sharp Shooting 814 |
+
+  Each gun is aimed at 0.85-1.0 of a Sniper on one target, and the area
+  skills at about half of the rifle on each target, the rule the
+  transcendent third classes follow; at a Sniper's scale that still puts
+  them above Sharp Shooting. Buffs (Heat Barrel, Platinum Alter, Improve Concentration)
+  and gear bonuses are not counted.
+
+### Equipment
+
+Four tiers, Rebellion only, each a Revolver, a Rifle, a Gatling Gun, a
+Shotgun, a Grenade Launcher, a hat, a coat, a poncho, boots and a badge. Hat,
+coat, poncho and boots of one tier give a set bonus. Each gun raises the
+skills that gun type is for.
+
+| Tier | Level | Drops from |
+|---|---|---|
+| Dustwalker | 50 | Orc Archer, Obsidian, Remover, Mineral, Breeze |
+| Bounty Hunter's | 65 | Apocalypse, Gig, Goblin Leader, Frus, Skogul |
+| Outlaw's | 80 | Venatu, Dimik, Archdam, Cecil Damon, Howard Alt-Eisen |
+| Hellfire | 95 | Sniper Cecil, Kiel D-01, RSX-0806, Whitesmith Howard, Lord Knight Seyren |
+
+No monster drops two classes' gear (the build script refuses it), so each
+stays within rAthena's ten drops per monster.
+
+The items borrow stock art (stock gun looks, the Western Grace, Cowboy Hat
+and Pirate Bandana), so the mod ships no sprites.
+
+Every item a Gunslinger can wear or use, a Rebellion can too: guns, bullets,
+grenades and the Gunslinger's gear.
+
+The **Gunsmith** beside Jesse sells what the skills consume and pre-renewal
+has no other source for: Full Metal Jacket, Grenade Launcher mines, Dragon
+Tail Missile, Slug Bullet and Special Alloy Trap. Bullets and Silver Bullets
+(for Platinum Alter) come from the stock gun shops.
+
+## Star Emperor
+
+**Star Emperor** in pre-renewal, as the Star Gladiator's rebirth: what Lord
+Knight is to the Knight.
+
+Pre-renewal never gave Star Gladiators a rebirth. rAthena's server already
+knows the Star Emperor in a pre-renewal build: the class and every SJ skill
+are compiled in, and it already lets the class wear what a Star Gladiator
+wears and, as a third class, the transcendent-only items. What pre-renewal
+lacks is the data: no HP, SP, EXP, ASPD or job-bonus tables, no skill tree,
+skill entries from an older revision, and no way to become one. This mod
+supplies it, and changes nothing in rAthena or the app.
+
+### The path
+
+Talk to **Master Haneul** beside Phoenix, the Taekwon master in Payon:
+
+1. **Star Gladiator, base 99 / job 50** → reborn as a **Novice** at level 1.
+   Like the Valkyrie's rebirth, you come with no items, no zeny and no
+   unspent skill points, and you get First Aid, Play Dead, a Knife and a
+   Cotton Shirt.
+2. **Novice, job 10** with Basic Skill 9 → **Taekwon** again, with 52 extra
+   status points: the 100 a transcendent class starts with.
+3. **Taekwon, job 40 or later** → **Star Emperor**, which goes to job 70.
+
+Like a transcendent class, the Star Emperor is the reborn second class: its
+69 job levels buy Star Gladiator skills and Star Emperor skills alike (its
+tree includes the Star Gladiator's).
+
+| Change at Taekwon job | Skill points (Novice + Taekwon + Star Emperor) |
+|---|---|
+| 40 | 9 + 39 + 69 = **117** |
+| 50 | 9 + 49 + 69 = **127**, a transcendent class's total |
+
+Renewal's Star Emperor has 176 (a Star Gladiator's 49 on top).
+
+### How strong
+
+At 0.85-1.0 of a transcendent class on one target, and for a fighter about
+half of that on each target of an area (see *Area damage* above):
+
+- **HP and SP**: the Star Gladiator's tables times 1.1. A transcendent class
+  gets its second class's table times 1.25.
+- **Job bonuses**: renewal's Star Emperor bonuses, less the last three, for
+  +40. A transcendent class gets +45.
+- **EXP**: the transcendent tables, base and job.
+- **ASPD and weight**: the Star Gladiator's.
+- **Cast times**: pre-renewal has no fixed cast time, and DEX shortens every
+  cast to nothing at 150. 75% of each skill's renewal fixed cast becomes
+  after-cast delay, which DEX does not reduce, and the rest is added to its
+  cast time: New Moon Kick casts in 1.25 s (before DEX) and then waits 0.75 s.
+  A skill with a cooldown of 10 s or more cannot be spammed anyway, so its
+  whole fixed cast goes into the cast time, where DEX reduces it: Nova
+  Explosion, Star Emperor Advent, Book of Creating Star.
+- **Gear**: everything a Star Gladiator wears, and the transcendent-only
+  items (rAthena allows third classes those in pre-renewal).
+- **Skill damage**: scaled in `lua/star_emperor.lua`, then measured on a
+  pre-renewal server against an Assassin Cross with the same level, stats
+  and weapon ATK, on the same target:
+
+  | | Star Emperor | Assassin Cross |
+  |---|---|---|
+  | Prominence Kick (+ Solar Burst) | 943 dmg/s | Sonic Blow 1044 |
+  | Attacks with Falling Star on Flash-Kicked targets | 907 | Sonic Blow 1044 |
+  | New Moon Kick + Full Moon Kick (area, each target) | 459 | |
+
+  Like the transcendent third classes, a fighter's area damage is held to
+  about half of what it deals one target: renewal gave the kicks as much to
+  every enemy around as to one.
+
+  Nova Explosion, Star Emperor Advent, Gravity Control and the two Books work
+  only on PvP and GvG maps, as in renewal, and are left as they are. Buffs
+  and gear bonuses are not counted.
+
+### Equipment
+
+Four tiers, Star Emperor only, each a book, a hat, a dobok, a mantle, shoes
+and a talisman. Hat, dobok, mantle and shoes of one tier give a set bonus;
+the books raise the kicks.
+
+| Tier | Level | Drops from |
+|---|---|---|
+| Dawn | 50 | Nightmare, Gargoyle, Knocker |
+| Zenith | 65 | False Angel, Arc Angeling, Harpy |
+| Eclipse | 80 | Fire Imp, Kasa, Gryphon |
+| Celestial | 95 | Ifrit, Moonlight Flower, Valkyrie Randgris |
+
+No monster drops two classes' gear (the build script refuses it), so each
+stays within rAthena's ten drops per monster. The items borrow stock art (the Solar Hat, Crescent Helm, Moonlight
+Flower Hat and Hat of the Sun God), so the mod ships no sprites.
+
+## Soul Reaper
+
+**Soul Reaper** in pre-renewal, as the Soul Linker's rebirth: what High
+Wizard is to the Wizard.
+
+Pre-renewal never gave Soul Linkers a rebirth. rAthena's server already
+knows the Soul Reaper in a pre-renewal build: the class and every SP skill
+are compiled in, and it already lets the class wear what a Soul Linker wears
+and, as a third class, the transcendent-only items. What pre-renewal lacks
+is the data: no HP, SP, EXP, ASPD or job-bonus tables, no skill tree, skill
+entries from an older revision, and no way to become one. This mod supplies
+it, and changes nothing in rAthena or the app.
+
+### The path
+
+Talk to **Shaman Seol** beside Phoenix, the Taekwon master in Payon:
+
+1. **Soul Linker, base 99 / job 50** → reborn as a **Novice** at level 1.
+   Like the Valkyrie's rebirth, you come with no items, no zeny and no
+   unspent skill points, and you get First Aid, Play Dead, a Knife and a
+   Cotton Shirt.
+2. **Novice, job 10** with Basic Skill 9 → **Taekwon** again, with 52 extra
+   status points: the 100 a transcendent class starts with.
+3. **Taekwon, job 40 or later** → **Soul Reaper**, which goes to job 70.
+
+Like a transcendent class, the Soul Reaper is the reborn second class: its
+69 job levels buy Soul Linker skills (the spirits) and Soul Reaper skills
+alike.
+
+| Change at Taekwon job | Skill points (Novice + Taekwon + Soul Reaper) |
+|---|---|
+| 40 | 9 + 39 + 69 = **117** |
+| 50 | 9 + 49 + 69 = **127**, a transcendent class's total |
+
+### How strong
+
+At 0.85-1.0 of a transcendent class on one target, and for a fighter about
+half of that on each target of an area (see *Area damage* above):
+
+- **HP and SP**: the Soul Linker's tables times 1.1. A transcendent class
+  gets its second class's table times 1.25.
+- **Job bonuses**: renewal's Soul Reaper bonuses, less the last three, for
+  +40. A transcendent class gets +45.
+- **EXP**: the transcendent tables, base and job.
+- **Gear**: everything a Soul Linker wears, and the transcendent-only items.
+- **Cast times**: pre-renewal has no fixed cast time, and DEX shortens every
+  cast to nothing at 150. 75% of each skill's renewal fixed cast becomes
+  after-cast delay, which DEX does not reduce, and the rest is added to its
+  cast time: Espa casts in 0.75 s (before DEX) and then waits 0.75 s. A
+  skill (or level) with a cooldown of 10 s or more cannot be spammed anyway,
+  so its whole fixed cast goes into the cast time, where DEX reduces it: Soul
+  Explosion, the Soul Reaper buff, Soul Unity from level 2.
+- **Skill damage**: scaled in `lua/soul_reaper.lua`, then measured on a
+  pre-renewal server against a High Wizard with the same level, stats and
+  staff, on the same target:
+
+  | | Soul Reaper | High Wizard |
+  |---|---|---|
+  | Espa | 1587 dmg/s | 1829 Jupitel Thunder, 986 Cold Bolt |
+  | Espa + Eswhoo, soul energy refilled | 1567 | |
+  | Soul Curse + Curse Explosion, soul energy refilled | about 5900 | |
+
+  The aim is 0.85-1.0 of a transcendent class on one target, as for the
+  transcendent third classes. As a caster's, the Soul Reaper's area spells
+  are not held to half of that.
+
+  Soul energy comes from Soul Collect (one every 20 s at level 5); the Soul
+  Reaper buff only gains it against players. Espa costs none at level 10 and
+  carries the damage; Eswhoo and Curse Explosion are bursts that spend it.
+  Soul Division and Soul Explosion work only on PvP and GvG maps, as in
+  renewal, and are left as they are.
+
+### Equipment
+
+Four tiers, Soul Reaper only, each a staff, a hood, a robe, a shawl, shoes
+and a bell. Hood, robe, shawl and shoes of one tier give a set bonus; the
+staves raise Espa, Eswhoo and Curse Explosion.
+
+| Tier | Level | Drops from |
+|---|---|---|
+| Wisp | 50 | Wraith, Wind Ghost, Injustice |
+| Shade | 65 | Gibbet, Dullahan, Disguise |
+| Revenant | 80 | Loli Ruri, Bloody Murderer, Baroness of Retribution |
+| Reaper's | 95 | Lord of the Dead, Dracula, Memory of Thanatos |
+
+No monster drops two classes' gear (the build script refuses it), so each
+stays within rAthena's ten drops per monster. The items borrow stock art (Morpheus's Hood, Whisper
+Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
+
 ## Files
 
 | | |
@@ -510,7 +912,15 @@ Crimson Rock for a Warlock. All give MATK +15%. Transcendent classes only.
 | `npc/warlock.txt` | the Warlock changer |
 | `npc/spellbook_seller.txt` | the Spellbook Seller in Geffen |
 | `db/spellbook_db.yml` | renewal's spellbooks |
-| `lua/third_classes.lua` | the skill damage scaling |
+| `lua/third_classes.lua` | the third classes' skill damage scaling |
+| `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |
+| `lua/kagerou_oboro.lua` | the skill damage scaling |
+| `npc/rebellion.txt` | Old Hand Jesse and the Gunsmith |
+| `lua/rebellion.lua` | the skill damage scaling, with the measured table |
+| `npc/star_emperor.txt` | Master Haneul |
+| `lua/star_emperor.lua` | the skill damage scaling, with the measured table |
+| `npc/soul_reaper.txt` | Shaman Seol |
+| `lua/soul_reaper.lua` | the skill damage scaling, with the measured table |
 | `db/job_stats.yml` | HP, SP, EXP, bonuses, ASPD, weight |
 | `db/skill_tree.yml` | renewal's trees, under the third classes |
 | `db/skill_db.yml` | renewal's entries for the third-class skills, with the fixed cast times turned into delay, the Arch Bishop's lower SP costs, and the Auto Shadow Spell flag on four more spells |
@@ -524,7 +934,8 @@ Everything under `db/` and `System/` is generated by
 `registry/tools/expanded_class/expanded_class.py`, from the pinned rAthena
 and each class's three CSV files, in its own directory beside it
 (`guillotine_cross/`, `shadow_chaser/`, `arch_bishop/`, `rune_knight/`,
-`royal_guard/`, `warlock/`):
+`royal_guard/`, `warlock/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
+`soul_reaper/`):
 
 ```
 python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena
@@ -532,9 +943,11 @@ python3 registry/tools/transcendent-third-classes/build.py --rathena ../rathena 
 ```
 
 The damage figures above come from the runs in
-`registry/tools/transcendent-third-classes/balance.json`; to measure them
-again, see `registry/tools/expanded_class/balance/README.md`:
+`registry/tools/transcendent-third-classes/balance.json` (the third
+classes) and `balance-<class>.json` beside it (the expanded classes); to
+measure them again, see `registry/tools/expanded_class/balance/README.md`:
 
 ```
 python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/transcendent-third-classes/balance.json
+python3 registry/tools/expanded_class/balance/run_specs.py registry/tools/transcendent-third-classes/balance-kagerou-oboro.json
 ```
