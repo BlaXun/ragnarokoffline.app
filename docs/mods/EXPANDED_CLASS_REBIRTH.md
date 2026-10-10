@@ -654,6 +654,7 @@ them go into one mod, `registry/mods/transcendent-third-classes` (branch
 | Rune Knight | Lord Knight | `valkyrie 42 39` |
 | Royal Guard | Paladin | `valkyrie 55 39` |
 | Warlock | High Wizard | `valkyrie 42 47` |
+| Mechanic | Whitesmith | `valkyrie 42 50` |
 
 ### Decided with the human (do not re-ask)
 
@@ -893,6 +894,21 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   casts, and a fixed pace can fall out of step with a caster's rhythm and
   lose a fifth. A spec run can list several paces (`"step": [1.0, 1.5]`)
   with `"method": "best"`; give every caster that.
+- **Check that everything a new skill consumes can be bought.** Pre-renewal
+  sells none of renewal's: cannonballs, Magic Gear Fuel, Special Alloy
+  Traps, Protect Neck Candy, the Genetic's craft books. Add renewal's
+  shop where renewal has it (the Black Marketeer in Einbroch, Harive in
+  Comodo), or one beside the class's guild. A mount or machine the class
+  needs (Madogear) wants an NPC too.
+- **The template lacks quest skills**: `@allskill` skips them, and a
+  Whitesmith's Cart Boost (so Cart Termination) needs Cart Revolution and
+  Change Cart; the helper teaches them. A skill the character lacks is
+  dropped by the server without any reply: `skilllv#id` shows the level.
+- **Cart skills grow with the cart's weight**: fill it (`"cartload":
+  "989:79"`; a full 8000 is refused) before measuring Cart Termination or
+  a Genetic's Cart Tornado.
+- **A mount changes what is equipped**: getting into the Madogear took the
+  cannonballs off; equip ammunition after mounting.
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

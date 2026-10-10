@@ -33,6 +33,11 @@
 # appended to the monster's own drops; every monster here has room.
 #
 # _______________________
+# Mechanic_T:
+# Where the equipment drops, from drops.csv. No Index:, so each is
+# appended to the monster's own drops; every monster here has room.
+#
+# _______________________
 # Kagerou, Oboro:
 # Where the equipment drops, from drops.csv. No Index:, so each is
 # appended to the monster's own drops; every monster here has room.
@@ -152,6 +157,22 @@ Body:
     Drops:
       - Item: Staff_Of_Starfall
         Rate: 5
+  - Id: 1383    # Explosion (EXPLOSION), 6 stock drops
+    Drops:
+      - Item: Piston_Axe
+        Rate: 10
+  - Id: 1836    # Magmaring (MAGMARING), 3 stock drops
+    Drops:
+      - Item: Boiler_Axe
+        Rate: 10
+  - Id: 1147    # Maya (MAYA), 8 stock drops
+    Drops:
+      - Item: Drill_Breaker
+        Rate: 300
+  - Id: 1719    # Detardeurus (DETALE), 8 stock drops
+    Drops:
+      - Item: Dragon_Forge_Axe
+        Rate: 300
   - Id: 1406    # Kapha (KAPHA), 8 stock drops
     Drops:
       - Item: Kagemaru_Tabi

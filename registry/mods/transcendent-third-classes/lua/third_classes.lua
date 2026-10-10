@@ -23,6 +23,9 @@
 --     Soul Expansion 1904, Chain Lightning 1886 (all four strikes on a lone
 --     target); a target Jack Frost 1512, Crimson Rock 1363, Frost Misty 1411,
 --     Comet 1409. SP costs: build.py.
+--   Mechanic vs Whitesmith (Cart Termination with a full cart 2519): Power
+--     Swing 2414, Boost Knuckle 2440, Vulcan Arm 2389; per target Arms Cannon
+--     (5x5 splash) about 1150, Axe Tornado 1244, Flame Launcher 1167.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -55,6 +58,11 @@ local FACTOR = {
   WL_FROSTMISTY         = 62,
   WL_CHAINLIGHTNING_ATK = 36,
   WL_COMET              = 85,
+  NC_POWERSWING         = 39,
+  NC_BOOSTKNUCKLE       = 40,
+  NC_VULCANARM          = 70,
+  NC_FLAMELAUNCHER      = 80,
+  NC_ARMSCANNON         = 48,   -- it splashes over 5x5: an area skill
 }
 
 for name, percent in pairs(FACTOR) do

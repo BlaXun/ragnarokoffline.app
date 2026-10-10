@@ -19,7 +19,10 @@ if os.environ.get("LEFT"):   # LEFT=<item id>: a second weapon in the left hand 
     head += [f"whisper npc:KoTest give#{os.environ['LEFT']}", "wait 2", "wear-given 0x20", "wait 1"]
 import os
 MOBT = {"dummy#4": "mob:25503", "dummy#5": "mob:25504"}.get(os.environ.get("DUMMY"), "mob:25500")   # the target
-head += [c for c in os.environ.get("EXTRA", "").split(";") if c]   # EXTRA="whisper npc:KoTest mount#2;wait 1"
+head += [c for c in os.environ.get("EXTRA", "").split(";") if c]
+if os.environ.get("CARTLOAD"):   # CARTLOAD=989:80: that many of an item into the cart (cart skills grow with its weight)
+    ci, cn = os.environ["CARTLOAD"].split(":")
+    head += [f"whisper npc:KoTest item#{ci}#{int(cn) - 1}", f"whisper npc:KoTest give#{ci}", "wait 2", f"tocart-given {cn}", "wait 1"]   # EXTRA="whisper npc:KoTest mount#2;wait 1"
 head += ["whisper npc:KoTest " + os.environ.get("DUMMY", "dummy"), "wait 2", "mobs"]   # DUMMY=dummy#2: other side
 hpcheck = os.environ.get("HPCHECK") == "1"   # also read the dummy's HP before and after: hp_dps, what it really lost
 if hpcheck: head += ["whisper npc:KoTest mobhp#0", "wait 1"]

@@ -17,7 +17,8 @@ the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
 (instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard). Each class keeps its CSV files in its own directory.
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Mechanic (instead of Whitesmith).
+Each class keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
 class rather than a sidegrade: Kagerou and Oboro (Ninja), Rebellion
@@ -40,6 +41,7 @@ WEAPONS = {
     "spear1": dict(type="Weapon", sub="1hSpear", loc=["Right_Hand"], label="Spear", unid="Spear"),
     "staff2": dict(type="Weapon", sub="2hStaff", loc=["Both_Hand"], label="Two-Handed Staff", unid="Rod"),
     "shield": dict(type="Armor",  sub=None,      loc=["Left_Hand"],  label="Shield", unid="Shield", view=True),
+    "axe2":   dict(type="Weapon", sub="2hAxe",   loc=["Both_Hand"],  label="Two-Handed Axe", unid="Axe"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -246,6 +248,27 @@ warlock = ec.config(
     },
 )
 
+mechanic = ec.config(
+    __file__, **COMMON,
+    JOBS=("Mechanic_T",),
+    # Renewal's Mechanic tree: Novice, Merchant, Blacksmith and the NC
+    # skills; renewal's transcendent one also inherits Whitesmith (Cart
+    # Termination, Meltdown, Maximum Power-Thrust, Upgrade Weapon). The
+    # Madogear comes from the Mado Engineer (npc/mado_engineer.txt).
+    TREE_FROM={"Mechanic_T": "Mechanic"},
+    BASE="Whitesmith",
+    SKILL_PREFIX="NC_",
+    HP_FROM="Whitesmith", HP_SCALE=1.0,
+    SP_FROM="Whitesmith", SP_SCALE=1.0,
+    EXP_FROM="Whitesmith",
+    # Renewal's Mechanic bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Str"), (70, "Dex")],
+    EQUIP_JOBS=["Blacksmith"],
+    EQUIP_LABEL="Whitesmith or Mechanic",
+    ITEMS_ABOUT="The Mechanic's axes, from mechanic/equipment.csv.",
+    CSV_DIR="mechanic",
+)
+
 # The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
 # or Oboro, a reborn Gunslinger a Rebellion, a reborn Star Gladiator a Star
 # Emperor, a reborn Soul Linker a Soul Reaper. Their NPCs and Lua are in the
@@ -390,5 +413,5 @@ soul_reaper = ec.config(
     CSV_DIR="soul_reaper",
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, mechanic,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])

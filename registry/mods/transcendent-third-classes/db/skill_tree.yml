@@ -33,6 +33,11 @@
 # the class gets that job's skills and what it inherits, nothing more.
 #
 # _______________________
+# Mechanic_T:
+# Renewal's trees for Mechanic_T, taken from Mechanic for Mechanic_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's Kagerou, Oboro tree, unchanged. It inherits Novice and
 # Ninja, so every point earned after the change can also go into Ninja skills.
@@ -730,6 +735,159 @@ Body:
         Requires:
           - Name: WL_SOULEXPANSION
             Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Mechanic_T    # renewal's Mechanic tree
+    Inherit:
+      Novice: true
+      Merchant: true
+      Blacksmith: true
+    Tree:
+      - Name: NC_MADOLICENCE
+        MaxLevel: 5
+      - Name: NC_BOOSTKNUCKLE
+        MaxLevel: 5
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 1
+      - Name: NC_PILEBUNKER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_BOOSTKNUCKLE
+            Level: 2
+      - Name: NC_VULCANARM
+        MaxLevel: 3
+        Requires:
+          - Name: NC_BOOSTKNUCKLE
+            Level: 2
+      - Name: NC_FLAMELAUNCHER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_VULCANARM
+            Level: 1
+      - Name: NC_COLDSLOWER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_VULCANARM
+            Level: 3
+      - Name: NC_ARMSCANNON
+        MaxLevel: 5
+        Requires:
+          - Name: NC_FLAMELAUNCHER
+            Level: 2
+          - Name: NC_COLDSLOWER
+            Level: 2
+      - Name: NC_ACCELERATION
+        MaxLevel: 3
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 1
+      - Name: NC_HOVERING
+        MaxLevel: 1
+        Requires:
+          - Name: NC_ACCELERATION
+            Level: 1
+      - Name: NC_F_SIDESLIDE
+        MaxLevel: 1
+        Requires:
+          - Name: NC_HOVERING
+            Level: 1
+      - Name: NC_B_SIDESLIDE
+        MaxLevel: 1
+        Requires:
+          - Name: NC_HOVERING
+            Level: 1
+      - Name: NC_MAINFRAME
+        MaxLevel: 4
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 4
+      - Name: NC_SELFDESTRUCTION
+        MaxLevel: 3
+        Requires:
+          - Name: NC_MAINFRAME
+            Level: 2
+      - Name: NC_SHAPESHIFT
+        MaxLevel: 4
+        Requires:
+          - Name: NC_MAINFRAME
+            Level: 2
+      - Name: NC_EMERGENCYCOOL
+        MaxLevel: 1
+        Requires:
+          - Name: NC_SELFDESTRUCTION
+            Level: 2
+      - Name: NC_INFRAREDSCAN
+        MaxLevel: 1
+        Requires:
+          - Name: NC_SHAPESHIFT
+            Level: 2
+      - Name: NC_ANALYZE
+        MaxLevel: 3
+        Requires:
+          - Name: NC_INFRAREDSCAN
+            Level: 1
+      - Name: NC_MAGNETICFIELD
+        MaxLevel: 3
+        Requires:
+          - Name: NC_EMERGENCYCOOL
+            Level: 1
+      - Name: NC_NEUTRALBARRIER
+        MaxLevel: 3
+        Requires:
+          - Name: NC_MAGNETICFIELD
+            Level: 2
+      - Name: NC_STEALTHFIELD
+        MaxLevel: 3
+        Requires:
+          - Name: NC_ANALYZE
+            Level: 3
+          - Name: NC_NEUTRALBARRIER
+            Level: 2
+      - Name: NC_REPAIR
+        MaxLevel: 5
+        Requires:
+          - Name: NC_MADOLICENCE
+            Level: 2
+      - Name: NC_TRAININGAXE
+        MaxLevel: 10
+      - Name: NC_RESEARCHFE
+        MaxLevel: 5
+      - Name: NC_AXEBOOMERANG
+        MaxLevel: 5
+        Requires:
+          - Name: NC_TRAININGAXE
+            Level: 1
+      - Name: NC_POWERSWING
+        MaxLevel: 10
+        Requires:
+          - Name: NC_AXEBOOMERANG
+            Level: 3
+      - Name: NC_AXETORNADO
+        MaxLevel: 5
+        Requires:
+          - Name: NC_TRAININGAXE
+            Level: 1
+      - Name: NC_SILVERSNIPER
+        MaxLevel: 5
+        Requires:
+          - Name: NC_RESEARCHFE
+            Level: 2
+      - Name: NC_MAGICDECOY
+        MaxLevel: 5
+        Requires:
+          - Name: NC_SILVERSNIPER
+            Level: 2
+      - Name: NC_DISJOINT
+        MaxLevel: 1
+        Requires:
+          - Name: NC_SILVERSNIPER
+            Level: 1
+      - Name: NC_MAGMA_ERUPTION
+        MaxLevel: 5
+        Requires:
+          - Name: NC_RESEARCHFE
+            Level: 1
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5
   - Job: Kagerou

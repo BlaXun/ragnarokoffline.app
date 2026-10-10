@@ -415,6 +415,98 @@
     1.5
    ],
    "repeat": 2
+  },
+  {
+   "id": "WS_CartTermination",
+   "class": 4011,
+   "weapon": 59021,
+   "extra": "whisper npc:KoTest cart#1;wait 1",
+   "cartload": "989:79",
+   "skills": "485",
+   "levels": "10",
+   "pre": "387:1:self"
+  },
+  {
+   "id": "NC_PowerSwing",
+   "class": 4064,
+   "weapon": 59021,
+   "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest mado#1;whisper npc:KoTest item#6146#300;whisper npc:KoTest item#6145#300;whisper npc:KoTest item#2139#1;wait 1",
+   "skills": "2279",
+   "levels": "10",
+   "versus": "WS_CartTermination",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "NC_BoostKnuckle",
+   "class": 4064,
+   "weapon": 59021,
+   "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest mado#1;whisper npc:KoTest item#6146#300;whisper npc:KoTest item#6145#300;whisper npc:KoTest item#2139#1;wait 1",
+   "skills": "2256",
+   "levels": "5",
+   "versus": "WS_CartTermination",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "NC_VulcanArm",
+   "class": 4064,
+   "weapon": 59021,
+   "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest mado#1;whisper npc:KoTest item#6146#300;whisper npc:KoTest item#6145#300;whisper npc:KoTest item#2139#1;wait 1",
+   "skills": "2258",
+   "levels": "3",
+   "versus": "WS_CartTermination",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "NC_ArmsCannon_area",
+   "class": 4064,
+   "weapon": 59021,
+   "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest mado#1;whisper npc:KoTest item#6146#300;whisper npc:KoTest item#6145#300;whisper npc:KoTest item#2139#1;wait 1;whisper npc:KoTest gun#59021#18000;wait 1",
+   "skills": "2261",
+   "levels": "5",
+   "method": "best",
+   "step": [
+    1.0
+   ],
+   "versus": "NC_PowerSwing",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "NC_AxeTornado_area",
+   "class": 4064,
+   "weapon": 59021,
+   "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest mado#1;whisper npc:KoTest item#6146#300;whisper npc:KoTest item#6145#300;whisper npc:KoTest item#2139#1;wait 1",
+   "skills": "2280s",
+   "levels": "5",
+   "versus": "NC_PowerSwing",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "NC_FlameLauncher_area",
+   "class": 4064,
+   "weapon": 59021,
+   "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest mado#1;whisper npc:KoTest item#6146#300;whisper npc:KoTest item#6145#300;whisper npc:KoTest item#2139#1;wait 1",
+   "skills": "2259",
+   "levels": "3",
+   "versus": "NC_PowerSwing",
+   "aim": [
+    0.4,
+    0.6
+   ]
   }
  ]
 }

@@ -1,0 +1,38 @@
+//===== transcendent-third-classes: Mado Engineer ==============
+//= A Mechanic's skills mostly need a Madogear, and pre-renewal
+//= has no NPC that gives one. The Mado Engineer, beside the
+//= Black Marketeer in Einbroch (which sells Magic Gear Fuel and
+//= cannonballs), puts a Mechanic who has learnt Madogear License
+//= into a Madogear, or takes it back.
+//==============================================================
+
+einbroch,124,250,4	script	Mado Engineer#tc	731,{
+	.@n$ = "[Mado Engineer]";
+	if (Class != Job_Mechanic_T && Class != Job_Mechanic) {
+		mes .@n$;
+		mes "These machines answer only to a Mechanic. Come back when you are one.";
+		close;
+	}
+	if (checkmadogear()) {
+		mes .@n$;
+		mes "Done with her for now? I'll park her for you.";
+		if (select("Yes, take it.:No.") == 1)
+			setmadogear 0;
+		close;
+	}
+	if (!getskilllv("NC_MADOLICENCE")) {
+		mes .@n$;
+		mes "Learn ^0000FFMadogear License^000000 first. Nobody drives one of mine without it.";
+		close;
+	}
+	if (checkriding()) {
+		mes .@n$;
+		mes "Get off your Peco Peco first; you cannot ride two things at once.";
+		close;
+	}
+	mes .@n$;
+	mes "She runs on ^0000FFMagic Gear Fuel^000000; my neighbour sells it, and cannonballs for the Arms Cannon.";
+	if (select("Get in.:Not now.") == 1)
+		setmadogear;
+	close;
+}

@@ -39,6 +39,12 @@
 # 3. The Warlock's weapons, from warlock/equipment.csv.
 #
 # _______________________
+# Mechanic_T:
+# 1. No job flags: rAthena already lets the class wear a Whitesmith's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Mechanic's axes, from mechanic/equipment.csv.
+#
+# _______________________
 # Kagerou, Oboro:
 # 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
@@ -669,6 +675,90 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;
+  - Id: 63701
+    AegisName: Piston_Axe
+    Name: Piston Axe
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2200
+    Attack: 165
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"NC_POWERSWING",10; bonus2 bSkillAtk,"NC_AXETORNADO",10; bonus2 bSkillAtk,"WS_CARTTERMINATION",10; bonus2 bSkillAtk,"MC_MAMMONITE",10;
+  - Id: 63702
+    AegisName: Boiler_Axe
+    Name: Boiler Axe
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2000
+    Attack: 155
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"NC_BOOSTKNUCKLE",10; bonus2 bSkillAtk,"NC_FLAMELAUNCHER",10; bonus2 bSkillAtk,"WS_CARTTERMINATION",10; bonus2 bSkillAtk,"MC_MAMMONITE",10;
+  - Id: 63711
+    AegisName: Drill_Breaker
+    Name: Drill Breaker
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2400
+    Attack: 185
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bVit,2; bonus2 bSkillAtk,"NC_POWERSWING",20; bonus2 bSkillAtk,"NC_ARMSCANNON",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"WS_CARTTERMINATION",20; bonus2 bSkillAtk,"MC_MAMMONITE",15;
+  - Id: 63712
+    AegisName: Dragon_Forge_Axe
+    Name: Dragon Forge Axe
+    Type: Weapon
+    SubType: 2hAxe
+    Buy: 20
+    Weight: 2300
+    Attack: 175
+    Range: 1
+    Slots: 1
+    Jobs:
+      Blacksmith: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bStr,2; bonus2 bSkillAtk,"NC_BOOSTKNUCKLE",20; bonus2 bSkillAtk,"NC_VULCANARM",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"WS_CARTTERMINATION",20; bonus2 bSkillAtk,"MC_MAMMONITE",15;
   - Id: 1201    # Knife
     Jobs:
       Alchemist: true
