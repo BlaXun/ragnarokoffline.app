@@ -937,6 +937,74 @@
       "files": []
     },
     {
+      "name": "rebellion",
+      "version": "1.0.0",
+      "author": "BlaXun",
+      "description": "Rebellion in pre-renewal. A Gunslinger at 99/70 is reborn as a Novice, becomes a Gunslinger again with transcendent stat points, and from Gunslinger job 50 becomes a Rebellion. The skills are scaled to sit a little below the transcendent classes, and four tiers of Rebellion guns and gear (levels 50 to 95) drop from monsters.",
+      "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/rebellion",
+      "tags": [
+        "equipment",
+        "gunslinger",
+        "jobs",
+        "lua",
+        "pre-renewal",
+        "rebellion"
+      ],
+      "icon": "",
+      "screenshots": [],
+      "requires": {
+        "mods": [],
+        "era": "pre-renewal",
+        "app": ">=1.5.4"
+      },
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "3c72833f8c0926d11ef5daa09b733602eec0a2503d3a389a561243753e1526e0"
+        },
+        {
+          "path": "System/itemInfo.lua",
+          "sha256": "6d21954a7a58636991a193e7a8410f72281942b52060d8fc83c46fcc0962f0f6"
+        },
+        {
+          "path": "db/item_combos.yml",
+          "sha256": "3c52ad22c6cf8f18d171a47f0d69853caae587a42d2fc125b2e28ffeeec4a1ca"
+        },
+        {
+          "path": "db/item_db.yml",
+          "sha256": "799b72ba6ca2dcf19bb1396a652fd28cb74ddbe0b9eff57db04c15abe21138b2"
+        },
+        {
+          "path": "db/job_stats.yml",
+          "sha256": "9cb4d9661880ae0bba0e670999e229273a27e82bb7353d199d5ef79907cd995e"
+        },
+        {
+          "path": "db/mob_db.yml",
+          "sha256": "7bed0cfeaa353a70e930d4a860fb5d181fe4f817e69f00bc0ac2d8e4f9145552"
+        },
+        {
+          "path": "db/skill_db.yml",
+          "sha256": "2fcee8772ca94fe722a153c81fea1be9299f4a7467c70d07d20c681088a724a4"
+        },
+        {
+          "path": "db/skill_tree.yml",
+          "sha256": "13fd1c8c173afea091184f1b445e4aa8c183295cf98645b7097bc92b15497c86"
+        },
+        {
+          "path": "lua/rebellion.lua",
+          "sha256": "baba498e7e0e3e785c41e053da303f769faa9bced2c2506f8ccd807f5c2913b9"
+        },
+        {
+          "path": "mod.json",
+          "sha256": "7d8f393f93deab013b457b78366568f76e79f621efa3386218ca92b653bae0d8"
+        },
+        {
+          "path": "npc/rebellion.txt",
+          "sha256": "13f66e72662d1bd48a0e9bfe37212dabd2888a336f1263d74f25d2c4f65dca0f"
+        }
+      ]
+    },
+    {
       "name": "refine-matk",
       "version": "1.0.0",
       "author": "BlaXun",

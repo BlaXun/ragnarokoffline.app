@@ -1,0 +1,5 @@
+tier,items,script,desc
+1,Dustwalker_Hat Dustwalker_Coat Dustwalker_Poncho Dustwalker_Boots,"bonus bAspdRate,3; bonus bLongAtkRate,3;","ASPD +3%|Ranged physical damage +3%"
+2,Bounty_Hat Bounty_Coat Bounty_Poncho Bounty_Boots,"bonus bAspdRate,5; bonus bLongAtkRate,5; bonus bMaxHPrate,5;","ASPD +5%|Ranged physical damage +5%|MaxHP +5%"
+3,Outlaw_Hat Outlaw_Coat Outlaw_Poncho Outlaw_Boots,"bonus bAspdRate,7; bonus bLongAtkRate,7; bonus bMaxHPrate,5; bonus bCritAtkRate,10;","ASPD +7%|Ranged physical damage +7%|MaxHP +5%|Critical damage +10%"
+4,Hellfire_Hat Hellfire_Coat Hellfire_Poncho Hellfire_Boots,"bonus bAspdRate,10; bonus bLongAtkRate,10; bonus bMaxHPrate,5; bonus bCritAtkRate,15;","ASPD +10%|Ranged physical damage +10%|MaxHP +5%|Critical damage +15%"
