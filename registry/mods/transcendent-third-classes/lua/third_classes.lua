@@ -35,6 +35,10 @@
 --     Reverberation 1588, Metallic Sound about 1650 (INT build); per target
 --     Severe Rainstorm 711 (its hits are WM_SEVERE_RAINSTORM_MELEE), Great
 --     Echo 782.
+--   Genetic vs Creator (Acid Terror 1196, which both keep; Acid
+--     Demonstration, about 12,500, stays the Creator's): per target, with a
+--     full cart, Cart Cannon (7x7 splash) 580, Cart Tornado 569, Spore
+--     Explosion 533, Crazy Weed 539 (its hits are GN_CRAZYWEED_ATK).
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -81,6 +85,10 @@ local FACTOR = {
   WM_METALICSOUND       = 43,
   WM_SEVERE_RAINSTORM_MELEE = 30,
   WM_GREAT_ECHO         = 50,
+  GN_CART_TORNADO       = 9,
+  GN_CARTCANNON         = 55,   -- it splashes over 7x7: an area skill
+  GN_SPORE_EXPLOSION    = 68,
+  GN_CRAZYWEED_ATK      = 38,
 }
 
 for name, percent in pairs(FACTOR) do

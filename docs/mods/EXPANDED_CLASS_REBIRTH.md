@@ -665,6 +665,7 @@ project notes); the summons and mounts (Warg, Madogear, elemental
 spirits) need testing in pre-renewal before anything is promised.
 | Ranger | Sniper | `valkyrie 42 55` |
 | Minstrel / Wanderer | Clown / Gypsy | `valkyrie 55 54` / `55 56` |
+| Genetic | Creator | `valkyrie 55 50` |
 
 ### Decided with the human (do not re-ask)
 
@@ -921,6 +922,15 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
 - **Measure each build a class is played with**: a performer's
   Reverberation and Metallic Sound are magic (an INT build), Severe
   Rainstorm physical (DEX).
+- **A crown that spends consumables** (the Creator's Acid Demonstration,
+  a Fire Bottle and an Acid Bottle a throw, about 12,700 a second) is not
+  what the sidegrade is aimed at: aim at the transcendent class's
+  everyday damage (Acid Terror) and leave the crown its own.
+- **Ground units hit under another id** (Crazy Weed as GN_CRAZYWEED_ATK):
+  list it in the run's `"count"`. Generator: `UNIT_KEPT` for a skill that
+  was a ground unit in pre-renewal and is a status in renewal (Hell's
+  Plant); pre-renewal's `ActiveInstance` limit stays when renewal's entry
+  sets none.
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

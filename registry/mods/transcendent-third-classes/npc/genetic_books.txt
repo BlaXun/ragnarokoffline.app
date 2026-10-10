@@ -1,0 +1,9 @@
+//===== transcendent-third-classes: Genetic Bookseller =========
+//= Renewal's Alchemist guild sells the Genetic's craft books;
+//= pre-renewal's does not. Without them a Genetic cannot make
+//= its bombs, plant seeds and spores (Spore Explosion, Crazy
+//= Weed), superior potions or cooking. Renewal's books, at
+//= renewal's price, beside the guild's Material Seller.
+//==============================================================
+
+alde_alche,40,184,3	shop	Genetic Bookseller#tc	755,6279:100000,6280:100000,6281:100000,6282:100000,6283:100000,6284:100000,6285:100000,11022:100000,11023:100000,11024:100000

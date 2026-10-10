@@ -1,0 +1,8 @@
+//===== transcendent-third-classes: Black Marketeer ============
+//= Renewal's Einbroch Black Marketeer, which pre-renewal lacks:
+//= cannonballs for a Genetic's Cart Cannon and a Mechanic's Arms
+//= Cannon, Magic Gear Fuel, and the Madogear's parts and repair
+//= kits. Same place and goods as renewal's; stock prices.
+//==============================================================
+
+einbroch,122,250,4	shop	Black Marketeer#tc	49,18000:-1,18001:-1,18002:-1,18003:-1,18004:-1,6146:-1,6145:-1,6147:-1,6186:-1,12392:-1,12393:-1,12394:-1,2139:-1,2800:-1,2801:-1,2802:-1,2803:-1,2804:-1,2805:-1,2806:-1,2807:-1,2808:-1

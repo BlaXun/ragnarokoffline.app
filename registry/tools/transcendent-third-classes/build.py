@@ -22,6 +22,8 @@ Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Ranger (inst
 Each class keeps its CSV files in its own directory.
 Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Minstrel and Wanderer
 (instead of Clown and Gypsy). Each class keeps its CSV files in its own directory.
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Genetic (instead of Creator).
+Each class keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
 class rather than a sidegrade: Kagerou and Oboro (Ninja), Rebellion
@@ -47,6 +49,7 @@ WEAPONS = {
     "knuckle": dict(type="Weapon", sub="Knuckle", loc=["Right_Hand"], label="Knuckle", unid="Knuckle"),
     "musical": dict(type="Weapon", sub="Musical", loc=["Right_Hand"], label="Instrument", unid="Instrument", gender="Male"),
     "whip":   dict(type="Weapon", sub="Whip",    loc=["Right_Hand"], label="Whip", unid="Whip", gender="Female"),
+    "axe1":   dict(type="Weapon", sub="1hAxe",   loc=["Right_Hand"], label="Axe", unid="Axe"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -338,6 +341,27 @@ wanderer = ec.config(
     EQUIP_LABEL="Gypsy or Wanderer",
     ITEMS_ABOUT="The Wanderer's whips, from wanderer/equipment.csv.",
     CSV_DIR="wanderer",
+genetic = ec.config(
+    __file__, **COMMON,
+    JOBS=("Genetic_T",),
+    # Renewal's Genetic tree: Novice, Merchant, Alchemist and the GN skills;
+    # renewal's transcendent one also inherits Creator (Acid Demonstration,
+    # Full Chemical Protection, Plant Cultivation, Slim Potion Pitcher).
+    TREE_FROM={"Genetic_T": "Genetic"},
+    BASE="Creator",
+    SKILL_PREFIX="GN_",
+    HP_FROM="Creator", HP_SCALE=1.0,
+    SP_FROM="Creator", SP_SCALE=1.0,
+    EXP_FROM="Creator",
+    # Renewal's Genetic bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Str"), (70, "Int")],
+    EQUIP_JOBS=["Alchemist"],
+    EQUIP_LABEL="Creator or Genetic",
+    ITEMS_ABOUT="The Genetic's axes, from genetic/equipment.csv.",
+    CSV_DIR="genetic",
+    # Pre-renewal's Hell's Plant was a ground unit; renewal's is a status on
+    # the caster that sets off GN_HELLS_PLANT_ATK, and places none.
+    UNIT_KEPT=["GN_HELLS_PLANT"],
 )
 
 # The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
@@ -487,4 +511,5 @@ soul_reaper = ec.config(
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, sura,
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, ranger,
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, minstrel, wanderer,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, genetic,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])

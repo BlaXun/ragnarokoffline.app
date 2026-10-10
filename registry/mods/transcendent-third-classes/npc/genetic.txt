@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Genetic ====================
+//= The Alchemist's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Merchant of job 40 or more
+//= whose rebirth target is Creator (ADVJOB) may become a
+//= Genetic here instead, beside the stock Creator changer,
+//= which is untouched. The choice is permanent.
+//=
+//= Genetic is a third class in rAthena. The change goes
+//= through Creator and at once on to Genetic, so
+//= rAthena's third-class skill lock records Creator job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Genetic tree (Novice, Merchant, Alchemist
+//= and its own skills), with the same 69 job levels a Creator
+//= has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,55,50,3	script	Genetic#Valkyrie	122,{
+	.@n$ = "[Genetic]";
+	if (Class == Job_Genetic_T) {
+		mes .@n$;
+		mes "You chose the cart and the seed. Axes for it grow where the geographers root, and with the fallen bishop and the dark lord, who keep what they took from alchemists.";
+		close;
+	}
+	if (ADVJOB != Job_Creator || Class != Job_Merchant_High) {
+		mes .@n$;
+		mes "An Alchemist who has been reborn chooses here: the Creator's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Creator throws everything into one flask: Acid Demonstration, Full Chemical Protection, Slim Potion Pitcher. A ^0000FFGenetic^000000 leaves those behind for the cart and the garden: Cart Cannon and Cart Tornado, man-eating plants and spores, and renewal's potions and bombs.";
+	next;
+	mes .@n$;
+	mes "You keep every Alchemist skill, your homunculus too. You will never learn a Creator skill: no Acid Demonstration, no Full Chemical Protection, no Plant Cultivation, no Slim Potion Pitcher.";
+	mes "Your job levels, your body and your gear are the same as a Creator's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take the cart and the seed.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Creator, at job 1: see the header.
+	jobchange Job_Creator;
+	jobchange Job_Genetic_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Genetic.";
+	close;
+}

@@ -31,6 +31,7 @@ The mod grows class by class. So far:
 | Ranger | Sniper | `valkyrie 42 55` |
 | Minstrel (male) | Clown | `valkyrie 55 54` (the Wandering Minstrel) |
 | Wanderer (female) | Gypsy | `valkyrie 55 56` |
+| Genetic | Creator | `valkyrie 55 50` |
 
 The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
@@ -690,6 +691,68 @@ Severe Rainstorm 2600; they are scaled in `lua/third_classes.lua`.
 Two tiers, an instrument (Bards: Clown or Minstrel) and a whip (Dancers:
 Gypsy or Wanderer) each. Each raises Reverberation and a Minstrel or
 Wanderer skill, and Musical Strike or Slinging Arrow and Arrow Vulcan.
+## Genetic
+
+### The path
+
+1. Alchemist, base 99 / job 50 → the Valkyrie's rebirth → High Novice →
+   High Merchant. The rebirth remembers Creator as the target, as usual.
+2. **High Merchant, job 40 or later**, no unspent skill points: talk to
+   the **Genetic** beside the Creator changer instead of the Creator
+   changer, which stays as it was. You are asked to confirm twice.
+
+The class's skill tree is renewal's Genetic tree: Novice, Merchant,
+Alchemist and the Genetic's own skills, with a Creator's 69 job levels
+and skill points. It keeps every Alchemist skill, the homunculus too,
+and never learns Acid Demonstration, Full Chemical Protection, Plant
+Cultivation or Slim Potion Pitcher. Its cart skills need a pushcart,
+from the Kafra as for any Merchant.
+
+Pre-renewal sells nothing a Genetic's new skills consume, so two of
+renewal's shops are added where renewal has them:
+- the **Black Marketeer** in Einbroch (`einbroch 122 250`): cannonballs
+  for Cart Cannon (and Magic Gear Fuel and Madogear parts);
+- the **Genetic Bookseller** in the Alchemist guild (`alde_alche 40 184`,
+  beside the Material Seller): renewal's craft books, 100,000 zeny each,
+  for the bombs, plant seeds and spores (Spore Explosion, Crazy Weed),
+  superior potions and cooking.
+
+### Creator or Genetic
+
+- **Creator**, the one flask: Acid Demonstration hits harder than
+  anything else in the game (about 17,000 a cast here, against a target
+  of VIT 30), at a Fire Bottle and an Acid Bottle a throw.
+- **Genetic**, the cart and the garden: Cart Cannon (cannonballs) and
+  Cart Tornado, man-eating plants (Crazy Weed, Hell's Plant, Thorn Trap,
+  Blood Sucker), Spore Explosion and Demonic Fire, and renewal's potions
+  and bombs from Special Pharmacy and Mix Cooking. Of renewal's Special
+  Pharmacy recipes, the herb activators, the concentrated syrups and
+  Golden X are not in pre-renewal's tables; the other 99 are.
+
+### How strong
+
+A Creator's damage without spending bottles on Acid Demonstration is
+Acid Terror (1197 dmg/s, which a Genetic keeps too); its Acid
+Demonstration did 12,700 a second here. The Genetic is measured against
+Acid Terror, with the same axe and a full cart (cart skills grow with
+its weight), on the same target. Cart Cannon splashes over 7x7, so it
+counts as an area skill: a Genetic's one-target damage is the Acid
+Terror both keep, and the Creator keeps the big single hit.
+
+| | Genetic | Creator |
+|---|---|---|
+| One target | Acid Terror 1177 dmg/s | Acid Terror 1196, Acid Demonstration about 12,500 |
+| Area, per target | Cart Cannon 580, Cart Tornado 569, Spore Explosion 533, Crazy Weed 539 | |
+
+Renewal's Cart Tornado did 7000 a second here with a full cart, Crazy
+Weed 1600 and Cart Cannon 1060 to each target; they are scaled in
+`lua/third_classes.lua`. Hell's Plant and the traps only
+act on a monster that moves or attacks, and are as in renewal.
+
+### Equipment
+
+Two tiers, two axes each, for both of the Alchemist's transcendent paths.
+Each raises Genetic skills, Acid Terror and Acid Demonstration.
 Transcendent classes only.
 
 | Item | Level | Drops from |
@@ -698,6 +761,10 @@ Transcendent classes only.
 | Gypsy Lash | 70 | Headless Mule |
 | Siren's Harp | 90 | Lady Tanee |
 | Moonlit Whip | 90 | Mistress |
+| Greenhouse Axe | 70 | Geographer |
+| Cart Breaker | 70 | High Orc |
+| Philosopher's Edge | 90 | Falling Bishop |
+| Chimera Splitter | 90 | Dark Lord |
 
 ## Kagerou and Oboro
 
@@ -1103,6 +1170,9 @@ Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
 | `npc/trap_seller.txt` | the Trap Seller in Payon |
 | `npc/minstrel.txt`, `npc/wanderer.txt` | the Minstrel and Wanderer changers |
 | `npc/candy_seller.txt` | Harive, the candy seller in Comodo |
+| `npc/genetic.txt` | the Genetic changer |
+| `npc/genetic_books.txt` | the Genetic Bookseller in the Alchemist guild |
+| `npc/black_marketeer.txt` | the Black Marketeer in Einbroch (cannonballs, Magic Gear Fuel) |
 | `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the third classes' skill damage scaling |
 | `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |
@@ -1129,6 +1199,7 @@ and each class's three CSV files, in its own directory beside it
 `royal_guard/`, `warlock/`, `sura/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `royal_guard/`, `warlock/`, `ranger/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `royal_guard/`, `warlock/`, `minstrel/`, `wanderer/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
+`royal_guard/`, `warlock/`, `genetic/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `soul_reaper/`):
 
 ```
