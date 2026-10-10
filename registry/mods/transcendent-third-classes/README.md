@@ -530,6 +530,15 @@ and never learns Acid Demonstration, Full Chemical Protection, Plant
 Cultivation or Slim Potion Pitcher. Its cart skills need a pushcart,
 from the Kafra as for any Merchant.
 
+Pre-renewal sells nothing a Genetic's new skills consume, so two of
+renewal's shops are added where renewal has them:
+- the **Black Marketeer** in Einbroch (`einbroch 122 250`): cannonballs
+  for Cart Cannon (and Magic Gear Fuel and Madogear parts);
+- the **Genetic Bookseller** in the Alchemist guild (`alde_alche 40 184`,
+  beside the Material Seller): renewal's craft books, 100,000 zeny each,
+  for the bombs, plant seeds and spores (Spore Explosion, Crazy Weed),
+  superior potions and cooking.
+
 ### Creator or Genetic
 
 - **Creator**, the one flask: Acid Demonstration hits harder than
@@ -971,6 +980,8 @@ Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
 | `npc/warlock.txt` | the Warlock changer |
 | `npc/spellbook_seller.txt` | the Spellbook Seller in Geffen |
 | `npc/genetic.txt` | the Genetic changer |
+| `npc/genetic_books.txt` | the Genetic Bookseller in the Alchemist guild |
+| `npc/black_marketeer.txt` | the Black Marketeer in Einbroch (cannonballs, Magic Gear Fuel) |
 | `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the third classes' skill damage scaling |
 | `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |
