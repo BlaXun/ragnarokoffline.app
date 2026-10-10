@@ -1072,7 +1072,7 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "cdcfe2252425a60759e386b2f25d248bea7528aa8baface9648c2fab5489014c"
+          "sha256": "d37c39ec883d023afeb4a2845ff7d991146f2512f9171ef9fc35bd935b8e548e"
         },
         {
           "path": "System/itemInfo.lua",
@@ -1135,12 +1135,20 @@
           "sha256": "56f99ebcda93386f127da589c7732dbb5091b51f385592423496182f29ae9342"
         },
         {
+          "path": "npc/black_marketeer.txt",
+          "sha256": "33cb31d84b339dee4d813828dc939c65d8af1f2c8cf43c1350231a06349a7fda"
+        },
+        {
           "path": "npc/dragon_breeder.txt",
           "sha256": "bd2bcaa85054f9103754398f47e0be91d7cbf327e9b5e7c8c66c4632370ee4af"
         },
         {
           "path": "npc/genetic.txt",
           "sha256": "f70fecc506840305fcf6e84a803ba7df3217dda3a04dd195e8b496c8e0c5cc35"
+        },
+        {
+          "path": "npc/genetic_books.txt",
+          "sha256": "f2757e7b289bf03fa69ba30d33352b04ebf1bc988aec167314c61c5b4068f641"
         },
         {
           "path": "npc/guillotine_cross.txt",
