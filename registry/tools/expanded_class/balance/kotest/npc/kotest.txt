@@ -62,6 +62,10 @@ OnWhisperGlobal:
 			{ statusup2 bDex,89; statusup2 bAgi,79; statusup2 bStr,29; statusup2 bLuk,19; statusup2 bVit,29; }
 		else
 			{ statusup2 bStr,79; statusup2 bAgi,89; statusup2 bDex,59; statusup2 bLuk,19; statusup2 bVit,29; }
+		if (.@a == 4011 || .@a == 4064 || .@a == 10 || .@a == 4058) {   // the Blacksmith line: Cart Boost needs the quest skills Cart Revolution and Change Cart, which @allskill skips
+			skill "MC_CARTREVOLUTION", 1, 0;
+			skill "MC_CHANGECART", 1, 0;
+		}
 		atcommand "@allskill";
 		.@w = atoi(@whispervar2$);
 		getitem .@w, 1;
@@ -77,6 +81,7 @@ OnWhisperGlobal:
 		}
 		if (.@a == 4062 || .@a == 4057 || .@a == 4054) getitem 6124, 1;   // a Ranger's Wolf's Flute (Warg Mastery needs one held)
 		setoption Option_Wug, 0; setoption Option_Wugrider, 0;   // a warg kept from an earlier run would be dismissed by the next summon
+		if (checkmadogear()) setmadogear 0;   // a Madogear kept from a Mechanic's run blocks the next class's skills
 		Zeny = 10000000;
 		sc_end SC_ALL;
 		percentheal 100,100;
@@ -99,6 +104,15 @@ OnWhisperGlobal:
 		end;
 	} else if (.@c$ == "spirit") {          // a Soul Linker's spirit on yourself (SL_STAR = 461)
 		sc_start4 SC_SPIRIT, 600000, 5, .@a, 0, 0;
+		end;
+	} else if (.@c$ == "skilllv") {        // skilllv#id: the level of a skill the character has
+		dispbottom "KoTest: skilllv " + .@a + " = " + getskilllv(.@a);
+		end;
+	} else if (.@c$ == "opts") {           // what the character carries and rides
+		dispbottom "KoTest: opts cart=" + checkcart() + " mado=" + checkmadogear() + " riding=" + checkriding() + " wug=" + checkwug() + " falcon=" + checkfalcon() + " option=" + Option;
+		end;
+	} else if (.@c$ == "mado") {           // mado#1: into a Madogear (a Mechanic with Madogear License), mado#0 out
+		setmadogear .@a;
 		end;
 	} else if (.@c$ == "cart") {           // cart#n: a pushcart of type n (0 takes it away)
 		setcart .@a;

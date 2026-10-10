@@ -556,15 +556,19 @@ renewal's shops are added where renewal has them:
 A Creator's damage without spending bottles on Acid Demonstration is
 Acid Terror (1197 dmg/s, which a Genetic keeps too); its Acid
 Demonstration did 12,700 a second here. The Genetic is measured against
-Acid Terror, with the same axe and a cart, on the same target:
+Acid Terror, with the same axe and a full cart (cart skills grow with
+its weight), on the same target. Cart Cannon splashes over 7x7, so it
+counts as an area skill: a Genetic's one-target damage is the Acid
+Terror both keep, and the Creator keeps the big single hit.
 
 | | Genetic | Creator |
 |---|---|---|
-| One target | Cart Cannon 1058 dmg/s | Acid Terror 1197 (both have it), Acid Demonstration about 12,500 |
-| Area, per target | Cart Tornado 611, Spore Explosion 533, Crazy Weed 572 | |
+| One target | Acid Terror 1177 dmg/s | Acid Terror 1196, Acid Demonstration about 12,500 |
+| Area, per target | Cart Cannon 580, Cart Tornado 569, Spore Explosion 533, Crazy Weed 539 | |
 
-Renewal's Cart Tornado did 5600 a second here and Crazy Weed 1600; they
-are scaled in `lua/third_classes.lua`. Hell's Plant and the traps only
+Renewal's Cart Tornado did 7000 a second here with a full cart, Crazy
+Weed 1600 and Cart Cannon 1060 to each target; they are scaled in
+`lua/third_classes.lua`. Hell's Plant and the traps only
 act on a monster that moves or attacks, and are as in renewal.
 
 ### Equipment

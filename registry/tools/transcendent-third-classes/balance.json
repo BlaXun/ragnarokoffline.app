@@ -435,7 +435,20 @@
    "versus": "CR_AcidTerror"
   },
   {
-   "id": "GN_CartCannon",
+   "id": "GN_AcidTerror",
+   "class": 4078,
+   "weapon": 59020,
+   "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest item#7135#200;whisper npc:KoTest item#7136#200;whisper npc:KoTest item#6212#100;whisper npc:KoTest item#6210#100;wait 1",
+   "skills": "230",
+   "levels": "5",
+   "versus": "CR_AcidTerror",
+   "aim": [
+    0.85,
+    1.05
+   ]
+  },
+  {
+   "id": "GN_CartCannon_area",
    "class": 4078,
    "weapon": 59020,
    "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest item#7135#200;whisper npc:KoTest item#7136#200;whisper npc:KoTest item#6212#100;whisper npc:KoTest item#6210#100;wait 1",
@@ -443,11 +456,12 @@
    "stats": "int",
    "skills": "2477",
    "levels": "5",
-   "versus": "CR_AcidTerror",
+   "versus": "GN_AcidTerror",
    "aim": [
-    0.85,
-    1.0
-   ]
+    0.4,
+    0.6
+   ],
+   "cartload": "989:79"
   },
   {
    "id": "GN_CartTornado_area",
@@ -456,11 +470,12 @@
    "extra": "whisper npc:KoTest cart#1;whisper npc:KoTest item#7135#200;whisper npc:KoTest item#7136#200;whisper npc:KoTest item#6212#100;whisper npc:KoTest item#6210#100;wait 1",
    "skills": "2476s",
    "levels": "10",
-   "versus": "GN_CartCannon",
+   "versus": "GN_AcidTerror",
    "aim": [
     0.4,
     0.6
-   ]
+   ],
+   "cartload": "989:79"
   },
   {
    "id": "GN_SporeExplosion_area",
@@ -471,11 +486,12 @@
    "skills": "2481",
    "levels": "10",
    "step": 0.3,
-   "versus": "GN_CartCannon",
+   "versus": "GN_AcidTerror",
    "aim": [
     0.4,
     0.6
-   ]
+   ],
+   "cartload": "989:79"
   },
   {
    "id": "GN_CrazyWeed_area",
@@ -488,11 +504,12 @@
    "how": "pos",
    "step": 0.3,
    "count": "2484",
-   "versus": "GN_CartCannon",
+   "versus": "GN_AcidTerror",
    "aim": [
     0.4,
     0.6
-   ]
+   ],
+   "cartload": "989:79"
   }
  ]
 }

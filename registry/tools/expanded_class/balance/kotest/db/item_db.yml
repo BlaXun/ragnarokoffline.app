@@ -225,3 +225,14 @@ Body:
     Locations:
       Right_Hand: true
     WeaponLevel: 4
+  - Id: 59021
+    AegisName: Test_2hAxe
+    Name: Test Two-Handed Axe
+    Type: Weapon
+    SubType: 2hAxe
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
