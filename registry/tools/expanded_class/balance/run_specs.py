@@ -22,7 +22,8 @@ Run fields (only id, class, weapon, skills and levels are required):
     skills    comma-separated skill ids cast in turn; "attack" for auto-attacks;
               a trailing "s" casts on yourself (2036s)
     levels    their levels, comma-separated
-    how       "mob" (cast on the dummy) or "pos" (on the dummy's cell)
+    how       "mob" (cast on the dummy), "pos" (on the dummy's cell) or "near"
+              (on a free cell two to its east: traps, which cannot go beside it)
     pre       "id:lv[:self][:once]" casts before the rotation and every 10 s
     extra     kotest commands before the dummy, ";"-separated (a shield, a dragon)
     charge    "id:lv:n": cast a self skill n times before the dummy (charms:

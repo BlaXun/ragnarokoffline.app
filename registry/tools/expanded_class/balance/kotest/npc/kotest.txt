@@ -75,6 +75,8 @@ OnWhisperGlobal:
 			getitem 7524, 50;                // Shadow_Orb
 			if (.@s$ == "int") { getitem 7521, 50; getitem 7522, 50; getitem 7523, 50; }   // Flame, Ice, Wind Stones (ninjutsu)
 		}
+		if (.@a == 4062 || .@a == 4057 || .@a == 4054) getitem 6124, 1;   // a Ranger's Wolf's Flute (Warg Mastery needs one held)
+		setoption Option_Wug, 0; setoption Option_Wugrider, 0;   // a warg kept from an earlier run would be dismissed by the next summon
 		Zeny = 10000000;
 		sc_end SC_ALL;
 		percentheal 100,100;

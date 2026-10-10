@@ -32,7 +32,8 @@ while pos is None:
     buf.append(l)
     try: e = json.loads(l)
     except Exception: continue
-    if e.get("ev") == "mob" and e.get("class") in (25500, 25503, 25504): pos = f"{e['x']} {e['y']}"
+    if e.get("ev") == "mob" and e.get("class") in (25500, 25503, 25504):
+        pos = f"{e['x']} {e['y']}"; near = f"{e['x'] + 2} {e['y']}"   # near: a free cell beside it (traps)
 step = float(a[10]) if len(a) > 10 else 0.1; body = []   # STEP: pace long casts
 paced = len(a) > 11 and a[11] == "paced"   # one cast at a time: the next only once the last has landed
 noheal = os.environ.get("NOHEAL") == "1"   # SP is not refilled: read before and after
@@ -47,7 +48,7 @@ if paced:
         if i % 6 == 0 and not noheal: body.append("whisper npc:KoTest heal")
         for s, l in pairs:
             h = "self" if s in selfs else how
-            body.append({"mob": f"cast {s} {l} {MOBT}", "self": f"cast {s} {l} self", "pos": f"cast-pos {s} {l} {pos}"}[h])
+            body.append({"mob": f"cast {s} {l} {MOBT}", "self": f"cast {s} {l} self", "pos": f"cast-pos {s} {l} {pos}", "near": f"cast-pos {s} {l} {near}"}[h])
 for i in range(0 if paced else int(secs / step)):
     if i % max(1, int(3 / step)) == 0: body.append("whisper npc:KoTest heal")
     if i % max(1, int(10 / step)) == 0:
@@ -64,7 +65,7 @@ for i in range(0 if paced else int(secs / step)):
         if s == "attack":
             body.append("attack " + MOBT); continue
         h = "self" if s in selfs else how
-        body.append({"mob": f"skill {s} {l} {MOBT}", "self": f"skill {s} {l} self", "pos": f"skill-pos {s} {l} {pos}"}[h])
+        body.append({"mob": f"skill {s} {l} {MOBT}", "self": f"skill {s} {l} self", "pos": f"skill-pos {s} {l} {pos}", "near": f"skill-pos {s} {l} {near}"}[h])
     body.append(f"dump-damage {step}")
 body.append("dump-damage 2")
 if hpcheck: body += ["whisper npc:KoTest mobhp#0", "wait 1"]
