@@ -515,6 +515,11 @@ def build_skill_db(src):
                 # only changes how the hit is shown, so pre-renewal's stays.
                 entry += "\n    # Hit: pre-renewal's value stays (renewal's default, Normal, cannot be written)"
                 continue
+            if k == "ActiveInstance":
+                # How many may stand at once (plants, traps). Renewal's entry
+                # sets no limit; pre-renewal's stays, the safer side.
+                entry += "\n    # ActiveInstance: pre-renewal's limit stays (renewal's entry sets none)"
+                continue
             if k == "Unit" and n in C.UNIT_KEPT:
                 entry += "\n    # Unit: pre-renewal's block stays (it cannot be removed); renewal's skill is cast at a target and places none"
                 continue

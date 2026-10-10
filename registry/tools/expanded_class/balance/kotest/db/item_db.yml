@@ -214,3 +214,14 @@ Body:
     Locations:
       Right_Hand: true
     WeaponLevel: 4
+  - Id: 59020
+    AegisName: Test_Axe
+    Name: Test Axe
+    Type: Weapon
+    SubType: 1hAxe
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
