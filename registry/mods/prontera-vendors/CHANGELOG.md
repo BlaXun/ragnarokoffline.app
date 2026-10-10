@@ -1,3 +1,13 @@
+## 1.6.0
+
+### Street
+- New: **Stall density** (80 % by default). How full a lane gets before stalls open in the next one: lower leaves gaps between stalls and spreads them over more lanes, 100 packs them shoulder to shoulder. Stalls that don't fit at the chosen density go to the emptiest lanes. Needs an app newer than 1.5.6; older ones fill each lane to 70–80 % as before.
+
+### Settings
+- **Hunted supply** has its own switch again, and **Hunting parties** (20 by default) only says how much they hunt. If you had the supply on, switch **Hunted supply** on once: your parties setting and the market's stock are kept.
+- **Start with a filled market** (off by default) and **MvP kills (per MvP a day)** (1 by default) are settings again.
+- **Market news** is a switch again, and **Announce market news** (on by default) says whether the server announces events and War of Emperium's moves or leaves them to the board. A server that had changed Market news gets the defaults once.
+
 ## 1.5.0
 
 ### Hunted supply (new, off by default)
