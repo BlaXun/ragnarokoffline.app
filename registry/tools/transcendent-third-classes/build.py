@@ -24,6 +24,7 @@ Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Minstrel and
 (instead of Clown and Gypsy). Each class keeps its CSV files in its own directory.
 Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Genetic (instead of Creator).
 Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Mechanic (instead of Whitesmith).
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Sorcerer (instead of Professor).
 Each class keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
@@ -52,6 +53,7 @@ WEAPONS = {
     "whip":   dict(type="Weapon", sub="Whip",    loc=["Right_Hand"], label="Whip", unid="Whip", gender="Female"),
     "axe1":   dict(type="Weapon", sub="1hAxe",   loc=["Right_Hand"], label="Axe", unid="Axe"),
     "axe2":   dict(type="Weapon", sub="2hAxe",   loc=["Both_Hand"],  label="Two-Handed Axe", unid="Axe"),
+    "book":   dict(type="Weapon", sub="Book",    loc=["Right_Hand"], label="Book", unid="Book"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -383,6 +385,32 @@ mechanic = ec.config(
     EQUIP_LABEL="Whitesmith or Mechanic",
     ITEMS_ABOUT="The Mechanic's axes, from mechanic/equipment.csv.",
     CSV_DIR="mechanic",
+sorcerer = ec.config(
+    __file__, **COMMON,
+    JOBS=("Sorcerer_T",),
+    # Renewal's Sorcerer tree: Novice, Mage, Sage and the SO skills;
+    # renewal's transcendent one also inherits Professor (Soul Change,
+    # Spider Web, Double Casting, Memorize).
+    TREE_FROM={"Sorcerer_T": "Sorcerer"},
+    BASE="Professor",
+    SKILL_PREFIX="SO_",
+    HP_FROM="Professor", HP_SCALE=1.0,
+    SP_FROM="Professor", SP_SCALE=1.0,
+    EXP_FROM="Professor",
+    # Renewal's Sorcerer bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Int"), (70, "Dex")],
+    EQUIP_JOBS=["Sage"],
+    EQUIP_LABEL="Professor or Sorcerer",
+    ITEMS_ABOUT="The Sorcerer's books, from sorcerer/equipment.csv.",
+    CSV_DIR="sorcerer",
+    # The elemental spirits: pre-renewal loads only the import layer's
+    # elemental_db, so renewal's table comes with the mod, without the five
+    # spirits of the fourth class (Elemental Master), whose EM_ skills
+    # pre-renewal lacks.
+    COPY_TABLES={"db/elemental_db.yml": ("db/re/elemental_db.yml", "ELEMENTAL_DB", 2, r"\bEM_EL_")},
+    # Pre-renewal's Cloud Kill costs 2 Red Gemstones and renewal's none; an
+    # import entry cannot take an item cost away, so pre-renewal's stays.
+    ITEMCOST_KEPT=["SO_CLOUD_KILL"],
 )
 
 # The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
@@ -534,4 +562,5 @@ ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, 
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, minstrel, wanderer,
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, genetic,
 ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, mechanic,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, sorcerer,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])

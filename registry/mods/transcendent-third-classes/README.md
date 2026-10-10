@@ -33,6 +33,7 @@ The mod grows class by class. So far:
 | Wanderer (female) | Gypsy | `valkyrie 55 56` |
 | Genetic | Creator | `valkyrie 55 50` |
 | Mechanic | Whitesmith | `valkyrie 42 50` |
+| Sorcerer | Professor | `valkyrie 55 47` |
 
 The stock transcendent changers in the Valkyrie's hall stand in two rows.
 Each third class's changer stands right beside its transcendent class's,
@@ -832,6 +833,68 @@ Mammonite. Transcendent classes only.
 | Boiler Axe | 70 | Magmaring |
 | Drill Breaker | 90 | Maya |
 | Dragon Forge Axe | 90 | Detale |
+## Sorcerer
+
+### The path
+
+1. Sage, base 99 / job 50 → the Valkyrie's rebirth → High Novice → High
+   Mage. The rebirth remembers Professor as the target, as usual.
+2. **High Mage, job 40 or later**, no unspent skill points: talk to the
+   **Sorcerer** beside the Professor changer instead of the Professor
+   changer, which stays as it was. You are asked to confirm twice.
+
+The class's skill tree is renewal's Sorcerer tree: Novice, Mage, Sage
+and the Sorcerer's own skills, with a Professor's 69 job levels and
+skill points. It keeps every Sage skill and never learns Soul Change,
+Spider Web, Double Casting or Memorize.
+
+Its **elemental spirits** (Agni, Aqua, Ventus, Tera, three sizes each)
+come from renewal's elemental table, which pre-renewal does not load;
+the mod brings it, without the fourth class's spirits. A summon costs
+the classic elemental stones (Red Blood and a Flame Heart, Crystal Blue
+and Mystic Frozen, Wind of Verdure and Rough Wind, Yellow Live and Great
+Nature), which monsters drop as before.
+
+### Professor or Sorcerer
+
+- **Professor**, magic bent to its will: Soul Change, Spider Web,
+  Double Casting, Memorize.
+- **Sorcerer**, the elements and their spirits: Varetyr Spear, Psychic
+  Wave, Diamond Dust, Earth Grave, Poison Buster and Cloud Kill, the
+  four elemental insignias, and Spell Fist, which holds a bolt in the
+  fist and lets every blow after it strike with the bolt.
+
+### How strong
+
+A caster: measured against a High Wizard of the same level and stats,
+with the same staff, on the same target, without consumables:
+
+| | Sorcerer | High Wizard |
+|---|---|---|
+| One target | Varetyr Spear about 1890 dmg/s, Spell Fist about 2110 | Jupitel Thunder with Mystical Amplification about 2080 |
+| Area, per target | Psychic Wave 1456, Poison Buster 1556, Cloud Kill 1648 | Meteor Storm with Mystical Amplification about 1440 |
+
+Renewal's Psychic Wave did about 5000 a second here, Poison Buster 3300
+and Cloud Kill 4300; they are scaled in `lua/third_classes.lua`. **Spell
+Fist** made every auto-attack a full bolt (about 7300 a second, 20 SP a
+hit, for up to three minutes); the bolt is scaled to 26% only for a
+Sorcerer under Spell Fist, so a Wizard's bolts and a Sorcerer's own are
+untouched. An offensive spirit adds about 300 a second. Pre-renewal's
+Cloud Kill costs **2 Red Gemstones**, and keeps them (an import entry
+cannot take an item cost away).
+
+### Equipment
+
+Two tiers, two books each, for both of the Sage's transcendent paths.
+Each raises Sorcerer spells and Sage ones (bolts, Earth Spike, Heaven's
+Drive). Transcendent classes only.
+
+| Item | Level | Drops from |
+|---|---|---|
+| Grimoire of Spirits | 70 | Rideword |
+| Codex of Elements | 70 | Deathword |
+| Tome of Varetyr | 90 | Ktullanux |
+| Shell of the Sage | 90 | Turtle General |
 
 ## Kagerou and Oboro
 
@@ -1243,6 +1306,8 @@ Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
 | `npc/mechanic.txt` | the Mechanic changer |
 | `npc/mado_engineer.txt` | the Mado Engineer in Einbroch |
 | `npc/black_marketeer.txt` | the Black Marketeer in Einbroch (Magic Gear Fuel, cannonballs) |
+| `npc/sorcerer.txt` | the Sorcerer changer |
+| `db/elemental_db.yml` | renewal's elemental spirits, without the fourth class's |
 | `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the third classes' skill damage scaling |
 | `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |
@@ -1271,6 +1336,7 @@ and each class's three CSV files, in its own directory beside it
 `royal_guard/`, `warlock/`, `minstrel/`, `wanderer/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `royal_guard/`, `warlock/`, `genetic/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `royal_guard/`, `warlock/`, `mechanic/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
+`royal_guard/`, `warlock/`, `sorcerer/`, `kagerou_oboro/`, `rebellion/`, `star_emperor/`,
 `soul_reaper/`):
 
 ```

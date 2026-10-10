@@ -667,6 +667,7 @@ spirits) need testing in pre-renewal before anything is promised.
 | Minstrel / Wanderer | Clown / Gypsy | `valkyrie 55 54` / `55 56` |
 | Genetic | Creator | `valkyrie 55 50` |
 | Mechanic | Whitesmith | `valkyrie 42 50` |
+| Sorcerer | Professor | `valkyrie 55 47` |
 
 ### Decided with the human (do not re-ask)
 
@@ -947,6 +948,15 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   a Genetic's Cart Tornado.
 - **A mount changes what is equipped**: getting into the Madogear took the
   cannonballs off; equip ammunition after mounting.
+- **A skill that borrows another skill's damage** (Spell Fist turns every
+  blow into the bolt it held) is scaled through that skill, but only when
+  it should be: a hook can test the caster's job and status
+  (`c.caster:has_status("SC_SPELLFIST")`) and leave everyone else's bolts
+  alone.
+- **A copied table may name what pre-renewal lacks**: renewal's
+  elemental_db holds the fourth class's spirits, whose EM_ skills
+  pre-renewal does not have; COPY_TABLES takes a pattern of rows to leave
+  out.
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

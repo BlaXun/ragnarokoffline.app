@@ -42,6 +42,11 @@
 --   Mechanic vs Whitesmith (Cart Termination with a full cart 2519): Power
 --     Swing 2414, Boost Knuckle 2440, Vulcan Arm 2389; per target Arms Cannon
 --     (5x5 splash) about 1150, Axe Tornado 1244, Flame Launcher 1167.
+--   Sorcerer vs High Wizard (as the Warlock; Mystical Amplification and
+--     Jupitel about 2080, and Meteor Storm about 1440 a target): Varetyr
+--     Spear about 1890, Spell Fist about 2110 (below); per target Psychic
+--     Wave 1456, Poison Buster 1556, Cloud Kill 1648, a caster's area at
+--     parity.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -97,12 +102,36 @@ local FACTOR = {
   NC_VULCANARM          = 70,
   NC_FLAMELAUNCHER      = 80,
   NC_ARMSCANNON         = 48,   -- it splashes over 5x5: an area skill
+  SO_PSYCHIC_WAVE       = 29,
+  SO_POISON_BUSTER      = 47,
+  SO_CLOUD_KILL         = 38,
 }
 
 for name, percent in pairs(FACTOR) do
   skill(name, {
     ratio = function(c, stock)
       return stock * percent // 100
+    end,
+  })
+end
+
+-- Spell Fist (Sorcerer): cast while a bolt is being cast, it cancels the
+-- bolt and turns every auto-attack after it into that bolt's magic damage,
+-- for 20 SP a hit, until the SP or the three minutes run out. In renewal
+-- that was about 7,300 a second here, three times a High Wizard's
+-- amplified Jupitel Thunder. The hit is computed through the bolt's own
+-- skill, so the bolt is scaled only for a Sorcerer under Spell Fist; a
+-- Wizard's or a Sorcerer's ordinary bolt is untouched.
+local SORCERER_T = 4074
+local SPELLFIST_KEPT = 26   -- percent of the bolt a Spell Fist hit keeps
+
+for _, name in ipairs({ "MG_FIREBOLT", "MG_COLDBOLT", "MG_LIGHTNINGBOLT", "WZ_EARTHSPIKE" }) do
+  skill(name, {
+    ratio = function(c, stock)
+      if c.caster.job == SORCERER_T and c.caster:has_status("SC_SPELLFIST") then
+        return stock * SPELLFIST_KEPT // 100
+      end
+      return stock
     end,
   })
 end
