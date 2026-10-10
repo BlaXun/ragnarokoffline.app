@@ -415,6 +415,130 @@
     1.5
    ],
    "repeat": 2
+  },
+  {
+   "id": "CH_OccultImpaction_Zen",
+   "class": 4016,
+   "weapon": 59017,
+   "skills": "266,401s",
+   "levels": "5,1"
+  },
+  {
+   "id": "CH_Asura_burst",
+   "class": 4016,
+   "weapon": 59017,
+   "skills": "271",
+   "levels": "5",
+   "pre": "270:5:self",
+   "extra": "whisper npc:KoTest sphererefill#15;wait 1",
+   "step": 0.3
+  },
+  {
+   "id": "SR_KnuckleArrow",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2336",
+   "levels": "10",
+   "versus": "CH_OccultImpaction_Zen",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "SR_DragonCombo",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2326",
+   "levels": "10",
+   "versus": "CH_OccultImpaction_Zen",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "SR_TigerCannon_RaisingDragon",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2330",
+   "levels": "10",
+   "pre": "2338:10:self",
+   "versus": "CH_OccultImpaction_Zen",
+   "aim": [
+    0.75,
+    1.0
+   ]
+  },
+  {
+   "id": "SR_GatesOfHell_burst",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2343",
+   "levels": "10",
+   "pre": "270:5:self",
+   "extra": "whisper npc:KoTest sphererefill#15;wait 1",
+   "step": 0.3,
+   "versus": "CH_Asura_burst",
+   "aim": [
+    0.3,
+    0.8
+   ]
+  },
+  {
+   "id": "SR_EarthShaker_area",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2328s",
+   "levels": "5",
+   "pre": "270:5:self",
+   "extra": "whisper npc:KoTest sphererefill#15;wait 1",
+   "versus": "SR_KnuckleArrow",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "SR_SkyNetBlow_area",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2327s",
+   "levels": "5",
+   "versus": "SR_KnuckleArrow",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "SR_LightningRide_area",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2518",
+   "levels": "5",
+   "how": "pos",
+   "pre": "270:5:self",
+   "extra": "whisper npc:KoTest sphererefill#15;wait 1",
+   "versus": "SR_KnuckleArrow",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "SR_RampageBlast_area",
+   "class": 4077,
+   "weapon": 59017,
+   "skills": "2332s",
+   "levels": "5",
+   "pre": "270:5:self",
+   "extra": "whisper npc:KoTest sphererefill#15;wait 1",
+   "versus": "SR_KnuckleArrow",
+   "aim": [
+    0.3,
+    0.6
+   ]
   }
  ]
 }

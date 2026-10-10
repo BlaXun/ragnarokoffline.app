@@ -324,7 +324,9 @@ Only measuring found these.
   `calculateSkillRatio`.
 - **`db/skill_db.yml` fields** (`AfterCastActDelay`, `Cooldown`, costs) for
   anything that adds damage with `ATK_ADD` in `battle.cpp`, which a ratio
-  cannot reach. Kunai Splash got Sonic Blow's 2 s delay. Put such overrides
+  cannot reach. Kunai Splash got Sonic Blow's 2 s delay; Tiger Cannon,
+  whose damage comes from HP and SP, a 7 s cooldown. A field the entry
+  lacks (Gates of Hell had no Cooldown) is added. Put such overrides
   in a named table in the generator (`SKILL_OVERRIDES`), with a comment saying
   why, and mark the line in the output.
 - Leave era-independent skills alone: zeny-based (Rapid Throw), %-of-HP
@@ -654,6 +656,13 @@ them go into one mod, `registry/mods/transcendent-third-classes` (branch
 | Rune Knight | Lord Knight | `valkyrie 42 39` |
 | Royal Guard | Paladin | `valkyrie 55 39` |
 | Warlock | High Wizard | `valkyrie 42 47` |
+| Sura | Champion | `valkyrie 55 42` |
+
+Still to come, each on its own branch, in this order: Ranger (Sniper),
+Minstrel/Wanderer (Clown/Gypsy), Genetic (Creator), Mechanic
+(Whitesmith), Sorcerer (Professor). Their identities are agreed (see the
+project notes); the summons and mounts (Warg, Madogear, elemental
+spirits) need testing in pre-renewal before anything is promised.
 
 ### Decided with the human (do not re-ask)
 
@@ -902,6 +911,12 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   a single-target spell, and it was set as one. Before treating a run on
   one dummy as an area figure, check whether the skill piles its hits onto
   a lone target.
+- **The rig's heals hide what a skill spends.** Every heal refills HP and
+  SP (and `sphererefill#n` spirit spheres), so a skill that spends all SP
+  (Asura Strike, Gates of Hell) or many spheres repeats far more often
+  than in play. Compare such bursts per hit, and steady rotations per
+  full SP bar (`NOHEAL=1`); give a burst skill a cooldown when renewal
+  gave it none.
 - **Resources the class holds, not spends.** Kagerou and Oboro charms
   (Fire, Ice, Wind, Earth) last five minutes and add to every ninjutsu of
   their element: +20% a charm to Ice Spear's every hit, +100% a charm to

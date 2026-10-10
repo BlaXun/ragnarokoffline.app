@@ -116,6 +116,24 @@
 # Skills: WL_CHAINLIGHTNING, WL_COMET, WL_CRIMSONROCK, WL_DRAINLIFE, WL_EARTHSTRAIN, WL_FROSTMISTY, WL_HELLINFERNO, WL_JACKFROST, WL_MARSHOFABYSS, WL_READING_SB, WL_RECOGNIZEDSPELL, WL_SIENNAEXECRATE, WL_SOULEXPANSION, WL_STASIS, WL_SUMMONBL, WL_SUMMONFB, WL_SUMMONSTONE, WL_SUMMONWB, WL_TELEKINESIS_INTENSE, WL_TETRAVORTEX, WL_WHITEIMPRISON, WL_READING_SB_READING (new)
 #
 # _______________________
+# Sura_T:
+# Renewal's entries for the SR_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: SR_CRESCENTELBOW, SR_CURSEDCIRCLE, SR_DRAGONCOMBO, SR_EARTHSHAKER, SR_FALLENEMPIRE, SR_FLASHCOMBO, SR_GATEOFHELL, SR_GENTLETOUCH_CHANGE, SR_GENTLETOUCH_ENERGYGAIN, SR_GENTLETOUCH_REVITALIZE, SR_HOWLINGOFLION, SR_KNUCKLEARROW, SR_LIGHTNINGWALK, SR_POWERVELOCITY, SR_RAISINGDRAGON, SR_RAMPAGEBLASTER, SR_RIDEINLIGHTNING, SR_TIGERCANNON
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's entries for the KO_/OB_/KG_ skills whose pre-renewal entry
 # differs. Pre-renewal's are an older revision: no Status: (so the buffs
@@ -4643,6 +4661,874 @@ Body:
     CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+  - Id: 2333
+    Name: SR_CRESCENTELBOW
+    Description: Crescent Elbow
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 1000
+    Duration1:
+      - Level: 1
+        Time: 3000
+      - Level: 2
+        Time: 4000
+      - Level: 3
+        Time: 5000
+      - Level: 4
+        Time: 6000
+      - Level: 5
+        Time: 7000
+    Cooldown: 5000
+    Requires:
+      SpCost: 80
+      SpiritSphereCost: 2
+    Status: CrescentElbow
+  - Id: 2334
+    Name: SR_CURSEDCIRCLE
+    Description: Cursed Circle
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 3
+    AfterCastActDelay: 1000
+    Duration1:
+      - Level: 1
+        Time: 3000
+      - Level: 2
+        Time: 4000
+      - Level: 3
+        Time: 5000
+      - Level: 4
+        Time: 6000
+      - Level: 5
+        Time: 7000
+    Cooldown: 10000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 80
+        - Level: 4
+          Amount: 100
+        - Level: 5
+          Amount: 120
+      HpRateCost:
+        - Level: 1
+          Amount: -1
+        - Level: 2
+          Amount: -2
+        - Level: 3
+          Amount: -3
+        - Level: 4
+          Amount: -4
+        - Level: 5
+          Amount: -5
+    Status: CursedCircle_Target
+  - Id: 2326
+    Name: SR_DRAGONCOMBO
+    Description: Dragon Combo
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    Range: 2
+    Hit: Multi_Hit
+    HitCount: -2
+    Element: Weapon
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Duration1: 4500
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 3
+        - Level: 2
+          Amount: 4
+        - Level: 3
+          Amount: 5
+        - Level: 4
+          Amount: 6
+        - Level: 5
+          Amount: 7
+        - Level: 6
+          Amount: 8
+        - Level: 7
+          Amount: 9
+        - Level: 8
+          Amount: 10
+        - Level: 9
+          Amount: 11
+        - Level: 10
+          Amount: 12
+    Status: Stun
+  - Id: 2328
+    Name: SR_EARTHSHAKER
+    Description: Earth Shaker
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Flags:
+      TargetTrap: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 2
+      - Level: 3
+        Area: 3
+      - Level: 4
+        Area: 4
+      - Level: 5
+        Area: 5
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Duration1:
+      - Level: 1
+        Time: 1000
+      - Level: 2
+        Time: 2000
+      - Level: 3
+        Time: 2000
+      - Level: 4
+        Time: 3000
+      - Level: 5
+        Time: 3000
+    Duration2: 4500
+    Cooldown: 3000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 36
+        - Level: 2
+          Amount: 40
+        - Level: 3
+          Amount: 44
+        - Level: 4
+          Amount: 48
+        - Level: 5
+          Amount: 52
+    Status: Stun
+  - Id: 2329
+    Name: SR_FALLENEMPIRE
+    Description: Fallen Empire
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Self
+    Flags:
+      NoTargetSelf: true
+    Range: 2
+    Hit: Multi_Hit
+    HitCount: -2
+    Element: Weapon
+    Duration1:
+      - Level: 1
+        Time: 500
+      - Level: 2
+        Time: 500
+      - Level: 3
+        Time: 1000
+      - Level: 4
+        Time: 1000
+      - Level: 5
+        Time: 1500
+      - Level: 6
+        Time: 1500
+      - Level: 7
+        Time: 2000
+      - Level: 8
+        Time: 2000
+      - Level: 9
+        Time: 2500
+      - Level: 10
+        Time: 2500
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 18
+        - Level: 2
+          Amount: 21
+        - Level: 3
+          Amount: 24
+        - Level: 4
+          Amount: 27
+        - Level: 5
+          Amount: 30
+        - Level: 6
+          Amount: 33
+        - Level: 7
+          Amount: 36
+        - Level: 8
+          Amount: 39
+        - Level: 9
+          Amount: 42
+        - Level: 10
+          Amount: 45
+      SpiritSphereCost:
+        - Level: 1
+          Amount: 2
+        - Level: 2
+          Amount: 2
+        - Level: 3
+          Amount: 2
+        - Level: 4
+          Amount: 2
+        - Level: 5
+          Amount: 2
+        - Level: 6
+          Amount: 1
+        - Level: 7
+          Amount: 1
+        - Level: 8
+          Amount: 1
+        - Level: 9
+          Amount: 1
+        - Level: 10
+          Amount: 1
+  - Id: 5009
+    Name: SR_FLASHCOMBO
+    Description: Flash Combo
+    MaxLevel: 5
+    TargetType: Attack
+    DamageFlags:
+      NoDamage: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 1000
+    Duration1: 3000
+    Cooldown:
+      - Level: 1
+        Time: 15000
+      - Level: 2
+        Time: 12000
+      - Level: 3
+        Time: 9000
+      - Level: 4
+        Time: 6000
+      - Level: 5
+        Time: 3000
+    Requires:
+      SpCost: 65
+      SpiritSphereCost:
+        - Level: 1
+          Amount: 5
+        - Level: 2
+          Amount: 5
+        - Level: 3
+          Amount: 4
+        - Level: 4
+          Amount: 4
+        - Level: 5
+          Amount: 3
+    Status: FlashCombo
+  - Id: 2343
+    Name: SR_GATEOFHELL
+    Description: Gate of Hell
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      IgnoreLongCard: true
+    Range: 7
+    Hit: Multi_Hit
+    HitCount: -7
+    Element: Weapon
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:
+      - Level: 1
+        Time: 1000
+      - Level: 2
+        Time: 1200
+      - Level: 3
+        Time: 1400
+      - Level: 4
+        Time: 1600
+      - Level: 5
+        Time: 1800
+      - Level: 6
+        Time: 2000
+      - Level: 7
+        Time: 2200
+      - Level: 8
+        Time: 2400
+      - Level: 9
+        Time: 2600
+      - Level: 10
+        Time: 2800
+    AfterCastActDelay:
+      - Level: 1
+        Time: 100
+      - Level: 2
+        Time: 200
+      - Level: 3
+        Time: 300
+      - Level: 4
+        Time: 400
+      - Level: 5
+        Time: 500
+      - Level: 6
+        Time: 600
+      - Level: 7
+        Time: 700
+      - Level: 8
+        Time: 800
+      - Level: 9
+        Time: 900
+      - Level: 10
+        Time: 1000
+    Requires:
+      SpCost: 100
+      SpiritSphereCost: 2
+    CastCancel: false
+    Cooldown: 10000    # this mod's balance; renewal's is different
+  - Id: 2347
+    Name: SR_GENTLETOUCH_CHANGE
+    Description: Gentle Touch - Change
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Range: 2
+    Hit: Single
+    HitCount: 1
+    CastTime: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 240000
+    Cooldown: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 50
+        - Level: 3
+          Amount: 60
+        - Level: 4
+          Amount: 70
+        - Level: 5
+          Amount: 80
+      HpRateCost:
+        - Level: 1
+          Amount: -2
+        - Level: 2
+          Amount: -4
+        - Level: 3
+          Amount: -6
+        - Level: 4
+          Amount: -8
+        - Level: 5
+          Amount: -10
+      SpiritSphereCost: 1
+    Status: Gt_Change
+  - Id: 2346
+    Name: SR_GENTLETOUCH_ENERGYGAIN
+    Description: Gentle Touch - Energy Gain
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 1250
+      - Level: 2
+        Time: 1375
+      - Level: 3
+        Time: 1500
+      - Level: 4
+        Time: 1625
+      - Level: 5
+        Time: 1750
+    AfterCastActDelay:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 1750
+      - Level: 2
+        Time: 2125
+      - Level: 3
+        Time: 2500
+      - Level: 4
+        Time: 2875
+      - Level: 5
+        Time: 3250
+    Duration1: 240000
+    Duration2: 600000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 50
+        - Level: 3
+          Amount: 60
+        - Level: 4
+          Amount: 70
+        - Level: 5
+          Amount: 80
+      HpRateCost:
+        - Level: 1
+          Amount: -1
+        - Level: 2
+          Amount: -2
+        - Level: 3
+          Amount: -3
+        - Level: 4
+          Amount: -4
+        - Level: 5
+          Amount: -5
+    Status: Gt_EnergyGain
+    Cooldown: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2348
+    Name: SR_GENTLETOUCH_REVITALIZE
+    Description: Gentle Touch - Revitalize
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Range: 2
+    Hit: Single
+    HitCount: 1
+    CastTime: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 240000
+    Cooldown: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 50
+        - Level: 3
+          Amount: 60
+        - Level: 4
+          Amount: 70
+        - Level: 5
+          Amount: 80
+      SpiritSphereCost: 1
+    Status: Gt_Revitalize
+  - Id: 2517
+    Name: SR_HOWLINGOFLION
+    Description: Howling of Lion
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 2
+      - Level: 2
+        Area: 2
+      - Level: 3
+        Area: 3
+      - Level: 4
+        Area: 3
+      - Level: 5
+        Area: 4
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1500    # renewal's FixedCastTime added here: a 10s+ cooldown already stops spam
+    Cooldown: 10000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost: 70
+      SpiritSphereCost: 3
+    CastCancel: false
+    Duration1: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2336
+    Name: SR_KNUCKLEARROW
+    Description: Knuckle Arrow
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    Range:
+      - Level: 1
+        Size: 7
+      - Level: 2
+        Size: 7
+      - Level: 3
+        Size: 8
+      - Level: 4
+        Size: 8
+      - Level: 5
+        Size: 9
+      - Level: 6
+        Size: 9
+      - Level: 7
+        Size: 10
+      - Level: 8
+        Size: 10
+      - Level: 9
+        Size: 11
+      - Level: 10
+        Size: 11
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    Knockback:
+      - Level: 1
+        Amount: 2
+      - Level: 2
+        Amount: 2
+      - Level: 3
+        Amount: 3
+      - Level: 4
+        Amount: 3
+      - Level: 5
+        Amount: 4
+      - Level: 6
+        Amount: 4
+      - Level: 7
+        Amount: 5
+      - Level: 8
+        Amount: 5
+      - Level: 9
+        Amount: 6
+      - Level: 10
+        Amount: 6
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    AfterCastActDelay: 1000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 12
+        - Level: 2
+          Amount: 14
+        - Level: 3
+          Amount: 16
+        - Level: 4
+          Amount: 18
+        - Level: 5
+          Amount: 20
+        - Level: 6
+          Amount: 22
+        - Level: 7
+          Amount: 24
+        - Level: 8
+          Amount: 26
+        - Level: 9
+          Amount: 28
+        - Level: 10
+          Amount: 30
+      SpiritSphereCost:
+        - Level: 1
+          Amount: 1
+        - Level: 2
+          Amount: 1
+        - Level: 3
+          Amount: 1
+        - Level: 4
+          Amount: 1
+        - Level: 5
+          Amount: 1
+        - Level: 6
+          Amount: 0
+        - Level: 7
+          Amount: 0
+        - Level: 8
+          Amount: 0
+        - Level: 9
+          Amount: 0
+        - Level: 10
+          Amount: 0
+  - Id: 2335
+    Name: SR_LIGHTNINGWALK
+    Description: Lightning Walk
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 1000
+    Duration1:
+      - Level: 1
+        Time: 5000
+      - Level: 2
+        Time: 6000
+      - Level: 3
+        Time: 7000
+      - Level: 4
+        Time: 8000
+      - Level: 5
+        Time: 9000
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 80
+        - Level: 2
+          Amount: 70
+        - Level: 3
+          Amount: 60
+        - Level: 4
+          Amount: 50
+        - Level: 5
+          Amount: 40
+      HpRateCost:
+        - Level: 1
+          Amount: -5
+        - Level: 2
+          Amount: -4
+        - Level: 3
+          Amount: -3
+        - Level: 4
+          Amount: -2
+        - Level: 5
+          Amount: -1
+    Status: LightningWalk
+  - Id: 2341
+    Name: SR_POWERVELOCITY
+    Description: Power Velocity
+    MaxLevel: 1
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      NoTargetSelf: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    CastTime: 1625    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost: 50
+      SpiritSphereCost: 5
+    AfterCastActDelay: 375    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2338
+    Name: SR_RAISINGDRAGON
+    Description: Raising Dragon
+    MaxLevel: 10
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 1000
+    Duration1:
+      - Level: 1
+        Time: 120000
+      - Level: 2
+        Time: 140000
+      - Level: 3
+        Time: 160000
+      - Level: 4
+        Time: 180000
+      - Level: 5
+        Time: 200000
+      - Level: 6
+        Time: 220000
+      - Level: 7
+        Time: 240000
+      - Level: 8
+        Time: 260000
+      - Level: 9
+        Time: 280000
+      - Level: 10
+        Time: 300000
+    Cooldown: 30000
+    Requires:
+      SpCost: 120
+    Status: RaisingDragon
+  - Id: 2332
+    Name: SR_RAMPAGEBLASTER
+    Description: Rampage Blaster
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+    Flags:
+      TargetTrap: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    AfterCastActDelay: 1000
+    Cooldown: 10000
+    Requires:
+      SpCost: 100
+      Status:
+        Explosionspirits: true
+      SpiritSphereCost: 3
+  - Id: 2518
+    Name: SR_RIDEINLIGHTNING
+    Description: Ride In Lightening
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Ground
+    DamageFlags:
+      Splash: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1000
+    Cooldown: 500
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 25
+        - Level: 2
+          Amount: 30
+        - Level: 3
+          Amount: 35
+        - Level: 4
+          Amount: 40
+        - Level: 5
+          Amount: 45
+      SpiritSphereCost: 2
+  - Id: 2330
+    Name: SR_TIGERCANNON
+    Description: Tiger Cannon
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      IgnoreNonCritAtkBonus: true
+      TargetTrap: true
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 2
+      - Level: 2
+        Area: 2
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 2
+      - Level: 6
+        Area: 3
+      - Level: 7
+        Area: 3
+      - Level: 8
+        Area: 3
+      - Level: 9
+        Area: 3
+      - Level: 10
+        Area: 3
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:
+      - Level: 1
+        Time: 1100
+      - Level: 2
+        Time: 1200
+      - Level: 3
+        Time: 1300
+      - Level: 4
+        Time: 1400
+      - Level: 5
+        Time: 1500
+      - Level: 6
+        Time: 1600
+      - Level: 7
+        Time: 1700
+      - Level: 8
+        Time: 1800
+      - Level: 9
+        Time: 1900
+      - Level: 10
+        Time: 2000
+    AfterCastActDelay: 1000
+    Cooldown: 7000    # this mod's balance; renewal's is different
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 30
+        - Level: 2
+          Amount: 35
+        - Level: 3
+          Amount: 40
+        - Level: 4
+          Amount: 45
+        - Level: 5
+          Amount: 50
+        - Level: 6
+          Amount: 55
+        - Level: 7
+          Amount: 60
+        - Level: 8
+          Amount: 65
+        - Level: 9
+          Amount: 70
+        - Level: 10
+          Amount: 75
+      Status:
+        Explosionspirits: true
+      SpiritSphereCost: 2
   - Id: 3023
     Name: KG_KAGEHUMI
     Description: Shadow Trampling

@@ -39,6 +39,12 @@
 # 3. The Warlock's weapons, from warlock/equipment.csv.
 #
 # _______________________
+# Sura_T:
+# 1. No job flags: rAthena already lets the class wear a Champion's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Sura's knuckles, from sura/equipment.csv.
+#
+# _______________________
 # Kagerou, Oboro:
 # 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
@@ -669,6 +675,90 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;
+  - Id: 63621
+    AegisName: Rakshasa_Claw
+    Name: Rakshasa Claw
+    Type: Weapon
+    SubType: Knuckle
+    Buy: 20
+    Weight: 500
+    Attack: 135
+    Range: 1
+    Slots: 1
+    Jobs:
+      Monk: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bStr,2; bonus2 bSkillAtk,"SR_KNUCKLEARROW",10; bonus2 bSkillAtk,"SR_TIGERCANNON",10; bonus2 bSkillAtk,"MO_INVESTIGATE",10; bonus2 bSkillAtk,"MO_EXTREMITYFIST",10;
+  - Id: 63622
+    AegisName: Iron_Mantra_Knuckle
+    Name: Iron Mantra Knuckle
+    Type: Weapon
+    SubType: Knuckle
+    Buy: 20
+    Weight: 450
+    Attack: 125
+    Range: 1
+    Slots: 1
+    Jobs:
+      Monk: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus2 bSkillAtk,"SR_DRAGONCOMBO",10; bonus2 bSkillAtk,"SR_SKYNETBLOW",10; bonus2 bSkillAtk,"CH_CHAINCRUSH",10; bonus2 bSkillAtk,"CH_TIGERFIST",10;
+  - Id: 63631
+    AegisName: Asura_Fang
+    Name: Asura Fang
+    Type: Weapon
+    SubType: Knuckle
+    Buy: 20
+    Weight: 550
+    Attack: 150
+    Range: 1
+    Slots: 1
+    Jobs:
+      Monk: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bStr,3; bonus bAgi,2; bonus2 bSkillAtk,"SR_KNUCKLEARROW",20; bonus2 bSkillAtk,"SR_GATEOFHELL",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"MO_INVESTIGATE",20; bonus2 bSkillAtk,"MO_EXTREMITYFIST",15;
+  - Id: 63632
+    AegisName: Vajra_Knuckle
+    Name: Vajra Knuckle
+    Type: Weapon
+    SubType: Knuckle
+    Buy: 20
+    Weight: 500
+    Attack: 140
+    Range: 1
+    Slots: 1
+    Jobs:
+      Monk: true
+    Classes:
+      Upper: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bAgi,3; bonus bDex,2; bonus2 bSkillAtk,"SR_DRAGONCOMBO",20; bonus2 bSkillAtk,"SR_SKYNETBLOW",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"CH_CHAINCRUSH",20; bonus2 bSkillAtk,"CH_TIGERFIST",15;
   - Id: 1201    # Knife
     Jobs:
       Alchemist: true
