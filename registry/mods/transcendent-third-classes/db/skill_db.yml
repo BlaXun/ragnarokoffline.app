@@ -116,6 +116,24 @@
 # Skills: WL_CHAINLIGHTNING, WL_COMET, WL_CRIMSONROCK, WL_DRAINLIFE, WL_EARTHSTRAIN, WL_FROSTMISTY, WL_HELLINFERNO, WL_JACKFROST, WL_MARSHOFABYSS, WL_READING_SB, WL_RECOGNIZEDSPELL, WL_SIENNAEXECRATE, WL_SOULEXPANSION, WL_STASIS, WL_SUMMONBL, WL_SUMMONFB, WL_SUMMONSTONE, WL_SUMMONWB, WL_TELEKINESIS_INTENSE, WL_TETRAVORTEX, WL_WHITEIMPRISON, WL_READING_SB_READING (new)
 #
 # _______________________
+# Ranger_T:
+# Renewal's entries for the RA_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: RA_AIMEDBOLT, RA_ARROWSTORM, RA_CAMOUFLAGE, RA_COBALTTRAP, RA_ELECTRICSHOCKER, RA_FEARBREEZE, RA_FIRINGTRAP, RA_ICEBOUNDTRAP, RA_MAGENTATRAP, RA_MAIZETRAP, RA_UNLIMIT, RA_VERDURETRAP, RA_WUGBITE, RA_WUGDASH, RA_WUGSTRIKE
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's entries for the KO_/OB_/KG_ skills whose pre-renewal entry
 # differs. Pre-renewal's are an older revision: no Status: (so the buffs
@@ -4643,6 +4661,570 @@ Body:
     CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+  - Id: 2236
+    Name: RA_AIMEDBOLT
+    Description: Aimed Bolt
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    Flags:
+      AlterRangeVulture: true
+    Range: 9
+    Hit: Multi_Hit
+    HitCount: 5
+    Element: Weapon
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 2750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 1000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost: 40
+      Weapon:
+        Bow: true
+      Ammo:
+        Arrow: true
+      AmmoAmount: 3
+  - Id: 2233
+    Name: RA_ARROWSTORM
+    Description: Arrow Storm
+    MaxLevel: 10
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+    Flags:
+      AlterRangeVulture: true
+    Range: 9
+    Hit: Multi_Hit
+    HitCount: -3
+    Element: Weapon
+    SplashArea:
+      - Level: 1
+        Area: 2
+      - Level: 2
+        Area: 2
+      - Level: 3
+        Area: 2
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 2
+      - Level: 6
+        Area: 3
+      - Level: 7
+        Area: 3
+      - Level: 8
+        Area: 3
+      - Level: 9
+        Area: 3
+      - Level: 10
+        Area: 4
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 2075    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 3200
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 24
+        - Level: 2
+          Amount: 28
+        - Level: 3
+          Amount: 32
+        - Level: 4
+          Amount: 36
+        - Level: 5
+          Amount: 40
+        - Level: 6
+          Amount: 44
+        - Level: 7
+          Amount: 48
+        - Level: 8
+          Amount: 52
+        - Level: 9
+          Amount: 56
+        - Level: 10
+          Amount: 60
+      Weapon:
+        Bow: true
+      Ammo:
+        Arrow: true
+      AmmoAmount: 5
+    AfterCastActDelay: 225    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2247
+    Name: RA_CAMOUFLAGE
+    Description: Camouflage
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      IgnoreKagehumi: true
+      IgnoreWugBite: true
+      Toggleable: true
+    Hit: Single
+    HitCount: 1
+    Duration1: 10000
+    Requires:
+      SpCost: 40
+    Status: Camouflage
+  - Id: 2250
+    Name: RA_COBALTTRAP
+    Description: Cobalt Trap
+    MaxLevel: 1
+    Type: Misc
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      IsTrap: true
+      AllowOnWarg: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    Element: Water
+    SplashArea: 2
+    ActiveInstance: 1
+    AfterCastActDelay: 2000
+    Duration1: 15000
+    Requires:
+      SpCost: 10
+      ItemCost:
+        - Item: Special_Alloy_Trap
+          Amount: 1
+        - Item: Indigo_Pts
+          Amount: 1
+    Unit:
+      Id: Cobalttrap
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        NoPc: true
+        RemovedByFireRain: true
+    Status: ElementalChange
+  - Id: 2238
+    Name: RA_ELECTRICSHOCKER
+    Description: Electric Shocker
+    MaxLevel: 5
+    Type: Misc
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsTrap: true
+      AllowOnWarg: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    SplashArea: 2
+    ActiveInstance: 3
+    Duration1: 15000
+    Duration2:
+      - Level: 1
+        Time: 20000
+      - Level: 2
+        Time: 22000
+      - Level: 3
+        Time: 24000
+      - Level: 4
+        Time: 26000
+      - Level: 5
+        Time: 28000
+    Requires:
+      SpCost: 35
+      ItemCost:
+        - Item: Special_Alloy_Trap
+          Amount: 1
+    Unit:
+      Id: Electricshocker
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        NoFootSet: true
+        RemovedByFireRain: true
+    Status: ElectricShocker
+  - Id: 2234
+    Name: RA_FEARBREEZE
+    Description: Fear Breeze
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      Critical: true
+    Hit: Single
+    HitCount: 1
+    Duration1:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 120000
+      - Level: 4
+        Time: 150000
+      - Level: 5
+        Time: 180000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    CastTimeFlags:
+      IgnoreDex: true
+      IgnoreStatus: true
+      IgnoreItemBonus: true
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 55
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 65
+        - Level: 4
+          Amount: 70
+        - Level: 5
+          Amount: 75
+      Weapon:
+        Bow: true
+    Status: FearBreeze
+    CastTime: 500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 1500    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+  - Id: 2253
+    Name: RA_FIRINGTRAP
+    Description: Firing Trap
+    MaxLevel: 5
+    Type: Misc
+    TargetType: Ground
+    DamageFlags:
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      IsTrap: true
+      TargetTrap: true
+      AlterRangeResearchTrap: true
+      AllowOnWarg: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    Element: Fire
+    SplashArea: 2
+    ActiveInstance: 2
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Duration1: 15000
+    Duration2: 13000
+    Requires:
+      SpCost: 10
+      ItemCost:
+        - Item: Special_Alloy_Trap
+          Amount: 1
+    Unit:
+      Id: Firingtrap
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        RemovedByFireRain: true
+    Status: Burning
+  - Id: 2254
+    Name: RA_ICEBOUNDTRAP
+    Description: Icebound Trap
+    MaxLevel: 5
+    Type: Misc
+    TargetType: Ground
+    DamageFlags:
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      IsTrap: true
+      TargetTrap: true
+      AlterRangeResearchTrap: true
+      AllowOnWarg: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    Element: Water
+    SplashArea: 2
+    ActiveInstance: 2
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Duration1: 15000
+    Duration2: 20000
+    Requires:
+      SpCost: 10
+      ItemCost:
+        - Item: Special_Alloy_Trap
+          Amount: 1
+    Unit:
+      Id: Iceboundtrap
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        RemovedByFireRain: true
+    Status: Freezing
+  - Id: 2249
+    Name: RA_MAGENTATRAP
+    Description: Magenta Trap
+    MaxLevel: 1
+    Type: Misc
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      IsTrap: true
+      AllowOnWarg: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    Element: Fire
+    SplashArea: 2
+    ActiveInstance: 1
+    AfterCastActDelay: 2000
+    Duration1: 15000
+    Requires:
+      SpCost: 10
+      ItemCost:
+        - Item: Special_Alloy_Trap
+          Amount: 1
+        - Item: Scarlet_Pts
+          Amount: 1
+    Unit:
+      Id: Magentatrap
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        NoPc: true
+        RemovedByFireRain: true
+    Status: ElementalChange
+  - Id: 2251
+    Name: RA_MAIZETRAP
+    Description: Maize Trap
+    MaxLevel: 1
+    Type: Misc
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      IsTrap: true
+      AllowOnWarg: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    Element: Earth
+    SplashArea: 2
+    ActiveInstance: 1
+    AfterCastActDelay: 2000
+    Duration1: 15000
+    Requires:
+      SpCost: 10
+      ItemCost:
+        - Item: Special_Alloy_Trap
+          Amount: 1
+        - Item: Lime_Green_Pts
+          Amount: 1
+    Unit:
+      Id: Maizetrap
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        NoPc: true
+        RemovedByFireRain: true
+    Status: ElementalChange
+  - Id: 5002
+    Name: RA_UNLIMIT
+    Description: Unlimited
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 500
+    Duration1: 30000    # this mod's balance; renewal's is different
+    Cooldown: 300000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 100
+        - Level: 2
+          Amount: 120
+        - Level: 3
+          Amount: 140
+        - Level: 4
+          Amount: 160
+        - Level: 5
+          Amount: 180
+    Status: Unlimit
+    CastTime: 1000    # renewal's FixedCastTime added here: a 300s+ cooldown already stops spam
+  - Id: 2252
+    Name: RA_VERDURETRAP
+    Description: Verdure Trap
+    MaxLevel: 1
+    Type: Misc
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      IsTrap: true
+      AllowOnWarg: true
+    Range: 3
+    Hit: Single
+    HitCount: 1
+    Element: Wind
+    SplashArea: 2
+    ActiveInstance: 1
+    AfterCastActDelay: 2000
+    Duration1: 15000
+    Requires:
+      SpCost: 10
+      ItemCost:
+        - Item: Special_Alloy_Trap
+          Amount: 1
+        - Item: Yellow_Wish_Pts
+          Amount: 1
+    Unit:
+      Id: Verduretrap
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoReiteration: true
+        NoPc: true
+        RemovedByFireRain: true
+    Status: ElementalChange
+  - Id: 2244
+    Name: RA_WUGBITE
+    Description: Warg Bite
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      IgnoreAtkCard: true
+      IgnoreElement: true
+      IgnoreDefCard: true
+    Flags:
+      AlterRangeVulture: true
+      IgnoreAutoGuard: true
+      IgnoreCicada: true
+      IgnoreNonCritAtkBonus: true
+      IncreaseDanceWithWugDamage: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 2000
+    Duration1:
+      - Level: 1
+        Time: 1000
+      - Level: 2
+        Time: 2000
+      - Level: 3
+        Time: 3000
+      - Level: 4
+        Time: 4000
+      - Level: 5
+        Time: 5000
+    Cooldown:
+      - Level: 1
+        Time: 4000
+      - Level: 2
+        Time: 6000
+      - Level: 3
+        Time: 8000
+      - Level: 4
+        Time: 10000
+      - Level: 5
+        Time: 12000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 42
+        - Level: 3
+          Amount: 44
+        - Level: 4
+          Amount: 46
+        - Level: 5
+          Amount: 48
+      State: Wug
+    Status: Bite
+  - Id: 2242
+    Name: RA_WUGDASH
+    Description: Warg Dash
+    MaxLevel: 1
+    Type: Weapon
+    TargetType: Self
+    DamageFlags:
+      Splash: true
+      IgnoreFlee: true
+    Flags:
+      AllowOnWarg: true
+      IgnoreNonCritAtkBonus: true
+      IncreaseDanceWithWugDamage: true
+      Toggleable: true
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea: 1
+    Requires:
+      SpCost: 4
+      State: Move_Enable
+    Status: WugDash
+  - Id: 2243
+    Name: RA_WUGSTRIKE
+    Description: Warg Strike
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      IgnoreAtkCard: true
+      IgnoreElement: true
+      IgnoreDefCard: true
+    Flags:
+      AllowOnWarg: true
+      IgnoreAutoGuard: true
+      IgnoreCicada: true
+      IgnoreNonCritAtkBonus: true
+      IncreaseDanceWithWugDamage: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 20
+        - Level: 2
+          Amount: 22
+        - Level: 3
+          Amount: 24
+        - Level: 4
+          Amount: 26
+        - Level: 5
+          Amount: 28
   - Id: 3023
     Name: KG_KAGEHUMI
     Description: Shadow Trampling

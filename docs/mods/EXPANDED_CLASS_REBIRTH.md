@@ -654,6 +654,7 @@ them go into one mod, `registry/mods/transcendent-third-classes` (branch
 | Rune Knight | Lord Knight | `valkyrie 42 39` |
 | Royal Guard | Paladin | `valkyrie 55 39` |
 | Warlock | High Wizard | `valkyrie 42 47` |
+| Ranger | Sniper | `valkyrie 42 55` |
 
 ### Decided with the human (do not re-ask)
 
@@ -893,6 +894,13 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   casts, and a fixed pace can fall out of step with a caster's rhythm and
   lose a fifth. A spec run can list several paces (`"step": [1.0, 1.5]`)
   with `"method": "best"`; give every caster that.
+- **Traps** are set off by a monster stepping on them, which a dummy never
+  does: place one on a free cell beside it (`"how": "near"`; a trap cannot
+  go next to a unit) and set it off with Detonator, in turn (`"seq"`,
+  0.5 s). A trap's damage is mostly DEX and INT, outside a ratio hook;
+  only its weapon part scales.
+- **A summon kept between runs** (a warg) is dismissed by the next run's
+  summon, since the skill toggles it: the helper's build clears it.
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

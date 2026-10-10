@@ -51,6 +51,14 @@
 # Job bonuses: renewal's to job 70, then one each at 68, 70 (+45 in all).
 #
 # _______________________
+# Ranger_T:
+# Ranger_T, which pre-renewal's job tables do not have.
+# Base levels 1-99 on the transcendent EXP table, job levels
+# 1-70 on the transcendent second-job table (cut at 70).
+# HP: Sniper x 1.0. SP: Sniper x 1.0. ASPD and weight: the Sniper's.
+# Job bonuses: renewal's to job 70, then one each at 68, 70 (+45 in all).
+#
+# _______________________
 # Kagerou, Oboro:
 # Kagerou, Oboro, which pre-renewal's job tables do not have.
 # Base levels 1-99 on the transcendent EXP table, job levels
@@ -5123,6 +5131,842 @@ Body:
         Sp: 892
       - Level: 99
         Sp: 901
+  - Jobs:
+      Ranger_T: true
+    MaxWeight: 27000
+    HpFactor: 85
+    SpIncrease: 400
+    BaseASPD:
+      Fist: 400
+      Dagger: 600
+      Bow: 600
+    BonusStats:
+      - Level: 1
+        Dex: 1
+      - Level: 2
+        Int: 1
+      - Level: 3
+        Int: 1
+      - Level: 4
+        Agi: 1
+      - Level: 7
+        Agi: 1
+      - Level: 8
+        Dex: 1
+      - Level: 9
+        Int: 1
+      - Level: 12
+        Vit: 1
+      - Level: 13
+        Vit: 1
+      - Level: 14
+        Vit: 1
+      - Level: 17
+        Dex: 1
+      - Level: 18
+        Agi: 1
+      - Level: 21
+        Int: 1
+      - Level: 22
+        Vit: 1
+      - Level: 23
+        Dex: 1
+      - Level: 26
+        Str: 1
+      - Level: 27
+        Str: 1
+      - Level: 30
+        Dex: 1
+      - Level: 31
+        Agi: 1
+      - Level: 32
+        Vit: 1
+      - Level: 36
+        Int: 1
+      - Level: 37
+        Int: 1
+      - Level: 38
+        Int: 1
+      - Level: 39
+        Agi: 1
+      - Level: 43
+        Agi: 1
+      - Level: 44
+        Dex: 1
+      - Level: 45
+        Agi: 1
+      - Level: 49
+        Int: 1
+      - Level: 50
+        Agi: 1
+      - Level: 51
+        Luk: 1
+      - Level: 52
+        Dex: 1
+      - Level: 54
+        Int: 1
+      - Level: 55
+        Agi: 1
+      - Level: 57
+        Vit: 1
+      - Level: 58
+        Luk: 1
+      - Level: 59
+        Dex: 1
+      - Level: 60
+        Agi: 1
+      - Level: 61
+        Agi: 1
+      - Level: 63
+        Vit: 1
+      - Level: 65
+        Luk: 1
+      - Level: 66
+        Agi: 1
+      - Level: 68
+        Dex: 1
+        Vit: 1
+      - Level: 70
+        Agi: 1
+        Luk: 1
+    MaxBaseLevel: 99
+    BaseExp:
+      - Level: 1
+        Exp: 10
+      - Level: 2
+        Exp: 18
+      - Level: 3
+        Exp: 28
+      - Level: 4
+        Exp: 40
+      - Level: 5
+        Exp: 85
+      - Level: 6
+        Exp: 123
+      - Level: 7
+        Exp: 168
+      - Level: 8
+        Exp: 220
+      - Level: 9
+        Exp: 278
+      - Level: 10
+        Exp: 400
+      - Level: 11
+        Exp: 481
+      - Level: 12
+        Exp: 613
+      - Level: 13
+        Exp: 731
+      - Level: 14
+        Exp: 875
+      - Level: 15
+        Exp: 1038
+      - Level: 16
+        Exp: 1213
+      - Level: 17
+        Exp: 1400
+      - Level: 18
+        Exp: 1575
+      - Level: 19
+        Exp: 1775
+      - Level: 20
+        Exp: 2268
+      - Level: 21
+        Exp: 2604
+      - Level: 22
+        Exp: 2786
+      - Level: 23
+        Exp: 3136
+      - Level: 24
+        Exp: 3506
+      - Level: 25
+        Exp: 4130
+      - Level: 26
+        Exp: 4796
+      - Level: 27
+        Exp: 5508
+      - Level: 28
+        Exp: 6264
+      - Level: 29
+        Exp: 9645
+      - Level: 30
+        Exp: 12392
+      - Level: 31
+        Exp: 14220
+      - Level: 32
+        Exp: 16159
+      - Level: 33
+        Exp: 18209
+      - Level: 34
+        Exp: 21649
+      - Level: 35
+        Exp: 24451
+      - Level: 36
+        Exp: 27401
+      - Level: 37
+        Exp: 30499
+      - Level: 38
+        Exp: 33748
+      - Level: 39
+        Exp: 47342
+      - Level: 40
+        Exp: 58160
+      - Level: 41
+        Exp: 64711
+      - Level: 42
+        Exp: 71573
+      - Level: 43
+        Exp: 78749
+      - Level: 44
+        Exp: 90144
+      - Level: 45
+        Exp: 99312
+      - Level: 46
+        Exp: 108870
+      - Level: 47
+        Exp: 118816
+      - Level: 48
+        Exp: 129154
+      - Level: 49
+        Exp: 174196
+      - Level: 50
+        Exp: 213220
+      - Level: 51
+        Exp: 238080
+      - Level: 52
+        Exp: 264150
+      - Level: 53
+        Exp: 291427
+      - Level: 54
+        Exp: 329640
+      - Level: 55
+        Exp: 363155
+      - Level: 56
+        Exp: 398116
+      - Level: 57
+        Exp: 434526
+      - Level: 58
+        Exp: 472381
+      - Level: 59
+        Exp: 610848
+      - Level: 60
+        Exp: 731828
+      - Level: 61
+        Exp: 806448
+      - Level: 62
+        Exp: 884232
+      - Level: 63
+        Exp: 965180
+      - Level: 64
+        Exp: 1073896
+      - Level: 65
+        Exp: 1170382
+      - Level: 66
+        Exp: 1270556
+      - Level: 67
+        Exp: 1374422
+      - Level: 68
+        Exp: 1481976
+      - Level: 69
+        Exp: 1850800
+      - Level: 70
+        Exp: 3389616
+      - Level: 71
+        Exp: 3666333
+      - Level: 72
+        Exp: 3953534
+      - Level: 73
+        Exp: 4251217
+      - Level: 74
+        Exp: 4559382
+      - Level: 75
+        Exp: 5129260
+      - Level: 76
+        Exp: 5488173
+      - Level: 77
+        Exp: 5859059
+      - Level: 78
+        Exp: 6241919
+      - Level: 79
+        Exp: 7374168
+      - Level: 80
+        Exp: 9570662
+      - Level: 81
+        Exp: 10458427
+      - Level: 82
+        Exp: 11380262
+      - Level: 83
+        Exp: 12336168
+      - Level: 84
+        Exp: 13326144
+      - Level: 85
+        Exp: 14994907
+      - Level: 86
+        Exp: 16130400
+      - Level: 87
+        Exp: 17304206
+      - Level: 88
+        Exp: 18516326
+      - Level: 89
+        Exp: 19766760
+      - Level: 90
+        Exp: 29216160
+      - Level: 91
+        Exp: 34949880
+      - Level: 92
+        Exp: 40930560
+      - Level: 93
+        Exp: 55017900
+      - Level: 94
+        Exp: 71510400
+      - Level: 95
+        Exp: 106974000
+      - Level: 96
+        Exp: 146061000
+      - Level: 97
+        Exp: 174405000
+      - Level: 98
+        Exp: 343210000
+      - Level: 99
+        Exp: 99999999
+    MaxJobLevel: 70
+    JobExp:
+      - Level: 1
+        Exp: 288
+      - Level: 2
+        Exp: 368
+      - Level: 3
+        Exp: 568
+      - Level: 4
+        Exp: 696
+      - Level: 5
+        Exp: 1206
+      - Level: 6
+        Exp: 1774
+      - Level: 7
+        Exp: 2192
+      - Level: 8
+        Exp: 3196
+      - Level: 9
+        Exp: 5080
+      - Level: 10
+        Exp: 7352
+      - Level: 11
+        Exp: 8580
+      - Level: 12
+        Exp: 9892
+      - Level: 13
+        Exp: 13358
+      - Level: 14
+        Exp: 18984
+      - Level: 15
+        Exp: 31925
+      - Level: 16
+        Exp: 35860
+      - Level: 17
+        Exp: 40013
+      - Level: 18
+        Exp: 51605
+      - Level: 19
+        Exp: 68585
+      - Level: 20
+        Exp: 87770
+      - Level: 21
+        Exp: 96443
+      - Level: 22
+        Exp: 105515
+      - Level: 23
+        Exp: 131770
+      - Level: 24
+        Exp: 167428
+      - Level: 25
+        Exp: 206720
+      - Level: 26
+        Exp: 223860
+      - Level: 27
+        Exp: 241673
+      - Level: 28
+        Exp: 294553
+      - Level: 29
+        Exp: 362303
+      - Level: 30
+        Exp: 479053
+      - Level: 31
+        Exp: 513362
+      - Level: 32
+        Exp: 548856
+      - Level: 33
+        Exp: 656197
+      - Level: 34
+        Exp: 787507
+      - Level: 35
+        Exp: 927154
+      - Level: 36
+        Exp: 985696
+      - Level: 37
+        Exp: 1046034
+      - Level: 38
+        Exp: 1231134
+      - Level: 39
+        Exp: 1449220
+      - Level: 40
+        Exp: 1678177
+      - Level: 41
+        Exp: 1773024
+      - Level: 42
+        Exp: 2182221
+      - Level: 43
+        Exp: 2534978
+      - Level: 44
+        Exp: 3043585
+      - Level: 45
+        Exp: 3782865
+      - Level: 46
+        Exp: 4461912
+      - Level: 47
+        Exp: 4672971
+      - Level: 48
+        Exp: 5971896
+      - Level: 49
+        Exp: 6250158
+      - Level: 50
+        Exp: 6875174
+      - Level: 51
+        Exp: 7562691
+      - Level: 52
+        Exp: 8318960
+      - Level: 53
+        Exp: 9150856
+      - Level: 54
+        Exp: 10065942
+      - Level: 55
+        Exp: 11877812
+      - Level: 56
+        Exp: 14015818
+      - Level: 57
+        Exp: 16538665
+      - Level: 58
+        Exp: 19515624
+      - Level: 59
+        Exp: 23028437
+      - Level: 60
+        Exp: 28094693
+      - Level: 61
+        Exp: 34275525
+      - Level: 62
+        Exp: 41816141
+      - Level: 63
+        Exp: 51015692
+      - Level: 64
+        Exp: 62239144
+      - Level: 65
+        Exp: 79666104
+      - Level: 66
+        Exp: 101972614
+      - Level: 67
+        Exp: 130524946
+      - Level: 68
+        Exp: 167071930
+      - Level: 69
+        Exp: 213852071
+    BaseHp:
+      - Level: 1
+        Hp: 40
+      - Level: 2
+        Hp: 47
+      - Level: 3
+        Hp: 55
+      - Level: 4
+        Hp: 63
+      - Level: 5
+        Hp: 72
+      - Level: 6
+        Hp: 82
+      - Level: 7
+        Hp: 93
+      - Level: 8
+        Hp: 105
+      - Level: 9
+        Hp: 118
+      - Level: 10
+        Hp: 132
+      - Level: 11
+        Hp: 146
+      - Level: 12
+        Hp: 161
+      - Level: 13
+        Hp: 177
+      - Level: 14
+        Hp: 194
+      - Level: 15
+        Hp: 212
+      - Level: 16
+        Hp: 231
+      - Level: 17
+        Hp: 250
+      - Level: 18
+        Hp: 270
+      - Level: 19
+        Hp: 291
+      - Level: 20
+        Hp: 313
+      - Level: 21
+        Hp: 336
+      - Level: 22
+        Hp: 360
+      - Level: 23
+        Hp: 385
+      - Level: 24
+        Hp: 410
+      - Level: 25
+        Hp: 436
+      - Level: 26
+        Hp: 463
+      - Level: 27
+        Hp: 491
+      - Level: 28
+        Hp: 520
+      - Level: 29
+        Hp: 550
+      - Level: 30
+        Hp: 581
+      - Level: 31
+        Hp: 612
+      - Level: 32
+        Hp: 644
+      - Level: 33
+        Hp: 677
+      - Level: 34
+        Hp: 711
+      - Level: 35
+        Hp: 746
+      - Level: 36
+        Hp: 782
+      - Level: 37
+        Hp: 818
+      - Level: 38
+        Hp: 855
+      - Level: 39
+        Hp: 893
+      - Level: 40
+        Hp: 932
+      - Level: 41
+        Hp: 972
+      - Level: 42
+        Hp: 1013
+      - Level: 43
+        Hp: 1055
+      - Level: 44
+        Hp: 1097
+      - Level: 45
+        Hp: 1140
+      - Level: 46
+        Hp: 1184
+      - Level: 47
+        Hp: 1229
+      - Level: 48
+        Hp: 1275
+      - Level: 49
+        Hp: 1322
+      - Level: 50
+        Hp: 1370
+      - Level: 51
+        Hp: 1418
+      - Level: 52
+        Hp: 1467
+      - Level: 53
+        Hp: 1517
+      - Level: 54
+        Hp: 1568
+      - Level: 55
+        Hp: 1620
+      - Level: 56
+        Hp: 1673
+      - Level: 57
+        Hp: 1726
+      - Level: 58
+        Hp: 1780
+      - Level: 59
+        Hp: 1835
+      - Level: 60
+        Hp: 1891
+      - Level: 61
+        Hp: 1948
+      - Level: 62
+        Hp: 2006
+      - Level: 63
+        Hp: 2065
+      - Level: 64
+        Hp: 2124
+      - Level: 65
+        Hp: 2184
+      - Level: 66
+        Hp: 2245
+      - Level: 67
+        Hp: 2307
+      - Level: 68
+        Hp: 2370
+      - Level: 69
+        Hp: 2434
+      - Level: 70
+        Hp: 2499
+      - Level: 71
+        Hp: 2564
+      - Level: 72
+        Hp: 2630
+      - Level: 73
+        Hp: 2697
+      - Level: 74
+        Hp: 2765
+      - Level: 75
+        Hp: 2834
+      - Level: 76
+        Hp: 2904
+      - Level: 77
+        Hp: 2974
+      - Level: 78
+        Hp: 3045
+      - Level: 79
+        Hp: 3117
+      - Level: 80
+        Hp: 3190
+      - Level: 81
+        Hp: 3264
+      - Level: 82
+        Hp: 3339
+      - Level: 83
+        Hp: 3415
+      - Level: 84
+        Hp: 3491
+      - Level: 85
+        Hp: 3568
+      - Level: 86
+        Hp: 3646
+      - Level: 87
+        Hp: 3725
+      - Level: 88
+        Hp: 3805
+      - Level: 89
+        Hp: 3886
+      - Level: 90
+        Hp: 3968
+      - Level: 91
+        Hp: 4050
+      - Level: 92
+        Hp: 4133
+      - Level: 93
+        Hp: 4217
+      - Level: 94
+        Hp: 4302
+      - Level: 95
+        Hp: 4388
+      - Level: 96
+        Hp: 4475
+      - Level: 97
+        Hp: 4562
+      - Level: 98
+        Hp: 4650
+      - Level: 99
+        Hp: 4739
+    BaseSp:
+      - Level: 1
+        Sp: 14
+      - Level: 2
+        Sp: 18
+      - Level: 3
+        Sp: 22
+      - Level: 4
+        Sp: 26
+      - Level: 5
+        Sp: 30
+      - Level: 6
+        Sp: 34
+      - Level: 7
+        Sp: 38
+      - Level: 8
+        Sp: 42
+      - Level: 9
+        Sp: 46
+      - Level: 10
+        Sp: 50
+      - Level: 11
+        Sp: 54
+      - Level: 12
+        Sp: 58
+      - Level: 13
+        Sp: 62
+      - Level: 14
+        Sp: 66
+      - Level: 15
+        Sp: 70
+      - Level: 16
+        Sp: 74
+      - Level: 17
+        Sp: 78
+      - Level: 18
+        Sp: 82
+      - Level: 19
+        Sp: 86
+      - Level: 20
+        Sp: 90
+      - Level: 21
+        Sp: 94
+      - Level: 22
+        Sp: 98
+      - Level: 23
+        Sp: 102
+      - Level: 24
+        Sp: 106
+      - Level: 25
+        Sp: 110
+      - Level: 26
+        Sp: 114
+      - Level: 27
+        Sp: 118
+      - Level: 28
+        Sp: 122
+      - Level: 29
+        Sp: 126
+      - Level: 30
+        Sp: 130
+      - Level: 31
+        Sp: 134
+      - Level: 32
+        Sp: 138
+      - Level: 33
+        Sp: 142
+      - Level: 34
+        Sp: 146
+      - Level: 35
+        Sp: 150
+      - Level: 36
+        Sp: 154
+      - Level: 37
+        Sp: 158
+      - Level: 38
+        Sp: 162
+      - Level: 39
+        Sp: 166
+      - Level: 40
+        Sp: 170
+      - Level: 41
+        Sp: 174
+      - Level: 42
+        Sp: 178
+      - Level: 43
+        Sp: 182
+      - Level: 44
+        Sp: 186
+      - Level: 45
+        Sp: 190
+      - Level: 46
+        Sp: 194
+      - Level: 47
+        Sp: 198
+      - Level: 48
+        Sp: 202
+      - Level: 49
+        Sp: 206
+      - Level: 50
+        Sp: 210
+      - Level: 51
+        Sp: 214
+      - Level: 52
+        Sp: 218
+      - Level: 53
+        Sp: 222
+      - Level: 54
+        Sp: 226
+      - Level: 55
+        Sp: 230
+      - Level: 56
+        Sp: 234
+      - Level: 57
+        Sp: 238
+      - Level: 58
+        Sp: 242
+      - Level: 59
+        Sp: 246
+      - Level: 60
+        Sp: 250
+      - Level: 61
+        Sp: 254
+      - Level: 62
+        Sp: 258
+      - Level: 63
+        Sp: 262
+      - Level: 64
+        Sp: 266
+      - Level: 65
+        Sp: 270
+      - Level: 66
+        Sp: 274
+      - Level: 67
+        Sp: 278
+      - Level: 68
+        Sp: 282
+      - Level: 69
+        Sp: 286
+      - Level: 70
+        Sp: 290
+      - Level: 71
+        Sp: 294
+      - Level: 72
+        Sp: 298
+      - Level: 73
+        Sp: 302
+      - Level: 74
+        Sp: 306
+      - Level: 75
+        Sp: 310
+      - Level: 76
+        Sp: 314
+      - Level: 77
+        Sp: 318
+      - Level: 78
+        Sp: 322
+      - Level: 79
+        Sp: 326
+      - Level: 80
+        Sp: 330
+      - Level: 81
+        Sp: 334
+      - Level: 82
+        Sp: 338
+      - Level: 83
+        Sp: 342
+      - Level: 84
+        Sp: 346
+      - Level: 85
+        Sp: 350
+      - Level: 86
+        Sp: 354
+      - Level: 87
+        Sp: 358
+      - Level: 88
+        Sp: 362
+      - Level: 89
+        Sp: 366
+      - Level: 90
+        Sp: 370
+      - Level: 91
+        Sp: 374
+      - Level: 92
+        Sp: 378
+      - Level: 93
+        Sp: 382
+      - Level: 94
+        Sp: 386
+      - Level: 95
+        Sp: 390
+      - Level: 96
+        Sp: 394
+      - Level: 97
+        Sp: 398
+      - Level: 98
+        Sp: 402
+      - Level: 99
+        Sp: 406
   - Jobs:
       Kagerou: true
       Oboro: true

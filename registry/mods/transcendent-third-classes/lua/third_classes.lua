@@ -23,6 +23,9 @@
 --     Soul Expansion 1904, Chain Lightning 1886 (all four strikes on a lone
 --     target); a target Jack Frost 1512, Crimson Rock 1363, Frost Misty 1411,
 --     Comet 1409. SP costs: build.py.
+--   Ranger vs Sniper (Double Strafe 2443): Aimed Bolt 2212, Warg Strike 2393;
+--     per target Arrow Storm 1139, Cluster Bomb 954, Firing Trap 1291 (traps:
+--     only their weapon part is in reach). Unlimit lasts 30 s: build.py.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -55,6 +58,11 @@ local FACTOR = {
   WL_FROSTMISTY         = 62,
   WL_CHAINLIGHTNING_ATK = 36,
   WL_COMET              = 85,
+  RA_AIMEDBOLT          = 67,
+  RA_WUGSTRIKE          = 27,
+  RA_ARROWSTORM         = 65,
+  RA_CLUSTERBOMB        = 70,
+  RA_FIRINGTRAP         = 10,   -- its weapon part; the DEX/INT part and the burn are out of reach
 }
 
 for name, percent in pairs(FACTOR) do

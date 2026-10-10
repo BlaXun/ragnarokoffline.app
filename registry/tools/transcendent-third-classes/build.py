@@ -17,7 +17,8 @@ the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
 (instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard). Each class keeps its CSV files in its own directory.
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Ranger (instead of Sniper).
+Each class keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
 class rather than a sidegrade: Kagerou and Oboro (Ninja), Rebellion
@@ -246,6 +247,30 @@ warlock = ec.config(
     },
 )
 
+ranger = ec.config(
+    __file__, **COMMON,
+    JOBS=("Ranger_T",),
+    # Renewal's Ranger tree: Novice, Archer, Hunter and the RA skills;
+    # renewal's transcendent one also inherits Sniper (Falcon Assault,
+    # Sharp Shooting, True Sight, Wind Walk). The Warg comes with the
+    # Ranger's own Warg Mastery, as in renewal: no NPC.
+    TREE_FROM={"Ranger_T": "Ranger"},
+    BASE="Sniper",
+    SKILL_PREFIX="RA_",
+    HP_FROM="Sniper", HP_SCALE=1.0,
+    SP_FROM="Sniper", SP_SCALE=1.0,
+    EXP_FROM="Sniper",
+    # Renewal's Ranger bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Dex"), (70, "Agi")],
+    EQUIP_JOBS=["Hunter"],
+    EQUIP_LABEL="Sniper or Ranger",
+    ITEMS_ABOUT="The Ranger's bows, from ranger/equipment.csv.",
+    CSV_DIR="ranger",
+    # Unlimit more than triples ranged damage; renewal kept it up for 150 s
+    # of every 300. Here it is a 30 s burst window.
+    SKILL_OVERRIDES={"RA_UNLIMIT": {"Duration1": "30000"}},
+)
+
 # The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
 # or Oboro, a reborn Gunslinger a Rebellion, a reborn Star Gladiator a Star
 # Emperor, a reborn Soul Linker a Soul Reaper. Their NPCs and Lua are in the
@@ -390,5 +415,5 @@ soul_reaper = ec.config(
     CSV_DIR="soul_reaper",
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, ranger,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])

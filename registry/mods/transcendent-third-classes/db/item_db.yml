@@ -39,6 +39,12 @@
 # 3. The Warlock's weapons, from warlock/equipment.csv.
 #
 # _______________________
+# Ranger_T:
+# 1. No job flags: rAthena already lets the class wear a Sniper's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Ranger's bows, from ranger/equipment.csv.
+#
+# _______________________
 # Kagerou, Oboro:
 # 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
@@ -669,6 +675,90 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;
+  - Id: 63641
+    AegisName: Warden_Bow
+    Name: Warden Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1300
+    Attack: 145
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bDex,2; bonus2 bSkillAtk,"RA_AIMEDBOLT",10; bonus2 bSkillAtk,"RA_ARROWSTORM",10; bonus2 bSkillAtk,"AC_DOUBLE",10; bonus2 bSkillAtk,"SN_SHARPSHOOTING",10;
+  - Id: 63642
+    AegisName: Pack_Leader_Bow
+    Name: Pack Leader Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1200
+    Attack: 135
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bAgi,2; bonus2 bSkillAtk,"RA_WUGSTRIKE",10; bonus2 bSkillAtk,"RA_CLUSTERBOMB",10; bonus2 bSkillAtk,"SN_FALCONASSAULT",10; bonus2 bSkillAtk,"HT_BLITZBEAT",10;
+  - Id: 63651
+    AegisName: Wildheart_Longbow
+    Name: Wildheart Longbow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1500
+    Attack: 160
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bDex,3; bonus bAgi,2; bonus2 bSkillAtk,"RA_AIMEDBOLT",20; bonus2 bSkillAtk,"RA_ARROWSTORM",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"AC_DOUBLE",20; bonus2 bSkillAtk,"SN_SHARPSHOOTING",15;
+  - Id: 63652
+    AegisName: Garm_Fang_Bow
+    Name: Garm Fang Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20
+    Weight: 1400
+    Attack: 150
+    Range: 5
+    Slots: 1
+    Jobs:
+      Hunter: true
+    Classes:
+      Upper: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bAgi,3; bonus bDex,2; bonus2 bSkillAtk,"RA_WUGSTRIKE",20; bonus2 bSkillAtk,"RA_FIRINGTRAP",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"SN_FALCONASSAULT",20; bonus2 bSkillAtk,"HT_BLITZBEAT",15;
   - Id: 1201    # Knife
     Jobs:
       Alchemist: true
