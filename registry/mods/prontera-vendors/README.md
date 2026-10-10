@@ -470,8 +470,25 @@ vendors.
 
 A pre-renewal server gets its own set from `pre-re/db/` (`"prerenewalFolder"`
 in mod.json lays it over `db/`): the same themes where the items exist,
-without the renewal-only ones (costumes, shadow gear, Doram), with its own
-price list.
+without the renewal-only ones (costumes, shadow gear, Crimson weapons,
+Doram), with its own price list.
+
+Its stalls and buyers list only what a pre-renewal server hands out.
+rAthena's pre-renewal item database also holds what came with renewal and
+later (third-job gear such as the Mechanic's devices, runes, spell books and
+poison herbs, Bradium and Carnium, cash-shop and event items, slotted
+variants nothing drops), and nothing in pre-renewal gives those to a player.
+The build script keeps an item only if it has a source there:
+
+- a monster that is out there drops it (a spawn, a script's spawn, a dead
+  branch's summon, a slave, a castle's treasure chest);
+- an NPC sells it or a script gives it (quests, exchanges, socket enchants);
+- players make it (forging, brewing, cooking, arrow crafting), or it belongs
+  to a pet;
+- a box that is itself obtainable holds it.
+
+About 2,600 of the 4,550 tradeable items in the pre-renewal database pass.
+The renewal set is not filtered.
 
 ## How it's built
 

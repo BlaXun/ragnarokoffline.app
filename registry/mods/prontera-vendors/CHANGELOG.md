@@ -3,6 +3,9 @@
 ### Street
 - New: **Stall density** (80 % by default). How full a lane gets before stalls open in the next one: lower leaves gaps between stalls and spreads them over more lanes, 100 packs them shoulder to shoulder. Stalls that don't fit at the chosen density go to the emptiest lanes. Needs an app newer than 1.5.6; older ones fill each lane to 70–80 % as before.
 
+### Pre-renewal
+- Pre-renewal stalls and buyers no longer list renewal items. rAthena's pre-renewal item database also holds what came later (the Mechanic's devices, runes, spell books, poison herbs, Bradium and Carnium, cash-shop and event items), and the stalls sold whatever was in it. Now an item is listed only if a pre-renewal server hands it out: a monster drops it, an NPC sells it or gives it for a quest, players make it, or a box holds it. 77 of the 1,658 listed items left the street, and the Crimson weapons stall with them. Renewal is unchanged.
+
 ### Settings
 - **Hunted supply** has its own switch again, and **Hunting parties** (20 by default) only says how much they hunt. If you had the supply on, switch **Hunted supply** on once: your parties setting and the market's stock are kept.
 - **Start with a filled market** (off by default) and **MvP kills (per MvP a day)** (1 by default) are settings again.
