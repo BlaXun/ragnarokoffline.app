@@ -1,0 +1,8 @@
+//===== transcendent-third-classes: Trap Seller ================
+//= A Ranger's traps (Cluster Bomb, Firing Trap, Icebound Trap
+//= and the rest) take renewal's Special Alloy Trap, which no
+//= pre-renewal shop sells. This one does, beside Payon's Tool
+//= Dealer, with the Hunter's plain Trap; stock prices.
+//==============================================================
+
+payon_in01,7,49,3	shop	Trap Seller#tc	88,7940:-1,1065:-1

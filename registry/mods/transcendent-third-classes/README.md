@@ -531,6 +531,10 @@ points. It keeps every Hunter skill and its falcon (the warg will not
 come while a falcon is out), and never learns Falcon Assault, Sharp
 Shooting, True Sight or Wind Walk.
 
+Its traps take renewal's **Special Alloy Trap**, which no pre-renewal
+shop sells: the **Trap Seller** beside Payon's Tool Dealer
+(`payon_in01 7 49`) does, with the plain Trap.
+
 ### Sniper or Ranger
 
 - **Sniper**, bow and falcon at long range: Falcon Assault, Sharp
@@ -971,6 +975,7 @@ Mask, Necromancer's Hood, Skull Hood), so the mod ships no sprites.
 | `npc/warlock.txt` | the Warlock changer |
 | `npc/spellbook_seller.txt` | the Spellbook Seller in Geffen |
 | `npc/ranger.txt` | the Ranger changer |
+| `npc/trap_seller.txt` | the Trap Seller in Payon |
 | `db/spellbook_db.yml` | renewal's spellbooks |
 | `lua/third_classes.lua` | the third classes' skill damage scaling |
 | `npc/kagerou_oboro.txt` | Kirikage and the Shadow Supplier |
