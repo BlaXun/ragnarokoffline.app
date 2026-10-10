@@ -1,0 +1,60 @@
+//===== transcendent-third-classes: Minstrel ======================================
+//= The Bard's other transcendent path.
+//=
+//= After the Valkyrie's rebirth, a High Archer of job 40 or more
+//= whose rebirth target is Clown (ADVJOB) may become a
+//= Minstrel here instead, beside the stock Clown changer,
+//= which is untouched. The choice is permanent.
+//=
+//= Minstrel is a third class in rAthena. The change goes
+//= through Clown and at once on to Minstrel, so
+//= rAthena's third-class skill lock records Clown job 1
+//= and holds nothing back. The class's tree is renewal's
+//= non-transcendent Minstrel tree (Novice, Archer, Bard and
+//= its own skills), with the same 69 job levels a Clown
+//= has: a sidegrade, not an upgrade.
+//==============================================================
+
+valkyrie,55,54,3	script	Wandering Minstrel#Valkyrie	741,{
+	.@n$ = "[Wandering Minstrel]";
+	if (Class == Job_Minstrel_T) {
+		mes .@n$;
+		mes "You chose the song. An instrument for it plays in the hands of the maid of the old mansion, and the sea queen keeps a harp that still sings.";
+		close;
+	}
+	if (ADVJOB != Job_Clown || Class != Job_Archer_High) {
+		mes .@n$;
+		mes "A Bard who has been reborn chooses here: the Clown's path, or mine.";
+		close;
+	}
+	if (JobLevel < 40) {
+		mes .@n$;
+		mes "Come back at job level 40 or later.";
+		close;
+	}
+	if (SkillPoint) {
+		mes .@n$;
+		mes "Spend your skill points first.";
+		close;
+	}
+	mes .@n$;
+	mes "A Clown plays for the kill: Arrow Vulcan, Tarot Card of Fate, Marionette Control. A ^0000FFMinstrel^000000 leaves those behind to play for the party: renewal's songs, sung alone or with a Wanderer, and Reverberation, Metallic Sound and Severe Rainstorm when the song must hurt.";
+	next;
+	mes .@n$;
+	mes "You keep every Bard skill, Musical Strike among them. You will never learn a Clown skill: no Arrow Vulcan, no Tarot Card of Fate, no Marionette Control, no Longing for Freedom.";
+	mes "Your job levels, your body and your gear are the same as a Clown's.";
+	next;
+	mes .@n$;
+	mes "^FF0000This choice is permanent.^000000";
+	if (select("I take up the song.:Not yet.") == 2)
+		close;
+	if (select("Permanently. I am sure.:Wait.") == 2)
+		close;
+	// Through Clown, at job 1: see the header.
+	jobchange Job_Clown;
+	jobchange Job_Minstrel_T;
+	set ADVJOB, 0;
+	mes .@n$;
+	mes "Welcome, Minstrel.";
+	close;
+}

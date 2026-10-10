@@ -17,7 +17,8 @@ the two differ only in their skills; damage is measured to parity.
 
 Classes so far: Guillotine Cross (instead of Assassin Cross), Shadow Chaser
 (instead of Stalker), Arch Bishop (instead of High Priest), Rune Knight (instead of Lord Knight),
-Royal Guard (instead of Paladin), Warlock (instead of High Wizard). Each class keeps its CSV files in its own directory.
+Royal Guard (instead of Paladin), Warlock (instead of High Wizard), Minstrel and Wanderer
+(instead of Clown and Gypsy). Each class keeps its CSV files in its own directory.
 
 The mod also carries the expanded classes, each the rebirth of its base
 class rather than a sidegrade: Kagerou and Oboro (Ninja), Rebellion
@@ -40,6 +41,8 @@ WEAPONS = {
     "spear1": dict(type="Weapon", sub="1hSpear", loc=["Right_Hand"], label="Spear", unid="Spear"),
     "staff2": dict(type="Weapon", sub="2hStaff", loc=["Both_Hand"], label="Two-Handed Staff", unid="Rod"),
     "shield": dict(type="Armor",  sub=None,      loc=["Left_Hand"],  label="Shield", unid="Shield", view=True),
+    "musical": dict(type="Weapon", sub="Musical", loc=["Right_Hand"], label="Instrument", unid="Instrument", gender="Male"),
+    "whip":   dict(type="Weapon", sub="Whip",    loc=["Right_Hand"], label="Whip", unid="Whip", gender="Female"),
 }
 
 # Shared by every class: the transcendent class's job levels and bonus total,
@@ -246,6 +249,48 @@ warlock = ec.config(
     },
 )
 
+minstrel = ec.config(
+    __file__, **COMMON,
+    JOBS=("Minstrel_T",),
+    # Renewal's Minstrel tree: Novice, Archer, Bard, the shared WM skills and
+    # the Minstrel's MI ones; renewal's transcendent one also inherits Clown
+    # (Arrow Vulcan, Tarot, Marionette Control, Longing for Freedom).
+    TREE_FROM={"Minstrel_T": "Minstrel"},
+    BASE="Clown",
+    # The WM skills both share are written here once; the Wanderer's
+    # config takes only its own WA ones.
+    SKILL_PREFIX=("WM_", "MI_"),
+    HP_FROM="Clown", HP_SCALE=1.0,
+    SP_FROM="Clown", SP_SCALE=1.0,
+    EXP_FROM="Clown",
+    # Renewal's bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Dex"), (70, "Int")],
+    EQUIP_JOBS=["BardDancer"],     # one item_db key for both; instruments are male-only, whips female-only
+    EQUIP_LABEL="Clown or Minstrel",
+    ITEMS_ABOUT="The Minstrel's instruments, from minstrel/equipment.csv.",
+    CSV_DIR="minstrel",
+    # Pre-renewal's Reverberation was a ground trap; the skill class now
+    # strikes a target (castendDamageId) and never places the unit.
+    UNIT_KEPT=["WM_REVERBERATION"],
+)
+
+wanderer = ec.config(
+    __file__, **COMMON,
+    JOBS=("Wanderer_T",),
+    TREE_FROM={"Wanderer_T": "Wanderer"},
+    BASE="Gypsy",
+    SKILL_PREFIX="WA_",
+    HP_FROM="Gypsy", HP_SCALE=1.0,
+    SP_FROM="Gypsy", SP_SCALE=1.0,
+    EXP_FROM="Gypsy",
+    # Renewal's bonuses come to +43 by job 70; two more make +45.
+    EXTRA_BONUS=[(68, "Dex"), (70, "Int")],
+    EQUIP_JOBS=["BardDancer"],
+    EQUIP_LABEL="Gypsy or Wanderer",
+    ITEMS_ABOUT="The Wanderer's whips, from wanderer/equipment.csv.",
+    CSV_DIR="wanderer",
+)
+
 # The expanded classes, reached by rebirth: a reborn Ninja becomes a Kagerou
 # or Oboro, a reborn Gunslinger a Rebellion, a reborn Star Gladiator a Star
 # Emperor, a reborn Soul Linker a Soul Reaper. Their NPCs and Lua are in the
@@ -390,5 +435,5 @@ soul_reaper = ec.config(
     CSV_DIR="soul_reaper",
 )
 
-ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock,
+ec.run([guillotine_cross, shadow_chaser, arch_bishop, rune_knight, royal_guard, warlock, minstrel, wanderer,
         kagerou_oboro, rebellion, star_emperor, soul_reaper])

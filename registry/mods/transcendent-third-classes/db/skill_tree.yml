@@ -33,6 +33,16 @@
 # the class gets that job's skills and what it inherits, nothing more.
 #
 # _______________________
+# Minstrel_T:
+# Renewal's trees for Minstrel_T, taken from Minstrel for Minstrel_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
+# Wanderer_T:
+# Renewal's trees for Wanderer_T, taken from Wanderer for Wanderer_T:
+# the class gets that job's skills and what it inherits, nothing more.
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's Kagerou, Oboro tree, unchanged. It inherits Novice and
 # Ninja, so every point earned after the change can also go into Ninja skills.
@@ -730,6 +740,298 @@ Body:
         Requires:
           - Name: WL_SOULEXPANSION
             Level: 5
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Minstrel_T    # renewal's Minstrel tree
+    Inherit:
+      Novice: true
+      Archer: true
+      Bard: true
+    Tree:
+      - Name: MI_RUSH_WINDMILL
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: MI_ECHOSONG
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: MI_HARMONIZE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WM_LESSON
+        MaxLevel: 10
+      - Name: WM_METALICSOUND
+        MaxLevel: 10
+        Requires:
+          - Name: WM_REVERBERATION
+            Level: 5
+      - Name: WM_REVERBERATION
+        MaxLevel: 5
+        Requires:
+          - Name: BA_DISSONANCE
+            Level: 5
+     # - Name: WM_DOMINION_IMPULSE
+       # MaxLevel: 1
+       # Requires:
+         # - Name: WM_REVERBERATION
+           # Level: 1
+      - Name: WM_SEVERE_RAINSTORM
+        MaxLevel: 5
+        Requires:
+          - Name: BA_MUSICALSTRIKE
+            Level: 5
+      - Name: WM_POEMOFNETHERWORLD
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_VOICEOFSIREN
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 3
+      - Name: WM_DEADHILLHERE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SIRCLEOFNATURE
+            Level: 3
+      - Name: WM_LULLABY_DEEPSLEEP
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_SIRCLEOFNATURE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_RANDOMIZESPELL
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 1
+      - Name: WM_GLOOMYDAY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_RANDOMIZESPELL
+            Level: 1
+      - Name: WM_GREAT_ECHO
+        MaxLevel: 5
+        Requires:
+          - Name: WM_METALICSOUND
+            Level: 1
+      - Name: WM_SONG_OF_MANA
+        MaxLevel: 5
+        Requires:
+          - Name: MI_RUSH_WINDMILL
+            Level: 1
+          - Name: MI_ECHOSONG
+            Level: 1
+          - Name: MI_HARMONIZE
+            Level: 1
+      - Name: WM_DANCE_WITH_WUG
+        MaxLevel: 5
+        Requires:
+          - Name: MI_RUSH_WINDMILL
+            Level: 1
+          - Name: MI_ECHOSONG
+            Level: 1
+          - Name: MI_HARMONIZE
+            Level: 1
+      - Name: WM_SOUND_OF_DESTRUCTION
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SATURDAY_NIGHT_FEVER
+            Level: 3
+          - Name: WM_MELODYOFSINK
+            Level: 3
+      - Name: WM_SATURDAY_NIGHT_FEVER
+        MaxLevel: 5
+        Requires:
+          - Name: WM_DANCE_WITH_WUG
+            Level: 1
+      - Name: WM_LERADS_DEW
+        MaxLevel: 5
+        Requires:
+          - Name: MI_RUSH_WINDMILL
+            Level: 1
+          - Name: MI_ECHOSONG
+            Level: 1
+          - Name: MI_HARMONIZE
+            Level: 1
+      - Name: WM_MELODYOFSINK
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SONG_OF_MANA
+            Level: 1
+      - Name: WM_BEYOND_OF_WARCRY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LERADS_DEW
+            Level: 1
+      - Name: WM_UNLIMITED_HUMMING_VOICE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SOUND_OF_DESTRUCTION
+            Level: 1
+          - Name: WM_BEYOND_OF_WARCRY
+            Level: 1
+      - Name: WM_FRIGG_SONG
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 2
+      - Name: ALL_FULL_THROTTLE
+        MaxLevel: 5
+  - Job: Wanderer_T    # renewal's Wanderer tree
+    Inherit:
+      Novice: true
+      Archer: true
+      Dancer: true
+    Tree:
+      - Name: WA_SWING_DANCE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WA_SYMPHONY_OF_LOVER
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WA_MOONLIT_SERENADE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LULLABY_DEEPSLEEP
+            Level: 1
+      - Name: WM_LESSON
+        MaxLevel: 10
+      - Name: WM_METALICSOUND
+        MaxLevel: 10
+        Requires:
+          - Name: WM_REVERBERATION
+            Level: 5
+      - Name: WM_REVERBERATION
+        MaxLevel: 5
+        Requires:
+          - Name: DC_UGLYDANCE
+            Level: 5
+     # - Name: WM_DOMINION_IMPULSE
+       # MaxLevel: 1
+       # Requires:
+         # - Name: WM_REVERBERATION
+           # Level: 1
+      - Name: WM_SEVERE_RAINSTORM
+        MaxLevel: 5
+        Requires:
+          - Name: DC_THROWARROW
+            Level: 5
+      - Name: WM_POEMOFNETHERWORLD
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_VOICEOFSIREN
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 3
+      - Name: WM_DEADHILLHERE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SIRCLEOFNATURE
+            Level: 3
+      - Name: WM_LULLABY_DEEPSLEEP
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_SIRCLEOFNATURE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 1
+      - Name: WM_RANDOMIZESPELL
+        MaxLevel: 5
+        Requires:
+          - Name: WM_POEMOFNETHERWORLD
+            Level: 1
+      - Name: WM_GLOOMYDAY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_RANDOMIZESPELL
+            Level: 1
+      - Name: WM_GREAT_ECHO
+        MaxLevel: 5
+        Requires:
+          - Name: WM_METALICSOUND
+            Level: 1
+      - Name: WM_SONG_OF_MANA
+        MaxLevel: 5
+        Requires:
+          - Name: WA_SWING_DANCE
+            Level: 1
+          - Name: WA_SYMPHONY_OF_LOVER
+            Level: 1
+          - Name: WA_MOONLIT_SERENADE
+            Level: 1
+      - Name: WM_DANCE_WITH_WUG
+        MaxLevel: 5
+        Requires:
+          - Name: WA_SWING_DANCE
+            Level: 1
+          - Name: WA_SYMPHONY_OF_LOVER
+            Level: 1
+          - Name: WA_MOONLIT_SERENADE
+            Level: 1
+      - Name: WM_SOUND_OF_DESTRUCTION
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SATURDAY_NIGHT_FEVER
+            Level: 3
+          - Name: WM_MELODYOFSINK
+            Level: 3
+      - Name: WM_SATURDAY_NIGHT_FEVER
+        MaxLevel: 5
+        Requires:
+          - Name: WM_DANCE_WITH_WUG
+            Level: 1
+      - Name: WM_LERADS_DEW
+        MaxLevel: 5
+        Requires:
+          - Name: WA_SWING_DANCE
+            Level: 1
+          - Name: WA_SYMPHONY_OF_LOVER
+            Level: 1
+          - Name: WA_MOONLIT_SERENADE
+            Level: 1
+      - Name: WM_MELODYOFSINK
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SONG_OF_MANA
+            Level: 1
+      - Name: WM_BEYOND_OF_WARCRY
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LERADS_DEW
+            Level: 1
+      - Name: WM_UNLIMITED_HUMMING_VOICE
+        MaxLevel: 5
+        Requires:
+          - Name: WM_SOUND_OF_DESTRUCTION
+            Level: 1
+          - Name: WM_BEYOND_OF_WARCRY
+            Level: 1
+      - Name: WM_FRIGG_SONG
+        MaxLevel: 5
+        Requires:
+          - Name: WM_LESSON
+            Level: 2
       - Name: ALL_FULL_THROTTLE
         MaxLevel: 5
   - Job: Kagerou

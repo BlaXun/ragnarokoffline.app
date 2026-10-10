@@ -654,6 +654,7 @@ them go into one mod, `registry/mods/transcendent-third-classes` (branch
 | Rune Knight | Lord Knight | `valkyrie 42 39` |
 | Royal Guard | Paladin | `valkyrie 55 39` |
 | Warlock | High Wizard | `valkyrie 42 47` |
+| Minstrel / Wanderer | Clown / Gypsy | `valkyrie 55 54` / `55 56` |
 
 ### Decided with the human (do not re-ask)
 
@@ -893,6 +894,16 @@ resets every field pre-renewal sets and renewal leaves out. What came up:
   casts, and a fixed pace can fall out of step with a caster's rhythm and
   lose a fifth. A spec run can list several paces (`"step": [1.0, 1.5]`)
   with `"method": "best"`; give every caster that.
+- **Some skills deal their damage through another skill id** (Severe
+  Rainstorm's hits are WM_SEVERE_RAINSTORM_MELEE): when a factor changes
+  nothing, scale the sub-skill.
+- **Item job keys are rAthena's, not the class names**: Bards and Dancers
+  share `BardDancer` (the server reads an unknown key as every job and
+  says so in map.log). Instruments must be `Gender: Male` and whips
+  `Female` (the generator's weapon kinds carry it).
+- **Measure each build a class is played with**: a performer's
+  Reverberation and Metallic Sound are magic (an INT build), Severe
+  Rainstorm physical (DEX).
 - **The counter can lie too.** Fire Rain reports each hit twice, from its
   unit and from the caster (the rig now counts it once); Chain Lightning
   reports as WL_CHAINLIGHTNING_ATK. When a figure looks out of line, run

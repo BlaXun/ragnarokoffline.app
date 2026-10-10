@@ -116,6 +116,42 @@
 # Skills: WL_CHAINLIGHTNING, WL_COMET, WL_CRIMSONROCK, WL_DRAINLIFE, WL_EARTHSTRAIN, WL_FROSTMISTY, WL_HELLINFERNO, WL_JACKFROST, WL_MARSHOFABYSS, WL_READING_SB, WL_RECOGNIZEDSPELL, WL_SIENNAEXECRATE, WL_SOULEXPANSION, WL_STASIS, WL_SUMMONBL, WL_SUMMONFB, WL_SUMMONSTONE, WL_SUMMONWB, WL_TELEKINESIS_INTENSE, WL_TETRAVORTEX, WL_WHITEIMPRISON, WL_READING_SB_READING (new)
 #
 # _______________________
+# Minstrel_T:
+# Renewal's entries for the WM_/MI_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: MI_ECHOSONG, MI_HARMONIZE, MI_RUSH_WINDMILL, WM_BEYOND_OF_WARCRY, WM_DANCE_WITH_WUG, WM_DEADHILLHERE, WM_DOMINION_IMPULSE, WM_FRIGG_SONG, WM_GLOOMYDAY, WM_GREAT_ECHO, WM_LERADS_DEW, WM_LULLABY_DEEPSLEEP, WM_MELODYOFSINK, WM_METALICSOUND, WM_POEMOFNETHERWORLD, WM_RANDOMIZESPELL, WM_REVERBERATION, WM_REVERBERATION_MAGIC, WM_REVERBERATION_MELEE, WM_SATURDAY_NIGHT_FEVER, WM_SEVERE_RAINSTORM, WM_SIRCLEOFNATURE, WM_SONG_OF_MANA, WM_SOUND_OF_DESTRUCTION, WM_UNLIMITED_HUMMING_VOICE, WM_VOICEOFSIREN
+#
+# _______________________
+# Wanderer_T:
+# Renewal's entries for the WA_ skills whose pre-renewal entry
+# differs. Pre-renewal's are an older revision: no Status: (so the buffs
+# start nothing) and other fields the skill classes no longer match.
+# A field pre-renewal sets and renewal does not is reset explicitly,
+# since an import entry only replaces the fields it names. The same goes
+# for keys inside DamageFlags, Flags and Requires' Ammo and Weapon: those
+# merge key by key, so a key pre-renewal sets is cleared explicitly.
+# Fields marked as this mod's own come from SKILL_OVERRIDES in build.py.
+# Pre-renewal has no fixed cast time, so 75% of each skill's renewal
+# FixedCastTime is added to its after-cast delay, which DEX does not
+# reduce, and the rest to its cast time.
+# A skill with a cooldown of 10s or more cannot be spammed anyway:
+# its whole fixed cast goes into its cast time instead.
+#
+# Skills: WA_MOONLIT_SERENADE, WA_SWING_DANCE, WA_SYMPHONY_OF_LOVER
+#
+# _______________________
 # Kagerou, Oboro:
 # Renewal's entries for the KO_/OB_/KG_ skills whose pre-renewal entry
 # differs. Pre-renewal's are an older revision: no Status: (so the buffs
@@ -4643,6 +4679,1254 @@ Body:
     CastTime: 5250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     AfterCastActDelay: 1250    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
     FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+  - Id: 2382
+    Name: MI_ECHOSONG
+    Description: Echo Song
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 7
+      - Level: 2
+        Area: 8
+      - Level: 3
+        Area: 9
+      - Level: 4
+        Area: 10
+      - Level: 5
+        Area: 11
+    CastTime: 1000
+    AfterCastActDelay: 2000
+    Duration1: 180000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 86
+        - Level: 2
+          Amount: 92
+        - Level: 3
+          Amount: 98
+        - Level: 4
+          Amount: 104
+        - Level: 5
+          Amount: 110
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: EchoSong
+  - Id: 2383
+    Name: MI_HARMONIZE
+    Description: Harmonize
+    MaxLevel: 5
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      IgnoreKagehumi: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    CastTime: 1000
+    AfterCastActDelay: 1000
+    Duration1: 60000
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 70
+        - Level: 2
+          Amount: 75
+        - Level: 3
+          Amount: 80
+        - Level: 4
+          Amount: 85
+        - Level: 5
+          Amount: 90
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: Harmonize
+  - Id: 2381
+    Name: MI_RUSH_WINDMILL
+    Description: Windmill Rush Attack
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: -1
+    CastTime: 4000    # renewal's FixedCastTime added here: a 10s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: 180000
+    Cooldown: 10000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 82
+        - Level: 2
+          Amount: 88
+        - Level: 3
+          Amount: 94
+        - Level: 4
+          Amount: 100
+        - Level: 5
+          Amount: 106
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: RushWindmill
+  - Id: 2433
+    Name: WM_BEYOND_OF_WARCRY
+    Description: Warcry of Beyond
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 5
+      - Level: 3
+        Area: 6
+      - Level: 4
+        Area: 6
+      - Level: 5
+        Area: 7
+    CastTime: 4000    # renewal's FixedCastTime added here: a 20s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1:
+      - Level: 1
+        Time: 20000
+      - Level: 2
+        Time: 30000
+      - Level: 3
+        Time: 40000
+      - Level: 4
+        Time: 50000
+      - Level: 5
+        Time: 60000
+    Cooldown: 20000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 120
+        - Level: 2
+          Amount: 130
+        - Level: 3
+          Amount: 140
+        - Level: 4
+          Amount: 150
+        - Level: 5
+          Amount: 160
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 2
+    Status: BeyondOfWarcry
+  - Id: 2428
+    Name: WM_DANCE_WITH_WUG
+    Description: Dance With A Warg
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 6
+      - Level: 3
+        Area: 7
+      - Level: 4
+        Area: 8
+      - Level: 5
+        Area: 9
+    CastTime: 1500    # renewal's FixedCastTime added here: a 180s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: 120000
+    Cooldown: 180000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 120
+        - Level: 2
+          Amount: 140
+        - Level: 3
+          Amount: 160
+        - Level: 4
+          Amount: 180
+        - Level: 5
+          Amount: 200
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 1
+    Status: DanceWithWug
+  - Id: 2421
+    Name: WM_DEADHILLHERE
+    Description: Valley of Death
+    MaxLevel: 5
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Range: 7
+    Hit: Single
+    HitCount: 1
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 3250
+      - Level: 2
+        Time: 2750
+      - Level: 3
+        Time: 2250
+      - Level: 4
+        Time: 1750
+      - Level: 5
+        Time: 1250
+    AfterCastActDelay: 1750    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 50
+        - Level: 2
+          Amount: 53
+        - Level: 3
+          Amount: 56
+        - Level: 4
+          Amount: 59
+        - Level: 5
+          Amount: 62
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Heartbroken_Tears
+          Amount: 1
+  - Id: 2417 # Removed on kRO
+    Name: WM_DOMINION_IMPULSE
+    Description: Dominion Impulse
+    MaxLevel: 1
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Range: 11
+    Hit: Single
+    HitCount: 1
+    SplashArea: 5
+    AfterCastActDelay: 1000
+    Requires:
+      SpCost: 10
+    FixedCastTime: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 5007
+    Name: WM_FRIGG_SONG
+    Description: Frigg's Song
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 6
+      - Level: 3
+        Area: 7
+      - Level: 4
+        Area: 8
+      - Level: 5
+        Area: 9
+    CastTime: 1000
+    AfterCastActDelay: 2000
+    Duration1: 60000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 200
+        - Level: 2
+          Amount: 230
+        - Level: 3
+          Amount: 260
+        - Level: 4
+          Amount: 290
+        - Level: 5
+          Amount: 320
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Heartbroken_Tears
+          Amount: 1
+    Status: Frigg_Song
+  - Id: 2425
+    Name: WM_GLOOMYDAY
+    Description: Gloomy Day
+    MaxLevel: 5
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    CastTime: 1500    # renewal's FixedCastTime added here: a 60s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: 60000
+    Cooldown: 60000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 60
+        - Level: 2
+          Amount: 75
+        - Level: 3
+          Amount: 90
+        - Level: 4
+          Amount: 105
+        - Level: 5
+          Amount: 120
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: GloomyDay
+  - Id: 2426
+    Name: WM_GREAT_ECHO
+    Description: Great Echo
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Ground
+    DamageFlags:
+      Splash: true
+    Flags:
+      IsChorus: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 2
+      - Level: 2
+        Area: 3
+      - Level: 3
+        Area: 3
+      - Level: 4
+        Area: 4
+      - Level: 5
+        Area: 4
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 2125
+      - Level: 2
+        Time: 2325
+      - Level: 3
+        Time: 2525
+      - Level: 4
+        Time: 2725
+      - Level: 5
+        Time: 2925
+    AfterCastActDelay: 675    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 5000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 80
+        - Level: 2
+          Amount: 90
+        - Level: 3
+          Amount: 100
+        - Level: 4
+          Amount: 110
+        - Level: 5
+          Amount: 120
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 2
+  - Id: 2431
+    Name: WM_LERADS_DEW
+    Description: Lerad's Dew
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 5
+      - Level: 3
+        Area: 6
+      - Level: 4
+        Area: 6
+      - Level: 5
+        Area: 7
+    CastTime: 1500    # renewal's FixedCastTime added here: a 20s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: 120000
+    Cooldown: 20000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 120
+        - Level: 2
+          Amount: 130
+        - Level: 3
+          Amount: 140
+        - Level: 4
+          Amount: 150
+        - Level: 5
+          Amount: 160
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 1
+    Status: LeradsDew
+  - Id: 2422
+    Name: WM_LULLABY_DEEPSLEEP
+    Description: Deep Sleep Lullaby
+    MaxLevel: 5
+    TargetType: Attack
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 1
+      - Level: 2
+        Area: 1
+      - Level: 3
+        Area: 1
+      - Level: 4
+        Area: 2
+      - Level: 5
+        Area: 2
+    CastTime: 1500    # renewal's FixedCastTime added here: a 30s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: # !TODO: What's the updated duration?
+      - Level: 1
+        Time: 12000
+      - Level: 2
+        Time: 14000
+      - Level: 3
+        Time: 16000
+      - Level: 4
+        Time: 18000
+      - Level: 5
+        Time: 20000
+    Cooldown: 30000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 80
+        - Level: 2
+          Amount: 90
+        - Level: 3
+          Amount: 100
+        - Level: 4
+          Amount: 110
+        - Level: 5
+          Amount: 120
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 2
+    Status: DeepSleep
+  - Id: 2432
+    Name: WM_MELODYOFSINK
+    Description: Melody of Sink
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 5
+      - Level: 3
+        Area: 6
+      - Level: 4
+        Area: 6
+      - Level: 5
+        Area: 7
+    CastTime: 4000    # renewal's FixedCastTime added here: a 20s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1:
+      - Level: 1
+        Time: 20000
+      - Level: 2
+        Time: 30000
+      - Level: 3
+        Time: 40000
+      - Level: 4
+        Time: 50000
+      - Level: 5
+        Time: 60000
+    Cooldown: 20000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 120
+        - Level: 2
+          Amount: 130
+        - Level: 3
+          Amount: 140
+        - Level: 4
+          Amount: 150
+        - Level: 5
+          Amount: 160
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 2
+    Status: MelodyOfSink
+  - Id: 2413
+    Name: WM_METALICSOUND
+    Description: Metallic Sound
+    MaxLevel: 10
+    Type: Magic
+    TargetType: Attack
+    Range: 9
+    Hit: Multi_Hit
+    HitCount: 2
+    Element: Weapon
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:
+      - Level: 1
+        Time: 1300
+      - Level: 2
+        Time: 1600
+      - Level: 3
+        Time: 1900
+      - Level: 4
+        Time: 2200
+      - Level: 5
+        Time: 2500
+      - Level: 6
+        Time: 2800
+      - Level: 7
+        Time: 3100
+      - Level: 8
+        Time: 3400
+      - Level: 9
+        Time: 3700
+      - Level: 10
+        Time: 4000
+    AfterCastActDelay: 500
+    Cooldown: 2500
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 62
+        - Level: 2
+          Amount: 64
+        - Level: 3
+          Amount: 66
+        - Level: 4
+          Amount: 68
+        - Level: 5
+          Amount: 70
+        - Level: 6
+          Amount: 72
+        - Level: 7
+          Amount: 74
+        - Level: 8
+          Amount: 76
+        - Level: 9
+          Amount: 78
+        - Level: 10
+          Amount: 80
+  - Id: 2419
+    Name: WM_POEMOFNETHERWORLD
+    Description: Poem of The Netherworld
+    MaxLevel: 5
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsTrap: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    SplashArea: 1
+    ActiveInstance: 5
+    CastTime: 3000
+    Duration1:
+      - Level: 1
+        Time: 9000
+      - Level: 2
+        Time: 11000
+      - Level: 3
+        Time: 13000
+      - Level: 4
+        Time: 15000
+      - Level: 5
+        Time: 17000
+    Duration2:
+      - Level: 1
+        Time: 8000
+      - Level: 2
+        Time: 10000
+      - Level: 3
+        Time: 12000
+      - Level: 4
+        Time: 14000
+      - Level: 5
+        Time: 16000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 12
+        - Level: 2
+          Amount: 16
+        - Level: 3
+          Amount: 20
+        - Level: 4
+          Amount: 24
+        - Level: 5
+          Amount: 28
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 2
+    Unit:
+      Id: Netherworld
+      Range: 1
+      Interval: 1000
+      Target: Enemy
+      Flag:
+        NoFootSet: true
+        PathCheck: true
+        NoKnockback: true
+    Status: Netherworld
+  - Id: 2424
+    Name: WM_RANDOMIZESPELL
+    Description: Improvised Song
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      NoDamage: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    AfterCastActDelay: 300
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 40
+        - Level: 2
+          Amount: 45
+        - Level: 3
+          Amount: 50
+        - Level: 4
+          Amount: 55
+        - Level: 5
+          Amount: 60
+      Weapon:
+        Musical: true
+        Whip: true
+  - Id: 2414
+    Name: WM_REVERBERATION
+    Description: Reverberation
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+      NoDamage: false    # set in pre-renewal's entry; renewal's leaves it out
+    Flags:
+      IsTrap: true
+    Range: 9
+    Hit: Multi_Hit
+    HitCount: -10
+    SplashArea: 2
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime: 1125    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    AfterCastActDelay: 875    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Cooldown: 150
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 56
+        - Level: 2
+          Amount: 62
+        - Level: 3
+          Amount: 68
+        - Level: 4
+          Amount: 74
+        - Level: 5
+          Amount: 80
+      Ammo:
+        Arrow: true
+      AmmoAmount: 5
+    Duration1: 0    # pre-renewal's entry sets this; renewal's does not
+    # Unit: pre-renewal's block stays (it cannot be removed); renewal's skill is cast at a target and places none
+  - Id: 2416 # Removed on kRO
+    Name: WM_REVERBERATION_MAGIC
+    Description: Reverberation Magic
+    MaxLevel: 5
+    Type: Magic
+    TargetType: Attack
+    Hit: Multi_Hit
+    HitCount: 10
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Requires:    # pre-renewal's entry has costs; renewal's has none
+      SpCost: 0
+    SplashArea: 0    # pre-renewal's entry sets this; renewal's does not
+    DamageFlags:
+      Splash: false    # set in pre-renewal's entry; renewal's leaves it out
+      SplashSplit: false    # set in pre-renewal's entry; renewal's leaves it out
+  - Id: 2415 # Removed on kRO
+    Name: WM_REVERBERATION_MELEE
+    Description: Reverberation Melee
+    MaxLevel: 5
+    Type: Weapon
+    TargetType: Attack
+    DamageFlags:
+      Splash: true
+      SplashSplit: false    # set in pre-renewal's entry; renewal's leaves it out
+    Hit: Single
+    HitCount: 1
+    Element: Weapon
+    SplashArea: 2
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    Requires:
+      SpCost: 1
+  - Id: 2430
+    Name: WM_SATURDAY_NIGHT_FEVER
+    Description: Saturday Night Fever
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 3
+      - Level: 2
+        Area: 4
+      - Level: 3
+        Area: 5
+      - Level: 4
+        Area: 6
+      - Level: 5
+        Area: 7
+    CastTime: 6000    # renewal's FixedCastTime added here: a 60s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1:
+      - Level: 1
+        Time: 10000
+      - Level: 2
+        Time: 15000
+      - Level: 3
+        Time: 20000
+      - Level: 4
+        Time: 25000
+      - Level: 5
+        Time: 30000
+    Duration2:
+      - Level: 1
+        Time: 10000
+      - Level: 2
+        Time: 8000
+      - Level: 3
+        Time: 6000
+      - Level: 4
+        Time: 4000
+      - Level: 5
+        Time: 2000
+    Cooldown: 60000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 150
+        - Level: 2
+          Amount: 160
+        - Level: 3
+          Amount: 170
+        - Level: 4
+          Amount: 180
+        - Level: 5
+          Amount: 190
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 5
+    Status: SaturdayNightFever
+  - Id: 2418
+    Name: WM_SEVERE_RAINSTORM
+    Description: Severe Rainstorm
+    MaxLevel: 5
+    TargetType: Ground
+    DamageFlags:
+      NoDamage: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    CopyFlags:
+      Skill:
+        Reproduce: true
+    CastTime:    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+      - Level: 1
+        Time: 1625
+      - Level: 2
+        Time: 2125
+      - Level: 3
+        Time: 2625
+      - Level: 4
+        Time: 3125
+      - Level: 5
+        Time: 3625
+    AfterCastActDelay: 1375    # renewal's FixedCastTime: 75% added here as delay, the rest to CastTime
+    Duration1: 3400
+    Cooldown:
+      - Level: 1
+        Time: 5000
+      - Level: 2
+        Time: 5500
+      - Level: 3
+        Time: 6000
+      - Level: 4
+        Time: 6500
+      - Level: 5
+        Time: 7000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 80
+        - Level: 2
+          Amount: 90
+        - Level: 3
+          Amount: 100
+        - Level: 4
+          Amount: 110
+        - Level: 5
+          Amount: 120
+      Weapon:
+        Bow: true
+        Musical: true
+        Whip: true
+      Ammo:
+        Arrow: true
+      AmmoAmount: 10
+    Unit:
+      Id: Severe_Rainstorm
+      Range: 5
+      Interval: 300
+      Target: Enemy
+      Flag:
+        DualMode: true
+  - Id: 2423
+    Name: WM_SIRCLEOFNATURE
+    Description: Circle of Nature's Sound
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: -1
+    CastTime: 1500    # renewal's FixedCastTime added here: a 180s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: 180000
+    Cooldown: 180000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 42
+        - Level: 2
+          Amount: 46
+        - Level: 3
+          Amount: 50
+        - Level: 4
+          Amount: 54
+        - Level: 5
+          Amount: 58
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: SircleOfNature
+  - Id: 2427
+    Name: WM_SONG_OF_MANA
+    Description: Song of Mana
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 6
+      - Level: 3
+        Area: 7
+      - Level: 4
+        Area: 8
+      - Level: 5
+        Area: 9
+    CastTime: 1500    # renewal's FixedCastTime added here: a 20s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: 120000
+    Cooldown: 20000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 120
+        - Level: 2
+          Amount: 140
+        - Level: 3
+          Amount: 160
+        - Level: 4
+          Amount: 180
+        - Level: 5
+          Amount: 200
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 1
+    Status: SongOfMana
+  - Id: 2429
+    Name: WM_SOUND_OF_DESTRUCTION
+    Description: Sound of Destruction
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+      IgnoreFlee: false    # set in pre-renewal's entry; renewal's leaves it out
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 5
+      - Level: 3
+        Area: 6
+      - Level: 4
+        Area: 6
+      - Level: 5
+        Area: 7
+    CastTime: 5000    # renewal's FixedCastTime added here: a 60s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1: 10000
+    Cooldown: 60000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 50
+        - Level: 2
+          Amount: 60
+        - Level: 3
+          Amount: 70
+        - Level: 4
+          Amount: 80
+        - Level: 5
+          Amount: 90
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 10
+    Status: SoundOfDestruction
+    Range: 0    # pre-renewal's entry sets this; renewal's does not
+  - Id: 2434
+    Name: WM_UNLIMITED_HUMMING_VOICE
+    Description: Unlimited Humming Voice
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Flags:
+      IsChorus: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 5
+      - Level: 2
+        Area: 5
+      - Level: 3
+        Area: 6
+      - Level: 4
+        Area: 6
+      - Level: 5
+        Area: 7
+    CastTime: 1500    # renewal's FixedCastTime added here: a 180s+ cooldown already stops spam
+    AfterCastActDelay: 300
+    Duration1:
+      - Level: 1
+        Time: 60000
+      - Level: 2
+        Time: 90000
+      - Level: 3
+        Time: 120000
+      - Level: 4
+        Time: 150000
+      - Level: 5
+        Time: 180000
+    Cooldown: 180000
+    FixedCastTime: 0    # moved into CastTime and AfterCastActDelay
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 120
+        - Level: 2
+          Amount: 130
+        - Level: 3
+          Amount: 140
+        - Level: 4
+          Amount: 150
+        - Level: 5
+          Amount: 160
+      Weapon:
+        Musical: true
+        Whip: true
+      ItemCost:
+        - Item: Protect_Neck_Candy
+          Amount: 5
+    Status: UnlimitedHummingVoice
+  - Id: 2420
+    Name: WM_VOICEOFSIREN
+    Description: Voice of Siren
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea:
+      - Level: 1
+        Area: 2
+      - Level: 2
+        Area: 3
+      - Level: 3
+        Area: 4
+      - Level: 4
+        Area: 5
+      - Level: 5
+        Area: 6
+    CastTime:
+      - Level: 1
+        Time: 2000
+      - Level: 2
+        Time: 2200
+      - Level: 3
+        Time: 2400
+      - Level: 4
+        Time: 2600
+      - Level: 5
+        Time: 2800
+    AfterCastActDelay: 1000
+    Duration1:
+      - Level: 1
+        Time: 15000
+      - Level: 2
+        Time: 18000
+      - Level: 3
+        Time: 21000
+      - Level: 4
+        Time: 24000
+      - Level: 5
+        Time: 27000
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 48
+        - Level: 2
+          Amount: 56
+        - Level: 3
+          Amount: 64
+        - Level: 4
+          Amount: 72
+        - Level: 5
+          Amount: 80
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: VoiceOfSiren
+  - Id: 2352
+    Name: WA_MOONLIT_SERENADE
+    Description: Moonlit Serenade
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: -1
+    CastTime: 1000
+    AfterCastActDelay: 300
+    Duration1: 180000
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 84
+        - Level: 2
+          Amount: 96
+        - Level: 3
+          Amount: 108
+        - Level: 4
+          Amount: 120
+        - Level: 5
+          Amount: 134
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: MoonlitSerenade
+  - Id: 2350
+    Name: WA_SWING_DANCE
+    Description: Swing Dance
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: -1
+    CastTime: 1000
+    AfterCastActDelay: 300
+    Duration1: 180000
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 96
+        - Level: 2
+          Amount: 112
+        - Level: 3
+          Amount: 128
+        - Level: 4
+          Amount: 144
+        - Level: 5
+          Amount: 160
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: SwingDance
+  - Id: 2351
+    Name: WA_SYMPHONY_OF_LOVER
+    Description: Symphony of Lovers
+    MaxLevel: 5
+    TargetType: Self
+    DamageFlags:
+      NoDamage: true
+      Splash: true
+    Hit: Single
+    HitCount: 1
+    SplashArea: -1
+    CastTime: 1000
+    AfterCastActDelay: 300
+    Duration1: 180000
+    Cooldown: 5000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 60
+        - Level: 2
+          Amount: 69
+        - Level: 3
+          Amount: 78
+        - Level: 4
+          Amount: 87
+        - Level: 5
+          Amount: 96
+      Weapon:
+        Musical: true
+        Whip: true
+    Status: SymphonyOfLover
   - Id: 3023
     Name: KG_KAGEHUMI
     Description: Shadow Trampling

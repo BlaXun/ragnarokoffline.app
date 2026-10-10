@@ -23,6 +23,10 @@
 --     Soul Expansion 1904, Chain Lightning 1886 (all four strikes on a lone
 --     target); a target Jack Frost 1512, Crimson Rock 1363, Frost Misty 1411,
 --     Comet 1409. SP costs: build.py.
+--   Minstrel/Wanderer vs Clown (Musical Strike, which both keep, 1800):
+--     Reverberation 1588, Metallic Sound about 1650 (INT build); per target
+--     Severe Rainstorm 711 (its hits are WM_SEVERE_RAINSTORM_MELEE), Great
+--     Echo 782.
 local FACTOR = {
   GC_CROSSIMPACT        = 29,
   GC_ROLLINGCUTTER      = 20,
@@ -55,6 +59,10 @@ local FACTOR = {
   WL_FROSTMISTY         = 62,
   WL_CHAINLIGHTNING_ATK = 36,
   WL_COMET              = 85,
+  WM_REVERBERATION      = 23,
+  WM_METALICSOUND       = 43,
+  WM_SEVERE_RAINSTORM_MELEE = 30,
+  WM_GREAT_ECHO         = 50,
 }
 
 for name, percent in pairs(FACTOR) do

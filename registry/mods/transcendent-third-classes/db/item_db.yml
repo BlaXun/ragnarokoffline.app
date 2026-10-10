@@ -39,6 +39,18 @@
 # 3. The Warlock's weapons, from warlock/equipment.csv.
 #
 # _______________________
+# Minstrel_T:
+# 1. No job flags: rAthena already lets the class wear a Clown's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Minstrel's instruments, from minstrel/equipment.csv.
+#
+# _______________________
+# Wanderer_T:
+# 1. No job flags: rAthena already lets the class wear a Gypsy's items.
+# 2. No renewal-only items: the skills need none.
+# 3. The Wanderer's whips, from wanderer/equipment.csv.
+#
+# _______________________
 # Kagerou, Oboro:
 # 1. KagerouOboro: true on every pre-renewal item a Ninja can equip or use,
 #    with the item's other jobs restated (an import entry's Jobs replaces them).
@@ -669,6 +681,94 @@ Body:
     Refineable: true
     Script: |
       bonus bInt,4; bonus bDex,2; bonus bMatkRate,15; bonus2 bSkillAtk,"WZ_VERMILION",15; if (Class == Job_High_Wizard) bonus2 bSkillAtk,"WZ_VERMILION",15; else bonus2 bSkillAtk,"WL_CRIMSONROCK",30; bonus bUnbreakableWeapon;
+  - Id: 63661
+    AegisName: Serenade_Lute
+    Name: Serenade Lute
+    Type: Weapon
+    SubType: Musical
+    Buy: 20
+    Weight: 800
+    Attack: 135
+    Range: 1
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Male
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"WM_REVERBERATION",10; bonus2 bSkillAtk,"WM_METALICSOUND",10; bonus2 bSkillAtk,"BA_MUSICALSTRIKE",10; bonus2 bSkillAtk,"CG_ARROWVULCAN",10;
+  - Id: 63671
+    AegisName: Sirens_Harp
+    Name: Siren's Harp
+    Type: Weapon
+    SubType: Musical
+    Buy: 20
+    Weight: 900
+    Attack: 150
+    Range: 1
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Male
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus2 bSkillAtk,"WM_REVERBERATION",20; bonus2 bSkillAtk,"WM_SEVERE_RAINSTORM_MELEE",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"BA_MUSICALSTRIKE",20; bonus2 bSkillAtk,"CG_ARROWVULCAN",15;
+  - Id: 63662
+    AegisName: Gypsy_Lash
+    Name: Gypsy Lash
+    Type: Weapon
+    SubType: Whip
+    Buy: 20
+    Weight: 700
+    Attack: 130
+    Range: 2
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Female
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 70
+    Refineable: true
+    Script: |
+      bonus bInt,2; bonus2 bSkillAtk,"WM_REVERBERATION",10; bonus2 bSkillAtk,"WM_METALICSOUND",10; bonus2 bSkillAtk,"DC_THROWARROW",10; bonus2 bSkillAtk,"CG_ARROWVULCAN",10;
+  - Id: 63672
+    AegisName: Moonlit_Whip
+    Name: Moonlit Whip
+    Type: Weapon
+    SubType: Whip
+    Buy: 20
+    Weight: 800
+    Attack: 145
+    Range: 2
+    Slots: 1
+    Jobs:
+      BardDancer: true
+    Classes:
+      Upper: true
+    Gender: Female
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 90
+    Refineable: true
+    Script: |
+      bonus bInt,3; bonus bDex,2; bonus2 bSkillAtk,"WM_REVERBERATION",20; bonus2 bSkillAtk,"WM_SEVERE_RAINSTORM_MELEE",15; bonus bUnbreakableWeapon; bonus2 bSkillAtk,"DC_THROWARROW",20; bonus2 bSkillAtk,"CG_ARROWVULCAN",15;
   - Id: 1201    # Knife
     Jobs:
       Alchemist: true

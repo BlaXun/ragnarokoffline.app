@@ -415,6 +415,91 @@
     1.5
    ],
    "repeat": 2
+  },
+  {
+   "id": "CL_MusicalStrike",
+   "class": 4020,
+   "weapon": 59018,
+   "ammo": 1750,
+   "stats": "dex",
+   "skills": "316",
+   "levels": "5"
+  },
+  {
+   "id": "MI_Reverberation",
+   "class": 4075,
+   "weapon": 59018,
+   "ammo": 1750,
+   "stats": "int",
+   "skills": "2414",
+   "levels": "5",
+   "versus": "CL_MusicalStrike",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "MI_MetallicSound",
+   "class": 4075,
+   "weapon": 59018,
+   "ammo": 1750,
+   "stats": "int",
+   "skills": "2413",
+   "levels": "10",
+   "versus": "CL_MusicalStrike",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "WA_Reverberation",
+   "class": 4076,
+   "user": "fem",
+   "weapon": 59019,
+   "ammo": 1750,
+   "stats": "int",
+   "skills": "2414",
+   "levels": "5",
+   "versus": "CL_MusicalStrike",
+   "aim": [
+    0.85,
+    1.0
+   ]
+  },
+  {
+   "id": "MI_SevereRainstorm_area",
+   "class": 4075,
+   "weapon": 59004,
+   "ammo": 1750,
+   "stats": "dex",
+   "skills": "2418",
+   "levels": "5",
+   "how": "pos",
+   "step": 0.3,
+   "versus": "MI_Reverberation",
+   "aim": [
+    0.4,
+    0.6
+   ]
+  },
+  {
+   "id": "MI_GreatEcho_area",
+   "class": 4075,
+   "weapon": 59018,
+   "ammo": 1750,
+   "stats": "dex",
+   "skills": "2426",
+   "levels": "5",
+   "how": "pos",
+   "step": 0.3,
+   "extra": "whisper npc:KoTest item#11513#40;wait 1",
+   "versus": "MI_Reverberation",
+   "aim": [
+    0.4,
+    0.6
+   ]
   }
  ]
 }

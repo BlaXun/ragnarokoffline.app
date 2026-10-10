@@ -190,3 +190,27 @@ Body:
     Locations:
       Right_Hand: true
     WeaponLevel: 4
+  - Id: 59018
+    AegisName: Test_Instrument
+    Name: Test Instrument
+    Type: Weapon
+    SubType: Musical
+    Gender: Male
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+  - Id: 59019
+    AegisName: Test_Whip
+    Name: Test Whip
+    Type: Weapon
+    SubType: Whip
+    Gender: Female
+    Weight: 10
+    Attack: 150
+    Range: 1
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
