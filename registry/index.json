@@ -1050,7 +1050,7 @@
       "name": "transcendent-third-classes",
       "version": "1.0.0",
       "author": "BlaXun",
-      "description": "Renewal's third and expanded classes in pre-renewal, at the transcendent classes' strength. Third classes are sidegrades: after the Valkyrie's rebirth, a reborn first class chooses the stock transcendent class or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera), Royal Guard (Crusader) and Warlock (Wizard, with spellbooks sold in Geffen). Expanded classes come by rebirth of their base class: Kagerou and Oboro (Ninja), Rebellion (Gunslinger), Star Emperor (Star Gladiator) and Soul Reaper (Soul Linker). Every class has its own gear, dropped by monsters, and damage measured against the transcendent classes.",
+      "description": "Renewal's third and expanded classes in pre-renewal, at the transcendent classes' strength. Third classes are sidegrades: after the Valkyrie's rebirth, a reborn first class chooses the stock transcendent class or its third class, with that class's own skills instead of the transcendent ones, the same skill points, tables and gear. The choice is permanent. So far: Guillotine Cross (Assassin), Shadow Chaser (Rogue), Arch Bishop (Priest), Rune Knight (Knight, with a Dragon Breeder in Prontera), Royal Guard (Crusader), Warlock (Wizard, with spellbooks sold in Geffen) and Mechanic (Blacksmith, with a Madogear from Einbroch). Expanded classes come by rebirth of their base class: Kagerou and Oboro (Ninja), Rebellion (Gunslinger), Star Emperor (Star Gladiator) and Soul Reaper (Soul Linker). Every class has its own gear, dropped by monsters, and damage measured against the transcendent classes.",
       "homepage": "https://github.com/Flux159/ragnarokoffline.app/tree/main/registry/mods/transcendent-third-classes",
       "tags": [
         "equipment",
@@ -1072,35 +1072,35 @@
       "files": [
         {
           "path": "README.md",
-          "sha256": "7e5119a99693d315a434dc453979046898a8f2035dd2de41851558f6c73e1eeb"
+          "sha256": "a8a6b0ec1dcd53c79b1a6b8925fea32f7897a275b54478752a080f0e664bdcaa"
         },
         {
           "path": "System/itemInfo.lua",
-          "sha256": "848a4b9d0ba8a75f8c4a643d89a4d45c46ae684b80408e7d9e5b1f8cf8600ab5"
+          "sha256": "ca10a3dcb6b27e4d32de5da7be940642225812fbe0c65513e99f023dd527c82d"
         },
         {
           "path": "db/item_combos.yml",
-          "sha256": "fa665eba154c9dc7e48a736caa0b6d0421d16882ebb43e2b5ffb8d40a29cf0a2"
+          "sha256": "b29b9f23fcdf8aa17477fe58ef76e600107bd9d5c151eabf0c6eb2ee3be90f33"
         },
         {
           "path": "db/item_db.yml",
-          "sha256": "af505f80a2175151dc6d3b9eb1bd2d8ae3893f7151743da0909ec41e5c2dc98d"
+          "sha256": "95b209f10cc4122c13139d98c83ad854fcf60adb006d0221a011fe16e655b5e3"
         },
         {
           "path": "db/job_stats.yml",
-          "sha256": "bd87b994f4e9109440c3e840880c7ed3cb2de9af3f055edf0b8d1ba92d53cb51"
+          "sha256": "b08227b52257dc5e9cf1186e27330743fd26289a878918480ab28704dbbba9f4"
         },
         {
           "path": "db/mob_db.yml",
-          "sha256": "ed19f5c352e713fb65daa8294e5942633b2281bc4ab0149faa3c43cc64753e35"
+          "sha256": "d4d1bba60454becb405bcc76a0ccc3fba129a28a76dd6b4795011dfa5378ebbe"
         },
         {
           "path": "db/skill_db.yml",
-          "sha256": "98e5531bac679cabbd3e02a22dad99919195daee1234a5de56d8bd028eebf08f"
+          "sha256": "909925037e2b15d22d88a03ec750aa62d2e1ebaa31078165de3adabd310e7f37"
         },
         {
           "path": "db/skill_tree.yml",
-          "sha256": "57edcdd4820b2589ae86fc062c8d49f994cfa1b4e746d4e8e122409bda7e695e"
+          "sha256": "06bfcfce209e466781c0bf2ed48cbb6054cae13e938f2218ed1acbba895ab3aa"
         },
         {
           "path": "db/spellbook_db.yml",
@@ -1124,15 +1124,19 @@
         },
         {
           "path": "lua/third_classes.lua",
-          "sha256": "48efb3b0229f1a0d87bbae8560faab02670836d48ef73b2da00b01135ba4d4b6"
+          "sha256": "e03cbf95a405dd91bfeddb1431955a82c0392aa480baece1df4b78161f694e28"
         },
         {
           "path": "mod.json",
-          "sha256": "fdf997d681310ab994219bbab694643a1c807875d72038d39e1d66ac74e007ec"
+          "sha256": "4f1b5cb2ffb7c2e6758f03b8831135497076c8aa90c40a360e0f028470904f61"
         },
         {
           "path": "npc/arch_bishop.txt",
           "sha256": "56f99ebcda93386f127da589c7732dbb5091b51f385592423496182f29ae9342"
+        },
+        {
+          "path": "npc/black_marketeer.txt",
+          "sha256": "33cb31d84b339dee4d813828dc939c65d8af1f2c8cf43c1350231a06349a7fda"
         },
         {
           "path": "npc/dragon_breeder.txt",
@@ -1145,6 +1149,14 @@
         {
           "path": "npc/kagerou_oboro.txt",
           "sha256": "e78a7caab830e8229c56e9403c5899f26c64efd37de90917e1cbda459e4805a2"
+        },
+        {
+          "path": "npc/mado_engineer.txt",
+          "sha256": "ecf634915fca70eef4b72c77e170569426029fd603c07f485d25732d27ab05eb"
+        },
+        {
+          "path": "npc/mechanic.txt",
+          "sha256": "798f174c4acfe12e34bdc75036134b3e6999f5b09717da60f14f418c09e15671"
         },
         {
           "path": "npc/rebellion.txt",
