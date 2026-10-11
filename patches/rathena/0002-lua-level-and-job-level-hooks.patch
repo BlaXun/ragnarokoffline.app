@@ -1,0 +1,506 @@
+diff --git a/src/map/battle.cpp b/src/map/battle.cpp
+index 3a6561994..42f5a52a2 100644
+--- a/src/map/battle.cpp
++++ b/src/map/battle.cpp
+@@ -2292,7 +2292,7 @@ int64 battle_addmastery(map_session_data *sd,block_list *target,int64 dmg,int32
+ 	if((skill = pc_checkskill(sd,AL_DEMONBANE)) > 0 &&
+ 		target->type == BL_MOB && //This bonus doesn't work against players.
+ 		(battle_check_undead(status->race,status->def_ele) || status->race == RC_DEMON) )
+-		damage += static_cast<decltype(damage)>(skill * (status_get_lv_dmg(sd) / 20.0 + 3.0));
++		damage += static_cast<decltype(damage)>(skill * (status_get_lv_dmg(sd, AL_DEMONBANE) / 20.0 + 3.0));
+ 	if( (skill = pc_checkskill(sd, RA_RANGERMAIN)) > 0 && (status->race == RC_BRUTE || status->race == RC_PLAYER_DORAM || status->race == RC_PLANT || status->race == RC_FISH) )
+ 		damage += (skill * 5);
+ 	if( (skill = pc_checkskill(sd,NC_RESEARCHFE)) > 0 && (status->def_ele == ELE_FIRE || status->def_ele == ELE_EARTH) )
+@@ -4080,8 +4080,11 @@ static void battle_calc_skill_base_damage(struct Damage* wd, block_list *src,blo
+ 		case RK_DRAGONBREATH_WATER:
+ 			{
+ 				int32 damagevalue = (sstatus->hp / 50 + status_get_max_sp(src) / 4) * skill_lv;
+-				if(status_get_lv_dmg(src) > 100)
+-					damagevalue = damagevalue * status_get_lv_dmg(src) / 100;
++				// The level this skill's damage may read (extension and Lua have their say).
++				const int32 formula_lv = status_get_lv_dmg(src, skill_id);
++
++				if(formula_lv > 100)
++					damagevalue = damagevalue * formula_lv / 100;
+ 				if(sd) {
+ 					if (pc_checkskill( sd, DK_DRAGONIC_AURA ) >= 1) {
+ 						damagevalue = damagevalue * (90 + 10 * pc_checkskill( sd, RK_DRAGONTRAINING ) + sstatus->pow / 5 ) / 100;
+@@ -4101,8 +4104,11 @@ static void battle_calc_skill_base_damage(struct Damage* wd, block_list *src,blo
+ 		case NC_SELFDESTRUCTION: {
+ 				int32 damagevalue = (skill_lv + 1) * ((sd ? pc_checkskill(sd,NC_MAINFRAME) : 0) + 8) * (status_get_sp(src) + sstatus->vit);
+ 
+-				if(status_get_lv_dmg(src) > 100)
+-					damagevalue = damagevalue * status_get_lv_dmg(src) / 100;
++				// The level this skill's damage may read (extension and Lua have their say).
++				const int32 formula_lv = status_get_lv_dmg(src, NC_SELFDESTRUCTION);
++
++				if(formula_lv > 100)
++					damagevalue = damagevalue * formula_lv / 100;
+ 				damagevalue = damagevalue + sstatus->hp;
+ 				ATK_ADD(wd->damage, wd->damage2, damagevalue);
+ #ifdef RENEWAL
+@@ -4691,7 +4697,7 @@ static void battle_attack_sc_bonus(struct Damage* wd, block_list *src, block_lis
+ 
+ 	uint16 anger_level;
+ 	if (sd != nullptr && anger_id < MAX_PC_FEELHATE && (anger_level = pc_checkskill(sd, sg_info[anger_id].anger_id))) {
+-		int32 skillratio = status_get_lv_dmg(sd) + sstatus->dex + sstatus->luk;
++		int32 skillratio = status_get_lv_dmg(sd, sg_info[anger_id].anger_id) + sstatus->dex + sstatus->luk;
+ 
+ 		if (anger_id == 2)
+ 			skillratio += sstatus->str; // SG_STAR_ANGER additionally has STR added in its formula.
+@@ -5208,7 +5214,7 @@ static void battle_calc_weapon_final_atk_modifiers(struct Damage* wd, block_list
+ 	if( tsc && tsc->getSCE(SC_CRESCENTELBOW) && wd->flag&BF_SHORT && rnd()%100 < tsc->getSCE(SC_CRESCENTELBOW)->val2 ) {
+ 		//ATK [{(Target HP / 100) x Skill Level} x Caster Base Level / 125] % + [Received damage x {1 + (Skill Level x 0.2)}]
+ 		int64 rdamage = 0;
+-		int32 ratio = (int64)(status_get_hp(src) / 100) * tsc->getSCE(SC_CRESCENTELBOW)->val1 * status_get_lv_dmg(target) / 125;
++		int32 ratio = (int64)(status_get_hp(src) / 100) * tsc->getSCE(SC_CRESCENTELBOW)->val1 * status_get_lv_dmg(target, SR_CRESCENTELBOW) / 125;
+ 		if (ratio > 5000) ratio = 5000; // Maximum of 5000% ATK
+ 		rdamage = battle_calc_base_damage(target,tstatus,&tstatus->rhw,tsc,sstatus->size,0);
+ 		rdamage = (int64)rdamage * ratio / 100 + wd->damage * (10 + tsc->getSCE(SC_CRESCENTELBOW)->val1 * 20 / 10) / 10;
+@@ -5688,9 +5694,9 @@ static struct Damage battle_calc_weapon_attack(block_list *src, block_list *targ
+ 
+ 			ATK_ADD(wd.damage, wd.damage2, sstatus->max_hp - sstatus->hp);
+ 			if(sc && sc->getSCE(SC_COMBO) && sc->getSCE(SC_COMBO)->val1 == SR_FALLENEMPIRE) {
+-				ATK_ADD(wd.damage, wd.damage2, static_cast<int64>(sstatus->max_sp * bonus) + 40 * status_get_lv_dmg(src));
++				ATK_ADD(wd.damage, wd.damage2, static_cast<int64>(sstatus->max_sp * bonus) + 40 * status_get_lv_dmg(src, SR_GATEOFHELL));
+ 			} else
+-				ATK_ADD(wd.damage, wd.damage2, static_cast<int64>(sstatus->sp * bonus) + 10 * status_get_lv_dmg(src));
++				ATK_ADD(wd.damage, wd.damage2, static_cast<int64>(sstatus->sp * bonus) + 10 * status_get_lv_dmg(src, SR_GATEOFHELL));
+ 		}
+ 			break;
+ 		case MH_TINDER_BREAKER:
+@@ -5905,7 +5911,7 @@ struct Damage battle_calc_magic_attack(block_list *src,block_list *target,uint16
+ 				i = 10 * skill_lv + sstatus->luk + sstatus->int_ + status_get_lv(src)
+ 				  	+ 300 - 300 * tstatus->hp / tstatus->max_hp;
+ #else
+-				i = 20 * skill_lv + sstatus->luk + sstatus->int_ + status_get_lv_dmg(src)
++				i = 20 * skill_lv + sstatus->luk + sstatus->int_ + status_get_lv_dmg(src, skill_id)
+ 				  	+ 200 - 200 * tstatus->hp / tstatus->max_hp;
+ #endif
+ 				if(i > 700)
+@@ -5921,7 +5927,7 @@ struct Damage battle_calc_magic_attack(block_list *src,block_list *target,uint16
+ 					}
+ 					MATK_RATE(skill_lv);
+ #else
+-					ad.damage = status_get_lv_dmg(src) + sstatus->int_ + skill_lv * 10;
++					ad.damage = status_get_lv_dmg(src, skill_id) + sstatus->int_ + skill_lv * 10;
+ #endif
+ 				}
+ 				break;
+@@ -5932,7 +5938,7 @@ struct Damage battle_calc_magic_attack(block_list *src,block_list *target,uint16
+ 				ad.damage = tstatus->sp * 2;
+ 				break;
+ 			case AB_RENOVATIO:
+-				ad.damage = status_get_lv_dmg(src) * 10 + sstatus->int_;
++				ad.damage = status_get_lv_dmg(src, AB_RENOVATIO) * 10 + sstatus->int_;
+ 				break;
+ 			case NPC_EARTHQUAKE:
+ 				if (mflag & NPC_EARTHQUAKE_FLAG) {
+diff --git a/src/map/skill.cpp b/src/map/skill.cpp
+index 1ae6a2a86..42a6bf625 100644
+--- a/src/map/skill.cpp
++++ b/src/map/skill.cpp
+@@ -552,7 +552,7 @@ int32 skill_calc_heal(block_list *src, block_list *target, uint16 skill_id, uint
+ 			if (sd && ((skill = pc_checkskill(sd, HP_MEDITATIO)) > 0))
+ 				hp_bonus += skill * 2;
+ #else
+-			hp = ((status_get_lv_dmg(src) + status_get_int(src)) / 8) * (4 + ((sd ? pc_checkskill(sd, AL_HEAL) : 1) * 8));
++			hp = ((status_get_lv_dmg(src, skill_id) + status_get_int(src)) / 8) * (4 + ((sd ? pc_checkskill(sd, AL_HEAL) : 1) * 8));
+ 			hp = (hp * (17 + 3 * skill_lv)) / 10;
+ #endif
+ 			break;
+@@ -587,7 +587,7 @@ int32 skill_calc_heal(block_list *src, block_list *target, uint16 skill_id, uint
+ 			 */
+ 			hp = (status_get_lv(src) + status_get_int(src)) / 5 * 30 * skill_lv / 10;
+ #else
+-			hp = (status_get_lv_dmg(src) + status_get_int(src)) / 8 * (4 + (skill_lv * 8));
++			hp = (status_get_lv_dmg(src, skill_id) + status_get_int(src)) / 8 * (4 + (skill_lv * 8));
+ #endif
+ 
+ 			if (sd && ((skill = pc_checkskill(sd, HP_MEDITATIO)) > 0))
+diff --git a/src/map/skill_lua.cpp b/src/map/skill_lua.cpp
+index c46ed34a4..fe8646fed 100644
+--- a/src/map/skill_lua.cpp
++++ b/src/map/skill_lua.cpp
+@@ -78,8 +78,8 @@ void count_hook(lua_State* state, lua_Debug*) {
+ // Hooks, by skill name and then by id
+ // ---------------------------------------------------------------------------
+ 
+-enum e_hook : uint8 { HOOK_RATIO = 0, HOOK_HIT, HOOK_ELEMENT, HOOK_ON_HIT, HOOK_ON_STEAL, HOOK_MAX };
+-const char* const hook_names[HOOK_MAX] = { "ratio", "hit", "element", "on_hit", "on_steal" };
++enum e_hook : uint8 { HOOK_RATIO = 0, HOOK_HIT, HOOK_ELEMENT, HOOK_ON_HIT, HOOK_ON_STEAL, HOOK_LEVEL, HOOK_JOB_LEVEL, HOOK_HEAL, HOOK_MAX };
++const char* const hook_names[HOOK_MAX] = { "ratio", "hit", "element", "on_hit", "on_steal", "level", "job_level", "heal" };
+ 
+ enum e_item_hook : uint8 { ITEM_HOOK_ON_ATTACK = 0, ITEM_HOOK_ON_HIT_TAKEN, ITEM_HOOK_MAX };
+ const char* const item_hook_names[ITEM_HOOK_MAX] = { "on_attack", "on_hit_taken" };
+@@ -458,6 +458,17 @@ void call_number_hook(e_hook which, uint16 skill_id, uint16 skill_lv, const bloc
+ 	}
+ }
+ 
++/// level and job_level: the level a skill's formula reads for `bl`. Runs by
++/// skill id, so it reaches skills that have no class. There is no target and
++/// no skill level here: a hook sees c.caster only.
++int32 call_level_hook(e_hook which, uint16 skill_id, const block_list* bl, int32 stock) {
++	int64 value = stock;
++
++	call_number_hook(which, skill_id, 0, bl, nullptr, value);
++
++	return static_cast<int32>(std::clamp<int64>(value, 0, MAX_LEVEL));
++}
++
+ // ---------------------------------------------------------------------------
+ // The wrapper around a skill's own class
+ // ---------------------------------------------------------------------------
+@@ -564,7 +575,7 @@ int32 lua_register_skill(lua_State* state) {
+ 			if (strcmp(key, hook_names[i]) == 0)
+ 				which = i;
+ 		if (which < 0)
+-			return luaL_error(state, "skill %s: unknown hook \"%s\" (ratio, hit, element, on_hit, on_steal or priority)", name, key);
++			return luaL_error(state, "skill %s: unknown hook \"%s\" (ratio, hit, element, on_hit, on_steal, level, job_level, heal or priority)", name, key);
+ 		if (!lua_isfunction(state, -1))
+ 			return luaL_error(state, "skill %s: %s must be a function", name, key);
+ 
+@@ -1421,6 +1432,14 @@ bool is_stealable(const mob_data& md, t_itemid nameid) {
+ 
+ } // namespace
+ 
++int32 skill_lua_level(uint16 skill_id, const block_list* bl, int32 stock) {
++	return call_level_hook(HOOK_LEVEL, skill_id, bl, stock);
++}
++
++int32 skill_lua_job_level(uint16 skill_id, const block_list* bl, int32 stock) {
++	return call_level_hook(HOOK_JOB_LEVEL, skill_id, bl, stock);
++}
++
+ t_itemid skill_lua_on_steal(block_list* src, block_list* target, uint16 skill_lv) {
+ 	// in_lua_cast refuses re-entry the same way on_damage does: an item
+ 	// whose on_attack cast of TF_STEAL otherwise reruns the on_steal hook
+diff --git a/src/map/skill_lua.hpp b/src/map/skill_lua.hpp
+index ea33eaa42..d32bf3d0f 100644
+--- a/src/map/skill_lua.hpp
++++ b/src/map/skill_lua.hpp
+@@ -53,6 +53,21 @@
+  * drop; returning nil lets the stock slot-order loop run as if no hook
+  * existed. First non-nil return in the priority chain wins.
+  *
++ * Two more hooks decide which level a skill's formula reads:
++ *
++ *   skill("SR_GATEOFHELL", {
++ *     level     = function(c, stock) return math.min(stock, 99) end,
++ *     job_level = function(c, stock) return 70 end,
++ *   })
++ *
++ * They run wherever a formula reads a player's base or job level for that
++ * skill's output (doc/extensions.md lists the skills), also for skills with
++ * no class of their own. `stock` is the real level, or what the
++ * skill_damage_level extension made of it. c.caster is the player; there is
++ * no c.target and c.skill_lv is 0, so a hook that reads c.target fails and is
++ * switched off. The result is kept between 0 and the server's level limit.
++ * Monsters' levels are never asked about.
++ *
+  * Two mods may hook the same part of the same skill: every registered hook
+  * runs, in ascending priority order (ties broken by mod load order). For
+  * ratio, hit and element each hook sees what the previous one returned as
+@@ -157,4 +172,12 @@ void skill_lua_apply(std::unique_ptr<s_skill_lua_hit>& hit);
+ /// that the returned nameid names a stealable entry on the mob.
+ t_itemid skill_lua_on_steal(struct block_list* src, struct block_list* target, uint16 skill_lv);
+ 
++/// The base level a skill's formula should read for `bl`: `stock` unless a
++/// mod's level hook on that skill says otherwise. Always `stock` when no hook
++/// is registered.
++int32 skill_lua_level(uint16 skill_id, const block_list* bl, int32 stock);
++
++/// As skill_lua_level(), for the job level and the job_level hook.
++int32 skill_lua_job_level(uint16 skill_id, const block_list* bl, int32 stock);
++
+ #endif /* SKILL_LUA_HPP */
+diff --git a/src/map/skills/elemental/ageofice.cpp b/src/map/skills/elemental/ageofice.cpp
+index c0403eb4f..cc8bf8e14 100644
+--- a/src/map/skills/elemental/ageofice.cpp
++++ b/src/map/skills/elemental/ageofice.cpp
+@@ -16,7 +16,7 @@ void SkillAgeOfIce::calculateSkillRatio(const Damage *wd, const block_list *src,
+ 
+ 	base_skillratio += -100 + 3700;
+ 	if (ed)
+-		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master) / 100;
++		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master, getSkillId()) / 100;
+ }
+ 
+ void SkillAgeOfIce::splashSearch(block_list* src, block_list* target, uint16 skill_lv, t_tick tick, int32 flag) const {
+diff --git a/src/map/skills/elemental/avalanche.cpp b/src/map/skills/elemental/avalanche.cpp
+index 30bce4c52..a21e21683 100644
+--- a/src/map/skills/elemental/avalanche.cpp
++++ b/src/map/skills/elemental/avalanche.cpp
+@@ -16,7 +16,7 @@ void SkillAvalanche::calculateSkillRatio(const Damage *wd, const block_list *src
+ 
+ 	base_skillratio += -100 + 450;
+ 	if (ed)
+-		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master) / 100;
++		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master, getSkillId()) / 100;
+ }
+ 
+ void SkillAvalanche::splashSearch(block_list* src, block_list* target, uint16 skill_lv, t_tick tick, int32 flag) const {
+diff --git a/src/map/skills/elemental/deadlypoison.cpp b/src/map/skills/elemental/deadlypoison.cpp
+index 02281b56d..c394ac4a0 100644
+--- a/src/map/skills/elemental/deadlypoison.cpp
++++ b/src/map/skills/elemental/deadlypoison.cpp
+@@ -16,7 +16,7 @@ void SkillDeadlyPoison::calculateSkillRatio(const Damage *wd, const block_list *
+ 
+ 	base_skillratio += -100 + 700;
+ 	if (ed)
+-		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master) / 100;
++		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master, getSkillId()) / 100;
+ }
+ 
+ void SkillDeadlyPoison::splashSearch(block_list* src, block_list* target, uint16 skill_lv, t_tick tick, int32 flag) const {
+diff --git a/src/map/skills/elemental/flamerock.cpp b/src/map/skills/elemental/flamerock.cpp
+index 7d153557e..9b2fe4294 100644
+--- a/src/map/skills/elemental/flamerock.cpp
++++ b/src/map/skills/elemental/flamerock.cpp
+@@ -16,7 +16,7 @@ void SkillFlameRock::calculateSkillRatio(const Damage *wd, const block_list *src
+ 
+ 	base_skillratio += -100 + 2400;
+ 	if (ed)
+-		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master) / 100;
++		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master, getSkillId()) / 100;
+ }
+ 
+ void SkillFlameRock::splashSearch(block_list* src, block_list* target, uint16 skill_lv, t_tick tick, int32 flag) const {
+diff --git a/src/map/skills/elemental/stormwind.cpp b/src/map/skills/elemental/stormwind.cpp
+index db303c039..5d7dbf891 100644
+--- a/src/map/skills/elemental/stormwind.cpp
++++ b/src/map/skills/elemental/stormwind.cpp
+@@ -16,7 +16,7 @@ void SkillStormWind::calculateSkillRatio(const Damage *wd, const block_list *src
+ 
+ 	base_skillratio += -100 + 2600;
+ 	if (ed)
+-		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master) / 100;
++		base_skillratio += base_skillratio * status_get_lv_dmg(ed->master, getSkillId()) / 100;
+ }
+ 
+ void SkillStormWind::splashSearch(block_list* src, block_list* target, uint16 skill_lv, t_tick tick, int32 flag) const {
+diff --git a/src/map/skills/gunslinger/quickdrawshot.cpp b/src/map/skills/gunslinger/quickdrawshot.cpp
+index 9cbc14af2..69968f535 100644
+--- a/src/map/skills/gunslinger/quickdrawshot.cpp
++++ b/src/map/skills/gunslinger/quickdrawshot.cpp
+@@ -16,7 +16,7 @@ void SkillQuickDrawShot::modifyDamageData(Damage& dmg, const block_list& src, co
+ 	dmg.div_ = 1;
+ 	
+ 	if (sd != nullptr) {
+-		dmg.div_ += status_get_joblv_dmg(sd, 0) / 20;
++		dmg.div_ += status_get_joblv_dmg(sd, 0, getSkillId()) / 20;
+ 	}
+ }
+ 
+diff --git a/src/map/skills/ninja/kocrossslash.cpp b/src/map/skills/ninja/kocrossslash.cpp
+index 2ca4b15f3..638b4755d 100644
+--- a/src/map/skills/ninja/kocrossslash.cpp
++++ b/src/map/skills/ninja/kocrossslash.cpp
+@@ -31,7 +31,7 @@ void SkillKoCrossSlash::calculateSkillRatio(const Damage *wd, const block_list *
+ 	skillratio += -100 + 200 * skill_lv;
+ 	RE_LVL_DMOD(120);
+ 	if(tsc && tsc->getSCE(SC_JYUMONJIKIRI))
+-		skillratio += skill_lv * status_get_lv_dmg(src);
++		skillratio += skill_lv * status_get_lv_dmg(src, getSkillId());
+ 	if (sc && sc->getSCE(SC_KAGEMUSYA))
+ 		skillratio += skillratio * sc->getSCE(SC_KAGEMUSYA)->val2 / 100;
+ }
+diff --git a/src/map/skills/swordman/enchantblade.cpp b/src/map/skills/swordman/enchantblade.cpp
+index 8f130b475..b10e22417 100644
+--- a/src/map/skills/swordman/enchantblade.cpp
++++ b/src/map/skills/swordman/enchantblade.cpp
+@@ -14,5 +14,5 @@ void SkillEnchantBlade::castendNoDamageId(block_list* src, block_list* target, u
+ 	const status_data* sstatus = status_get_status_data(*src);
+ 
+ 	clif_skill_nodamage(src, *target, getSkillId(), skill_lv,
+-		sc_start2(src, target, type, 100, skill_lv, ((100 + 20 * skill_lv) * status_get_lv_dmg(src)) / 100 + sstatus->int_, skill_get_time(getSkillId(), skill_lv)));
++		sc_start2(src, target, type, 100, skill_lv, ((100 + 20 * skill_lv) * status_get_lv_dmg(src, getSkillId())) / 100 + sstatus->int_, skill_get_time(getSkillId(), skill_lv)));
+ }
+diff --git a/src/map/skills/taekwon/esma.cpp b/src/map/skills/taekwon/esma.cpp
+index fcf4a0891..71fe43afd 100644
+--- a/src/map/skills/taekwon/esma.cpp
++++ b/src/map/skills/taekwon/esma.cpp
+@@ -12,7 +12,7 @@ SkillEsma::SkillEsma() : SkillImpl(SL_SMA) {
+ 
+ void SkillEsma::calculateSkillRatio(const Damage *wd, const block_list *src, const block_list *target, uint16 skill_lv, int32 &base_skillratio, int32 mflag) const {
+ 	// Base damage is 40% + lv%
+-	base_skillratio += -60 + status_get_lv_dmg(src);
++	base_skillratio += -60 + status_get_lv_dmg(src, getSkillId());
+ }
+ 
+ void SkillEsma::castendDamageId(block_list *src, block_list *target, uint16 skill_lv, t_tick tick, int32& flag) const {
+diff --git a/src/map/skills/taekwon/gravitycontrol.cpp b/src/map/skills/taekwon/gravitycontrol.cpp
+index 6106b431e..6f817b1c1 100644
+--- a/src/map/skills/taekwon/gravitycontrol.cpp
++++ b/src/map/skills/taekwon/gravitycontrol.cpp
+@@ -20,7 +20,7 @@ void SkillGravityControl::castendNoDamageId(block_list *src, block_list *target,
+ 	if (target->type == BL_PC)
+ 		fall_damage += dstsd->weight / 10 - tstatus->def;
+ 	else // Monster's don't have weight. Put something in its place.
+-		fall_damage += 50 * status_get_lv_dmg(src) - tstatus->def;
++		fall_damage += 50 * status_get_lv_dmg(src, getSkillId()) - tstatus->def;
+ 
+ 	fall_damage = max(1, fall_damage);
+ 
+diff --git a/src/map/skills/taekwon/jumpkick.cpp b/src/map/skills/taekwon/jumpkick.cpp
+index b1444c78b..44fc93a31 100644
+--- a/src/map/skills/taekwon/jumpkick.cpp
++++ b/src/map/skills/taekwon/jumpkick.cpp
+@@ -15,9 +15,9 @@ void SkillJumpKick::calculateSkillRatio(const Damage *wd, const block_list *src,
+ 	const status_change *sc = status_get_sc(src);
+ 	// Different damage formulas depending on damage trigger
+ 	if (sc && sc->getSCE(SC_COMBO) && sc->getSCE(SC_COMBO)->val1 == getSkillId())
+-		base_skillratio += -100 + 4 * status_get_lv_dmg(src); // Tumble formula [4%*baselevel]
++		base_skillratio += -100 + 4 * status_get_lv_dmg(src, getSkillId()); // Tumble formula [4%*baselevel]
+ 	else if (wd->miscflag) {
+-		base_skillratio += -100 + 4 * status_get_lv_dmg(src); // Running formula [4%*baselevel]
++		base_skillratio += -100 + 4 * status_get_lv_dmg(src, getSkillId()); // Running formula [4%*baselevel]
+ 		if (sc && sc->getSCE(SC_SPURT)) // Spurt formula [8%*baselevel]
+ 			base_skillratio *= 2;
+ 	} else
+diff --git a/src/map/status.cpp b/src/map/status.cpp
+index f354ab7e9..7d9c2c9d8 100644
+--- a/src/map/status.cpp
++++ b/src/map/status.cpp
+@@ -21,6 +21,7 @@
+ 
+ #include "battle.hpp"
+ #include "extensions.hpp"
++#include "skill_lua.hpp"
+ #include "battleground.hpp"
+ #include "clif.hpp"
+ #include "elemental.hpp"
+@@ -3644,41 +3645,50 @@ static uint32 status_calc_maxap_pc( map_session_data& sd ){
+ }
+ 
+ /**
+- * Base level as a skill's damage may read it. With the `skill_damage_level`
+- * extension on, a player's level counts up to the extension's base_level and
+- * no further; off (default), this is status_get_lv. Monsters and other
+- * units always give their own level.
+- * @param bl: Object whose level a damage formula reads
++ * Base level as a skill's output may read it: the player's level, then what
++ * the `skill_damage_level` extension makes of it (at most its base_level),
++ * then what a mod's Lua `level` hook on that skill says, which has the last
++ * word. Monsters and other units always give their own level.
++ * @param bl: Object whose level a formula reads
++ * @param skill_id: The skill whose formula is asking
+  * @return Level for the formula
+  */
+-int32 status_get_lv_dmg(const block_list* bl) {
++int32 status_get_lv_dmg(const block_list* bl, uint16 skill_id) {
+ 	int32 lv = status_get_lv(bl);
+ 
+-	if (bl != nullptr && bl->type == BL_PC && extension_enabled("skill_damage_level")) {
++	// Only a player's level is ever changed.
++	if (bl == nullptr || bl->type != BL_PC) {
++		return lv;
++	}
++
++	if (extension_enabled("skill_damage_level")) {
+ 		lv = min(lv, static_cast<int32>(extension_int("skill_damage_level", "base_level", lv)));
+ 	}
+ 
+-	return lv;
++	return skill_lua_level(skill_id, bl, lv);
+ }
+ 
+ /**
+- * Job level as a skill's damage may read it. With the `skill_damage_level`
+- * extension on, every player counts as the extension's job_level; off
+- * (default), this is the player's own job level.
++ * Job level as a skill's output may read it: the player's job level, then the
++ * `skill_damage_level` extension's job_level when that is on, then what a
++ * mod's Lua `job_level` hook on that skill says, which has the last word.
+  * @param sd: Player (may be nullptr)
+  * @param fallback: Value for a unit that is not a player
++ * @param skill_id: The skill whose formula is asking
+  * @return Job level for the formula
+  */
+-int32 status_get_joblv_dmg(const map_session_data* sd, int32 fallback) {
++int32 status_get_joblv_dmg(const map_session_data* sd, int32 fallback, uint16 skill_id) {
+ 	if (sd == nullptr) {
+ 		return fallback;
+ 	}
+ 
++	int32 job_lv = sd->status.job_level;
++
+ 	if (extension_enabled("skill_damage_level")) {
+-		return static_cast<int32>(extension_int("skill_damage_level", "job_level", sd->status.job_level));
++		job_lv = static_cast<int32>(extension_int("skill_damage_level", "job_level", job_lv));
+ 	}
+ 
+-	return sd->status.job_level;
++	return skill_lua_job_level(skill_id, sd, job_lv);
+ }
+ 
+ /**
+@@ -12095,8 +12105,12 @@ static bool status_change_start_post_delay(block_list* src, block_list* bl, sc_t
+ 			val3 = 2 * val1 + val2 + (sd?sd->status.job_level:50) / 4; // MDEF Increase
+ 			break;
+ 		case SC_MOONLITSERENADE: // MATK Increase
+-		case SC_RUSHWINDMILL: // ATK Increase
+-			val3 = 4 + val1 * 3 + val2 + status_get_joblv_dmg(sd, 50) / 5;
++		case SC_RUSHWINDMILL: { // ATK Increase
++				// Which of the two songs this is, for the job_level hook.
++				const uint16 song_id = (type == SC_RUSHWINDMILL) ? MI_RUSH_WINDMILL : WA_MOONLIT_SERENADE;
++
++				val3 = 4 + val1 * 3 + val2 + status_get_joblv_dmg(sd, 50, song_id) / 5;
++			}
+ 			break;
+ 		case SC_ECHOSONG:
+ 			val3 = 6 * val1 + val2 + (sd?sd->status.job_level:50) / 4; // DEF Increase
+@@ -12177,7 +12191,7 @@ static bool status_change_start_post_delay(block_list* src, block_list* bl, sc_t
+ 				int16 index = sd->equip_index[EQI_HAND_R];
+ 
+ 				if (index >= 0 && sd->inventory_data[index] && sd->inventory_data[index]->type == IT_WEAPON)
+-					val2 += 15 * status_get_joblv_dmg(sd, 0) + sd->inventory_data[index]->weight / 10 * sd->inventory_data[index]->weapon_level * status_get_lv_dmg(bl) / 100;
++					val2 += 15 * status_get_joblv_dmg(sd, 0, LG_EXEEDBREAK) + sd->inventory_data[index]->weight / 10 * sd->inventory_data[index]->weapon_level * status_get_lv_dmg(bl, LG_EXEEDBREAK) / 100;
+ 			} else // Monster
+ 				val2 += 750;
+ 			break;
+@@ -12385,16 +12399,20 @@ static bool status_change_start_post_delay(block_list* src, block_list* bl, sc_t
+ 			tick_time = 1000;
+ 			val4 = tick / tick_time;
+ 			break;
+-		case SC_ZANGETSU:
+-			if( status_get_hp(bl) % 2 == 0 )
+-				val2 = (status_get_lv_dmg(bl) / 3) + (20 * val1); //+Watk
+-			else
+-				val2 -= (status_get_lv_dmg(bl) / 3) + (30 * val1); //-Watk
++		case SC_ZANGETSU: {
++				// The part of the bonus that comes from the base level.
++				const int32 level_part = status_get_lv_dmg(bl, OB_ZANGETSU) / 3;
+ 
+-			if( status_get_sp(bl) % 2 == 0 )
+-				val3 = (status_get_lv_dmg(bl) / 3) + (20 * val1); //+Matk
+-			else
+-				val3 -= (status_get_lv_dmg(bl) / 3) + (30 * val1); //-Matk
++				if( status_get_hp(bl) % 2 == 0 )
++					val2 = level_part + (20 * val1); //+Watk
++				else
++					val2 -= level_part + (30 * val1); //-Watk
++
++				if( status_get_sp(bl) % 2 == 0 )
++					val3 = level_part + (20 * val1); //+Matk
++				else
++					val3 -= level_part + (30 * val1); //-Matk
++			}
+ 			break;
+ 		case SC_GENSOU:
+ 			{
+diff --git a/src/map/status.hpp b/src/map/status.hpp
+index 4ada853bc..7c7634d0e 100644
+--- a/src/map/status.hpp
++++ b/src/map/status.hpp
+@@ -3591,8 +3591,8 @@ int32 status_get_lv(const block_list *bl);
+ #define status_get_vit(bl) status_get_status_data(*bl)->vit
+ #define status_get_int(bl) status_get_status_data(*bl)->int_
+ #define status_get_dex(bl) status_get_status_data(*bl)->dex
+-int32 status_get_lv_dmg(const block_list* bl);
+-int32 status_get_joblv_dmg(const map_session_data* sd, int32 fallback);
++int32 status_get_lv_dmg(const block_list* bl, uint16 skill_id);
++int32 status_get_joblv_dmg(const map_session_data* sd, int32 fallback, uint16 skill_id);
+ #define status_get_luk(bl) status_get_status_data(*bl)->luk
+ #define status_get_pow(bl) status_get_status_data(*bl)->pow
+ #define status_get_sta(bl) status_get_status_data(*bl)->sta

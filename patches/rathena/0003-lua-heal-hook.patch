@@ -1,0 +1,138 @@
+diff --git a/src/map/skill_lua.cpp b/src/map/skill_lua.cpp
+index fe8646fed..d5b685c09 100644
+--- a/src/map/skill_lua.cpp
++++ b/src/map/skill_lua.cpp
+@@ -431,7 +431,7 @@ void push_context(uint16 skill_id, uint16 skill_lv, const block_list* src, const
+ /// registered hook runs in priority order; each sees what the previous one
+ /// returned as `stock`, and returning nil keeps the running value. A hook
+ /// that fails is switched off and the chain carries on with the rest.
+-void call_number_hook(e_hook which, uint16 skill_id, uint16 skill_lv, const block_list* src, const block_list* target, int64& value) {
++void call_number_hook(e_hook which, uint16 skill_id, uint16 skill_lv, const block_list* src, const block_list* target, int64& value, const int64* base = nullptr) {
+ 	s_skill_hooks* hooks = hooks_for(skill_id);
+ 
+ 	if (hooks == nullptr || hooks->hooks[which].empty())
+@@ -443,6 +443,8 @@ void call_number_hook(e_hook which, uint16 skill_id, uint16 skill_lv, const bloc
+ 
+ 		lua_rawgeti(L, LUA_REGISTRYINDEX, hook.ref);
+ 		push_context(skill_id, skill_lv, src, target, nullptr);
++		if (base != nullptr)
++			set_int("base", *base);  // heal: the amount before the skill's own bonus
+ 		lua_pushinteger(L, value);
+ 		if (!protected_call(hook, hooks->skill.c_str(), 2, 1))
+ 			continue;
+@@ -1440,6 +1442,15 @@ int32 skill_lua_job_level(uint16 skill_id, const block_list* bl, int32 stock) {
+ 	return call_level_hook(HOOK_JOB_LEVEL, skill_id, bl, stock);
+ }
+ 
++int32 skill_lua_heal(uint16 skill_id, uint16 skill_lv, const block_list* src, const block_list* target, int32 stock, int32 base) {
++	int64 value = stock;
++	const int64 before_bonus = base;
++
++	call_number_hook(HOOK_HEAL, skill_id, skill_lv, src, target, value, &before_bonus);
++
++	return static_cast<int32>(std::clamp<int64>(value, 0, INT32_MAX));
++}
++
+ t_itemid skill_lua_on_steal(block_list* src, block_list* target, uint16 skill_lv) {
+ 	// in_lua_cast refuses re-entry the same way on_damage does: an item
+ 	// whose on_attack cast of TF_STEAL otherwise reruns the on_steal hook
+diff --git a/src/map/skill_lua.hpp b/src/map/skill_lua.hpp
+index d32bf3d0f..a976bdc52 100644
+--- a/src/map/skill_lua.hpp
++++ b/src/map/skill_lua.hpp
+@@ -68,6 +68,17 @@
+  * switched off. The result is kept between 0 and the server's level limit.
+  * Monsters' levels are never asked about.
+  *
++ * And one decides what a heal skill restores:
++ *
++ *   skill("AB_CHEAL", {
++ *     heal = function(c, stock) return c.base * 85 // 100 end,
++ *   })
++ *
++ * heal runs for AL_HEAL, AB_HIGHNESSHEAL and AB_CHEAL when they heal (not
++ * when Heal damages an Undead). `stock` is the amount the server would
++ * restore; c.base is that amount before the skill's own bonus, which only
++ * AB_CHEAL has (2.5 % per party member). c.target is the unit being healed.
++ *
+  * Two mods may hook the same part of the same skill: every registered hook
+  * runs, in ascending priority order (ties broken by mod load order). For
+  * ratio, hit and element each hook sees what the previous one returned as
+@@ -180,4 +191,9 @@ int32 skill_lua_level(uint16 skill_id, const block_list* bl, int32 stock);
+ /// As skill_lua_level(), for the job level and the job_level hook.
+ int32 skill_lua_job_level(uint16 skill_id, const block_list* bl, int32 stock);
+ 
++/// The amount a heal skill restores: `stock` unless a mod's heal hook on that
++/// skill says otherwise. `base` is the amount before the skill's own bonus
++/// (Coluceo Heal's bonus per party member); the hook reads it as c.base.
++int32 skill_lua_heal(uint16 skill_id, uint16 skill_lv, const block_list* src, const block_list* target, int32 stock, int32 base);
++
+ #endif /* SKILL_LUA_HPP */
+diff --git a/src/map/skills/acolyte/coluceoheal.cpp b/src/map/skills/acolyte/coluceoheal.cpp
+index 5bcd7d5ee..7522f4d45 100644
+--- a/src/map/skills/acolyte/coluceoheal.cpp
++++ b/src/map/skills/acolyte/coluceoheal.cpp
+@@ -6,6 +6,7 @@
+ #include "map/clif.hpp"
+ #include "map/party.hpp"
+ #include "map/pc.hpp"
++#include "map/skill_lua.hpp"
+ #include "map/status.hpp"
+ 
+ SkillColuceoHeal::SkillColuceoHeal() : SkillImpl(AB_CHEAL) {
+@@ -20,10 +21,14 @@ void SkillColuceoHeal::castendNoDamageId(block_list *src, block_list *target, ui
+ 		if( sd && tstatus && !battle_check_undead(tstatus->race, tstatus->def_ele) && !tsc->getSCE(SC_BERSERK) ) {
+ 			int32 partycount = (sd->status.party_id ? party_foreachsamemap(party_sub_count, sd, 0) : 0);
+ 
+-			int32 i = skill_calc_heal(src, target, AL_HEAL, pc_checkskill(sd, AL_HEAL), true);
++			// What the caster's own Heal would restore on this member.
++			const int32 base_heal = skill_calc_heal(src, target, AL_HEAL, pc_checkskill(sd, AL_HEAL), true);
++			int32 i = base_heal;
+ 
+ 			if( partycount > 1 )
+ 				i += (i / 100) * (partycount * 10) / 4;
++			// A mod's heal hook has the last word; it sees base_heal as c.base.
++			i = skill_lua_heal(getSkillId(), skill_lv, src, target, i, base_heal);
+ 			if (status_isimmune(target))
+ 				i = 0; // Should heal by 0 or won't do anything?? in iRO it breaks the healing to members.. [malufett]
+ 
+diff --git a/src/map/skills/acolyte/heal.cpp b/src/map/skills/acolyte/heal.cpp
+index 84c321118..416077e3b 100644
+--- a/src/map/skills/acolyte/heal.cpp
++++ b/src/map/skills/acolyte/heal.cpp
+@@ -5,6 +5,7 @@
+ 
+ #include "../../mob.hpp"
+ #include "../../pc.hpp"
++#include "../../skill_lua.hpp"
+ 
+ SkillHeal::SkillHeal() : SkillImpl(AL_HEAL)
+ {
+@@ -19,6 +20,7 @@ void SkillHeal::castendNoDamageId(block_list *src, block_list *bl, uint16 skill_
+ 	mob_data *dstmd = BL_CAST(BL_MOB, bl);
+ 
+ 	int32 heal = skill_calc_heal(src, bl, getSkillId(), skill_lv, true);
++	heal = skill_lua_heal(getSkillId(), skill_lv, src, bl, heal, heal);
+ 
+ 	if (status_isimmune(bl) || (dstmd && (status_get_class(bl) == MOBID_EMPERIUM || status_get_class_(bl) == CLASS_BATTLEFIELD)))
+ 		heal = 0;
+diff --git a/src/map/skills/acolyte/highnessheal.cpp b/src/map/skills/acolyte/highnessheal.cpp
+index a2a93706a..066f2efdf 100644
+--- a/src/map/skills/acolyte/highnessheal.cpp
++++ b/src/map/skills/acolyte/highnessheal.cpp
+@@ -6,6 +6,7 @@
+ #include "map/clif.hpp"
+ #include "map/mob.hpp"
+ #include "map/pc.hpp"
++#include "map/skill_lua.hpp"
+ #include "map/status.hpp"
+ 
+ SkillHighnessHeal::SkillHighnessHeal() : SkillImpl(AB_HIGHNESSHEAL) {
+@@ -23,6 +24,7 @@ void SkillHighnessHeal::castendNoDamageId(block_list *src, block_list *target, u
+ 	map_session_data* dstsd = BL_CAST( BL_PC, target );
+ 
+ 	int32 heal = skill_calc_heal(src, target, getSkillId(), skill_lv, true);
++	heal = skill_lua_heal(getSkillId(), skill_lv, src, target, heal, heal);
+ 
+ 	if (status_isimmune(target) || (dstmd && (status_get_class(target) == MOBID_EMPERIUM || status_get_class_(target) == CLASS_BATTLEFIELD)))
+ 		heal = 0;

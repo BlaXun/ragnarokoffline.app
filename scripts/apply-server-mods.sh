@@ -35,6 +35,32 @@ sha256() {
 
 python3 "$ROOT/scripts/apply-crash-trace.py" "$TARGET"
 
+# Hooks in rAthena's own files that a mod of ours needs before the fork has
+# them: patches/rathena/*.patch, written against the commit config/VENDOR_PINS
+# pins. Each is meant to become a commit on the fork; when the pin moves to a
+# commit that has one, its patch is deleted here. Applied once, like the
+# engine's patches below, and for the same reason marked with a stamp.
+if ls "$ROOT"/patches/rathena/*.patch >/dev/null 2>&1; then
+    echo "==> rathena hooks: patches"
+    HSTAMP="$TARGET/.ragnarokoffline-rathena-patches"
+    HWANT=$(cat "$ROOT"/patches/rathena/*.patch | sha256 | cut -d' ' -f1)
+    if [ -f "$HSTAMP" ] && [ "$(cat "$HSTAMP")" = "$HWANT" ]; then
+        echo "    already applied"
+    elif [ -f "$HSTAMP" ]; then
+        echo "    patches/rathena changed since this checkout was built -- delete it and re-clone" >&2
+        exit 1
+    else
+        for p in "$ROOT"/patches/rathena/*.patch; do
+            if ! patch -d "$TARGET" -p1 --forward < "$p"; then
+                echo "    FAILED $(basename "$p") -- the pinned rAthena has changed under this patch" >&2
+                exit 1
+            fi
+            echo "    applied $(basename "$p")"
+        done
+        echo "$HWANT" > "$HSTAMP"
+    fi
+fi
+
 echo "==> population engine: files"
 # Copied every time: these are ours alone, nothing upstream writes here, so
 # re-copying is how a third-party/ update reaches an existing checkout.
