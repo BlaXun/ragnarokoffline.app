@@ -96,6 +96,38 @@ test('3rd and 4th class bands match the gates they are advanced into at', () => 
 	}
 });
 
+// NEEDS 19: a mod that brings the third classes to pre-renewal builds them on the transcendent
+// ids (4060-4065, 4073-4079), and brings the expanded jobs' advancements with them. None of
+// those had a profile, nor had the Super Novice, so every draft of one was refused.
+test('the jobs a class mod adds, and the Super Novice, have a profile to draft from', () => {
+	const jobs = {
+		RuneKnightT: 4060, WarlockT: 4061, RangerT: 4062, ArchBishopT: 4063, MechanicT: 4064,
+		GuillotineCrossT: 4065, RoyalGuardT: 4073, SorcererT: 4074, MinstrelT: 4075, WandererT: 4076,
+		SuraT: 4077, GeneticT: 4078, ShadowChaserT: 4079,
+		ExpandedSuperNovice: 4190, Kagerou: 4211, Oboro: 4212, Rebellion: 4215, StarEmperor: 4239,
+		SoulReaper: 4240, SuperNovice: 23,
+	};
+	const renewalOnly = new Set([...gearYml.split(/^ {2}- GearSetName: /m).slice(1)]
+		.filter((b) => /^ {4}RenewalOnly:\s*true/m.test(b)).map((b) => b.split(/\s/)[0]));
+	assert.ok(renewalOnly.has('third_2hsword'), 'parsed the RenewalOnly gear sets');
+	for (const [job, id] of Object.entries(jobs)) {
+		assert.strictEqual(jobIds[job], id, `${job} must resolve to ${id} through kJobNameMap`);
+		assert.ok(owner[job], `no profile in population_engine.yml lists ${job}`);
+		const p = profiles[owner[job]];
+		assert.ok(owner[job].startsWith('companion_'), `${job} is for drafting only, in a companion_ profile`);
+		const set = p.jobs[job];
+		assert.ok(gearSets.has(set), `${job}'s gear set ${set} must exist`);
+		// A pre-renewal server passes a RenewalOnly set over unread, and these are pre-renewal jobs.
+		assert.ok(!renewalOnly.has(set), `${job} wears ${set}, which pre-renewal does not load`);
+		if (job === 'SuperNovice') continue;
+		// The mod raises these jobs to base level 175 and base stats to 150.
+		assert.deepStrictEqual(range(p.body, 'BaseLevel'), [99, 175], `${owner[job]} BaseLevel`);
+		const tops = ['Str', 'Agi', 'Vit', 'Int', 'Dex', 'Luk'].map((st) => range(p.body, st));
+		assert.ok(tops.every(Boolean), `${owner[job]} declares all six stats`);
+		assert.strictEqual(Math.max(...tops.map((r) => r[1])), 150, `${owner[job]}'s main stat reaches 150`);
+	}
+});
+
 test('the companion-only profiles do not spawn ambiently', () => {
 	for (const name of Object.keys(profiles).filter((n) => n.startsWith('companion_'))) {
 		assert.doesNotMatch(spawnYml, new RegExp(`Profile: ${name}\\b`),

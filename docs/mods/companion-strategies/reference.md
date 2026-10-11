@@ -119,6 +119,14 @@ A list is several families: `Job: [Wizard, Sage]`. A job this server's era lacks
 both eras. A name that is no job at all is a warning. `Job` in a
 [selector](#choosing-who-selectors) works the same way.
 
+A mod that brings the third classes to pre-renewal builds them on their
+transcendent ids, and a plan names them as rAthena does: `Job: Rune_Knight_T`
+(or `4060`) is that class alone, and `Job: Knight` still takes it in with the
+rest of the family. Kagerou and Oboro are in the Ninja's family, Rebellion in
+the Gunslinger's, Star Emperor in the Star Gladiator's, Soul Reaper in the Soul
+Linker's. `@companion draft <job id>` drafts any of them
+([Companions](../../COMPANIONS.md#current-scope)).
+
 ### Encounters: boss fights
 
 A monster's plan normally applies only while the companion targets that monster.

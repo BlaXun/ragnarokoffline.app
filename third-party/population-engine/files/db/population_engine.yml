@@ -843,8 +843,10 @@ Body:
 #
 # Vehicles (dragon, warg, mado) are set by the engine from the skill tree,
 # so these carry no setriding script. Genetic/Biolo get a cart for Cart
-# Cannon and Cart Tornado. 3rd-class transcendent ids (4060-4079) are not
-# listed: nothing advances into them and the Summon tab cannot draft them.
+# Cannon and Cart Tornado. The 3rd-class transcendent ids (4060-4079) are
+# not listed here: nothing advances into them and the Summon tab does not
+# offer them. They have profiles of their own at the end of this file, for
+# @companion draft <job id> where a mod builds its third classes on them.
 ###########################################################################
 
   - Profile: companion_third_swordsman    # 3rd  Rune Knight / Royal Guard
@@ -1298,6 +1300,325 @@ Body:
     Wis: [20, 50]
     Spl: [40, 80]
     Con: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+###########################################################################
+# RAGNAROKMAC — companion profiles for jobs a mod brings to an era
+#
+# Companion-only, like the block above: no spawn entry names them. They are
+# here so that @companion draft <job id> finds a profile for
+#
+#   - the transcendent 3rd-class ids (4060-4065, 4073-4079). Pre-renewal has
+#     no third class; a mod that adds them builds them on these ids, and a
+#     party of them has to be draftable to be played and tested;
+#   - the expanded jobs' advancements: Kagerou, Oboro, Rebellion, Star
+#     Emperor, Soul Reaper, Expanded Super Novice;
+#   - the Super Novice, which no profile listed at all.
+#
+# A job the server's job table lacks is passed over at load, so on a stock
+# pre-renewal server only the Super Novice profile has a job.
+#
+# Gear is the set of the class each is built on (para_*): those have a
+# PreRenewal block, where the third_* sets are RenewalOnly. Base level runs
+# 99-175 and the stat targets to 150, for a mod that raises both for these
+# jobs; a draft comes at its owner's level and never above the job's own
+# MaxBaseLevel, and a stat stops at the job's own cap (pc_need_status_point),
+# so on a server that keeps 99 or 130 these profiles ask for nothing more.
+###########################################################################
+
+  - Profile: companion_third_t_swordsman     # 3rd (trans. id)  Rune Knight / Royal Guard
+    Jobs:
+      RuneKnightT: para_knight_base
+      RoyalGuardT: para_crusader
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [110, 150]
+    Agi: [40, 80]
+    Vit: [90, 130]
+    Int: [10, 40]
+    Dex: [60, 100]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_t_caster        # 3rd (trans. id)  Warlock / Sorcerer
+    Jobs:
+      WarlockT : para_mage
+      SorcererT: para_mage
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [1, 10]
+    Agi: [20, 50]
+    Vit: [40, 80]
+    Int: [120, 150]
+    Dex: [100, 140]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_t_priest        # 3rd (trans. id)  Arch Bishop
+    Jobs:
+      ArchBishopT: para_mage
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [1, 10]
+    Agi: [20, 50]
+    Vit: [70, 110]
+    Int: [120, 150]
+    Dex: [80, 120]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_t_monk          # 3rd (trans. id)  Sura
+    Jobs:
+      SuraT: para_monk
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [110, 150]
+    Agi: [30, 60]
+    Vit: [80, 120]
+    Int: [20, 50]
+    Dex: [80, 120]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_t_archer        # 3rd (trans. id)  Ranger / Minstrel / Wanderer
+    Jobs:
+      RangerT  : para_bow
+      MinstrelT: para_bow
+      WandererT: para_bow
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [10, 40]
+    Agi: [90, 130]
+    Vit: [30, 60]
+    Int: [30, 60]
+    Dex: [120, 150]
+    Luk: [30, 60]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_third_t_merchant      # 3rd (trans. id)  Mechanic / Genetic, cart-bearing
+    Jobs:
+      MechanicT: para_merchant
+      GeneticT : para_merchant
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [110, 150]
+    Agi: [20, 50]
+    Vit: [80, 120]
+    Int: [40, 70]
+    Dex: [70, 110]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+    Script: |
+      setcart;
+
+  - Profile: companion_third_t_thief         # 3rd (trans. id)  Guillotine Cross / Shadow Chaser
+    Jobs:
+      GuillotineCrossT: para_assassin_katar
+      ShadowChaserT   : para_thief
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [90, 130]
+    Agi: [110, 150]
+    Vit: [40, 70]
+    Int: [10, 40]
+    Dex: [80, 120]
+    Luk: [30, 60]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_expanded_ninja        # Kagerou / Oboro
+    Jobs:
+      Kagerou: para_ninja
+      Oboro  : para_ninja
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [60, 100]
+    Agi: [90, 130]
+    Vit: [40, 70]
+    Int: [80, 120]
+    Dex: [110, 150]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_expanded_rebellion    # Rebellion
+    Jobs:
+      Rebellion: para_gun
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [20, 50]
+    Agi: [90, 130]
+    Vit: [30, 60]
+    Int: [10, 40]
+    Dex: [120, 150]
+    Luk: [40, 70]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_expanded_star_emperor # Star Emperor
+    Jobs:
+      StarEmperor: para_taekwon
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [110, 150]
+    Agi: [100, 140]
+    Vit: [50, 80]
+    Int: [30, 60]
+    Dex: [80, 120]
+    Luk: [50, 80]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_expanded_soul_reaper  # Soul Reaper
+    Jobs:
+      SoulReaper: para_mage
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [1, 10]
+    Agi: [20, 50]
+    Vit: [50, 90]
+    Int: [120, 150]
+    Dex: [100, 140]
+    Luk: [10, 40]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_super_novice          # Super Novice
+    Jobs:
+      SuperNovice: novice_set
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [45, 99]
+    JobLevel: [1, 99]
+    Str: [50, 80]
+    Agi: [60, 90]
+    Vit: [30, 60]
+    Int: [30, 60]
+    Dex: [60, 90]
+    Luk: [20, 50]
+    Flags:
+      - mortal
+    TownBehavior: wander
+    FieldBehavior: combat
+    DungeonBehavior: combat
+
+  - Profile: companion_expanded_super_novice # Expanded Super Novice
+    Jobs:
+      ExpandedSuperNovice: novice_set
+    NameProfile: default
+    ChatProfile: default
+    Hair: [0, 42]
+    HairColor: [0, 131]
+    ClothesColor: [0, 699]
+    BaseLevel: [99, 175]
+    JobLevel: [1, 70]
+    Str: [90, 130]
+    Agi: [90, 130]
+    Vit: [40, 70]
+    Int: [40, 70]
+    Dex: [110, 150]
+    Luk: [20, 50]
     Flags:
       - mortal
     TownBehavior: wander

@@ -283,6 +283,15 @@ and then `@CPEND|count`, which is how the Companions window draws its rows:
 - Companions can be recruited from the existing Population Engine population, or
   **drafted directly** (`@companion draft <job> [name] [m|f]`, or the Summon tab)
   without hunting the world for a matching character.
+- `@companion draft` also takes a job by its id, and that reaches jobs the Summon
+  tab does not list: the Super Novice (`23`), and the jobs a class mod adds to an
+  era. In pre-renewal such a mod builds the third classes on their transcendent
+  ids (`4060`-`4065`, `4073`-`4079`: `@companion draft 4060 Sigurd m` is a Rune
+  Knight) and brings Kagerou, Oboro, Rebellion, Star Emperor, Soul Reaper and the
+  Expanded Super Novice (`4211`, `4212`, `4215`, `4239`, `4240`, `4190`). Such a
+  companion comes at its owner's level like any other, up to the level the mod
+  gives the job, and wears the gear of the class it is built on. Without a mod
+  that adds the job, the draft is refused as before.
 - A drafted companion's sex is yours to choose: `m`, `f`, `male` or `female`, as
   the first or the last word after the job (`@companion draft Knight f Aria` or
   `@companion draft Knight Aria f`). Leave it out and it is either, at random. A

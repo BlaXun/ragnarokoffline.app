@@ -32,6 +32,7 @@ watch what the companion reports.
 **Limits**
 - [Can it use items, potions, or switch gear?](#can-it-use-items-potions-or-switch-gear)
 - [Do regular AI characters use plans too?](#do-regular-ai-characters-use-plans-too)
+- [Can I test a plan with a third class in pre-renewal?](#can-i-test-a-plan-with-a-third-class-in-pre-renewal)
 - [Does it run out of SP?](#does-it-run-out-of-sp)
 - [Can it sit down to regenerate?](#can-it-sit-down-to-regenerate)
 
@@ -234,6 +235,15 @@ window's Gear tab.
 
 Only plans marked `For: shells` or `For: all`. They have no owner, so owner rules
 don't apply to them. See [Regular shells](reference.md#regular-shells).
+
+### Can I test a plan with a third class in pre-renewal?
+
+Yes, with a mod that adds the class. Draft it by its job id, since the Summon tab
+lists only the jobs of the stock game: `@companion draft 4060 Sigurd m` is a Rune
+Knight on its transcendent id, `4211` a Kagerou, `23` a Super Novice. It comes at
+your level, up to the level the mod gives the job; `#blvl` and `#joblvl` set it
+to anything else. In a plan, `Job: Rune_Knight_T` names that class and
+`Job: Knight` its whole family.
 
 ### Does it run out of SP?
 

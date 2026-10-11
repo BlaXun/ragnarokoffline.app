@@ -280,6 +280,17 @@ static const std::unordered_map<std::string, uint16_t> kJobNameMap = {
 	{ "RoyalGuard",      4066 }, { "Sorcerer",        4067 }, { "Minstrel",        4068 },
 	{ "Wanderer",        4069 }, { "Sura",            4070 }, { "Genetic",         4071 },
 	{ "ShadowChaser",    4072 },
+	// RAGNAROKMAC: the transcendent 3rd jobs (4060-4065, 4073-4079), for profiles and
+	// @companion draft only. Where a mod builds its third classes on these ids (the
+	// only ones a pre-renewal job table can be given), a companion is drafted as one.
+	{ "RuneKnightT",     4060 }, { "WarlockT",        4061 }, { "RangerT",         4062 },
+	{ "ArchBishopT",     4063 }, { "MechanicT",       4064 }, { "GuillotineCrossT", 4065 },
+	{ "RoyalGuardT",     4073 }, { "SorcererT",       4074 }, { "MinstrelT",       4075 },
+	{ "WandererT",       4076 }, { "SuraT",           4077 }, { "GeneticT",        4078 },
+	{ "ShadowChaserT",   4079 },
+	// RAGNAROKMAC: the expanded jobs' advancements
+	{ "ExpandedSuperNovice", 4190 }, { "Kagerou",     4211 }, { "Oboro",           4212 },
+	{ "Rebellion",       4215 }, { "StarEmperor",     4239 }, { "SoulReaper",      4240 },
 	// 4th jobs (4252-4264 main line, 4302-4308 extended)
 	{ "DragonKnight",    4252 }, { "Meister",         4253 }, { "ShadowCross",     4254 },
 	{ "ArchMage",        4255 }, { "Cardinal",        4256 }, { "Windhawk",        4257 },
